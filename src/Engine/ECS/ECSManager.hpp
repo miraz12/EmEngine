@@ -5,15 +5,7 @@
 #endif
 
 #include "Entity.hpp"
-#include "Systems/AnimationSystem.hpp"
-#include "Systems/CameraSystem.hpp"
-#include "Systems/CollisionSystem.hpp"
 #include "Systems/GraphicsSystem.hpp"
-#include "Systems/HealthSystem.hpp"
-#include "Systems/InputSystem.hpp"
-#include "Systems/MovementSystem.hpp"
-#include "Systems/SeeingSystem.hpp"
-#include "Systems/WeaponSystem.hpp"
 
 #include <GLFW/glfw3.h>
 #include <iostream>

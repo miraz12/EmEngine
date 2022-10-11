@@ -6,8 +6,6 @@
 #include "Engine/ECS/Entity.hpp"
 #include "Engine/MapLoader/MapLoader.hpp"
 
-#include "Engine/ECS/Components/SeeingComponent.hpp"
-
 Game::Game(GLFWwindow *window) : m_ECSManager(&ECSManager::getInstance()) {
   GraphicsSystem *gSys = m_ECSManager->getGraphicsSystem();
   gSys->getQuadManager()->getTexture(0).loadFromFile(
@@ -32,8 +30,6 @@ Game::Game(GLFWwindow *window) : m_ECSManager(&ECSManager::getInstance()) {
   gSys->getCamera()->setPosition(0.5f * (float)gSys->getMapLoader()->getWidth(),
                                  0.5f *
                                      (float)gSys->getMapLoader()->getHeight());
-
-  m_ECSManager->createPlayerEntity(7.f, 4.f, window);
 }
 
 void Game::update(float dt) { m_ECSManager->update(dt); }

@@ -4,9 +4,9 @@ if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
 
     find_package(OpenGL REQUIRED)
 
-    add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
     # GLAD
-    TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE glad/include)
+    add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
+    TARGET_INCLUDE_DIRECTORIES(glad PUBLIC glad/include)
 
 
 
@@ -45,3 +45,7 @@ TARGET_INCLUDE_DIRECTORIES(imgui PUBLIC imgui glfw/include)
 TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE stb_image)
 
 TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui)
+
+if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
+TARGET_LINK_LIBRARIES(exts INTERFACE glad)
+endif()

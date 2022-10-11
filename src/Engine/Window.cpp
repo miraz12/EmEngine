@@ -2,6 +2,9 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#define GL_GLEXT_PROTOTYPES
+#else
+#include <glad/glad.h>
 #endif
 
 #include <backends/imgui_impl_glfw.h>
@@ -34,7 +37,8 @@ void errorCallback(int /*error*/, const char *description) {
   printf("Error: %s\n", description);
 }
 
-GLFWwindow *window;
+static GLFWwindow *window;
+static Game *game;
 
 bool isBigEndian() {
   int a = 1;
@@ -114,7 +118,14 @@ bool Window::open() {
 
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init("#version 100");
+  ImGui_ImplOpenGL3_Init("#version 300 es");
+
+#ifndef EMSCRIPTEN
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    std::cout << "Failed to initialize GLAD" << std::endl;
+    return false;
+  }
+#endif
 
   return true;
 }
@@ -150,6 +161,8 @@ void Window::gameLoop() {
   updateTimer += dt;
   updatesSinceRender = 0;
 
+  glClearColor(1.0, 0.0, 0.0, 1.0);
+
   // If dt is bigger than minUpdateRate - update multiple times
   while (updateTimer >= minUpdateRate) {
     if (updatesSinceRender >= 20) {
@@ -159,11 +172,13 @@ void Window::gameLoop() {
       break;
     }
 
+    game->update((float)minUpdateRate);
     updateTimer -= minUpdateRate;
     updatesSinceRender++;
   }
 
   if (updatesSinceRender == 0) { // dt is faster than
+    game->update((float)updateTimer);
     updateTimer = 0.0f;
   }
 
@@ -175,7 +190,7 @@ bool Window::start() {
   currentTime = glfwGetTime();
   previousTime = currentTime;
 
-  Game game(window);
+  game = new Game(window);
 
 #ifdef EMSCRIPTEN
   // Define a mail loop function, that will be called as fast as possible

@@ -1,8 +1,9 @@
 #include "Camera.hpp"
 
 #ifdef EMSCRIPTEN
+#include <GLES2/gl2.h>
 #include <emscripten.h>
-#elif
+#else
 #include <glad/glad.h>
 #endif
 

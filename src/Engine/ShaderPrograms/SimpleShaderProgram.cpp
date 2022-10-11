@@ -2,37 +2,44 @@
 
 #include <iostream>
 
+#ifdef EMSCRIPTEN
+#include <GLES3/gl3.h>
+#include <emscripten.h>
+#define GL_GLEXT_PROTOTYPES
+#else
 #include <glad/glad.h>
+#endif
 
-SimpleShaderProgram::SimpleShaderProgram():
-    ShaderProgram("resources/Shaders/vertex.glsl", "resources/Shaders/fragment.glsl") {
+SimpleShaderProgram::SimpleShaderProgram()
+    : ShaderProgram("resources/Shaders/vertex.glsl",
+                    "resources/Shaders/fragment.glsl") {
 
-    // Change if uniforms change in shaders, the map's values are set to match layout(location = x) in shaders.
-    m_uniformBindings["modelMatrix"] = 0;
-    m_uniformBindings["viewMatrix"] = 1;
-	m_uniformBindings["textureMatrix"] = 2;
-	m_uniformBindings["texture0"] = 3;
-    m_uniformBindings["useTexture"] = 4;
+  // Change if uniforms change in shaders, the map's values are set to match
+  // layout(location = x) in shaders.
+  m_uniformBindings["modelMatrix"] = 0;
+  m_uniformBindings["viewMatrix"] = 1;
+  m_uniformBindings["textureMatrix"] = 2;
+  m_uniformBindings["texture0"] = 3;
+  m_uniformBindings["useTexture"] = 4;
 
-	use(); // Start using the shader
+  use(); // Start using the shader
 
-	// Set texture0 uniform to be texture unit 0
-	glUniform1i(m_uniformBindings["texture0"], 0);
+  // Set texture0 uniform to be texture unit 0
+  glUniform1i(m_uniformBindings["texture0"], 0);
 }
 
-SimpleShaderProgram::~SimpleShaderProgram() {
-
-}
+SimpleShaderProgram::~SimpleShaderProgram() {}
 
 void SimpleShaderProgram::setupVertexAttributePointers() {
-    // Change if input layout changes in shaders
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+  // Change if input layout changes in shaders
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float),
+                        (void *)(7 * sizeof(float)));
+  glEnableVertexAttribArray(2);
 }
-
