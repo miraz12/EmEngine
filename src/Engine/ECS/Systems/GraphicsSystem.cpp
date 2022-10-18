@@ -22,13 +22,13 @@ GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
 void GraphicsSystem::update(float /*dt*/) {
   draw();
 
+  std::cout << "Draw stuff: " << m_entities.size() << std::endl;
   for (auto &e : m_entities) {
     PositionComponent *p = static_cast<PositionComponent *>(
         e->getComponent(ComponentTypeEnum::POSITION));
     GraphicsComponent *g = static_cast<GraphicsComponent *>(
         e->getComponent(ComponentTypeEnum::GRAPHICS));
     g->grapObj->draw();
-    std::cout << "Draw stuff: " << m_entities.size() << std::endl;
   }
 }
 

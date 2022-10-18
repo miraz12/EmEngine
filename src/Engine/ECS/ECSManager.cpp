@@ -1,6 +1,8 @@
 #include "ECSManager.hpp"
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
+#include <Objects/Quad.hpp>
+#include <ShaderPrograms/SimpleShaderProgram.hpp>
 
 std::vector<Entity *> ECSManager::m_entities;
 
@@ -148,7 +150,10 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   playerEntity.makePlayable();
   // Add components to player
   GraphicsComponent *graphComp = new GraphicsComponent();
+  SimpleShaderProgram* sProg = new SimpleShaderProgram();
+  graphComp->grapObj = new Quad(sProg);
   addComponent(playerEntity, graphComp);
-  std::cout << "Add Player" << std::endl;
+  PositionComponent *posComp = new PositionComponent();
+  addComponent(playerEntity, posComp);
   return playerEntity.getID();
 }
