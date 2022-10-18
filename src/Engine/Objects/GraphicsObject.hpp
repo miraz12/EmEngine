@@ -7,16 +7,14 @@
 
 class GraphicsObject {
 public:
-    GraphicsObject(ShaderProgram& ShaderProgram);
+    GraphicsObject();
     virtual ~GraphicsObject();
 
-    void changeShaderProgram(ShaderProgram &shaderProgram);
     void bindVAO();
     void unbindVAO();
     virtual void draw() = 0;
 
 protected:
-    ShaderProgram& p_shaderProgram;
     glm::mat4 p_modelMatrix = glm::mat4(1.0f);
 
     virtual void setVertexData(std::size_t dataSize, const void* data);

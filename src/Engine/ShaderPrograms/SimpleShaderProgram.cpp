@@ -14,6 +14,8 @@ SimpleShaderProgram::SimpleShaderProgram()
     : ShaderProgram("resources/Shaders/vertex.glsl",
                     "resources/Shaders/fragment.glsl") {
 
+  m_uniformBindings["modelMatrix"] = 0;
+  m_uniformBindings["viewMatrix"] = 1;
   use(); // Start using the shader
 }
 

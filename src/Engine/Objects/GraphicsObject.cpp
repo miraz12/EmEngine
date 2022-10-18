@@ -10,16 +10,13 @@
 #include <glad/glad.h>
 #endif
 
-GraphicsObject::GraphicsObject(ShaderProgram &shaderProgram)
-    : p_shaderProgram(shaderProgram) {
+GraphicsObject::GraphicsObject() {
   glGenVertexArrays(1, &m_VAO);
   glGenBuffers(1, &m_VBO);
   glGenBuffers(1, &m_EBO);
 
   glBindVertexArray(m_VAO);
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-
-  p_shaderProgram.setupVertexAttributePointers();
 
   glBindVertexArray(0);
 }
@@ -28,10 +25,6 @@ GraphicsObject::~GraphicsObject() {
   glDeleteVertexArrays(1, &m_VAO);
   glDeleteBuffers(1, &m_VBO);
   glDeleteBuffers(1, &m_EBO);
-}
-
-void GraphicsObject::changeShaderProgram(ShaderProgram &shaderProgram) {
-  p_shaderProgram = shaderProgram;
 }
 
 void GraphicsObject::bindVAO() { glBindVertexArray(m_VAO); }
@@ -51,7 +44,7 @@ void GraphicsObject::setIndexData(std::size_t dataSize, const void *data) {
   glBindVertexArray(m_VAO);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO),
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
 
   glBindVertexArray(0);
 }

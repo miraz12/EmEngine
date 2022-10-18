@@ -10,7 +10,7 @@
 #include <glad/glad.h>
 #endif
 
-Quad::Quad(ShaderProgram& prog) : GraphicsObject(prog) {
+Quad::Quad() : GraphicsObject() {
 
   setVertexData(sizeof(m_vertices), m_vertices);
   setIndexData(sizeof(m_indices), m_indices);
@@ -19,8 +19,6 @@ Quad::Quad(ShaderProgram& prog) : GraphicsObject(prog) {
 Quad::~Quad() {}
 
 void Quad::draw() {
-  std::cout << "Render quad!" << std::endl;
-  p_shaderProgram.use();
   bindVAO();
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

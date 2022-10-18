@@ -12,7 +12,7 @@
 #endif
 
 MapLoader::MapLoader(ShaderProgram &shader, std::string mapName)
-    : GraphicsObject(shader), m_texture(0), m_modelMatrix(1.0f), m_width(30),
+    : GraphicsObject(), m_texture(0), m_modelMatrix(1.0f), m_width(30),
       m_height(30) {
 
   loadMap(mapName);
@@ -24,11 +24,7 @@ MapLoader::MapLoader(ShaderProgram &shader, std::string mapName)
 glm::mat4 &MapLoader::getModelMatrix() { return m_modelMatrix; }
 
 void MapLoader::draw() {
-  p_shaderProgram.use();
   bindVAO();
-  glUniform1i(p_shaderProgram.getUniformLocation("useTexture"), 1);
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
-                     GL_FALSE, glm::value_ptr(m_modelMatrix));
   m_texture.bind();
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

@@ -150,8 +150,7 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   playerEntity.makePlayable();
   // Add components to player
   GraphicsComponent *graphComp = new GraphicsComponent();
-  SimpleShaderProgram* sProg = new SimpleShaderProgram();
-  graphComp->grapObj = new Quad(sProg);
+  graphComp->grapObj = new Quad();
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();
   addComponent(playerEntity, posComp);

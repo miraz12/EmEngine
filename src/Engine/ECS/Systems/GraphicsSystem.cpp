@@ -22,7 +22,6 @@ GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
 void GraphicsSystem::update(float /*dt*/) {
   draw();
 
-  std::cout << "Draw stuff: " << m_entities.size() << std::endl;
   for (auto &e : m_entities) {
     PositionComponent *p = static_cast<PositionComponent *>(
         e->getComponent(ComponentTypeEnum::POSITION));
@@ -34,6 +33,10 @@ void GraphicsSystem::update(float /*dt*/) {
 
 void GraphicsSystem::draw() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
+  m_simpleShaderProgram.use();
+  m_camera.bindViewMatrix(m_simpleShaderProgram.getUniformLocation("viewMatrix"));
+
 }
 
 void GraphicsSystem::initGL() {
@@ -42,4 +45,5 @@ void GraphicsSystem::initGL() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
+  m_simpleShaderProgram.setupVertexAttributePointers();
 }

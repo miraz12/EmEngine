@@ -161,8 +161,6 @@ void Window::gameLoop() {
   updateTimer += dt;
   updatesSinceRender = 0;
 
-  glClearColor(1.0, 0.0, 0.0, 1.0);
-
   // If dt is bigger than minUpdateRate - update multiple times
   while (updateTimer >= minUpdateRate) {
     if (updatesSinceRender >= 20) {

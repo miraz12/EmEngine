@@ -8,7 +8,7 @@ struct InstanceData;
 
 class Quad : public GraphicsObject {
 public:
-  Quad(ShaderProgram& prog);
+  Quad();
   virtual ~Quad();
   void draw() override;
 
@@ -18,11 +18,11 @@ public:
 
 private:
 
-    float m_vertices[20] = {
-        -0.5f, -0.5f, 0.0f,     0.0f, 1.0f,
-         0.5f, -0.5f, 0.0f,     1.0f, 1.0f,
-        -0.5f,  0.5f, 0.0f,     0.0f, 0.0f,
-         0.5f,  0.5f, 0.0f,     1.0f, 0.0f,
+    float m_vertices[36] = {
+        -0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 1.0f,
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,     0.0f, 0.0f,
+         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,
     };
 
     unsigned int m_indices[6] = {

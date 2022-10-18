@@ -19,11 +19,11 @@ mat4 thresholdMatrix = mat4(
 
 void main()
 {
-    if (useTexture == 0) {
+    if (useTexture == 1) {
         FragColor = texture(texture0, texCoords);
     }
     else {
-       FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+       FragColor = color;
     }
 
     float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
