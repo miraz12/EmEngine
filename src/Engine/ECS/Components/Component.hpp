@@ -6,20 +6,9 @@
 
 //enum class containing all types of components. Add new enum if new component type is created
 enum class ComponentTypeEnum {
-	POSITION,
-	MOVEMENT,
-	INPUT,
-	COLLISION,
-	ACTION, 
-	HEALTH,
-	DAMAGE,
 	GRAPHICS,
-	WEAPON,
-	SEEING,
+	POSITION,
 	CAMERAFOCUS,
-	MAPTILE,
-	PLAYER,
-	POWERUP
 };
 
 //Basic component interface which all other components implement

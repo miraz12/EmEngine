@@ -26,7 +26,6 @@
 
 	//Adds entity to System if it contains the right components
 	bool System::addEntity(Entity* entity) {
-
 		if (entityHasCorrectComponents(entity)) {
 
 			//the right components exists in entity

@@ -14,18 +14,7 @@ SimpleShaderProgram::SimpleShaderProgram()
     : ShaderProgram("resources/Shaders/vertex.glsl",
                     "resources/Shaders/fragment.glsl") {
 
-  // Change if uniforms change in shaders, the map's values are set to match
-  // layout(location = x) in shaders.
-  m_uniformBindings["modelMatrix"] = 0;
-  m_uniformBindings["viewMatrix"] = 1;
-  m_uniformBindings["textureMatrix"] = 2;
-  m_uniformBindings["texture0"] = 3;
-  m_uniformBindings["useTexture"] = 4;
-
   use(); // Start using the shader
-
-  // Set texture0 uniform to be texture unit 0
-  glUniform1i(m_uniformBindings["texture0"], 0);
 }
 
 SimpleShaderProgram::~SimpleShaderProgram() {}

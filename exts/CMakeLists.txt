@@ -4,10 +4,6 @@ if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
 
     find_package(OpenGL REQUIRED)
 
-    # GLAD
-    add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
-    TARGET_INCLUDE_DIRECTORIES(glad PUBLIC glad/include)
-
 
 
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -15,6 +11,10 @@ if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     add_subdirectory(glfw)
 endif()
+
+# GLAD
+add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
+TARGET_INCLUDE_DIRECTORIES(glad PUBLIC glad/include)
 
 
 # GLFW
