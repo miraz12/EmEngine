@@ -1,4 +1,6 @@
 #include "Quad.hpp"
+#include "ShaderPrograms/ShaderProgram.hpp"
+#include <iostream>
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -8,22 +10,17 @@
 #include <glad/glad.h>
 #endif
 
-#include <cstdlib>
+Quad::Quad(ShaderProgram& prog) : GraphicsObject(prog) {
 
-#include "Engine/Objects/InstancedQuadManager.hpp"
-
-Quad::Quad(std::vector<InstanceData> *quadData, unsigned int quadIndex)
-    : SpriteMap(quadData, quadIndex), m_quadData(quadData),
-      m_quadIndex(quadIndex) {}
+  setVertexData(sizeof(m_vertices), m_vertices);
+  setIndexData(sizeof(m_indices), m_indices);
+}
 
 Quad::~Quad() {}
 
-glm::mat4 &Quad::getModelMatrix() {
-  return m_quadData->at(m_quadIndex).modelMatrix;
-}
-
-unsigned int Quad::getQuadIndex() { return m_quadIndex; }
-
-void Quad::setTextureIndex(unsigned int index) {
-  m_quadData->at(m_quadIndex).textureIndex = index;
+void Quad::draw() {
+  std::cout << "Render quad!" << std::endl;
+  p_shaderProgram.use();
+  bindVAO();
+  glDrawArrays(GL_TRIANGLES, 0, 6);
 }

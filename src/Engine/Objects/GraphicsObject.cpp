@@ -12,7 +12,16 @@
 
 GraphicsObject::GraphicsObject(ShaderProgram &shaderProgram)
     : p_shaderProgram(shaderProgram) {
-  init();
+  glGenVertexArrays(1, &m_VAO);
+  glGenBuffers(1, &m_VBO);
+  glGenBuffers(1, &m_EBO);
+
+  glBindVertexArray(m_VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+
+  p_shaderProgram.setupVertexAttributePointers();
+
+  glBindVertexArray(0);
 }
 
 GraphicsObject::~GraphicsObject() {
@@ -42,20 +51,7 @@ void GraphicsObject::setIndexData(std::size_t dataSize, const void *data) {
   glBindVertexArray(m_VAO);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO),
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-
-  glBindVertexArray(0);
-}
-
-void GraphicsObject::init() {
-  glGenVertexArrays(1, &m_VAO);
-  glGenBuffers(1, &m_VBO);
-  glGenBuffers(1, &m_EBO);
-
-  glBindVertexArray(m_VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-
-  p_shaderProgram.setupVertexAttributePointers();
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
 
   glBindVertexArray(0);
 }

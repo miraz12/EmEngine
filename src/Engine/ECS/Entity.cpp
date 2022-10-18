@@ -1,4 +1,5 @@
 #include "Entity.hpp"
+#include <iostream>
 
 Entity::Entity(int ID)
 : m_ID(ID), m_playable(false), m_name("none"), m_components(){

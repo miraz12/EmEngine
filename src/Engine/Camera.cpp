@@ -1,7 +1,7 @@
 #include "Camera.hpp"
 
 #ifdef EMSCRIPTEN
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #include <emscripten.h>
 #else
 #include <glad/glad.h>
@@ -16,6 +16,7 @@ Camera::~Camera() {}
 glm::mat4 &Camera::getViewMatrix() { return m_viewMatrix; }
 
 void Camera::setPosition(float positionX, float positionY) {
+
   m_position.x = positionX;
   m_position.y = positionY;
   m_matrixNeedsUpdate = true;

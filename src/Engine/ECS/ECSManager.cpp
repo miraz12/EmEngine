@@ -1,5 +1,6 @@
 #include "ECSManager.hpp"
 #include "Components/GraphicsComponent.hpp"
+#include "Components/PositionComponent.hpp"
 
 std::vector<Entity *> ECSManager::m_entities;
 
@@ -7,10 +8,6 @@ ECSManager::ECSManager()
     : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(),
       m_removeComponents() {
   initializeSystems();
-  m_startingPositions.push_back(glm::vec2(2, 2));
-  m_startingPositions.push_back(glm::vec2(28, 2));
-  m_startingPositions.push_back(glm::vec2(2, 28));
-  m_startingPositions.push_back(glm::vec2(28, 28));
 }
 
 ECSManager::~ECSManager() {
@@ -39,10 +36,6 @@ void ECSManager::update(float dt) {
   for (auto &s : m_systems) {
     s.second->update(dt);
   }
-}
-
-void ECSManager::updateRenderingSystems(float dt) {
-  // m_systems["ANIMATION"]->update(dt);
 }
 
 void ECSManager::reset() {
@@ -90,6 +83,7 @@ Entity *ECSManager::getEntity(int entityID) {
 
 void ECSManager::addEntities() {
   for (auto &newEntity : m_addEntities) {
+
     // add to manager
     m_entities.push_back(newEntity);
 
@@ -145,4 +139,16 @@ void ECSManager::removeComponents() {
     }
   }
   m_removeComponents.clear();
+}
+
+const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
+
+  Entity &playerEntity = createEntity();
+  playerEntity.setName("Player");
+  playerEntity.makePlayable();
+  // Add components to player
+  GraphicsComponent *graphComp = new GraphicsComponent();
+  addComponent(playerEntity, graphComp);
+  std::cout << "Add Player" << std::endl;
+  return playerEntity.getID();
 }
