@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#endif
-
 #include "Entity.hpp"
 #include "Systems/GraphicsSystem.hpp"
 

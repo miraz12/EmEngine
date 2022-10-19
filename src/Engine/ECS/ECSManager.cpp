@@ -1,6 +1,7 @@
 #include "ECSManager.hpp"
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
+#include <Objects/Mesh.hpp>
 #include <Objects/Quad.hpp>
 #include <ShaderPrograms/SimpleShaderProgram.hpp>
 
@@ -150,7 +151,8 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   playerEntity.makePlayable();
   // Add components to player
   GraphicsComponent *graphComp = new GraphicsComponent();
-  graphComp->grapObj = new Quad();
+  graphComp->grapObj = new Mesh("resources/Models/DragonAttenuation.glb");
+
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();
   addComponent(playerEntity, posComp);

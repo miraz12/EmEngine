@@ -2,20 +2,19 @@
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 
+#include <iostream>
+
 #ifdef EMSCRIPTEN
+#define GL_OES_vertex_array_object
 #include <GLES3/gl3.h>
 #include <emscripten.h>
-#define GL_GLEXT_PROTOTYPES
 #else
 #include <glad/glad.h>
 #endif
 
-#include <iostream>
-
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
     : System(ECSManager, ComponentTypeEnum::POSITION,
-             ComponentTypeEnum::GRAPHICS)
-{
+             ComponentTypeEnum::GRAPHICS) {
   initGL();
 }
 
@@ -35,8 +34,8 @@ void GraphicsSystem::draw() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
   m_simpleShaderProgram.use();
-  m_camera.bindViewMatrix(m_simpleShaderProgram.getUniformLocation("viewMatrix"));
-
+  m_camera.bindViewMatrix(
+      m_simpleShaderProgram.getUniformLocation("viewMatrix"));
 }
 
 void GraphicsSystem::initGL() {

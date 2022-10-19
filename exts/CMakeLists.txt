@@ -39,8 +39,9 @@ ADD_LIBRARY(imgui STATIC  imgui/imgui.cpp
                           imgui/backends/imgui_impl_opengl3.cpp)
 TARGET_INCLUDE_DIRECTORIES(imgui PUBLIC imgui glfw/include)
 
-# STB_IMAGE
-TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE stb_image)
+# Header only
+TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE header_only)
+
 
 TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui)
 

@@ -12,8 +12,7 @@
 #endif
 
 MapLoader::MapLoader(ShaderProgram &shader, std::string mapName)
-    : GraphicsObject(), m_texture(0), m_modelMatrix(1.0f), m_width(30),
-      m_height(30) {
+    : GraphicsObject(), m_modelMatrix(1.0f), m_width(30), m_height(30) {
 
   loadMap(mapName);
   parseMap();
@@ -25,7 +24,6 @@ glm::mat4 &MapLoader::getModelMatrix() { return m_modelMatrix; }
 
 void MapLoader::draw() {
   bindVAO();
-  m_texture.bind();
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
@@ -66,7 +64,6 @@ void MapLoader::parseMap() {
       break;
     }
   }
-  m_texture.setTextureData(texData, m_width, m_height);
   free(texData);
 }
 
