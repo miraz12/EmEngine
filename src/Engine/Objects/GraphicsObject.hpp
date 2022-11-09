@@ -11,7 +11,7 @@ public:
 
   void bindVAO();
   void unbindVAO();
-  virtual void draw() = 0;
+  virtual void draw(ShaderProgram& prog) = 0;
 
 protected:
   glm::mat4 p_modelMatrix = glm::mat4(1.0f);

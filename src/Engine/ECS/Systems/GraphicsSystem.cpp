@@ -26,7 +26,7 @@ void GraphicsSystem::update(float /*dt*/) {
         e->getComponent(ComponentTypeEnum::POSITION));
     GraphicsComponent *g = static_cast<GraphicsComponent *>(
         e->getComponent(ComponentTypeEnum::GRAPHICS));
-    g->grapObj->draw();
+    g->grapObj->draw(m_simpleShaderProgram);
   }
 }
 

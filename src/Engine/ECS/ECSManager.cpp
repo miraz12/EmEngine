@@ -151,7 +151,8 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   playerEntity.makePlayable();
   // Add components to player
   GraphicsComponent *graphComp = new GraphicsComponent();
-  graphComp->grapObj = new Mesh("resources/Models/DragonAttenuation.glb");
+  // graphComp->grapObj = new Mesh("resources/Models/DragonAttenuation.glb");
+  graphComp->grapObj = new Quad();
 
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();

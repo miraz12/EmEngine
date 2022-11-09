@@ -10,7 +10,7 @@ class Quad : public GraphicsObject {
 public:
   Quad();
   virtual ~Quad();
-  void draw() override;
+  void draw(ShaderProgram& prog) override;
 
   glm::mat4 &getModelMatrix();
   unsigned int getQuadIndex();
@@ -29,4 +29,6 @@ private:
         0, 1, 2,
         2, 1, 3,
     };
+
+    glm::mat4 m_model;
 };

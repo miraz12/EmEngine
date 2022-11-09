@@ -59,4 +59,4 @@ Mesh::Mesh(std::string filename) {
   }
 }
 
-void Mesh::draw() {}
+void Mesh::draw(ShaderProgram& prog) {}

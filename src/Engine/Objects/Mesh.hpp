@@ -6,7 +6,7 @@ class Mesh : public GraphicsObject {
 public:
   Mesh(std::string filename);
   virtual ~Mesh(){};
-  void draw() override;
+  void draw(ShaderProgram& prog) override;
 
 private:
   struct GLBufferState {
