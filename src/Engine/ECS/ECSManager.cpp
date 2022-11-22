@@ -1,14 +1,19 @@
 #include "ECSManager.hpp"
-#include "Components/GraphicsComponent.hpp"
-#include "Components/PositionComponent.hpp"
+
 #include <Objects/Mesh.hpp>
 #include <Objects/Quad.hpp>
 #include <ShaderPrograms/SimpleShaderProgram.hpp>
 
+#include "Components/GraphicsComponent.hpp"
+#include "Components/PositionComponent.hpp"
+
 std::vector<Entity *> ECSManager::m_entities;
 
 ECSManager::ECSManager()
-    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(),
+    : m_idCounter(1),
+      m_addEntities(),
+      m_addComponents(),
+      m_removeEntities(),
       m_removeComponents() {
   initializeSystems();
 }
@@ -86,7 +91,6 @@ Entity *ECSManager::getEntity(int entityID) {
 
 void ECSManager::addEntities() {
   for (auto &newEntity : m_addEntities) {
-
     // add to manager
     m_entities.push_back(newEntity);
 
@@ -100,10 +104,8 @@ void ECSManager::addEntities() {
 
 void ECSManager::addComponents() {
   for (auto &components : m_addComponents) {
-
     // if enitity does not already have component, proceed
     if (components.ent.addComponent(components.cmp)) {
-
       for (auto &system : m_systems) {
         // if entity is not already belonging to the system, try and add it
         if (!system.second->containsEntity(components.ent.getID())) {
@@ -117,7 +119,6 @@ void ECSManager::addComponents() {
 
 void ECSManager::removeEntities() {
   for (auto &i : m_removeEntities) {
-
     // delete in systems
     for (auto &system : m_systems) {
       system.second->removeEntity(i);
@@ -145,7 +146,6 @@ void ECSManager::removeComponents() {
 }
 
 const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
-
   Entity &playerEntity = createEntity();
   playerEntity.setName("Player");
   playerEntity.makePlayable();

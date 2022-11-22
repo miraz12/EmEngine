@@ -1,45 +1,46 @@
 #pragma once
 #include <vector>
-#include "../Entity.hpp"
+
 #include "../Components/Component.hpp"
+#include "../Entity.hpp"
 
 class ECSManager;
 class System {
+ public:
+  // Created many different constructors for different amount of required
+  // components
+  System(ECSManager* ECSManager, ComponentTypeEnum c1);
 
-public:
+  System(ECSManager* ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2);
 
-	//Created many different constructors for different amount of required components
-	System(ECSManager* ECSManager, ComponentTypeEnum c1);
-		
-	System(ECSManager* ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2);
+  System(ECSManager* ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2,
+         ComponentTypeEnum c3);
 
-	System(ECSManager* ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2, ComponentTypeEnum c3);
+  virtual ~System() = default;
 
-	virtual ~System() = default;
-		
-	//Checks if entity has correct components
-	bool entityHasCorrectComponents(Entity* entity);
+  // Checks if entity has correct components
+  bool entityHasCorrectComponents(Entity* entity);
 
-	//Adds entity to System if it contains the right components
-	bool addEntity(Entity* entity); 
+  // Adds entity to System if it contains the right components
+  bool addEntity(Entity* entity);
 
-	//checks if entity belongs to this system
-	bool containsEntity(int entityID);
+  // checks if entity belongs to this system
+  bool containsEntity(int entityID);
 
-	//finds entity by id and removes it if it does not contain correct components
-	void removeFaultyEntity(int ID);
+  // finds entity by id and removes it if it does not contain correct components
+  void removeFaultyEntity(int ID);
 
-	//Removes entity
-	void removeEntity(int ID);
+  // Removes entity
+  void removeEntity(int ID);
 
-	//this function is called when the system should do its thing
-	virtual void update(float dt) = 0;
+  // this function is called when the system should do its thing
+  virtual void update(float dt) = 0;
 
-	//Initialize system
-	virtual void initialize() {};
+  // Initialize system
+  virtual void initialize(){};
 
-protected:
-	ECSManager *m_manager;
-	std::vector<ComponentTypeEnum> m_requiredComponents;
-	std::vector<Entity*> m_entities;
+ protected:
+  ECSManager* m_manager;
+  std::vector<ComponentTypeEnum> m_requiredComponents;
+  std::vector<Entity*> m_entities;
 };

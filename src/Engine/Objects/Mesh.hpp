@@ -1,20 +1,21 @@
 #pragma once
-#include "GraphicsObject.hpp"
 #include <map>
 #include <vector>
+
+#include "GraphicsObject.hpp"
 class Mesh : public GraphicsObject {
-public:
+ public:
   Mesh(std::string filename);
   virtual ~Mesh(){};
   void draw(ShaderProgram& prog) override;
 
-private:
+ private:
   struct GLBufferState {
     unsigned int vb;
   };
 
   struct GLMeshState {
-    std::vector<unsigned int> diffuseTex; // for each primitive in mesh
+    std::vector<unsigned int> diffuseTex;  // for each primitive in mesh
   };
 
   struct GLProgramState {
@@ -23,8 +24,8 @@ private:
   };
 
   struct GLCurvesState {
-    unsigned int vb; // vertex buffer
-    size_t count;    // byte count
+    unsigned int vb;  // vertex buffer
+    size_t count;     // byte count
   };
 
   std::map<int, GLBufferState> gBufferState;

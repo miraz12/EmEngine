@@ -1,8 +1,8 @@
-#include "Engine/Window.hpp"
-
 #include <exception>
 #include <iostream>
 #include <stdexcept>
+
+#include "Engine/Window.hpp"
 
 void handle_eptr(std::exception_ptr eptr) {
   try {

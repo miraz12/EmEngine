@@ -14,7 +14,7 @@ struct VisualEntity {
 };
 
 class BotInterface {
-public:
+ public:
   virtual void print() = 0;
   virtual void update(float dt, std::vector<VisualEntity> *eyes) = 0;
   virtual void actionMove(void (*f)(unsigned int key, BotInterface *bot)) = 0;

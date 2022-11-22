@@ -1,8 +1,9 @@
 #include "GraphicsSystem.hpp"
-#include "ECS/Components/GraphicsComponent.hpp"
-#include "ECS/Components/PositionComponent.hpp"
 
 #include <iostream>
+
+#include "ECS/Components/GraphicsComponent.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -43,6 +44,6 @@ void GraphicsSystem::initGL() {
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
-  glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
+  glLineWidth(3.0f);  // Sets line width of things like wireframe and draw lines
   m_simpleShaderProgram.setupVertexAttributePointers();
 }

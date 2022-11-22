@@ -8,15 +8,13 @@
 #include <glad/glad.h>
 #endif
 
+#include <GLFW/glfw3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
+#include <Game/Game.hpp>
 #include <fstream>
 #include <iostream>
-
-#include <GLFW/glfw3.h>
-
-#include <Game/Game.hpp>
 
 static double currentTime;
 static double previousTime;
@@ -49,11 +47,9 @@ bool isBigEndian() {
 int convertToInt(char *buffer, int len) {
   int a = 0;
   if (!isBigEndian())
-    for (int i = 0; i < len; i++)
-      ((char *)&a)[i] = buffer[i];
+    for (int i = 0; i < len; i++) ((char *)&a)[i] = buffer[i];
   else
-    for (int i = 0; i < len; i++)
-      ((char *)&a)[3 - i] = buffer[i];
+    for (int i = 0; i < len; i++) ((char *)&a)[3 - i] = buffer[i];
   return a;
 }
 
@@ -66,10 +62,10 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
     return NULL;
   }
   in.read(buffer, 4);
-  in.read(buffer, 4); // WAVE
-  in.read(buffer, 4); // fmt
-  in.read(buffer, 4); // 16
-  in.read(buffer, 2); // 1
+  in.read(buffer, 4);  // WAVE
+  in.read(buffer, 4);  // fmt
+  in.read(buffer, 4);  // 16
+  in.read(buffer, 2);  // 1
   in.read(buffer, 2);
   chan = convertToInt(buffer, 2);
   in.read(buffer, 4);
@@ -78,7 +74,7 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
   in.read(buffer, 2);
   in.read(buffer, 2);
   bps = convertToInt(buffer, 2);
-  in.read(buffer, 4); // data
+  in.read(buffer, 4);  // data
   in.read(buffer, 4);
   size = convertToInt(buffer, 4);
   char *data = new char[size];
@@ -176,7 +172,7 @@ void Window::gameLoop() {
     updatesSinceRender++;
   }
 
-  if (updatesSinceRender == 0) { // dt is faster than
+  if (updatesSinceRender == 0) {  // dt is faster than
     game->update((float)updateTimer);
     updateTimer = 0.0f;
   }
@@ -233,10 +229,10 @@ void Window::renderImgui() {
 
   static float f = 0.0f;
 
-  ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!"
+  ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
   ImGui::Text("This is some useful text.");
   ImGui::SliderFloat("float", &f, 0.0f,
-                     1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+                     1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
 
   ImGui::End();
   // Rendering

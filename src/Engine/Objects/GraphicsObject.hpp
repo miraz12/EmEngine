@@ -5,22 +5,22 @@
 #include "../ShaderPrograms/ShaderProgram.hpp"
 
 class GraphicsObject {
-public:
+ public:
   GraphicsObject();
   virtual ~GraphicsObject();
 
   void bindVAO();
   void unbindVAO();
-  virtual void draw(ShaderProgram& prog) = 0;
+  virtual void draw(ShaderProgram &prog) = 0;
 
-protected:
+ protected:
   glm::mat4 p_modelMatrix = glm::mat4(1.0f);
 
   virtual void setVertexData(std::size_t dataSize, const void *data);
   virtual void setIndexData(std::size_t dataSize, const void *data);
 
-private:
+ private:
   unsigned int m_VAO;
   unsigned int m_VBO;
-  unsigned int m_EBO; // Optional
+  unsigned int m_EBO;  // Optional
 };

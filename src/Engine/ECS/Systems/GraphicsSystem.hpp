@@ -1,32 +1,29 @@
 #pragma once
-#include "System.hpp"
-#include "../../Camera.hpp"
-#include "../../ShaderPrograms/SimpleShaderProgram.hpp"
-
 #include <array>
 
+#include "../../Camera.hpp"
+#include "../../ShaderPrograms/SimpleShaderProgram.hpp"
+#include "System.hpp"
 
-class GraphicsSystem : public System
-{
-public:
+class GraphicsSystem : public System {
+ public:
+  GraphicsSystem(ECSManager* ECSManager);
+  void update(float dt);
 
-	GraphicsSystem(ECSManager *ECSManager);
-	void update(float dt);
+  Camera* getCamera() { return &m_camera; };
 
-	Camera* getCamera() { return &m_camera; };
+ private:
+  void draw();
+  void initGL();
 
-private:
-	void draw();
-    void initGL();
+  Camera m_camera;
+  SimpleShaderProgram m_simpleShaderProgram;
 
-    Camera m_camera;
-    SimpleShaderProgram m_simpleShaderProgram;
+  // Framebuffer variables
+  std::array<unsigned int, 2> m_fbos;
+  std::array<unsigned int, 2> m_colTexs;
+  std::array<unsigned int, 2> m_rbos;
 
-    // Framebuffer variables
-    std::array<unsigned int, 2> m_fbos;
-    std::array<unsigned int, 2> m_colTexs;
-    std::array<unsigned int, 2> m_rbos;
-
-    unsigned int m_width, m_height;
-    unsigned int quadVAO, quadVBO;
+  unsigned int m_width, m_height;
+  unsigned int quadVAO, quadVBO;
 };

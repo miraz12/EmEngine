@@ -1,4 +1,5 @@
 #include "MapLoader.hpp"
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -13,7 +14,6 @@
 
 MapLoader::MapLoader(ShaderProgram &shader, std::string mapName)
     : GraphicsObject(), m_modelMatrix(1.0f), m_width(30), m_height(30) {
-
   loadMap(mapName);
   parseMap();
   setVertexData(sizeof(m_vertices), m_vertices);
@@ -50,18 +50,18 @@ void MapLoader::parseMap() {
       malloc(sizeof(unsigned char) * m_width * m_height * 4));
   for (size_t i = 0; i < m_width * m_height; i++) {
     switch (m_mapData[i]) {
-    case tileType::ground:
-      texData[i * 4] = 200;
-      texData[i * 4 + 1] = 200;
-      texData[i * 4 + 2] = 200;
-      texData[i * 4 + 3] = 255;
-      break;
-    case tileType::wall:
-      texData[i * 4] = 0;
-      texData[i * 4 + 1] = 0;
-      texData[i * 4 + 2] = 0;
-      texData[i * 4 + 3] = 255;
-      break;
+      case tileType::ground:
+        texData[i * 4] = 200;
+        texData[i * 4 + 1] = 200;
+        texData[i * 4 + 2] = 200;
+        texData[i * 4 + 3] = 255;
+        break;
+      case tileType::wall:
+        texData[i * 4] = 0;
+        texData[i * 4 + 1] = 0;
+        texData[i * 4 + 2] = 0;
+        texData[i * 4 + 3] = 255;
+        break;
     }
   }
   free(texData);

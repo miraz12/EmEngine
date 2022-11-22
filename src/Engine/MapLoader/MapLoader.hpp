@@ -1,12 +1,12 @@
 #pragma once
+#include <glm/glm.hpp>
+
 #include "../Objects/GraphicsObject.hpp"
 #include "../Objects/Quad.hpp"
 #include "../ShaderPrograms/SimpleShaderProgram.hpp"
 
-#include <glm/glm.hpp>
-
 class MapLoader : protected GraphicsObject {
-public:
+ public:
   MapLoader(ShaderProgram &shader, std::string mapName);
   ~MapLoader() = default;
   // MapLoader(MapLoader const&) = delete;
@@ -19,7 +19,7 @@ public:
   unsigned int getWidth();
   unsigned int getHeight();
 
-private:
+ private:
   void loadMap(std::string mapName);
   void parseMap();
   glm::mat4 m_modelMatrix;

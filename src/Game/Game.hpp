@@ -3,14 +3,14 @@
 #include "Engine/ECS/ECSManager.hpp"
 
 class Game {
-public:
+ public:
   Game(GLFWwindow *window);
   ~Game();
 
   void update(float dt);
   void reset();
 
-private:
+ private:
   void init();
   void setupEntities();
 

@@ -1,16 +1,17 @@
 #pragma once
 
-#include "Entity.hpp"
-#include "Systems/GraphicsSystem.hpp"
-
 #include <GLFW/glfw3.h>
+
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 
+#include "Entity.hpp"
+#include "Systems/GraphicsSystem.hpp"
+
 class ECSManager {
-public:
+ public:
   static ECSManager &getInstance() {
     static ECSManager instance;
     return instance;
@@ -58,7 +59,7 @@ public:
     return dynamic_cast<GraphicsSystem *>(m_systems["GRAPHICS"]);
   };
 
-private:
+ private:
   ECSManager();
   // Entities
   int m_idCounter;

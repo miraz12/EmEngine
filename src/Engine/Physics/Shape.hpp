@@ -1,33 +1,34 @@
 #pragma once
 
-#include <vector>
-#include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <glm/glm.hpp>
+#include <vector>
 
 class Shape {
-public:
-    Shape();
-    virtual ~Shape();
+ public:
+  Shape();
+  virtual ~Shape();
 
-    void addVertex(glm::vec2 vertex);
-    void addNormal(glm::vec2 normal);
+  void addVertex(glm::vec2 vertex);
+  void addNormal(glm::vec2 normal);
 
-    void clearVertices();
-    void clearNormals();
+  void clearVertices();
+  void clearNormals();
 
-    void setTransformMatrix(const glm::mat4 &matrix);
+  void setTransformMatrix(const glm::mat4& matrix);
 
-    const std::vector<glm::vec2>& getTransformedVertices();
-    const std::vector<glm::vec2>& getTransformedNormals();
-private:
-    std::vector<glm::vec2> m_originalVertices;
-    std::vector<glm::vec2> m_originalNormals;
+  const std::vector<glm::vec2>& getTransformedVertices();
+  const std::vector<glm::vec2>& getTransformedNormals();
 
-    std::vector<glm::vec2> m_transformedVertices;
-    std::vector<glm::vec2> m_transformedNormals;
+ private:
+  std::vector<glm::vec2> m_originalVertices;
+  std::vector<glm::vec2> m_originalNormals;
 
-    bool m_verticesNeedsUpdate;
-    bool m_normalsNeedsUpdate;
+  std::vector<glm::vec2> m_transformedVertices;
+  std::vector<glm::vec2> m_transformedNormals;
 
-    glm::mat4 m_transformMatrix;
+  bool m_verticesNeedsUpdate;
+  bool m_normalsNeedsUpdate;
+
+  glm::mat4 m_transformMatrix;
 };

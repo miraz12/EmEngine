@@ -1,13 +1,10 @@
 #include "Component.hpp"
-
 #include "Objects/GraphicsObject.hpp"
 
-class GraphicsComponent : public Component 
-{
+class GraphicsComponent : public Component {
+ public:
+  GraphicsObject* grapObj;
 
-public:
-	GraphicsObject* grapObj;
-
-	GraphicsComponent();
-	virtual ~GraphicsComponent();
+  GraphicsComponent();
+  virtual ~GraphicsComponent();
 };

@@ -1,4 +1,5 @@
 #include "Mesh.hpp"
+
 #include <iostream>
 
 #define TINYGLTF_IMPLEMENTATION
@@ -7,7 +8,6 @@
 #include "tiny_gltf.h"
 
 Mesh::Mesh(std::string filename) {
-
   tinygltf::Model model;
   tinygltf::TinyGLTF loader;
 
@@ -37,7 +37,7 @@ Mesh::Mesh(std::string filename) {
     const tinygltf::BufferView &bufferView = model.bufferViews[i];
     if (bufferView.target == 0) {
       std::cout << "WARN: bufferView.target is zero" << std::endl;
-      continue; // Unsupported bufferView.
+      continue;  // Unsupported bufferView.
     }
 
     int sparse_accessor = -1;
@@ -59,4 +59,4 @@ Mesh::Mesh(std::string filename) {
   }
 }
 
-void Mesh::draw(ShaderProgram& prog) {}
+void Mesh::draw(ShaderProgram &prog) {}

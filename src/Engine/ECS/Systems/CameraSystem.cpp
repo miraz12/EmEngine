@@ -1,15 +1,16 @@
 #include "CameraSystem.hpp"
+
 #include "ECS/Components/PositionComponent.hpp"
 #include "ECS/ECSManager.hpp"
 
-CameraSystem::CameraSystem(ECSManager* ECSManager) 
-: System(ECSManager, ComponentTypeEnum::CAMERAFOCUS, ComponentTypeEnum::POSITION){
-
-}
+CameraSystem::CameraSystem(ECSManager* ECSManager)
+    : System(ECSManager, ComponentTypeEnum::CAMERAFOCUS,
+             ComponentTypeEnum::POSITION) {}
 
 void CameraSystem::update(float /*dt*/) {
-	//System should only have one entity
-	for (auto& e : m_entities) {
-		PositionComponent* posComp = static_cast<PositionComponent*>(e->getComponent(ComponentTypeEnum::POSITION));
-	}
+  // System should only have one entity
+  for (auto& e : m_entities) {
+    PositionComponent* posComp = static_cast<PositionComponent*>(
+        e->getComponent(ComponentTypeEnum::POSITION));
+  }
 }

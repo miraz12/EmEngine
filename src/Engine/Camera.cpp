@@ -9,15 +9,18 @@
 #endif
 
 Camera::Camera()
-    : m_viewMatrix(1.0f), m_matrixNeedsUpdate(false), m_position{0.0f, 0.0f},
-      m_zoom(1.0f), m_rotation(0.0f), m_ratio(1.0f) {}
+    : m_viewMatrix(1.0f),
+      m_matrixNeedsUpdate(false),
+      m_position{0.0f, 0.0f},
+      m_zoom(1.0f),
+      m_rotation(0.0f),
+      m_ratio(1.0f) {}
 
 Camera::~Camera() {}
 
 glm::mat4 &Camera::getViewMatrix() { return m_viewMatrix; }
 
 void Camera::setPosition(float positionX, float positionY) {
-
   m_position.x = positionX;
   m_position.y = positionY;
   m_matrixNeedsUpdate = true;
