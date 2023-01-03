@@ -4,28 +4,37 @@
 #include <glm/glm.hpp>
 
 class Camera {
- public:
+public:
   Camera();
   ~Camera();
 
-  glm::mat4& getViewMatrix();
+  glm::mat4 &getViewMatrix();
 
-  void setPosition(float positionX,
-                   float positionY);  // Set position of camera (2D)
+  void setPosition(glm::vec3 v) {
+    m_position = v;
+    m_matrixNeedsUpdate = true;
+  };
   void setZoom(float zoomAmount);
-  void setRotation(float rotation);  // Set rotation clockwise
+  void setFront(glm::vec3 f) {
+    m_front = f;
+    m_matrixNeedsUpdate = true;
+  };
 
-  glm::vec2& getPosition() { return m_position; };
+  glm::vec3 getPosition() { return m_position; };
+  glm::vec3 getFront() { return m_front; };
+  glm::vec3 getUp() { return m_up; };
 
-  void setAspectRatio(float ratio);
-  void bindViewMatrix(unsigned int uniformLocation);
+  void bindProjViewMatrix(unsigned int proj, unsigned int view);
 
- private:
+private:
   glm::mat4 m_viewMatrix;
+  glm::mat4 m_ProjectionMatrix;
   bool m_matrixNeedsUpdate;
 
-  glm::vec2 m_position;
+  glm::vec3 m_position;
+  glm::vec3 m_front;
+  glm::vec3 m_right;
+  glm::vec3 m_up;
   float m_zoom;
-  float m_rotation;
-  float m_ratio;
+  float m_fov;
 };

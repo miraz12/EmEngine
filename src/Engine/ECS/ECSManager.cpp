@@ -29,7 +29,7 @@ ECSManager::~ECSManager() {
 }
 
 void ECSManager::initializeSystems() {
-  m_systems["GRAPHICS"] = new GraphicsSystem(this);
+  m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
 }
 
 void ECSManager::update(float dt) {

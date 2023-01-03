@@ -7,16 +7,14 @@
 
 class GraphicsSystem : public System {
  public:
-  GraphicsSystem(ECSManager* ECSManager);
+  GraphicsSystem(ECSManager* ECSManager, Camera& cam);
   void update(float dt);
-
-  Camera* getCamera() { return &m_camera; };
 
  private:
   void draw();
   void initGL();
 
-  Camera m_camera;
+  Camera& m_camera;
   SimpleShaderProgram m_simpleShaderProgram;
 
   // Framebuffer variables

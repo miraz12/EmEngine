@@ -1,4 +1,5 @@
 #include "GraphicsSystem.hpp"
+#include "Window.hpp"
 
 #include <iostream>
 
@@ -13,9 +14,9 @@
 #include <glad/glad.h>
 #endif
 
-GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
+GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
     : System(ECSManager, ComponentTypeEnum::POSITION,
-             ComponentTypeEnum::GRAPHICS) {
+             ComponentTypeEnum::GRAPHICS), m_camera(cam) {
   initGL();
 }
 
@@ -35,7 +36,8 @@ void GraphicsSystem::draw() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
   m_simpleShaderProgram.use();
-  m_camera.bindViewMatrix(
+  m_camera.bindProjViewMatrix(
+      m_simpleShaderProgram.getUniformLocation("projMatrix"),
       m_simpleShaderProgram.getUniformLocation("viewMatrix"));
 }
 

@@ -16,6 +16,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "InputManager.hpp"
+
 static double currentTime;
 static double previousTime;
 static double dt = 0.0;
@@ -30,6 +32,17 @@ static double minUpdateRate = 1.0f / 60.0f;
 static double updateTimer = 0.0f;
 static int updatesSinceRender = 0;
 
+static unsigned int SCR_WIDTH = 800;
+static unsigned int SCR_HEIGHT = 800;
+static double SCR_PITCH = 0.0;
+static double SCR_YAW = -90.0;
+
+
+double lastX, lastY;
+
+static InputManager& inMgr = InputManager::getInstance();
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 void errorCallback(int /*error*/, const char *description) {
@@ -100,6 +113,7 @@ bool Window::open() {
   }
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetCursorPosCallback(window, mouse_callback);
   glfwSwapInterval(0);
 
   // Setup IMGUI
@@ -150,7 +164,6 @@ void Window::gameLoop() {
     tempFps = 0.0f;
     counter = 0;
     fpsUpdateTimer = 0.0f;
-    // std::cout << fps;
     glfwSetWindowTitle(window,
                        ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
   }
@@ -188,7 +201,6 @@ bool Window::start() {
   game = new Game(window);
 
 #ifdef EMSCRIPTEN
-  // Define a mail loop function, that will be called as fast as possible
   emscripten_set_main_loop(&gameLoop, 0, 1);
 #else
 
@@ -209,9 +221,50 @@ bool Window::start() {
 }
 
 void processInput(GLFWwindow *theWindow) {
+
   if (glfwGetKey(theWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(theWindow, true);
   }
+
+  inMgr.HandleInput(InputManager::KEY::Escape, glfwGetKey(theWindow, GLFW_KEY_ESCAPE));
+  inMgr.HandleInput(InputManager::KEY::W, glfwGetKey(theWindow, GLFW_KEY_W));
+  inMgr.HandleInput(InputManager::KEY::A, glfwGetKey(theWindow, GLFW_KEY_A));
+  inMgr.HandleInput(InputManager::KEY::S, glfwGetKey(theWindow, GLFW_KEY_S));
+  inMgr.HandleInput(InputManager::KEY::D, glfwGetKey(theWindow, GLFW_KEY_D));
+  inMgr.HandleInput(InputManager::KEY::F, glfwGetKey(theWindow, GLFW_KEY_F));
+  inMgr.HandleInput(InputManager::KEY::ArrowUp, glfwGetKey(theWindow, GLFW_KEY_UP));
+  inMgr.HandleInput(InputManager::KEY::ArrowDown, glfwGetKey(theWindow, GLFW_KEY_DOWN));
+  inMgr.HandleInput(InputManager::KEY::ArrowRight, glfwGetKey(theWindow, GLFW_KEY_RIGHT));
+  inMgr.HandleInput(InputManager::KEY::ArrowLeft, glfwGetKey(theWindow, GLFW_KEY_LEFT));
+  inMgr.HandleInput(InputManager::KEY::Mouse1, glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+  if (!inMgr.keys.at(InputManager::KEY::Mouse1))
+  {
+      lastX = xpos;
+      lastY = ypos;
+      return;
+  }
+  
+  float xoffset = xpos - lastX;
+  float yoffset = lastY - ypos; 
+  lastX = xpos;
+  lastY = ypos;
+
+  float sensitivity = 0.1f;
+  xoffset *= sensitivity;
+  yoffset *= sensitivity;
+
+  SCR_YAW   += xoffset;
+  SCR_PITCH += yoffset;
+
+  if(SCR_PITCH > 89.0f)
+      SCR_PITCH = 89.0f;
+  if(SCR_PITCH < -89.0f)
+      SCR_PITCH = -89.0f;
+
+  game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
@@ -234,6 +287,7 @@ void Window::renderImgui() {
   ImGui::SliderFloat("float", &f, 0.0f,
                      1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
 
+  
   ImGui::End();
   // Rendering
   ImGui::Render();

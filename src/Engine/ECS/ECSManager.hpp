@@ -59,6 +59,8 @@ class ECSManager {
     return dynamic_cast<GraphicsSystem *>(m_systems["GRAPHICS"]);
   };
 
+  Camera& getCamera() { return m_camera; };
+
  private:
   ECSManager();
   // Entities
@@ -81,6 +83,7 @@ class ECSManager {
     ComponentTypeEnum cmp;
   };
   std::vector<removeComponent_t> m_removeComponents;
+  Camera m_camera;
 
   void addEntities();
   void addComponents();

@@ -17,6 +17,8 @@ SimpleShaderProgram::SimpleShaderProgram()
       glGetUniformLocation(p_shaderProgram, "modelMatrix");
   m_uniformBindings["viewMatrix"] =
       glGetUniformLocation(p_shaderProgram, "viewMatrix");
+  m_uniformBindings["projMatrix"] =
+      glGetUniformLocation(p_shaderProgram, "projMatrix");
   use();  // Start using the shader
 }
 
