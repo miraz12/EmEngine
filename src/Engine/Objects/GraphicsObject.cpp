@@ -10,51 +10,16 @@
 #include <glad/glad.h>
 #endif
 
-GraphicsObject::GraphicsObject() {
+GraphicsObject::GraphicsObject(ShaderProgram &shaderProgram)
+    : p_shaderProgram(shaderProgram) {
   glGenVertexArrays(1, &m_VAO);
-  glGenBuffers(1, &m_VBO);
-  glGenBuffers(1, &m_EBO);
-
-  glBindVertexArray(m_VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float),
-                        (void *)(7 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-  glBindVertexArray(0);
 }
 
-GraphicsObject::~GraphicsObject() {
+GraphicsObject::~GraphicsObject() { 
   glDeleteVertexArrays(1, &m_VAO);
-  glDeleteBuffers(1, &m_VBO);
-  glDeleteBuffers(1, &m_EBO);
-}
+  delete &p_shaderProgram;
+ }
 
 void GraphicsObject::bindVAO() { glBindVertexArray(m_VAO); }
 
 void GraphicsObject::unbindVAO() { glBindVertexArray(0); }
-
-void GraphicsObject::setVertexData(std::size_t dataSize, const void *data) {
-  glBindVertexArray(m_VAO);
-
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-  glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-
-  glBindVertexArray(0);
-}
-
-void GraphicsObject::setIndexData(std::size_t dataSize, const void *data) {
-  glBindVertexArray(m_VAO);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO),
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-
-  glBindVertexArray(0);
-}

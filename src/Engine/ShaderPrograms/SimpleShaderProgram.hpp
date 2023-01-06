@@ -6,5 +6,4 @@ class SimpleShaderProgram : public ShaderProgram {
   SimpleShaderProgram();
   ~SimpleShaderProgram();
 
-  void setupVertexAttributePointers() override;
 };

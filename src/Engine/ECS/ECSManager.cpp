@@ -10,10 +10,7 @@
 std::vector<Entity *> ECSManager::m_entities;
 
 ECSManager::ECSManager()
-    : m_idCounter(1),
-      m_addEntities(),
-      m_addComponents(),
-      m_removeEntities(),
+    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(),
       m_removeComponents() {
   initializeSystems();
 }
@@ -151,8 +148,14 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   playerEntity.makePlayable();
   // Add components to player
   GraphicsComponent *graphComp = new GraphicsComponent();
-  // graphComp->grapObj = new Mesh("resources/Models/DragonAttenuation.glb");
-  graphComp->grapObj = new Quad();
+  SimpleShaderProgram *p = new SimpleShaderProgram;
+  Mesh *m = new Mesh(*p);
+  // m->LoadFlile("resources/Models/helmet/DamagedHelmet.glb");
+  m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+
+  graphComp->grapObj = m;
+
+  // graphComp->grapObj = new Quad(*p);
 
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();

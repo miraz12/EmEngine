@@ -6,4 +6,6 @@ GraphicsComponent::GraphicsComponent() {
   m_componentType = ComponentTypeEnum::GRAPHICS;
 }
 
-GraphicsComponent::~GraphicsComponent() {}
+GraphicsComponent::~GraphicsComponent() {
+  delete grapObj;
+}

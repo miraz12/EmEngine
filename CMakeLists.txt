@@ -3,6 +3,7 @@ project(emEngine)
 # Generate compile_commands.json for LSP
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(EMCC_DEBUG 1)
+#set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
 
 # Add source files
@@ -19,7 +20,8 @@ add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine Game)
-target_compile_options(${PROJECT_NAME} PRIVATE -ggdb)
+#target_compile_options(${PROJECT_NAME} PRIVATE -ggdb -fsanitize=address)
+#target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
 
 if (DEFINED EMSCRIPTEN)
 set_target_properties(${PROJECT_NAME}

@@ -3,24 +3,21 @@
 #include <glm/glm.hpp>
 
 #include "../ShaderPrograms/ShaderProgram.hpp"
+#include "Camera.hpp"
 
 class GraphicsObject {
- public:
-  GraphicsObject();
+public:
+  GraphicsObject(ShaderProgram &shaderProgram);
   virtual ~GraphicsObject();
 
   void bindVAO();
   void unbindVAO();
-  virtual void draw(ShaderProgram &prog) = 0;
+  virtual void draw(Camera& cam) = 0;
 
- protected:
+protected:
   glm::mat4 p_modelMatrix = glm::mat4(1.0f);
+  ShaderProgram &p_shaderProgram;
 
-  virtual void setVertexData(std::size_t dataSize, const void *data);
-  virtual void setIndexData(std::size_t dataSize, const void *data);
-
- private:
+private:
   unsigned int m_VAO;
-  unsigned int m_VBO;
-  unsigned int m_EBO;  // Optional
 };

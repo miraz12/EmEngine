@@ -11,11 +11,9 @@ class GraphicsSystem : public System {
   void update(float dt);
 
  private:
-  void draw();
   void initGL();
 
   Camera& m_camera;
-  SimpleShaderProgram m_simpleShaderProgram;
 
   // Framebuffer variables
   std::array<unsigned int, 2> m_fbos;

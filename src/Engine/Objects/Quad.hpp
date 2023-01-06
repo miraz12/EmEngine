@@ -8,16 +8,16 @@
 struct InstanceData;
 
 class Quad : public GraphicsObject {
- public:
-  Quad();
+public:
+  Quad(ShaderProgram &shaderProgram);
   virtual ~Quad();
-  void draw(ShaderProgram& prog) override;
+  void draw(Camera& cam) override;
 
-  glm::mat4& getModelMatrix();
+  glm::mat4 &getModelMatrix();
   unsigned int getQuadIndex();
   void setTextureIndex(unsigned int index);
 
- private:
+private:
   float m_vertices[36] = {
       -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
       0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
@@ -30,4 +30,10 @@ class Quad : public GraphicsObject {
   };
 
   glm::mat4 m_model;
+
+private:
+  void setVertexData(std::size_t dataSize, const void *data);
+  void setIndexData(std::size_t dataSize, const void *data);
+  unsigned int m_VBO;
+  unsigned int m_EBO; // Optional
 };

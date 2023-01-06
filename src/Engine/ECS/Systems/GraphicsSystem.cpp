@@ -16,29 +16,22 @@
 
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
     : System(ECSManager, ComponentTypeEnum::POSITION,
-             ComponentTypeEnum::GRAPHICS), m_camera(cam) {
+             ComponentTypeEnum::GRAPHICS),
+      m_camera(cam) {
   initGL();
 }
 
 void GraphicsSystem::update(float /*dt*/) {
-  draw();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
 
   for (auto &e : m_entities) {
     PositionComponent *p = static_cast<PositionComponent *>(
         e->getComponent(ComponentTypeEnum::POSITION));
     GraphicsComponent *g = static_cast<GraphicsComponent *>(
         e->getComponent(ComponentTypeEnum::GRAPHICS));
-    g->grapObj->draw(m_simpleShaderProgram);
+    g->grapObj->draw(m_camera);
   }
-}
-
-void GraphicsSystem::draw() {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  glEnable(GL_DEPTH_TEST);
-  m_simpleShaderProgram.use();
-  m_camera.bindProjViewMatrix(
-      m_simpleShaderProgram.getUniformLocation("projMatrix"),
-      m_simpleShaderProgram.getUniformLocation("viewMatrix"));
 }
 
 void GraphicsSystem::initGL() {
@@ -46,6 +39,5 @@ void GraphicsSystem::initGL() {
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
-  glLineWidth(3.0f);  // Sets line width of things like wireframe and draw lines
-  m_simpleShaderProgram.setupVertexAttributePointers();
+  glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
 }
