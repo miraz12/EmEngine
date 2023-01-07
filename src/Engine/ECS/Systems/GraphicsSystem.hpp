@@ -2,18 +2,18 @@
 #include <array>
 
 #include "../../Camera.hpp"
-#include "../../ShaderPrograms/SimpleShaderProgram.hpp"
+#include "../../ShaderPrograms/QuadShaderProgram.hpp"
 #include "System.hpp"
 
 class GraphicsSystem : public System {
- public:
-  GraphicsSystem(ECSManager* ECSManager, Camera& cam);
+public:
+  GraphicsSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
 
- private:
+private:
   void initGL();
 
-  Camera& m_camera;
+  Camera &m_camera;
 
   // Framebuffer variables
   std::array<unsigned int, 2> m_fbos;
@@ -22,4 +22,7 @@ class GraphicsSystem : public System {
 
   unsigned int m_width, m_height;
   unsigned int quadVAO, quadVBO;
+  unsigned int gBuffer;
+  unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;
+  QuadShaderProgram m_shaderProgram;
 };

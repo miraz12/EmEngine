@@ -11,7 +11,7 @@ class Quad : public GraphicsObject {
 public:
   Quad(ShaderProgram &shaderProgram);
   virtual ~Quad();
-  void draw(Camera& cam) override;
+  void draw(Camera &cam) override;
 
   glm::mat4 &getModelMatrix();
   unsigned int getQuadIndex();
@@ -31,9 +31,10 @@ private:
 
   glm::mat4 m_model;
 
-private:
   void setVertexData(std::size_t dataSize, const void *data);
   void setIndexData(std::size_t dataSize, const void *data);
   unsigned int m_VBO;
   unsigned int m_EBO; // Optional
+
+  unsigned int m_VAO;
 };

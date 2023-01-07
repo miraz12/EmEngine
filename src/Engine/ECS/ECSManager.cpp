@@ -3,6 +3,7 @@
 #include <Objects/Mesh.hpp>
 #include <Objects/Quad.hpp>
 #include <ShaderPrograms/SimpleShaderProgram.hpp>
+#include <ShaderPrograms/MeshShaderProgram.hpp>
 
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
@@ -148,13 +149,14 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   playerEntity.makePlayable();
   // Add components to player
   GraphicsComponent *graphComp = new GraphicsComponent();
-  SimpleShaderProgram *p = new SimpleShaderProgram;
+  MeshShaderProgram *p = new MeshShaderProgram;
   Mesh *m = new Mesh(*p);
-  // m->LoadFlile("resources/Models/helmet/DamagedHelmet.glb");
-  m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
+  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
 
   graphComp->grapObj = m;
 
+  // SimpleShaderProgram *p = new SimpleShaderProgram;
   // graphComp->grapObj = new Quad(*p);
 
   addComponent(playerEntity, graphComp);

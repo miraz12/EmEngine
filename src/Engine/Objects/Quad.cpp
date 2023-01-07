@@ -17,7 +17,9 @@ Quad::Quad(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
   glGenBuffers(1, &m_VBO);
   glGenBuffers(1, &m_EBO);
 
-  bindVAO();
+  glGenVertexArrays(1, &m_VAO);
+  glBindVertexArray(m_VAO);
+
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)0);
@@ -38,12 +40,13 @@ Quad::Quad(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
 }
 
 Quad::~Quad() {
+  glDeleteVertexArrays(1, &m_VAO);
   glDeleteBuffers(1, &m_VBO);
   glDeleteBuffers(1, &m_EBO);
 }
 
 void Quad::setVertexData(std::size_t dataSize, const void *data) {
-  bindVAO();
+  glBindVertexArray(m_VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
   glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
@@ -52,7 +55,7 @@ void Quad::setVertexData(std::size_t dataSize, const void *data) {
 }
 
 void Quad::setIndexData(std::size_t dataSize, const void *data) {
-  bindVAO();
+  glBindVertexArray(m_VAO);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO),
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
@@ -66,6 +69,7 @@ void Quad::draw(Camera &cam) {
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
                      GL_FALSE, glm::value_ptr(m_model));
-  bindVAO();
+  glBindVertexArray(m_VAO);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
 }

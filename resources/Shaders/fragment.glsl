@@ -20,7 +20,16 @@ mat4 thresholdMatrix = mat4(
 
 void main()
 {
-    float lum = max(dot(normal, normalize(vec3(3.0, 10.0, -5.0))), 0.0);
-    FragColor = texture(texture0, texCoords) * vec4((0.3 + 0.7 * lum) * vec3(1.0, 1.0, 1.0), 1.0);
+    if (useTexture == 1) {
+        FragColor = texture(texture0, texCoords);
+    }
+    else {
+    //    FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        FragColor = vec4(0.5 * normalize(normal) + 0.5, 1.0);
+    }
 
+    float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
+    if (threshold >= FragColor.a) {
+        discard;
+    }
 }

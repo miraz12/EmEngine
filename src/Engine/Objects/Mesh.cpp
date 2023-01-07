@@ -64,12 +64,15 @@ Mesh::Mesh(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
 Mesh::~Mesh() { glDeleteVertexArrays(1, &m_vaoAndEbos.first); }
 
 void Mesh::draw(Camera &cam) {
+  glBindVertexArray(m_vaoAndEbos.first);
   p_shaderProgram.use();
   cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
                      GL_FALSE, glm::value_ptr(m_modelMatrix));
-  glBindVertexArray(m_vaoAndEbos.first);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texid);
 
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
@@ -193,16 +196,16 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
     }
 
     const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-    std::cout << "bufferview.target " << bufferView.target << std::endl;
+    // std::cout << "bufferview.target " << bufferView.target << std::endl;
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
     vbos[i] = vbo;
     glBindBuffer(bufferView.target, vbo);
 
-    std::cout << "buffer.data.size = " << buffer.data.size()
-              << ", bufferview.byteOffset = " << bufferView.byteOffset
-              << std::endl;
+    // std::cout << "buffer.data.size = " << buffer.data.size()
+    //           << ", bufferview.byteOffset = " << bufferView.byteOffset
+    //           << std::endl;
 
     glBufferData(bufferView.target, bufferView.byteLength,
                  &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
@@ -247,7 +250,6 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
 
       if (tex.source > -1) {
 
-        GLuint texid;
         glGenTextures(1, &texid);
 
         tinygltf::Image &image = model.images[tex.source];
@@ -260,20 +262,21 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         GLenum format = GL_RGBA;
-
         if (image.component == 1) {
           format = GL_RED;
         } else if (image.component == 2) {
           format = GL_RG;
         } else if (image.component == 3) {
           format = GL_RGB;
+        } else if (image.component == 4) {
+          format = GL_RGBA;
         } else {
           std::cout << "WARNING: no matching format." << std::endl;
         }
 
         GLenum type = GL_UNSIGNED_BYTE;
         if (image.bits == 8) {
-          // ok
+          type = GL_UNSIGNED_BYTE;
         } else if (image.bits == 16) {
           type = GL_UNSIGNED_SHORT;
         } else {

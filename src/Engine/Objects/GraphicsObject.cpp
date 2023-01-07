@@ -11,15 +11,6 @@
 #endif
 
 GraphicsObject::GraphicsObject(ShaderProgram &shaderProgram)
-    : p_shaderProgram(shaderProgram) {
-  glGenVertexArrays(1, &m_VAO);
-}
+    : p_shaderProgram(shaderProgram) {}
 
-GraphicsObject::~GraphicsObject() { 
-  glDeleteVertexArrays(1, &m_VAO);
-  delete &p_shaderProgram;
- }
-
-void GraphicsObject::bindVAO() { glBindVertexArray(m_VAO); }
-
-void GraphicsObject::unbindVAO() { glBindVertexArray(0); }
+GraphicsObject::~GraphicsObject() { delete &p_shaderProgram; }
