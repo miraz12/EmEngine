@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SAT_H_
+#define SAT_H_
 
 #include <cmath>
 #include <glm/ext.hpp>
@@ -374,3 +375,4 @@ inline float getRaycastIntersection(const glm::vec2 &rayStart,
 }
 
 }  // namespace SAT
+#endif // SAT_H_

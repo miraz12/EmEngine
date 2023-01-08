@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MESH_H_
+#define MESH_H_
+
 #include <map>
 #include <vector>
 
@@ -54,3 +56,4 @@ private:
   glm::mat4 m_modelMatrix;
 
 };
+#endif // MESH_H_

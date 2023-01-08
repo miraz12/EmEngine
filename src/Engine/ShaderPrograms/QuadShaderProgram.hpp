@@ -1,4 +1,7 @@
-#pragma once
+#ifndef QUADSHADERPROGRAM_H_
+#define QUADSHADERPROGRAM_H_
+
+
 #include "ShaderProgram.hpp"
 
 class QuadShaderProgram : public ShaderProgram {
@@ -7,3 +10,4 @@ class QuadShaderProgram : public ShaderProgram {
   ~QuadShaderProgram();
 
 };
+#endif // QUADSHADERPROGRAM_H_

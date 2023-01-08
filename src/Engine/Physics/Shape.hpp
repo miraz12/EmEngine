@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SHAPE_H_
+#define SHAPE_H_
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -32,3 +33,4 @@ class Shape {
 
   glm::mat4 m_transformMatrix;
 };
+#endif // SHAPE_H_

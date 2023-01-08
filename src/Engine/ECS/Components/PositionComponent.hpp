@@ -1,3 +1,6 @@
+#ifndef POSITIONCOMPONENT_H_
+#define POSITIONCOMPONENT_H_
+
 #include <glm/glm.hpp>
 
 #include "Component.hpp"
@@ -13,3 +16,5 @@ class PositionComponent : public Component {
 
   glm::mat4 calculateMatrix();
 };
+
+#endif // POSITIONCOMPONENT_H_

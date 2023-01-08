@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SIMPLESHADERPROGRAM_H_
+#define SIMPLESHADERPROGRAM_H_
+
 #include "ShaderProgram.hpp"
 
 class SimpleShaderProgram : public ShaderProgram {
@@ -7,3 +9,4 @@ class SimpleShaderProgram : public ShaderProgram {
   ~SimpleShaderProgram();
 
 };
+#endif // SIMPLESHADERPROGRAM_H_

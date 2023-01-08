@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAME_H_
+#define GAME_H_
 
 #include "Engine/ECS/ECSManager.hpp"
 #include "Engine/InputManager.hpp"
@@ -26,3 +27,5 @@ private:
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
 };
+
+#endif // GAME_H_

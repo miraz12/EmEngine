@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SHADERPROGRAM_H_
+#define SHADERPROGRAM_H_
+
 #include <string>
 #include <unordered_map>
 
@@ -22,3 +24,4 @@ protected:
 private:
   void readFile(std::string filePath, std::string *result);
 };
+#endif // SHADERPROGRAM_H_

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef ENTITY_H_
+#define ENTITY_H_
+
 #include <string>
 #include <vector>
 
@@ -38,3 +40,4 @@ class Entity {
   std::string m_name;
   std::vector<Component*> m_components;
 };
+#endif // ENTITY_H_

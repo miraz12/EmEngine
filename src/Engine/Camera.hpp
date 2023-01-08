@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CAMERA_H_
+#define CAMERA_H_
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -38,3 +39,5 @@ private:
   float m_zoom;
   float m_fov;
 };
+
+#endif // CAMERA_H_

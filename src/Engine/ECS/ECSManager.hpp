@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ECSMANAGER_H_
+#define ECSMANAGER_H_
 
 #include <GLFW/glfw3.h>
 
@@ -90,3 +91,4 @@ class ECSManager {
   void removeEntities();
   void removeComponents();
 };
+#endif // LIGHTINGSYSTEM_H_

@@ -1,4 +1,5 @@
-#pragma once 
+#ifndef INPUTMANAGER_H_
+#define INPUTMANAGER_H_
 
 #include <unordered_map>
 
@@ -33,3 +34,5 @@ public:
  private:
   InputManager();
 };
+
+#endif // INPUTMANAGER_H_

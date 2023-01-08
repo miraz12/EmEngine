@@ -1,4 +1,5 @@
-#pragma once
+#ifndef QUAD_H_
+#define QUAD_H_
 
 #include <ShaderPrograms/SimpleShaderProgram.hpp>
 #include <glm/glm.hpp>
@@ -38,3 +39,4 @@ private:
 
   unsigned int m_VAO;
 };
+#endif // QUAD_H_

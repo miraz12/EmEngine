@@ -1,4 +1,6 @@
-#pragma once
+#ifndef GRAPHICSSYSTEM_H_
+#define GRAPHICSSYSTEM_H_
+
 #include <array>
 
 #include "../../Camera.hpp"
@@ -21,8 +23,9 @@ private:
   std::array<unsigned int, 2> m_rbos;
 
   unsigned int m_width, m_height;
-  unsigned int quadVAO, quadVBO;
+  unsigned int quadVAO;
   unsigned int gBuffer;
   unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;
   QuadShaderProgram m_shaderProgram;
 };
+#endif // GRAPHICSSYSTEM_H_

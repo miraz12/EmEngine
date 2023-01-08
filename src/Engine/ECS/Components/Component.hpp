@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMPONENT_H_
+#define COMPONENT_H_
 
 #ifdef _WIN32
 #include <windows.h>
@@ -10,6 +11,7 @@ enum class ComponentTypeEnum {
   GRAPHICS,
   POSITION,
   CAMERAFOCUS,
+  LIGHTING,
 };
 
 // Basic component interface which all other components implement
@@ -22,3 +24,4 @@ class Component {
  protected:
   ComponentTypeEnum m_componentType;
 };
+#endif // COMPONENT_H_

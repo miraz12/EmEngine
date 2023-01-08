@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MESHSHADERPROGRAM_H_
+#define MESHSHADERPROGRAM_H_
+
 #include "ShaderProgram.hpp"
 
 class MeshShaderProgram : public ShaderProgram {
@@ -7,3 +9,4 @@ class MeshShaderProgram : public ShaderProgram {
   ~MeshShaderProgram();
 
 };
+#endif // MESHSHADERPROGRAM_H_

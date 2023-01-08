@@ -1,4 +1,6 @@
-#pragma once
+#ifndef GRAPHICSOBJECT_H_
+#define GRAPHICSOBJECT_H_
+
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
@@ -16,3 +18,5 @@ protected:
   glm::mat4 p_modelMatrix = glm::mat4(1.0f);
   ShaderProgram &p_shaderProgram;
 };
+
+#endif // GRAPHICSOBJECT_H_

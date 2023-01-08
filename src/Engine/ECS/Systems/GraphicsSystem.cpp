@@ -25,6 +25,7 @@ void GraphicsSystem::update(float /*dt*/) {
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+  // Draw geometry
   for (auto &e : m_entities) {
     PositionComponent *p = static_cast<PositionComponent *>(
         e->getComponent(ComponentTypeEnum::POSITION));
@@ -33,16 +34,17 @@ void GraphicsSystem::update(float /*dt*/) {
     g->grapObj->draw(m_camera);
   }
 
+  // Draw lights
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_shaderProgram.use();
+  glBindVertexArray(quadVAO);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, gPosition);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, gNormal);
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-  glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray(0);
 
@@ -56,6 +58,7 @@ void GraphicsSystem::update(float /*dt*/) {
 void GraphicsSystem::initGL() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_MULTISAMPLE);
   glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
 
   glBindVertexArray(0);
@@ -68,7 +71,7 @@ void GraphicsSystem::initGL() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 800, 800, 0, GL_RGBA, GL_FLOAT,
                NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          gPosition, 0);
 
@@ -78,7 +81,7 @@ void GraphicsSystem::initGL() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 800, 800, 0, GL_RGBA, GL_FLOAT,
                NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
                          gNormal, 0);
 
@@ -88,7 +91,7 @@ void GraphicsSystem::initGL() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 800, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
                          gAlbedoSpec, 0);
 
@@ -113,6 +116,7 @@ void GraphicsSystem::initGL() {
   glUniform1i(m_shaderProgram.getUniformLocation("gNormal"), 1);
   glUniform1i(m_shaderProgram.getUniformLocation("gAlbedoSpec"), 2);
 
+  unsigned int quadVBO;
   float quadVertices[] = {
       // positions        // texture Coords
       -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
@@ -122,10 +126,6 @@ void GraphicsSystem::initGL() {
   glGenVertexArrays(1, &quadVAO);
   glGenBuffers(1, &quadVBO);
   glBindVertexArray(quadVAO);
-
-  glUniform1i(m_shaderProgram.getUniformLocation("gPosition"), 0);
-  glUniform1i(m_shaderProgram.getUniformLocation("gNormal"), 1);
-  glUniform1i(m_shaderProgram.getUniformLocation("gAlbedoSpec"), 2);
 
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
   glActiveTexture(GL_TEXTURE0);
@@ -141,6 +141,6 @@ void GraphicsSystem::initGL() {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
-                        (void*)(3 * sizeof(float)));
-   glBindVertexArray(0);
+                        (void *)(3 * sizeof(float)));
+  glBindVertexArray(0);
 }

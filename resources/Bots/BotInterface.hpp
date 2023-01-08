@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOTINTERFACE_H_
+#define BOTINTERFACE_H_
 
 #include <iostream>
 #include <vector>
@@ -14,7 +15,7 @@ struct VisualEntity {
 };
 
 class BotInterface {
- public:
+public:
   virtual void print() = 0;
   virtual void update(float dt, std::vector<VisualEntity> *eyes) = 0;
   virtual void actionMove(void (*f)(unsigned int key, BotInterface *bot)) = 0;
@@ -25,3 +26,5 @@ class BotInterface {
 
   unsigned int m_id{0};
 };
+
+#endif // BOTINTERFACE_H_

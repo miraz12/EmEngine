@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SYSTEM_H_
+#define SYSTEM_H_
+
 #include <vector>
 
 #include "../Components/Component.hpp"
@@ -44,3 +46,4 @@ class System {
   std::vector<ComponentTypeEnum> m_requiredComponents;
   std::vector<Entity*> m_entities;
 };
+#endif // SYSTEM_H_ 
