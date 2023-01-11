@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 class Camera {
-public:
+ public:
   Camera();
   ~Camera();
 
@@ -27,7 +27,7 @@ public:
 
   void bindProjViewMatrix(unsigned int proj, unsigned int view);
 
-private:
+ private:
   glm::mat4 m_viewMatrix;
   glm::mat4 m_ProjectionMatrix;
   bool m_matrixNeedsUpdate;
@@ -40,4 +40,4 @@ private:
   float m_fov;
 };
 
-#endif // CAMERA_H_
+#endif  // CAMERA_H_

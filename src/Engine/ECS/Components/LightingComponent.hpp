@@ -4,8 +4,8 @@
 #include "Component.hpp"
 
 class LightingComponent : public Component {
-public:
+ public:
   LightingComponent();
   virtual ~LightingComponent();
 };
-#endif // LIGHTINGCOMPONENT_H_
+#endif  // LIGHTINGCOMPONENT_H_

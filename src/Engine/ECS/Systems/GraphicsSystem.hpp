@@ -8,11 +8,11 @@
 #include "System.hpp"
 
 class GraphicsSystem : public System {
-public:
+ public:
   GraphicsSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
 
-private:
+ private:
   void initGL();
 
   Camera &m_camera;
@@ -28,4 +28,4 @@ private:
   unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;
   QuadShaderProgram m_shaderProgram;
 };
-#endif // GRAPHICSSYSTEM_H_
+#endif  // GRAPHICSSYSTEM_H_

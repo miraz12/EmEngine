@@ -7,6 +7,5 @@ class MeshShaderProgram : public ShaderProgram {
  public:
   MeshShaderProgram();
   ~MeshShaderProgram();
-
 };
-#endif // MESHSHADERPROGRAM_H_
+#endif  // MESHSHADERPROGRAM_H_

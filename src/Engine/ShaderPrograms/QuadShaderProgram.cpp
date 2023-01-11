@@ -19,7 +19,7 @@ QuadShaderProgram::QuadShaderProgram()
       glGetUniformLocation(p_shaderProgram, "gNormal");
   m_uniformBindings["gAlbedoSpec"] =
       glGetUniformLocation(p_shaderProgram, "gAlbedoSpec");
-  use(); // Start using the shader
+  use();  // Start using the shader
 }
 
 QuadShaderProgram::~QuadShaderProgram() {}

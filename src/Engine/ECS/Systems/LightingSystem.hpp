@@ -4,10 +4,9 @@
 #include "System.hpp"
 
 class LightingSystem : public System {
-
-public:
+ public:
   LightingSystem(ECSManager *ECSManager);
   void update(float dt);
 };
 
-#endif // LIGHTINGSYSTEM_H_
+#endif  // LIGHTINGSYSTEM_H_

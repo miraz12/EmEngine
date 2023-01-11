@@ -37,17 +37,51 @@ static unsigned int SCR_HEIGHT = 800;
 static double SCR_PITCH = 0.0;
 static double SCR_YAW = -90.0;
 
-
 double lastX, lastY;
 
-static InputManager& inMgr = InputManager::getInstance();
+static InputManager &inMgr = InputManager::getInstance();
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-void errorCallback(int /*error*/, const char *description) {
-  printf("Error: %s\n", description);
+
+#ifndef EMSCRIPTEN
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
+                                GLenum severity, GLsizei length,
+                                const GLchar *message, const void *userParam) {
+  std::string msg("[OPENGL DEBUG MESSAGE] ");
+
+  // print error severity
+  switch (severity) {
+    case GL_DEBUG_SEVERITY_LOW:
+      msg.append("\u001b[32m<Low severity> \u001b[0m");
+
+      break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+      msg.append("\u001b[33m<Medium severity> \u001b[0m");
+      break;
+    case GL_DEBUG_SEVERITY_HIGH:
+      msg.append("\u001b[31m<High severity> \u001b[0m");
+      break;
+  }
+
+  // append message to output
+  msg.append(message);
+
+  // print message
+  switch (type) {
+    case GL_DEBUG_TYPE_ERROR:
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+      printf("Error: %s\n", msg.c_str());
+      break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+      printf("Performance issue: %s\n", msg.c_str());
+      break;
+    default:  // Portability, Deprecated, Other
+      break;
+  }
 }
+#endif
 
 static GLFWwindow *window;
 static Game *game;
@@ -97,12 +131,12 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
 
 bool Window::open() {
   glfwInit();
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  glfwSetErrorCallback(errorCallback);
   SCR_WIDTH = 1000;
   SCR_HEIGHT = 1000;
   window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
@@ -136,6 +170,9 @@ bool Window::open() {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return false;
   }
+  glEnable(GL_DEBUG_OUTPUT);
+  glDebugMessageCallback(MessageCallback, 0);
+
 #endif
 
   return true;
@@ -221,34 +258,38 @@ bool Window::start() {
 }
 
 void processInput(GLFWwindow *theWindow) {
-
   if (glfwGetKey(theWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(theWindow, true);
   }
 
-  inMgr.HandleInput(InputManager::KEY::Escape, glfwGetKey(theWindow, GLFW_KEY_ESCAPE));
+  inMgr.HandleInput(InputManager::KEY::Escape,
+                    glfwGetKey(theWindow, GLFW_KEY_ESCAPE));
   inMgr.HandleInput(InputManager::KEY::W, glfwGetKey(theWindow, GLFW_KEY_W));
   inMgr.HandleInput(InputManager::KEY::A, glfwGetKey(theWindow, GLFW_KEY_A));
   inMgr.HandleInput(InputManager::KEY::S, glfwGetKey(theWindow, GLFW_KEY_S));
   inMgr.HandleInput(InputManager::KEY::D, glfwGetKey(theWindow, GLFW_KEY_D));
   inMgr.HandleInput(InputManager::KEY::F, glfwGetKey(theWindow, GLFW_KEY_F));
-  inMgr.HandleInput(InputManager::KEY::ArrowUp, glfwGetKey(theWindow, GLFW_KEY_UP));
-  inMgr.HandleInput(InputManager::KEY::ArrowDown, glfwGetKey(theWindow, GLFW_KEY_DOWN));
-  inMgr.HandleInput(InputManager::KEY::ArrowRight, glfwGetKey(theWindow, GLFW_KEY_RIGHT));
-  inMgr.HandleInput(InputManager::KEY::ArrowLeft, glfwGetKey(theWindow, GLFW_KEY_LEFT));
-  inMgr.HandleInput(InputManager::KEY::Mouse1, glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
+  inMgr.HandleInput(InputManager::KEY::ArrowUp,
+                    glfwGetKey(theWindow, GLFW_KEY_UP));
+  inMgr.HandleInput(InputManager::KEY::ArrowDown,
+                    glfwGetKey(theWindow, GLFW_KEY_DOWN));
+  inMgr.HandleInput(InputManager::KEY::ArrowRight,
+                    glfwGetKey(theWindow, GLFW_KEY_RIGHT));
+  inMgr.HandleInput(InputManager::KEY::ArrowLeft,
+                    glfwGetKey(theWindow, GLFW_KEY_LEFT));
+  inMgr.HandleInput(InputManager::KEY::Mouse1,
+                    glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-  if (!inMgr.keys.at(InputManager::KEY::Mouse1))
-  {
-      lastX = xpos;
-      lastY = ypos;
-      return;
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+  if (!inMgr.keys.at(InputManager::KEY::Mouse1)) {
+    lastX = xpos;
+    lastY = ypos;
+    return;
   }
-  
+
   float xoffset = xpos - lastX;
-  float yoffset = lastY - ypos; 
+  float yoffset = lastY - ypos;
   lastX = xpos;
   lastY = ypos;
 
@@ -256,13 +297,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
   xoffset *= sensitivity;
   yoffset *= sensitivity;
 
-  SCR_YAW   += xoffset;
+  SCR_YAW += xoffset;
   SCR_PITCH += yoffset;
 
-  if(SCR_PITCH > 89.0f)
-      SCR_PITCH = 89.0f;
-  if(SCR_PITCH < -89.0f)
-      SCR_PITCH = -89.0f;
+  if (SCR_PITCH > 89.0f) SCR_PITCH = 89.0f;
+  if (SCR_PITCH < -89.0f) SCR_PITCH = -89.0f;
 
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
@@ -287,7 +326,6 @@ void Window::renderImgui() {
   ImGui::SliderFloat("float", &f, 0.0f,
                      1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
 
-  
   ImGui::End();
   // Rendering
   ImGui::Render();

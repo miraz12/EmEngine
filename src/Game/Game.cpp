@@ -1,19 +1,19 @@
 #include "glm/geometric.hpp"
 #define NOMINMAX
-#include "Game.hpp"
-#include "Window.hpp"
-
 #include <algorithm>
 #include <glm/glm.hpp>
 
+#include "Game.hpp"
+#include "Window.hpp"
+
 Game::Game(GLFWwindow *window)
-    : m_window(window), m_ECSManager(&ECSManager::getInstance()),
+    : m_window(window),
+      m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
   m_ECSManager->createPlayerEntity(0, 0, m_window);
 }
 
 void Game::update(float dt) {
-
   handleInput(dt);
   m_ECSManager->update(dt);
 }

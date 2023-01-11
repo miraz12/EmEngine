@@ -33,4 +33,4 @@ class Shape {
 
   glm::mat4 m_transformMatrix;
 };
-#endif // SHAPE_H_
+#endif  // SHAPE_H_

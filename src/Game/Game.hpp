@@ -5,7 +5,7 @@
 #include "Engine/InputManager.hpp"
 
 class Game {
-public:
+ public:
   Game(GLFWwindow *window);
   ~Game();
 
@@ -16,7 +16,7 @@ public:
     m_yaw = y;
   }
 
-private:
+ private:
   void init();
   void setupEntities();
   void handleInput(float dt);
@@ -28,4 +28,4 @@ private:
   float m_yaw{-90.0f};
 };
 
-#endif // GAME_H_
+#endif  // GAME_H_

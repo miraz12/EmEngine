@@ -23,4 +23,3 @@ SimpleShaderProgram::SimpleShaderProgram()
 }
 
 SimpleShaderProgram::~SimpleShaderProgram() {}
-

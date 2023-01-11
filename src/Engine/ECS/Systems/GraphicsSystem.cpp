@@ -1,10 +1,10 @@
 #include "GraphicsSystem.hpp"
-#include "Window.hpp"
 
 #include <iostream>
 
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
+#include "Window.hpp"
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -49,7 +49,7 @@ void GraphicsSystem::update(float /*dt*/) {
   glBindVertexArray(0);
 
   glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);  // write to default framebuffer
   glBlitFramebuffer(0, 0, 800, 800, 0, 0, 800, 800, GL_DEPTH_BUFFER_BIT,
                     GL_NEAREST);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -58,8 +58,7 @@ void GraphicsSystem::update(float /*dt*/) {
 void GraphicsSystem::initGL() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_MULTISAMPLE);
-  glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
+  glLineWidth(3.0f);  // Sets line width of things like wireframe and draw lines
 
   glBindVertexArray(0);
   glGenFramebuffers(1, &gBuffer);

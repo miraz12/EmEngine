@@ -7,6 +7,5 @@ class SimpleShaderProgram : public ShaderProgram {
  public:
   SimpleShaderProgram();
   ~SimpleShaderProgram();
-
 };
-#endif // SIMPLESHADERPROGRAM_H_
+#endif  // SIMPLESHADERPROGRAM_H_

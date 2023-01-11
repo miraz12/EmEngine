@@ -11,4 +11,4 @@ class GraphicsComponent : public Component {
   GraphicsComponent();
   virtual ~GraphicsComponent();
 };
-#endif // GRAPHICSCOMPONENT_H_
+#endif  // GRAPHICSCOMPONENT_H_

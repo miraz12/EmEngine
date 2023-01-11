@@ -375,4 +375,4 @@ inline float getRaycastIntersection(const glm::vec2 &rayStart,
 }
 
 }  // namespace SAT
-#endif // SAT_H_
+#endif  // SAT_H_

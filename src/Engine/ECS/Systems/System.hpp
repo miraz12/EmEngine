@@ -46,4 +46,4 @@ class System {
   std::vector<ComponentTypeEnum> m_requiredComponents;
   std::vector<Entity*> m_entities;
 };
-#endif // SYSTEM_H_ 
+#endif  // SYSTEM_H_

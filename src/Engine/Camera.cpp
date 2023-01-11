@@ -1,7 +1,9 @@
 #include "Camera.hpp"
-#include "Window.hpp"
+
 #include <iostream>
 #include <ostream>
+
+#include "Window.hpp"
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -13,8 +15,12 @@
 
 Camera::Camera()
     : m_viewMatrix(1.0f),
-      m_matrixNeedsUpdate(true), m_position{0.0f, 0.0f, 4.0f}, m_zoom(1.0f),
-      m_fov(45.0f), m_front(0.0f, 0.0f, -1.0f), m_up(0.0f, 1.0f, 0.0f) {}
+      m_matrixNeedsUpdate(true),
+      m_position{0.0f, 0.0f, 4.0f},
+      m_zoom(1.0f),
+      m_fov(45.0f),
+      m_front(0.0f, 0.0f, -1.0f),
+      m_up(0.0f, 1.0f, 0.0f) {}
 
 Camera::~Camera() {}
 

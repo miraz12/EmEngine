@@ -60,7 +60,7 @@ class ECSManager {
     return dynamic_cast<GraphicsSystem *>(m_systems["GRAPHICS"]);
   };
 
-  Camera& getCamera() { return m_camera; };
+  Camera &getCamera() { return m_camera; };
 
  private:
   ECSManager();
@@ -91,4 +91,4 @@ class ECSManager {
   void removeEntities();
   void removeComponents();
 };
-#endif // LIGHTINGSYSTEM_H_
+#endif  // LIGHTINGSYSTEM_H_

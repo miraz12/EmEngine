@@ -40,4 +40,4 @@ class Entity {
   std::string m_name;
   std::vector<Component*> m_components;
 };
-#endif // ENTITY_H_
+#endif  // ENTITY_H_

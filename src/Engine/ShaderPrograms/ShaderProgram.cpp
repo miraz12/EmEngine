@@ -57,10 +57,6 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath,
               << infoLog << std::endl;
   }
 
-  // link shaders
-  glDeleteProgram(p_shaderProgram);  // Delete in case this is not the first
-                                     // time this shader is created.
-
   p_shaderProgram = glCreateProgram();
   glAttachShader(p_shaderProgram, vertexShader);
   glAttachShader(p_shaderProgram, fragmentShader);

@@ -2,8 +2,8 @@
 
 #include <Objects/Mesh.hpp>
 #include <Objects/Quad.hpp>
-#include <ShaderPrograms/SimpleShaderProgram.hpp>
 #include <ShaderPrograms/MeshShaderProgram.hpp>
+#include <ShaderPrograms/SimpleShaderProgram.hpp>
 
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
@@ -11,7 +11,10 @@
 std::vector<Entity *> ECSManager::m_entities;
 
 ECSManager::ECSManager()
-    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(),
+    : m_idCounter(1),
+      m_addEntities(),
+      m_addComponents(),
+      m_removeEntities(),
       m_removeComponents() {
   initializeSystems();
 }

@@ -4,14 +4,13 @@
 #include <unordered_map>
 
 class InputManager {
-public:
+ public:
   static InputManager &getInstance() {
     static InputManager instance;
     return instance;
   }
   InputManager(InputManager const &) = delete;
   void operator=(InputManager const &) = delete;
-
 
   enum KEY {
     Escape,
@@ -24,7 +23,7 @@ public:
     ArrowDown,
     ArrowRight,
     ArrowLeft,
-    Mouse1 
+    Mouse1
   };
 
   void HandleInput(KEY k, bool pressed);
@@ -35,4 +34,4 @@ public:
   InputManager();
 };
 
-#endif // INPUTMANAGER_H_
+#endif  // INPUTMANAGER_H_

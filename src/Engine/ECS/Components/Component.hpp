@@ -24,4 +24,4 @@ class Component {
  protected:
   ComponentTypeEnum m_componentType;
 };
-#endif // COMPONENT_H_
+#endif  // COMPONENT_H_
