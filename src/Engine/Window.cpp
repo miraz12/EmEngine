@@ -132,9 +132,10 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
 bool Window::open() {
   glfwInit();
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
   glfwWindowHint(GLFW_SAMPLES, 4);
 
   SCR_WIDTH = 1000;
@@ -170,8 +171,8 @@ bool Window::open() {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return false;
   }
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(MessageCallback, 0);
+  //glEnable(GL_DEBUG_OUTPUT);
+  //glDebugMessageCallback(MessageCallback, 0);
 
 #endif
 
