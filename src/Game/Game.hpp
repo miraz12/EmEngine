@@ -15,6 +15,7 @@ class Game {
     m_pitch = p;
     m_yaw = y;
   }
+  void setViewport(unsigned int w, unsigned int h);
 
  private:
   void init();

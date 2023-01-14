@@ -20,6 +20,11 @@ class Camera {
     m_front = f;
     m_matrixNeedsUpdate = true;
   };
+  void setSize(unsigned int w, unsigned int h) {
+    m_width = w;
+    m_height = h;
+    m_matrixNeedsUpdate = true;
+  }
 
   glm::vec3 getPosition() { return m_position; };
   glm::vec3 getFront() { return m_front; };
@@ -38,6 +43,8 @@ class Camera {
   glm::vec3 m_up;
   float m_zoom;
   float m_fov;
+  float m_width;
+  float m_height;
 };
 
 #endif  // CAMERA_H_

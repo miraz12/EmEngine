@@ -11,6 +11,7 @@ class GraphicsSystem : public System {
  public:
   GraphicsSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
+  void setViewport(unsigned int w, unsigned int h);
 
  private:
   void initGL();
@@ -22,7 +23,7 @@ class GraphicsSystem : public System {
   std::array<unsigned int, 2> m_colTexs;
   std::array<unsigned int, 2> m_rbos;
 
-  unsigned int m_width, m_height;
+  unsigned int m_width{800}, m_height{800};
   unsigned int quadVAO;
   unsigned int gBuffer;
   unsigned int gPosition, gNormal, gAlbedoSpec, gDepth;

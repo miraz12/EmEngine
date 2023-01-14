@@ -136,7 +136,6 @@ bool Window::open() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-  glfwWindowHint(GLFW_SAMPLES, 4);
 
   SCR_WIDTH = 1000;
   SCR_HEIGHT = 1000;
@@ -149,7 +148,6 @@ bool Window::open() {
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
-  glfwSwapInterval(0);
 
   // Setup IMGUI
   IMGUI_CHECKVERSION();
@@ -171,8 +169,8 @@ bool Window::open() {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return false;
   }
-  //glEnable(GL_DEBUG_OUTPUT);
-  //glDebugMessageCallback(MessageCallback, 0);
+  // glEnable(GL_DEBUG_OUTPUT);
+  // glDebugMessageCallback(MessageCallback, 0);
 
 #endif
 
@@ -310,6 +308,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
   SCR_WIDTH = width;
   SCR_HEIGHT = height;
+  game->setViewport(width, height);
   glViewport(0, 0, width, height);
 }
 

@@ -20,7 +20,9 @@ Camera::Camera()
       m_zoom(1.0f),
       m_fov(45.0f),
       m_front(0.0f, 0.0f, -1.0f),
-      m_up(0.0f, 1.0f, 0.0f) {}
+      m_up(0.0f, 1.0f, 0.0f),
+      m_height(800),
+      m_width(800) {}
 
 Camera::~Camera() {}
 
@@ -35,7 +37,7 @@ void Camera::bindProjViewMatrix(unsigned int proj, unsigned int view) {
   if (m_matrixNeedsUpdate) {
     m_viewMatrix = glm::lookAt(m_position, m_position + m_front, m_up);
     m_ProjectionMatrix =
-        glm::perspectiveFov(m_fov, 800.f, 800.f, 0.01f, 1000.0f);
+        glm::perspectiveFov(m_fov, m_width, m_height, 0.01f, 1000.0f);
     m_matrixNeedsUpdate = false;
   }
   glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(m_ProjectionMatrix));

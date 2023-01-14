@@ -62,4 +62,8 @@ void Game::handleInput(float dt) {
   }
 }
 
+void Game::setViewport(unsigned int w, unsigned int h) {
+  m_ECSManager->getGraphicsSystem()->setViewport(w, h);
+}
+
 Game::~Game() {}
