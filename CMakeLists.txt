@@ -27,5 +27,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Engine Game)
 if (DEFINED EMSCRIPTEN)
 set_target_properties(${PROJECT_NAME}
         PROPERTIES SUFFIX ".html"
-        LINK_FLAGS " --bind -sFULL_ES3 -s USE_GLFW=3 -s WASM=1 -s ALLOW_MEMORY_GROWTH -gsource-map=http://localhost:8000/ --preload-file ../resources ")
+        LINK_FLAGS " --bind -sFULL_ES3 -s USE_GLFW=3 -s WASM=1 -s ALLOW_MEMORY_GROWTH -gsource-map --source-map-base http://localhost:8000/ --preload-file ../resources ")
 endif (DEFINED EMSCRIPTEN)

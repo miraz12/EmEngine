@@ -128,15 +128,15 @@ std::pair<unsigned int, std::map<int, unsigned int>> Mesh::bindModel(
 
   glBindVertexArray(0);
   // cleanup vbos but do not delete index buffers yet
-  for (auto it = vbos.cbegin(); it != vbos.cend();) {
-    tinygltf::BufferView bufferView = model.bufferViews[it->first];
-    if (bufferView.target != GL_ELEMENT_ARRAY_BUFFER) {
-      glDeleteBuffers(1, &vbos[it->first]);
-      vbos.erase(it++);
-    } else {
-      ++it;
-    }
-  }
+  // for (auto it = vbos.cbegin(); it != vbos.cend();) {
+  //   tinygltf::BufferView bufferView = model.bufferViews[it->first];
+  //   if (bufferView.target != GL_ELEMENT_ARRAY_BUFFER) {
+  //     glDeleteBuffers(1, &vbos[it->first]);
+  //     vbos.erase(it++);
+  //   } else {
+  //     ++it;
+  //   }
+  // }
 
   return {vao, vbos};
 }
