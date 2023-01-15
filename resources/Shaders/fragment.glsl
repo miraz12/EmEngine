@@ -3,7 +3,6 @@ precision highp float;
 
 in vec4 color;
 in vec2 texCoords;
-in vec3 normal;
 
 // If uniforms change, also update SimpleShaderProgram to match
 uniform sampler2D texture0;
@@ -26,7 +25,7 @@ void main()
         gAlbedo = texture(texture0, texCoords);
     }
     else {
-        gAlbedo = vec4(0.5 * normalize(normal) + 0.5, 1.0);
+        gAlbedo = color;
     }
 
     float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;

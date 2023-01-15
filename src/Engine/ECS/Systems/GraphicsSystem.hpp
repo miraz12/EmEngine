@@ -27,6 +27,7 @@ class GraphicsSystem : public System {
   unsigned int quadVAO;
   unsigned int gBuffer;
   unsigned int gPosition, gNormal, gAlbedo;
+  unsigned int rboDepth;
   QuadShaderProgram m_shaderProgram;
 };
 #endif  // GRAPHICSSYSTEM_H_

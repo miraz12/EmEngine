@@ -17,7 +17,7 @@ Game::Game(GLFWwindow *window)
   graphComp->grapObj = new Quad(*p);
   m_ECSManager->addComponent(en, graphComp);
   PositionComponent *posComp = new PositionComponent();
-  posComp->position = glm::vec3(2.0, 0.0, 0.0);
+  posComp->position = glm::vec3(0.0, 0.0, 2.0);
   m_ECSManager->addComponent(en, posComp);
 
 }

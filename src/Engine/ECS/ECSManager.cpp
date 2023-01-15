@@ -149,6 +149,7 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
 
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();
+  posComp->rotation = 30.0f;
   addComponent(playerEntity, posComp);
   return playerEntity.getID();
 }

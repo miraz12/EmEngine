@@ -24,4 +24,8 @@ void main()
     gPosition = position;
     gAlbedo = texture(texture0, texCoords);
     gNormal = normal;
+    float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
+    if (threshold >= gAlbedo.a) {
+        discard;
+    }
 }
