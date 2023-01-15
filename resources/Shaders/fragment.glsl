@@ -9,7 +9,9 @@ in vec3 normal;
 uniform sampler2D texture0;
 uniform int useTexture;
 
-out vec4 FragColor;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gAlbedo;
 
 mat4 thresholdMatrix = mat4(
     1.0, 9.0, 3.0, 11.0,
@@ -21,15 +23,14 @@ mat4 thresholdMatrix = mat4(
 void main()
 {
     if (useTexture == 1) {
-        FragColor = texture(texture0, texCoords);
+        gAlbedo = texture(texture0, texCoords);
     }
     else {
-    //    FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        FragColor = vec4(0.5 * normalize(normal) + 0.5, 1.0);
+        gAlbedo = vec4(0.5 * normalize(normal) + 0.5, 1.0);
     }
 
     float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
-    if (threshold >= FragColor.a) {
+    if (threshold >= gAlbedo.a) {
         discard;
     }
 }

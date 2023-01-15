@@ -10,7 +10,7 @@ uniform sampler2D texture0;
 
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
-layout (location = 2) out vec4 gAlbedoSpec;
+layout (location = 2) out vec4 gAlbedo;
 
 mat4 thresholdMatrix = mat4(
     1.0, 9.0, 3.0, 11.0,
@@ -22,6 +22,6 @@ mat4 thresholdMatrix = mat4(
 void main()
 {
     gPosition = position;
-    gAlbedoSpec = texture(texture0, texCoords);
+    gAlbedo = texture(texture0, texCoords);
     gNormal = normal;
 }
