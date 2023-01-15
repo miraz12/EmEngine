@@ -10,7 +10,7 @@ class Mesh : public GraphicsObject {
  public:
   Mesh(ShaderProgram &p);
   virtual ~Mesh();
-  void draw(Camera &cam) override;
+  void draw(Camera &cam, glm::mat4 model) override;
 
   void LoadFlile(std::string filename);
 
@@ -52,6 +52,5 @@ class Mesh : public GraphicsObject {
   std::pair<unsigned int, std::map<int, unsigned int>> m_vaoAndEbos;
   tinygltf::Model m_model;
   unsigned int texid;
-  glm::mat4 m_modelMatrix;
 };
 #endif  // MESH_H_

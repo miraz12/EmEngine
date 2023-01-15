@@ -23,18 +23,17 @@ static std::string GetFilePathExtension(const std::string &FileName) {
 }
 
 Mesh::Mesh(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
-  m_modelMatrix = glm::mat4(1.0);
 }
 
 Mesh::~Mesh() { glDeleteVertexArrays(1, &m_vaoAndEbos.first); }
 
-void Mesh::draw(Camera &cam) {
+void Mesh::draw(Camera &cam, glm::mat4 model) {
   glBindVertexArray(m_vaoAndEbos.first);
   p_shaderProgram.use();
   cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
-                     GL_FALSE, glm::value_ptr(m_modelMatrix));
+                     GL_FALSE, glm::value_ptr(model));
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texid);
@@ -113,8 +112,8 @@ void Mesh::bindModelNodes(std::map<int, unsigned int> &vbos,
   }
 }
 
-std::pair<unsigned int, std::map<int, unsigned int>> Mesh::bindModel(
-    tinygltf::Model &model) {
+std::pair<unsigned int, std::map<int, unsigned int>>
+Mesh::bindModel(tinygltf::Model &model) {
   std::map<int, unsigned int> vbos;
   GLuint vao;
   glGenVertexArrays(1, &vao);
@@ -145,17 +144,17 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
                     tinygltf::Mesh &mesh) {
   for (size_t i = 0; i < model.bufferViews.size(); ++i) {
     const tinygltf::BufferView &bufferView = model.bufferViews[i];
-    if (bufferView.target == 0) {  // TODO impl drawarrays
+    if (bufferView.target == 0) { // TODO impl drawarrays
       std::cout << "WARN: bufferView.target is zero" << std::endl;
-      continue;  // Unsupported bufferView.
-                 /*
-                   From spec2.0 readme:
-                   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0
-                            ... drawArrays function should be used with a count equal to
-                   the count            property of any of the accessors referenced by the
-                   attributes            property            (they are all equal for a
-                   given           primitive).
-                 */
+      continue; // Unsupported bufferView.
+                /*
+                  From spec2.0 readme:
+                  https://github.com/KhronosGroup/glTF/tree/master/specification/2.0
+                           ... drawArrays function should be used with a count equal to
+                  the count            property of any of the accessors referenced by the
+                  attributes            property            (they are all equal for a
+                  given           primitive).
+                */
     }
 
     const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
@@ -190,10 +189,14 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
       }
 
       int vaa = -1;
-      if (attrib.first.compare("POSITION") == 0) vaa = 0;
-      if (attrib.first.compare("NORMAL") == 0) vaa = 1;
-      if (attrib.first.compare("TANGENT") == 0) vaa = 2;
-      if (attrib.first.compare("TEXCOORD_0") == 0) vaa = 3;
+      if (attrib.first.compare("POSITION") == 0)
+        vaa = 0;
+      if (attrib.first.compare("NORMAL") == 0)
+        vaa = 1;
+      if (attrib.first.compare("TANGENT") == 0)
+        vaa = 2;
+      if (attrib.first.compare("TEXCOORD_0") == 0)
+        vaa = 3;
       if (vaa > -1) {
         glEnableVertexAttribArray(vaa);
         glVertexAttribPointer(vaa, size, accessor.componentType,

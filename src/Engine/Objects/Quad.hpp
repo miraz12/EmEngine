@@ -12,7 +12,7 @@ class Quad : public GraphicsObject {
  public:
   Quad(ShaderProgram &shaderProgram);
   virtual ~Quad();
-  void draw(Camera &cam) override;
+  void draw(Camera &cam, glm::mat4 model) override;
 
   glm::mat4 &getModelMatrix();
   unsigned int getQuadIndex();
@@ -29,8 +29,6 @@ class Quad : public GraphicsObject {
   unsigned int m_indices[6] = {
       0, 1, 2, 2, 1, 3,
   };
-
-  glm::mat4 m_model;
 
   void setVertexData(std::size_t dataSize, const void *data);
   void setIndexData(std::size_t dataSize, const void *data);

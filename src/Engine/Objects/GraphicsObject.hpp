@@ -12,7 +12,7 @@ class GraphicsObject {
   GraphicsObject(ShaderProgram &shaderProgram);
   virtual ~GraphicsObject();
 
-  virtual void draw(Camera &cam) = 0;
+  virtual void draw(Camera &cam, glm::mat4 model) = 0;
 
  protected:
   glm::mat4 p_modelMatrix = glm::mat4(1.0f);

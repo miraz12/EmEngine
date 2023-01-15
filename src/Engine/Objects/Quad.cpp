@@ -34,7 +34,6 @@ Quad::Quad(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
   glEnableVertexAttribArray(2);
   glBindVertexArray(0);
 
-  m_model = glm::mat4(1.0f);
   setVertexData(sizeof(m_vertices), m_vertices);
   setIndexData(sizeof(m_indices), m_indices);
 }
@@ -63,12 +62,12 @@ void Quad::setIndexData(std::size_t dataSize, const void *data) {
   glBindVertexArray(0);
 }
 
-void Quad::draw(Camera &cam) {
+void Quad::draw(Camera &cam, glm::mat4 model) {
   p_shaderProgram.use();
   cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
-                     GL_FALSE, glm::value_ptr(m_model));
+                     GL_FALSE, glm::value_ptr(model));
   glBindVertexArray(m_VAO);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);

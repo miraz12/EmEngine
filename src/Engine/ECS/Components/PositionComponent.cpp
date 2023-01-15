@@ -3,7 +3,7 @@
 #include <glm/ext.hpp>
 
 PositionComponent::PositionComponent()
-    : position(2.0f, 2.0f, -0.1f), rotation(0.0f), scale(1.0f) {
+    : position(0.0f, 0.0f, 0.0f), rotation(0.0f), scale(1.0f) {
   m_componentType = ComponentTypeEnum::POSITION;
 }
 

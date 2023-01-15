@@ -29,9 +29,10 @@ void GraphicsSystem::update(float /*dt*/) {
   for (auto &e : m_entities) {
     PositionComponent *p = static_cast<PositionComponent *>(
         e->getComponent(ComponentTypeEnum::POSITION));
+    glm::mat4 model = p->calculateMatrix();
     GraphicsComponent *g = static_cast<GraphicsComponent *>(
         e->getComponent(ComponentTypeEnum::GRAPHICS));
-    g->grapObj->draw(m_camera);
+    g->grapObj->draw(m_camera, model);
   }
 
   // Draw lights

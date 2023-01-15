@@ -1,20 +1,9 @@
 #include "ECSManager.hpp"
 
-#include <Objects/Mesh.hpp>
-#include <Objects/Quad.hpp>
-#include <ShaderPrograms/MeshShaderProgram.hpp>
-#include <ShaderPrograms/SimpleShaderProgram.hpp>
-
-#include "Components/GraphicsComponent.hpp"
-#include "Components/PositionComponent.hpp"
-
 std::vector<Entity *> ECSManager::m_entities;
 
 ECSManager::ECSManager()
-    : m_idCounter(1),
-      m_addEntities(),
-      m_addComponents(),
-      m_removeEntities(),
+    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(),
       m_removeComponents() {
   initializeSystems();
 }
@@ -156,11 +145,7 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   Mesh *m = new Mesh(*p);
   m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
   // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
-
   graphComp->grapObj = m;
-
-  // SimpleShaderProgram *p = new SimpleShaderProgram;
-  // graphComp->grapObj = new Quad(*p);
 
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();

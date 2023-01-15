@@ -11,8 +11,15 @@
 #include "Entity.hpp"
 #include "Systems/GraphicsSystem.hpp"
 
+#include "Components/GraphicsComponent.hpp"
+#include "Components/PositionComponent.hpp"
+#include "Objects/Mesh.hpp"
+#include "Objects/Quad.hpp"
+#include "ShaderPrograms/MeshShaderProgram.hpp"
+#include "ShaderPrograms/SimpleShaderProgram.hpp"
+
 class ECSManager {
- public:
+public:
   static ECSManager &getInstance() {
     static ECSManager instance;
     return instance;
@@ -62,7 +69,7 @@ class ECSManager {
 
   Camera &getCamera() { return m_camera; };
 
- private:
+private:
   ECSManager();
   // Entities
   int m_idCounter;
@@ -91,4 +98,4 @@ class ECSManager {
   void removeEntities();
   void removeComponents();
 };
-#endif  // LIGHTINGSYSTEM_H_
+#endif // LIGHTINGSYSTEM_H_

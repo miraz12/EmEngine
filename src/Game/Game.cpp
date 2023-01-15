@@ -1,5 +1,4 @@
 #include "glm/geometric.hpp"
-#define NOMINMAX
 #include <algorithm>
 #include <glm/glm.hpp>
 
@@ -7,10 +6,20 @@
 #include "Window.hpp"
 
 Game::Game(GLFWwindow *window)
-    : m_window(window),
-      m_ECSManager(&ECSManager::getInstance()),
+    : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
   m_ECSManager->createPlayerEntity(0, 0, m_window);
+
+  Entity &en = m_ECSManager->createEntity();
+  en.setName("Quad");
+  GraphicsComponent *graphComp = new GraphicsComponent();
+  SimpleShaderProgram *p = new SimpleShaderProgram;
+  graphComp->grapObj = new Quad(*p);
+  m_ECSManager->addComponent(en, graphComp);
+  PositionComponent *posComp = new PositionComponent();
+  posComp->position = glm::vec3(2.0, 0.0, 0.0);
+  m_ECSManager->addComponent(en, posComp);
+
 }
 
 void Game::update(float dt) {
