@@ -136,6 +136,7 @@ bool Window::open() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+  glfwWindowHint(GLFW_SAMPLES, 4);
 
   SCR_WIDTH = 1000;
   SCR_HEIGHT = 1000;

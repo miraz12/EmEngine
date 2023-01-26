@@ -7,14 +7,14 @@
 #include "GraphicsObject.hpp"
 #include "tiny_gltf.h"
 class Mesh : public GraphicsObject {
- public:
+public:
   Mesh(ShaderProgram &p);
   virtual ~Mesh();
   void draw(Camera &cam, glm::mat4 model) override;
 
   void LoadFlile(std::string filename);
 
- private:
+private:
   void drawModelNodes(
       const std::pair<unsigned int, std::map<int, unsigned int>> &vaoAndEbos,
       tinygltf::Model &model, tinygltf::Node &node);
@@ -22,8 +22,8 @@ class Mesh : public GraphicsObject {
                 tinygltf::Mesh &mesh);
   void bindModelNodes(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
                       tinygltf::Node &node);
-  std::pair<unsigned int, std::map<int, unsigned int>> bindModel(
-      tinygltf::Model &model);
+  std::pair<unsigned int, std::map<int, unsigned int>>
+  bindModel(tinygltf::Model &model);
   void bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
                 tinygltf::Mesh &mesh);
 
@@ -32,7 +32,7 @@ class Mesh : public GraphicsObject {
   };
 
   struct GLMeshState {
-    std::vector<unsigned int> diffuseTex;  // for each primitive in mesh
+    std::vector<unsigned int> diffuseTex; // for each primitive in mesh
   };
 
   struct GLProgramState {
@@ -41,8 +41,8 @@ class Mesh : public GraphicsObject {
   };
 
   struct GLCurvesState {
-    unsigned int vb;  // vertex buffer
-    size_t count;     // byte count
+    unsigned int vb; // vertex buffer
+    size_t count;    // byte count
   };
 
   std::map<int, GLBufferState> gBufferState;
@@ -53,4 +53,4 @@ class Mesh : public GraphicsObject {
   tinygltf::Model m_model;
   unsigned int texid;
 };
-#endif  // MESH_H_
+#endif // MESH_H_

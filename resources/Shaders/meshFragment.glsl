@@ -6,7 +6,8 @@ in vec2 texCoords;
 in vec3 normal;
 
 // If uniforms change, also update SimpleShaderProgram to match
-uniform sampler2D texture0;
+uniform sampler2D textures[5];
+
 
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
@@ -22,8 +23,8 @@ mat4 thresholdMatrix = mat4(
 void main()
 {
     gPosition = position;
-    gAlbedo = texture(texture0, texCoords);
-    gNormal = normal;
+    gAlbedo = texture(textures[0], texCoords);
+    gNormal = normalize(texture(textures[4], texCoords).xyz);
     float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
     if (threshold >= gAlbedo.a) {
         discard;

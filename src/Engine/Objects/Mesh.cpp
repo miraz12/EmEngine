@@ -14,6 +14,8 @@
 #include <glad/glad.h>
 #endif
 
+#include "Managers/TextureManager.hpp"
+
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 static std::string GetFilePathExtension(const std::string &FileName) {
@@ -22,8 +24,7 @@ static std::string GetFilePathExtension(const std::string &FileName) {
   return "";
 }
 
-Mesh::Mesh(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
-}
+Mesh::Mesh(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {}
 
 Mesh::~Mesh() { glDeleteVertexArrays(1, &m_vaoAndEbos.first); }
 
@@ -34,9 +35,6 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
                      GL_FALSE, glm::value_ptr(model));
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texid);
 
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
@@ -59,15 +57,59 @@ void Mesh::drawModelNodes(
 
 void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
                     tinygltf::Model &model, tinygltf::Mesh &mesh) {
+  TextureManager &texMan = TextureManager::getInstance();
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
     tinygltf::Primitive primitive = mesh.primitives[i];
-    tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.at(indexAccessor.bufferView));
+    tinygltf::Material m = model.materials[primitive.material];
+    GLuint texIdx = m.pbrMetallicRoughness.baseColorTexture.index;
+    glActiveTexture(GL_TEXTURE0 + model.textures[texIdx].source);
+    texMan.BindTexture(texIdx);
 
-    glDrawElements(primitive.mode, indexAccessor.count,
-                   indexAccessor.componentType,
-                   BUFFER_OFFSET(indexAccessor.byteOffset));
+    texIdx = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
+    glActiveTexture(GL_TEXTURE0 + model.textures[texIdx].source);
+    texMan.BindTexture(texIdx);
+
+    texIdx = m.emissiveTexture.index;
+    glActiveTexture(GL_TEXTURE0 + model.textures[texIdx].source);
+    texMan.BindTexture(texIdx);
+
+    texIdx = m.occlusionTexture.index;
+    glActiveTexture(GL_TEXTURE0 + model.textures[texIdx].source);
+    texMan.BindTexture(texIdx);
+
+    texIdx = m.normalTexture.index;
+    glActiveTexture(GL_TEXTURE0 + model.textures[texIdx].source);
+    texMan.BindTexture(texIdx);
+
+
+
+
+
+    if (m.doubleSided) {
+      glDisable(GL_CULL_FACE);
+    } else {
+      glEnable(GL_CULL_FACE);
+    }
+    if (m.alphaMode == "BLEND") {
+      glEnable(GL_BLEND);
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
+                          GL_ONE_MINUS_SRC_ALPHA);
+      glBlendEquation(GL_FUNC_ADD);
+    } else {
+      glDisable(GL_BLEND);
+    }
+    if (primitive.indices > -1) {
+      tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.at(indexAccessor.bufferView));
+
+      glDrawElements(primitive.mode, indexAccessor.count,
+                     indexAccessor.componentType,
+                     BUFFER_OFFSET(indexAccessor.byteOffset));
+    } else {
+      std::cout << primitive.indices << std::endl;
+      glDrawArrays(primitive.mode, 0, model.accessors[primitive.indices].count);
+    }
   }
 }
 
@@ -106,6 +148,7 @@ void Mesh::bindModelNodes(std::map<int, unsigned int> &vbos,
     bindMesh(vbos, model, model.meshes[node.mesh]);
   }
 
+  // Load child nodes
   for (size_t i = 0; i < node.children.size(); i++) {
     assert((node.children[i] >= 0) && (node.children[i] < model.nodes.size()));
     bindModelNodes(vbos, model, model.nodes[node.children[i]]);
@@ -179,8 +222,6 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
 
     for (auto &attrib : primitive.attributes) {
       tinygltf::Accessor accessor = model.accessors[attrib.second];
-      int byteStride =
-          accessor.ByteStride(model.bufferViews[accessor.bufferView]);
       glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
 
       int size = 1;
@@ -198,30 +239,24 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
       if (attrib.first.compare("TEXCOORD_0") == 0)
         vaa = 3;
       if (vaa > -1) {
-        glEnableVertexAttribArray(vaa);
+        int byteStride =
+            accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        assert(byteStride != -1);
         glVertexAttribPointer(vaa, size, accessor.componentType,
                               accessor.normalized ? GL_TRUE : GL_FALSE,
                               byteStride, BUFFER_OFFSET(accessor.byteOffset));
+        glEnableVertexAttribArray(vaa);
       } else
         std::cout << "vaa missing: " << attrib.first << std::endl;
     }
 
-    if (model.textures.size() > 0) {
-      // fixme: Use material's baseColor
-      tinygltf::Texture &tex = model.textures[0];
+    for (auto &tex : model.textures) {
+      std::cout << tex.sampler << std::endl;
+      TextureManager &texMan = TextureManager::getInstance();
+
+      tinygltf::Image &image = model.images[tex.source];
 
       if (tex.source > -1) {
-        glGenTextures(1, &texid);
-
-        tinygltf::Image &image = model.images[tex.source];
-
-        glBindTexture(GL_TEXTURE_2D, texid);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
         GLenum format = GL_RGBA;
         if (image.component == 1) {
           format = GL_RED;
@@ -244,8 +279,8 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
           std::cout << "WARNING: no matching type." << std::endl;
         }
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0,
-                     format, type, &image.image.at(0));
+        texid = texMan.LoadTexture(format, type, image.width, image.height,
+                                   &image.image.at(0));
       }
     }
   }
