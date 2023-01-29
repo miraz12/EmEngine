@@ -19,6 +19,10 @@ MeshShaderProgram::MeshShaderProgram()
       glGetUniformLocation(p_shaderProgram, "viewMatrix");
   m_uniformBindings["projMatrix"] =
       glGetUniformLocation(p_shaderProgram, "projMatrix");
+  m_uniformBindings["textures"] = 
+      glGetUniformLocation(p_shaderProgram, "textures");
+
+
   use();  // Start using the shader
 }
 

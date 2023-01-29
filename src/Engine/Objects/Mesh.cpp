@@ -35,6 +35,10 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
                      GL_FALSE, glm::value_ptr(model));
+  GLint tex[5] = {0, 1, 2, 3, 4}; 
+  glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
+ 
+  
 
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
@@ -82,10 +86,6 @@ void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
     glActiveTexture(GL_TEXTURE0 + model.textures[texIdx].source);
     texMan.BindTexture(texIdx);
 
-
-
-
-
     if (m.doubleSided) {
       glDisable(GL_CULL_FACE);
     } else {
@@ -107,7 +107,6 @@ void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
                      indexAccessor.componentType,
                      BUFFER_OFFSET(indexAccessor.byteOffset));
     } else {
-      std::cout << primitive.indices << std::endl;
       glDrawArrays(primitive.mode, 0, model.accessors[primitive.indices].count);
     }
   }
@@ -279,7 +278,7 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
           std::cout << "WARNING: no matching type." << std::endl;
         }
 
-        texid = texMan.LoadTexture(format, type, image.width, image.height,
+        texMan.LoadTexture(format, type, image.width, image.height,
                                    &image.image.at(0));
       }
     }
