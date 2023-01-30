@@ -29,8 +29,6 @@ void Game::update(float dt) {
 
 void Game::handleInput(float dt) {
   float camSpeed = 5.f;
-  glm::vec3 moveVec = glm::vec3(0.0);
-  bool move = false;
   Camera &cam = m_ECSManager->getCamera();
   // Parse input
   if (m_InputManager->keys.at(InputManager::KEY::A)) {
@@ -72,7 +70,7 @@ void Game::handleInput(float dt) {
 }
 
 void Game::setViewport(unsigned int w, unsigned int h) {
-  m_ECSManager->getGraphicsSystem()->setViewport(w, h);
+  m_ECSManager->getLightingSystem()->setViewport(w, h);
 }
 
 Game::~Game() {}

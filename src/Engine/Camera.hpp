@@ -39,12 +39,11 @@ class Camera {
 
   glm::vec3 m_position;
   glm::vec3 m_front;
-  glm::vec3 m_right;
   glm::vec3 m_up;
   float m_zoom;
   float m_fov;
-  float m_width;
   float m_height;
+  float m_width;
 };
 
 #endif  // CAMERA_H_

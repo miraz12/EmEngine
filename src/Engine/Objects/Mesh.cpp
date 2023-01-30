@@ -35,10 +35,8 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
                          p_shaderProgram.getUniformLocation("viewMatrix"));
   glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
                      GL_FALSE, glm::value_ptr(model));
-  GLint tex[5] = {0, 1, 2, 3, 4}; 
+  GLint tex[5] = {0, 1, 2, 3, 4};
   glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
- 
-  
 
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
@@ -51,7 +49,8 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
 void Mesh::drawModelNodes(
     const std::pair<unsigned int, std::map<int, unsigned int>> &vaoAndEbos,
     tinygltf::Model &model, tinygltf::Node &node) {
-  if ((node.mesh >= 0) && (node.mesh < model.meshes.size())) {
+  if ((node.mesh >= 0) &&
+      (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
     drawMesh(vaoAndEbos.second, model, model.meshes[node.mesh]);
   }
   for (size_t i = 0; i < node.children.size(); i++) {
@@ -105,7 +104,7 @@ void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
 
       glDrawElements(primitive.mode, indexAccessor.count,
                      indexAccessor.componentType,
-                     BUFFER_OFFSET(indexAccessor.byteOffset));
+                     (void *)(sizeof(char) * (indexAccessor.byteOffset)));
     } else {
       glDrawArrays(primitive.mode, 0, model.accessors[primitive.indices].count);
     }
@@ -143,13 +142,15 @@ void Mesh::LoadFlile(std::string filename) {
 
 void Mesh::bindModelNodes(std::map<int, unsigned int> &vbos,
                           tinygltf::Model &model, tinygltf::Node &node) {
-  if ((node.mesh >= 0) && (node.mesh < model.meshes.size())) {
+  if ((node.mesh >= 0) &&
+      (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
     bindMesh(vbos, model, model.meshes[node.mesh]);
   }
 
   // Load child nodes
   for (size_t i = 0; i < node.children.size(); i++) {
-    assert((node.children[i] >= 0) && (node.children[i] < model.nodes.size()));
+    assert((node.children[i] >= 0) &&
+           (static_cast<unsigned int>(node.children[i]) < model.nodes.size()));
     bindModelNodes(vbos, model, model.nodes[node.children[i]]);
   }
 }
@@ -163,7 +164,8 @@ Mesh::bindModel(tinygltf::Model &model) {
 
   const tinygltf::Scene &scene = model.scenes[model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
-    assert((scene.nodes[i] >= 0) && (scene.nodes[i] < model.nodes.size()));
+    assert((scene.nodes[i] >= 0) &&
+           (static_cast<unsigned int>(scene.nodes[i]) < model.nodes.size()));
     bindModelNodes(vbos, model, model.nodes[scene.nodes[i]]);
   }
 
@@ -241,16 +243,16 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
         int byteStride =
             accessor.ByteStride(model.bufferViews[accessor.bufferView]);
         assert(byteStride != -1);
-        glVertexAttribPointer(vaa, size, accessor.componentType,
-                              accessor.normalized ? GL_TRUE : GL_FALSE,
-                              byteStride, BUFFER_OFFSET(accessor.byteOffset));
+        glVertexAttribPointer(
+            vaa, size, accessor.componentType,
+            accessor.normalized ? GL_TRUE : GL_FALSE, byteStride,
+            (void *)(sizeof(char) * (indexAccessor.byteOffset)));
         glEnableVertexAttribArray(vaa);
       } else
         std::cout << "vaa missing: " << attrib.first << std::endl;
     }
 
     for (auto &tex : model.textures) {
-      std::cout << tex.sampler << std::endl;
       TextureManager &texMan = TextureManager::getInstance();
 
       tinygltf::Image &image = model.images[tex.source];
@@ -279,7 +281,7 @@ void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
         }
 
         texMan.LoadTexture(format, type, image.width, image.height,
-                                   &image.image.at(0));
+                           &image.image.at(0));
       }
     }
   }

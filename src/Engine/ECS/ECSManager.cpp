@@ -1,4 +1,5 @@
 #include "ECSManager.hpp"
+#include "Systems/GraphicsSystem.hpp"
 
 std::vector<Entity *> ECSManager::m_entities;
 
@@ -19,6 +20,7 @@ ECSManager::~ECSManager() {
 }
 
 void ECSManager::initializeSystems() {
+  m_systems["LIGHTS"] = new LightingSystem(this, m_camera);
   m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
 }
 
@@ -135,7 +137,7 @@ void ECSManager::removeComponents() {
   m_removeComponents.clear();
 }
 
-const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
+int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow* /* window */) {
   Entity &playerEntity = createEntity();
   playerEntity.setName("Player");
   playerEntity.makePlayable();
@@ -144,7 +146,7 @@ const int ECSManager::createPlayerEntity(float x, float y, GLFWwindow *window) {
   MeshShaderProgram *p = new MeshShaderProgram;
   Mesh *m = new Mesh(*p);
   m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
-  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/Avocado/glTF-Binary/Avocado.glb");
   graphComp->grapObj = m;
 
   addComponent(playerEntity, graphComp);

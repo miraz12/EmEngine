@@ -20,7 +20,6 @@ void TextureManager::LoadTexture(GLenum format, GLenum type, unsigned int width,
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  GLint internalFormat = GL_RGBA32F;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, type, data);
   texIds.push_back(texId);
 }

@@ -1,12 +1,26 @@
 #ifndef LIGHTINGSYSTEM_H_
 #define LIGHTINGSYSTEM_H_
 
+#include "Camera.hpp"
 #include "System.hpp"
+#include "ShaderPrograms/QuadShaderProgram.hpp"
 
 class LightingSystem : public System {
- public:
-  LightingSystem(ECSManager *ECSManager);
+public:
+  LightingSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
+  void setViewport(unsigned int w, unsigned int h);
+
+private:
+  void initGL();
+
+  Camera &m_camera;
+  unsigned int m_width{800}, m_height{800};
+  unsigned int quadVAO;
+  unsigned int gBuffer;
+  unsigned int gPosition, gNormal, gAlbedo;
+  unsigned int rboDepth;
+  QuadShaderProgram m_shaderProgram;
 };
 
-#endif  // LIGHTINGSYSTEM_H_
+#endif // LIGHTINGSYSTEM_H_

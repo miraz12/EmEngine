@@ -46,9 +46,9 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 #ifndef EMSCRIPTEN
-void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
-                                GLenum severity, GLsizei length,
-                                const GLchar *message, const void *userParam) {
+void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type, GLuint /* id */,
+                                GLenum severity, GLsizei /* length */,
+                                const GLchar *message, const void */* userParam */) {
   std::string msg("[OPENGL DEBUG MESSAGE] ");
 
   // print error severity
@@ -281,7 +281,7 @@ void processInput(GLFWwindow *theWindow) {
                     glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
 }
 
-void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+void mouse_callback(GLFWwindow */* window */, double xpos, double ypos) {
   if (!inMgr.keys.at(InputManager::KEY::Mouse1)) {
     lastX = xpos;
     lastY = ypos;

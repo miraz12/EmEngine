@@ -51,6 +51,5 @@ private:
   GLProgramState gGLProgramState;
   std::pair<unsigned int, std::map<int, unsigned int>> m_vaoAndEbos;
   tinygltf::Model m_model;
-  unsigned int texid;
 };
 #endif // MESH_H_

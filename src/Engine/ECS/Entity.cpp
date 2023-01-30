@@ -13,7 +13,7 @@ Entity::~Entity() {
   m_components.clear();
 }
 
-const int Entity::getID() { return m_ID; }
+int Entity::getID() { return m_ID; }
 
 bool Entity::addComponent(Component* component) {
   if (!hasComponent(component->getComponentType())) {

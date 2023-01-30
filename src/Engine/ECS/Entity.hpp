@@ -13,7 +13,7 @@ class Entity {
   ~Entity();
   Entity(const Entity&) = delete;
 
-  const int getID();
+  int getID();
 
   // Adds component
   // Can't have more than one type of component!

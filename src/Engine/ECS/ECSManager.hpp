@@ -9,7 +9,7 @@
 #include <string>
 
 #include "Entity.hpp"
-#include "Systems/GraphicsSystem.hpp"
+#include "Systems/LightingSystem.hpp"
 
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
@@ -57,14 +57,14 @@ public:
   void removeComponent(Entity &entity, ComponentTypeEnum component);
 
   // Create a controllable entity at position x,y
-  const int createPlayerEntity(float x, float y, GLFWwindow *window);
+  int createPlayerEntity(float x, float y, GLFWwindow *window);
 
   // Returns entity by ID, or NULL if it does not exist
   static Entity *getEntity(int entityID);
 
   // Get rendering system
-  GraphicsSystem *getGraphicsSystem() {
-    return dynamic_cast<GraphicsSystem *>(m_systems["GRAPHICS"]);
+  LightingSystem *getLightingSystem() {
+    return dynamic_cast<LightingSystem *>(m_systems["LIGHTS"]);
   };
 
   Camera &getCamera() { return m_camera; };
