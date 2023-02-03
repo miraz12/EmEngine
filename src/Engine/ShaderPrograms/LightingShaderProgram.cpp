@@ -1,4 +1,4 @@
-#include "QuadShaderProgram.hpp"
+#include "LightingShaderProgram.hpp"
 
 #ifdef EMSCRIPTEN
 #include <GLES3/gl3.h>
@@ -8,15 +8,14 @@
 #include <glad/glad.h>
 #endif
 
-QuadShaderProgram::QuadShaderProgram()
-    : ShaderProgram("resources/Shaders/quadVertex.glsl",
-                    "resources/Shaders/quadFragment.glsl") {
+LightingShaderProgram::LightingShaderProgram()
+    : ShaderProgram("resources/Shaders/lightVertex.glsl",
+                    "resources/Shaders/lightFragment.glsl") {
   m_uniformBindings["gPosition"] =
       glGetUniformLocation(p_shaderProgram, "gPosition");
   m_uniformBindings["gNormal"] =
       glGetUniformLocation(p_shaderProgram, "gNormal");
   m_uniformBindings["gAlbedoSpec"] =
       glGetUniformLocation(p_shaderProgram, "gAlbedoSpec");
-  use();  // Start using the shader
+  use(); // Start using the shader
 }
-

@@ -3,7 +3,7 @@
 
 #include "Camera.hpp"
 #include "System.hpp"
-#include "ShaderPrograms/QuadShaderProgram.hpp"
+#include "ShaderPrograms/LightingShaderProgram.hpp"
 
 class LightingSystem : public System {
 public:
@@ -20,7 +20,7 @@ private:
   unsigned int gBuffer;
   unsigned int gPosition, gNormal, gAlbedo;
   unsigned int rboDepth;
-  QuadShaderProgram m_shaderProgram;
+  LightingShaderProgram m_shaderProgram;
 };
 
 #endif // LIGHTINGSYSTEM_H_

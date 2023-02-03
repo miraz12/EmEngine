@@ -10,10 +10,10 @@ public:
   }
   TextureManager(TextureManager const &) = delete;
   void operator=(TextureManager const &) = delete;
-  void LoadTexture(unsigned int format, unsigned int type,
+  void loadTexture(unsigned int format, unsigned int type,
                    unsigned int width, unsigned int height,
                    unsigned char *data);
-  void BindTexture(unsigned int texIdx);
+  void bindTexture(unsigned int texIdx);
 
 private:
   std::vector<unsigned int> texIds;

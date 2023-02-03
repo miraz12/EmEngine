@@ -137,7 +137,8 @@ void ECSManager::removeComponents() {
   m_removeComponents.clear();
 }
 
-int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow* /* window */) {
+int ECSManager::createPlayerEntity(float /* x */, float /* y */,
+                                   GLFWwindow * /* window */) {
   Entity &playerEntity = createEntity();
   playerEntity.setName("Player");
   playerEntity.makePlayable();
@@ -146,7 +147,8 @@ int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow* /* 
   MeshShaderProgram *p = new MeshShaderProgram;
   Mesh *m = new Mesh(*p);
   m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
-  // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/Avocado/glTF-Binary/Avocado.glb");
+  // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/ToyCar/glTF-Binary/ToyCar.glb");
+  // m->LoadFlile("/home/shaggy/git/EmEngine/resources/Models/gltf/sponzaglb/sponza.glb");
   graphComp->grapObj = m;
 
   addComponent(playerEntity, graphComp);

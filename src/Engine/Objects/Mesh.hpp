@@ -23,32 +23,13 @@ private:
   void bindModelNodes(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
                       tinygltf::Node &node);
   std::pair<unsigned int, std::map<int, unsigned int>>
-  bindModel(tinygltf::Model &model);
+  loadModel(tinygltf::Model &model);
   void bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
                 tinygltf::Mesh &mesh);
+  void loadMaterials();
+  void loadTextures(tinygltf::Model &model);
+  void loadNode(tinygltf::Model &model, tinygltf::Node &node, std::map<int, unsigned int> &vbos);
 
-  struct GLBufferState {
-    unsigned int vb;
-  };
-
-  struct GLMeshState {
-    std::vector<unsigned int> diffuseTex; // for each primitive in mesh
-  };
-
-  struct GLProgramState {
-    std::map<std::string, int> attribs;
-    std::map<std::string, int> uniforms;
-  };
-
-  struct GLCurvesState {
-    unsigned int vb; // vertex buffer
-    size_t count;    // byte count
-  };
-
-  std::map<int, GLBufferState> gBufferState;
-  std::map<std::string, GLMeshState> gMeshState;
-  std::map<int, GLCurvesState> gCurvesMesh;
-  GLProgramState gGLProgramState;
   std::pair<unsigned int, std::map<int, unsigned int>> m_vaoAndEbos;
   tinygltf::Model m_model;
 };

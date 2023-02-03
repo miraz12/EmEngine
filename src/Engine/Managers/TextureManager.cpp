@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #endif
 
-void TextureManager::LoadTexture(GLenum format, GLenum type, unsigned int width,
+void TextureManager::loadTexture(GLenum format, GLenum type, unsigned int width,
                                  unsigned int height, unsigned char *data) {
   GLuint texId;
   glGenTextures(1, &texId);
@@ -24,6 +24,6 @@ void TextureManager::LoadTexture(GLenum format, GLenum type, unsigned int width,
   texIds.push_back(texId);
 }
 
-void TextureManager::BindTexture(unsigned int texIdx) {
+void TextureManager::bindTexture(unsigned int texIdx) {
   glBindTexture(GL_TEXTURE_2D, texIds.at(texIdx));
 }
