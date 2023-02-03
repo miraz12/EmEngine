@@ -146,10 +146,10 @@ int ECSManager::createPlayerEntity(float /* x */, float /* y */,
   GraphicsComponent *graphComp = new GraphicsComponent();
   MeshShaderProgram *p = new MeshShaderProgram;
   Mesh *m = new Mesh(*p);
-  //m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
-  m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
+  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
   // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/ToyCar/glTF-Binary/ToyCar.glb");
-  // m->LoadFlile("/home/shaggy/git/EmEngine/resources/Models/gltf/sponzaglb/sponza.glb");
+  // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
   graphComp->grapObj = m;
 
   addComponent(playerEntity, graphComp);

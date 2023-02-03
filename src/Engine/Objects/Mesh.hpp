@@ -20,12 +20,8 @@ private:
       tinygltf::Model &model, tinygltf::Node &node);
   void drawMesh(const std::map<int, unsigned int> &vbos, tinygltf::Model &model,
                 tinygltf::Mesh &mesh);
-  void bindModelNodes(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
-                      tinygltf::Node &node);
   std::pair<unsigned int, std::map<int, unsigned int>>
   loadModel(tinygltf::Model &model);
-  void bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
-                tinygltf::Mesh &mesh);
   void loadMaterials();
   void loadTextures(tinygltf::Model &model);
   void loadNode(tinygltf::Model &model, tinygltf::Node &node, std::map<int, unsigned int> &vbos);

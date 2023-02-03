@@ -80,7 +80,16 @@ unsigned int ShaderProgram::getUniformLocation(std::string uniformName) {
   if (m_uniformBindings.find(uniformName) == m_uniformBindings.end()) {
     std::cout << "No uniform with name " << uniformName << "\n";
   } else {
-    return m_uniformBindings[uniformName];
+    return m_uniformBindings.at(uniformName);
+  }
+  return 0;
+}
+
+int ShaderProgram::getAttribLocation(std::string attribName) {
+  if (m_attribBindings.find(attribName) == m_attribBindings.end()) {
+    std::cout << "No attribute with name " << attribName << "\n";
+  } else {
+    return m_attribBindings.at(attribName);
   }
   return 0;
 }

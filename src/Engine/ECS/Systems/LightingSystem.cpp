@@ -39,7 +39,6 @@ void LightingSystem::update(float /* dt */) {
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, gAlbedo);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glBindVertexArray(0);
 }
 
 void LightingSystem::initGL() {
@@ -50,7 +49,6 @@ void LightingSystem::initGL() {
   glColorMask(true, true, true, true);
 
 
-  glBindVertexArray(0);
   glGenFramebuffers(1, &gBuffer);
   glGenTextures(1, &gPosition);
   glGenTextures(1, &gNormal);
@@ -90,7 +88,6 @@ void LightingSystem::initGL() {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                         (void *)(3 * sizeof(float)));
-  glBindVertexArray(0);
 }
 
 void LightingSystem::setViewport(unsigned int w, unsigned int h) {
@@ -98,7 +95,6 @@ void LightingSystem::setViewport(unsigned int w, unsigned int h) {
   m_height = h;
   m_camera.setSize(w, h);
 
-  glBindVertexArray(0);
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
   // - position color buffer
