@@ -48,7 +48,6 @@ void LightingSystem::initGL() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glColorMask(true, true, true, true);
-  glClearDepth(1.0);
 
 
   glBindVertexArray(0);

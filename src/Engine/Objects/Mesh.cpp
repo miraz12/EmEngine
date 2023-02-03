@@ -42,8 +42,6 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
     drawModelNodes(m_vaoAndEbos, m_model, m_model.nodes[scene.nodes[i]]);
   }
-
-  glBindVertexArray(0);
 }
 
 void Mesh::drawModelNodes(
@@ -108,6 +106,17 @@ void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
     //   glDisable(GL_BLEND);
     // }
     if (primitive.indices != -1) {
+      for (auto &attrib : primitive.attributes) {
+        tinygltf::Accessor accessor = model.accessors[attrib.second];
+        unsigned int loc = vbos.at(accessor.bufferView);
+        glBindBuffer(GL_ARRAY_BUFFER, loc);
+        int byteStride =
+            accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        glVertexAttribPointer(loc, accessor.type, accessor.componentType,
+                              accessor.normalized, byteStride,
+                              (void *)(sizeof(char) * (accessor.byteOffset)));
+        glEnableVertexAttribArray(loc);
+      }
       tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.at(indexAccessor.bufferView));
       glDrawElements(primitive.mode, indexAccessor.count,
@@ -193,7 +202,6 @@ Mesh::loadModel(tinygltf::Model &model) {
     loadNode(model, model.nodes[scene.nodes[i]], vbos);
   }
 
-  glBindVertexArray(0);
   // cleanup vbos but do not delete index buffers yet
   // for (auto it = vbos.cbegin(); it != vbos.cend();) {
   //   tinygltf::BufferView bufferView = model.bufferViews[it->first];
@@ -208,62 +216,6 @@ Mesh::loadModel(tinygltf::Model &model) {
   return {vao, vbos};
 }
 
-void Mesh::bindMesh(std::map<int, unsigned int> &vbos, tinygltf::Model &model,
-                    tinygltf::Mesh &mesh) {
-  for (size_t i = 0; i < model.bufferViews.size(); ++i) {
-    const tinygltf::BufferView &bufferView = model.bufferViews[i];
-    const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-    // std::cout << "bufferview.target " << bufferView.target << std::endl;
-
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    vbos[i] = vbo;
-    glBindBuffer(bufferView.target, vbo);
-
-    // std::cout << "buffer.data.size = " << buffer.data.size()
-    //           << ", bufferview.byteOffset = " << bufferView.byteOffset
-    //           << std::endl;
-
-    glBufferData(bufferView.target, bufferView.byteLength,
-                 &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-  }
-
-  for (size_t i = 0; i < mesh.primitives.size(); ++i) {
-    tinygltf::Primitive primitive = mesh.primitives[i];
-    tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
-
-    for (auto &attrib : primitive.attributes) {
-      tinygltf::Accessor accessor = model.accessors[attrib.second];
-      glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-
-      int size = 1;
-      if (accessor.type != TINYGLTF_TYPE_SCALAR) {
-        size = accessor.type;
-      }
-
-      int vaa = -1;
-      if (attrib.first.compare("POSITION") == 0)
-        vaa = 0;
-      if (attrib.first.compare("NORMAL") == 0)
-        vaa = 1;
-      if (attrib.first.compare("TANGENT") == 0)
-        vaa = 2;
-      if (attrib.first.compare("TEXCOORD_0") == 0)
-        vaa = 3;
-      if (vaa > -1) {
-        int byteStride =
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        assert(byteStride != -1);
-        glVertexAttribPointer(
-            vaa, size, accessor.componentType,
-            accessor.normalized ? GL_TRUE : GL_FALSE, byteStride,
-            (void *)(sizeof(char) * (indexAccessor.byteOffset)));
-        glEnableVertexAttribArray(vaa);
-      } else
-        std::cout << "vaa missing: " << attrib.first << std::endl;
-    }
-  }
-}
 void Mesh::loadTextures(tinygltf::Model &model) {
   for (auto &tex : model.textures) {
     TextureManager &texMan = TextureManager::getInstance();
@@ -307,7 +259,7 @@ void Mesh::loadNode(tinygltf::Model &model, tinygltf::Node &node,
     for (size_t i = 0; i < model.bufferViews.size(); ++i) {
       const tinygltf::BufferView &bufferView = model.bufferViews[i];
       const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-
+      if (bufferView.target != 0) {
       GLuint vbo;
       glGenBuffers(1, &vbo);
       vbos[i] = vbo;
@@ -315,79 +267,40 @@ void Mesh::loadNode(tinygltf::Model &model, tinygltf::Node &node,
 
       glBufferData(bufferView.target, bufferView.byteLength,
                    &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-    }
-
-    for (auto &primitive : mesh.primitives) {
-      // Get buffer data for vertex normals
-      if (primitive.attributes.find("POSITION") != primitive.attributes.end()) {
-        const tinygltf::Accessor &accessor =
-            model.accessors[primitive.attributes.find("POSITION")->second];
-        const tinygltf::BufferView &view =
-            model.bufferViews[accessor.bufferView];
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-        glVertexAttribPointer(
-            0, accessor.type, accessor.componentType,
-            accessor.normalized ? GL_TRUE : GL_FALSE,
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]),
-            reinterpret_cast<const float *>(
-                &(model.buffers[view.buffer]
-                      .data[accessor.byteOffset + view.byteOffset])));
-        glEnableVertexAttribArray(0);
-      }
-      // Get buffer data for vertex normals
-      if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) {
-        const tinygltf::Accessor &accessor =
-            model.accessors[primitive.attributes.find("NORMAL")->second];
-        const tinygltf::BufferView &view =
-            model.bufferViews[accessor.bufferView];
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-        glVertexAttribPointer(
-            1, accessor.type, accessor.componentType,
-            accessor.normalized ? GL_TRUE : GL_FALSE,
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]),
-            reinterpret_cast<const float *>(
-                &(model.buffers[view.buffer]
-                      .data[accessor.byteOffset + view.byteOffset])));
-        glEnableVertexAttribArray(1);
-      }
-      // Get buffer data for vertex texture coordinates
-      // glTF supports multiple sets, we only load the first one
-      if (primitive.attributes.find("TEXCOORD_0") !=
-          primitive.attributes.end()) {
-        const tinygltf::Accessor &accessor =
-            model.accessors[primitive.attributes.find("TEXCOORD_0")->second];
-        const tinygltf::BufferView &view =
-            model.bufferViews[accessor.bufferView];
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-        glVertexAttribPointer(
-            2, accessor.type, accessor.componentType,
-            accessor.normalized ? GL_TRUE : GL_FALSE,
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]),
-            reinterpret_cast<const float *>(
-                &(model.buffers[view.buffer]
-                      .data[accessor.byteOffset + view.byteOffset])));
-        glEnableVertexAttribArray(2);
-      }
-      // POI: This sample uses normal mapping, so we also need to load the
-      // tangents from the glTF file
-      if (primitive.attributes.find("TANGENT") != primitive.attributes.end()) {
-        const tinygltf::Accessor &accessor =
-            model.accessors[primitive.attributes.find("TANGENT")->second];
-        const tinygltf::BufferView &view =
-            model.bufferViews[accessor.bufferView];
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
-        glVertexAttribPointer(
-            3, accessor.type, accessor.componentType,
-            accessor.normalized ? GL_TRUE : GL_FALSE,
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]),
-            reinterpret_cast<const float *>(
-                &(model.buffers[view.buffer]
-                      .data[accessor.byteOffset + view.byteOffset])));
-        glEnableVertexAttribArray(3);
       }
     }
+
+     for (size_t i = 0; i < mesh.primitives.size(); ++i) {
+      tinygltf::Primitive primitive = mesh.primitives[i];
+      tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
+
+      for (auto &attrib : primitive.attributes) {
+      tinygltf::Accessor accessor = model.accessors[attrib.second];
+      glBindBuffer(GL_ARRAY_BUFFER, vbos[accessor.bufferView]);
+
+      int size = 1;
+      if (accessor.type != TINYGLTF_TYPE_SCALAR) {
+        size = accessor.type;
+      }
+
+      int vaa = -1;
+      if (attrib.first.compare("POSITION") == 0) vaa = 0;
+      if (attrib.first.compare("NORMAL") == 0) vaa = 1;
+      if (attrib.first.compare("TANGENT") == 0) vaa = 3;
+      if (attrib.first.compare("TEXCOORD_0") == 0) vaa = 2;
+      if (vaa > -1) {
+        int byteStride =
+            accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        assert(byteStride != -1);
+        glVertexAttribPointer(
+            vaa, size, accessor.componentType,
+            accessor.normalized ? GL_TRUE : GL_FALSE, byteStride,
+            (void *)(sizeof(char) * (indexAccessor.byteOffset)));
+        glEnableVertexAttribArray(vaa);
+      } else
+        std::cout << "vaa missing: " << attrib.first << std::endl;
+      }
+    }
+    
   }
 }

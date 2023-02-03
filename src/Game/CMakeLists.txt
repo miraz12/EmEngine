@@ -8,7 +8,7 @@ target_compile_options(Game PRIVATE
                         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
                         -pedantic -Wall -Wextra -Werror>
                         $<$<CXX_COMPILER_ID:MSVC>:
-                        /W4;/WX;>)
+                        /W4;>)
 
 set_target_properties(Game PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CMAKE_CXX_EXTENSIONS OFF)
 target_compile_definitions(Game PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
