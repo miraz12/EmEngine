@@ -1,24 +1,31 @@
-#include "glm/geometric.hpp"
-#include <algorithm>
-#include <glm/glm.hpp>
-
 #include "Game.hpp"
 #include "Window.hpp"
+#include "glm/geometric.hpp"
+#include <ECS/Components/LightingComponent.hpp>
+#include <algorithm>
+#include <glm/glm.hpp>
 
 Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
   m_ECSManager->createPlayerEntity(0, 0, m_window);
 
+  // Entity &en = m_ECSManager->createEntity();
+  // en.setName("Quad");
+  // GraphicsComponent *graphComp = new GraphicsComponent();
+  // SimpleShaderProgram *p = new SimpleShaderProgram;
+  // graphComp->grapObj = new Quad(*p);
+  // m_ECSManager->addComponent(en, graphComp);
+  // PositionComponent *posComp = new PositionComponent();
+  // posComp->position = glm::vec3(0.0, 0.0, 2.0);
+  // m_ECSManager->addComponent(en, posComp);
+
   Entity &en = m_ECSManager->createEntity();
-  en.setName("Quad");
-  GraphicsComponent *graphComp = new GraphicsComponent();
-  SimpleShaderProgram *p = new SimpleShaderProgram;
-  graphComp->grapObj = new Quad(*p);
-  m_ECSManager->addComponent(en, graphComp);
-  PositionComponent *posComp = new PositionComponent();
-  posComp->position = glm::vec3(0.0, 0.0, 2.0);
-  m_ECSManager->addComponent(en, posComp);
+  LightingComponent *lightComp = new LightingComponent();
+  lightComp->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.05f, 0.4f,
+                                   glm::vec3(-0.0f, -1.0f, -0.0f));
+  m_ECSManager->addComponent(en, lightComp);
+
 
 }
 

@@ -1,34 +1,29 @@
-// #ifndef LIGHTINGCOMPONENT_H_
-// #define LIGHTINGCOMPONENT_H_
-// #include <glm/glm.hpp>
+#ifndef LIGHTINGCOMPONENT_H_
+#define LIGHTINGCOMPONENT_H_
+#include "Types/LightTypes.hpp"
+#include <glm/glm.hpp>
 
-// #include "Component.hpp"
+#include "Component.hpp"
 
-// class LightingComponent : public Component {
-// public:
-//   enum type {
-//     POINT,
-//     SPOT,
-//     AREA,
-//   };
+class LightingComponent : public Component {
+public:
+  enum TYPE {
+    NONE,
+    POINT,
+    DIRECTIONAL,
+  };
+  LightingComponent();
+  virtual ~LightingComponent();
 
-// private:
-//   // type m_t;
-//   // struct BaseLight {
-//   //   glm::vec3 Color;
-//   //   float AmbientIntensity;
-//   //   float DiffuseIntensity;
+  void SetupPointLight(glm::vec3 color, float constant, float linear,
+                       float quadratic, glm::vec3 pos);
+  void SetupDirectionalLight(glm::vec3 color, float ambient, float diffuse,
+                             glm::vec3 dir);
+  TYPE getType() { return m_t; };
+  BaseLight *getBaseLight() { return light; };
 
-//   //   BaseLight() {
-//   //     Color = glm::vec3(0.0f, 0.0f, 0.0f);
-//   //     AmbientIntensity = 0.0f;
-//   //     DiffuseIntensity = 0.0f;
-//   //   }
-
-//   //   virtual void Setup(int i = -1) = 0;
-//   // };
-
-//   // LightingComponent();
-//   // virtual ~LightingComponent();
-// };
-// #endif // LIGHTINGCOMPONENT_H_
+private:
+  TYPE m_t{NONE};
+  BaseLight *light;
+};
+#endif // LIGHTINGCOMPONENT_H_

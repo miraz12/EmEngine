@@ -41,6 +41,8 @@ double lastX, lastY;
 
 static InputManager &inMgr = InputManager::getInstance();
 
+#define _DEBUG_
+
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -131,8 +133,13 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
 
 bool Window::open() {
   glfwInit();
+#ifdef _DEBUG_
+  std::cout << "DEBUG MODE" << std::endl;
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+#else
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#endif
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
@@ -170,9 +177,12 @@ bool Window::open() {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return false;
   }
-  // glEnable(GL_DEBUG_OUTPUT);
-  // glDebugMessageCallback(MessageCallback, 0);
+#endif
 
+
+#ifndef _DEBUG_
+  glEnable(GL_DEBUG_OUTPUT);
+  glDebugMessageCallback(MessageCallback, 0);
 #endif
 
   return true;

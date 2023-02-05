@@ -1,8 +1,10 @@
 #include "LightingSystem.hpp"
-
 #include "ECS/Components/GraphicsComponent.hpp"
+#include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "Managers/FrameBufferManager.hpp"
+#include "Types/LightTypes.hpp"
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 
 #ifdef EMSCRIPTEN
@@ -14,23 +16,79 @@
 #endif
 
 LightingSystem::LightingSystem(ECSManager *ECSManager, Camera &cam)
-    : System(ECSManager, ComponentTypeEnum::LIGHTING,
-             ComponentTypeEnum::POSITION),
-      m_camera(cam) {
-  // for (auto &e : m_entities) {
-  //   PositionComponent *p = static_cast<PositionComponent *>(
-  //       e->getComponent(ComponentTypeEnum::POSITION));
-  //   GraphicsComponent *g = static_cast<GraphicsComponent *>(
-  //       e->getComponent(ComponentTypeEnum::GRAPHICS));
-  // }
-  // Draw lights
-
+    : System(ECSManager, ComponentTypeEnum::LIGHTING), m_camera(cam) {
   initGL();
 }
 void LightingSystem::update(float /* dt */) {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_shaderProgram.use();
+
+  unsigned int numPLights = 0;
+  for (auto &e : m_entities) {
+    LightingComponent *g = static_cast<LightingComponent *>(
+        e->getComponent(ComponentTypeEnum::LIGHTING));
+
+    LightingComponent::TYPE t = g->getType();
+    if (t == LightingComponent::DIRECTIONAL) {
+      DirectionalLight *light =
+          static_cast<DirectionalLight *>(g->getBaseLight());
+      glUniform3fv(
+          m_shaderProgram.getUniformLocation("directionalLight.direction"), 1,
+          glm::value_ptr(light->direction));
+
+      glUniform3fv(m_shaderProgram.getUniformLocation("directionalLight.color"),
+                   1, glm::value_ptr(light->color));
+
+      glUniform1f(m_shaderProgram.getUniformLocation(
+                      "directionalLight.ambientIntensity"),
+                  light->ambientIntensity);
+
+      glUniform1f(m_shaderProgram.getUniformLocation(
+                      "directionalLight.diffuseIntensity"),
+                  light->diffuseIntensity);
+
+    } else if (t == LightingComponent::POINT) {
+      PointLight *light = static_cast<PointLight *>(g->getBaseLight());
+      glUniform3fv(
+          m_shaderProgram.getUniformLocation(
+              "gPointLights[" + std::to_string(numPLights) + "].position"),
+          1, glm::value_ptr(light->position));
+
+      glUniform3fv(
+          m_shaderProgram.getUniformLocation(
+              "gPointLights[" + std::to_string(numPLights) + "].position"),
+          1, glm::value_ptr(light->position));
+
+      glUniform3fv(
+          m_shaderProgram.getUniformLocation(
+              "gPointLights[" + std::to_string(numPLights) + "].color"),
+          1, glm::value_ptr(light->color));
+
+      glUniform1f(
+          m_shaderProgram.getUniformLocation(
+              "gPointLights[" + std::to_string(numPLights) + "].constant"),
+          light->constant);
+
+      glUniform1f(
+          m_shaderProgram.getUniformLocation(
+              "gPointLights[" + std::to_string(numPLights) + "].linear"),
+          light->linear);
+
+      glUniform1f(
+          m_shaderProgram.getUniformLocation(
+              "gPointLights[" + std::to_string(numPLights) + "].quadratic"),
+          light->quadratic);
+    numPLights++;
+    }
+  }
+
+  glUniform1i(m_shaderProgram.getUniformLocation("nrOfPointLights"),
+              numPLights);
+
+  glUniform3fv(m_shaderProgram.getUniformLocation("camPos"), 1,
+               glm::value_ptr(m_camera.getPosition()));
+
   glBindVertexArray(quadVAO);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -47,7 +105,6 @@ void LightingSystem::initGL() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glColorMask(true, true, true, true);
-
 
   glGenFramebuffers(1, &gBuffer);
   glGenTextures(1, &gPosition);

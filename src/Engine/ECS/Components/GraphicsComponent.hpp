@@ -5,10 +5,10 @@
 #include "Objects/GraphicsObject.hpp"
 
 class GraphicsComponent : public Component {
- public:
-  GraphicsObject* grapObj;
+public:
+  GraphicsObject *grapObj;
 
   GraphicsComponent();
   virtual ~GraphicsComponent();
 };
-#endif  // GRAPHICSCOMPONENT_H_
+#endif // GRAPHICSCOMPONENT_H_
