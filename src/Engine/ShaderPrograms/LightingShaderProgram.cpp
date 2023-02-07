@@ -23,44 +23,60 @@ LightingShaderProgram::LightingShaderProgram()
 
   m_uniformBindings["directionalLight.direction"] =
       glGetUniformLocation(p_shaderProgram, "directionalLight.direction");
-  m_uniformBindings["directionalLight.color"] =
-      glGetUniformLocation(p_shaderProgram, "directionalLight.color");
-  m_uniformBindings["directionalLight.ambientIntensity"] =
-      glGetUniformLocation(p_shaderProgram, "directionalLight.ambientIntensity");
-  m_uniformBindings["directionalLight.diffuseIntensity"] =
-      glGetUniformLocation(p_shaderProgram, "directionalLight.diffuseIntensity");
+  m_uniformBindings["directionalLight.base.color"] =
+      glGetUniformLocation(p_shaderProgram, "directionalLight.base.color");
+  m_uniformBindings["directionalLight.base.ambientIntensity"] =
+      glGetUniformLocation(p_shaderProgram,
+                           "directionalLight.base.ambientIntensity");
+  m_uniformBindings["directionalLight.base.diffuseIntensity"] =
+      glGetUniformLocation(p_shaderProgram,
+                           "directionalLight.base.diffuseIntensity");
 
   for (unsigned int i = 0; i < 10; i++) {
-    m_uniformBindings["gPointLights[" + std::to_string(i) + "].position"] =
+    m_uniformBindings["pointLights[" + std::to_string(i) + "].position"] =
         glGetUniformLocation(
             p_shaderProgram,
-            std::string("gPointLights[" + std::to_string(i) + "].position")
+            std::string("pointLights[" + std::to_string(i) + "].position")
                 .c_str());
 
-    m_uniformBindings["gPointLights[" + std::to_string(i) + "].color"] =
+    m_uniformBindings["pointLights[" + std::to_string(i) + "].base.color"] =
         glGetUniformLocation(
             p_shaderProgram,
-            std::string("gPointLights[" + std::to_string(i) + "].color")
+            std::string("pointLights[" + std::to_string(i) + "].base.color")
                 .c_str());
 
-    m_uniformBindings["gPointLights[" + std::to_string(i) + "].constant"] =
+    m_uniformBindings["pointLights[" + std::to_string(i) +
+                      "].base.ambientIntensity"] =
+        glGetUniformLocation(p_shaderProgram,
+                             std::string("pointLights[" + std::to_string(i) +
+                                         "].base.ambientIntensity")
+                                 .c_str());
+
+    m_uniformBindings["pointLights[" + std::to_string(i) +
+                      "].base.diffuseIntensity"] =
+        glGetUniformLocation(p_shaderProgram,
+                             std::string("pointLights[" + std::to_string(i) +
+                                         "].base.diffuseIntensity")
+                                 .c_str());
+
+    m_uniformBindings["pointLights[" + std::to_string(i) + "].constant"] =
         glGetUniformLocation(
             p_shaderProgram,
-            std::string("gPointLights[" + std::to_string(i) + "].constant")
+            std::string("pointLights[" + std::to_string(i) + "].constant")
                 .c_str());
 
-    m_uniformBindings["gPointLights[" + std::to_string(i) + "].linear"] =
+    m_uniformBindings["pointLights[" + std::to_string(i) + "].linear"] =
         glGetUniformLocation(
             p_shaderProgram,
-            std::string("gPointLights[" + std::to_string(i) + "].linear")
+            std::string("pointLights[" + std::to_string(i) + "].linear")
                 .c_str());
 
-    m_uniformBindings["gPointLights[" + std::to_string(i) + "].quadratic"] =
+    m_uniformBindings["pointLights[" + std::to_string(i) + "].quadratic"] =
         glGetUniformLocation(
             p_shaderProgram,
-            std::string("gPointLights[" + std::to_string(i) + "].quadratic")
+            std::string("pointLights[" + std::to_string(i) + "].quadratic")
                 .c_str());
   }
 
-  use(); // Start using the shader
+  use();  // Start using the shader
 }

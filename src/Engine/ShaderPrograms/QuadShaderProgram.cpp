@@ -19,4 +19,3 @@ QuadShaderProgram::QuadShaderProgram()
       glGetUniformLocation(p_shaderProgram, "gAlbedoSpec");
   use();  // Start using the shader
 }
-

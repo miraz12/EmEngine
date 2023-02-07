@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 class FrameBufferManager {
-public:
+ public:
   static FrameBufferManager &getInstance() {
     static FrameBufferManager instance;
     return instance;
@@ -15,9 +15,9 @@ public:
   unsigned int getFBO(std::string name) { return fbos.at(name); };
   void setFBO(std::string name, unsigned int &fbo) { fbos[name] = fbo; };
 
-private:
+ private:
   FrameBufferManager() = default;
   std::unordered_map<std::string, unsigned int> fbos;
 };
 
-#endif // FRAMEBUFFERMANAGER_H_
+#endif  // FRAMEBUFFERMANAGER_H_

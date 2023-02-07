@@ -1,10 +1,14 @@
 #include "ECSManager.hpp"
+
 #include "Systems/GraphicsSystem.hpp"
 
 std::vector<Entity *> ECSManager::m_entities;
 
 ECSManager::ECSManager()
-    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(),
+    : m_idCounter(1),
+      m_addEntities(),
+      m_addComponents(),
+      m_removeEntities(),
       m_removeComponents() {
   initializeSystems();
 }

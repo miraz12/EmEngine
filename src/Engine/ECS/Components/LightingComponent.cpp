@@ -6,13 +6,16 @@ LightingComponent::LightingComponent() {
 
 LightingComponent::~LightingComponent() { delete light; }
 
-void LightingComponent::SetupPointLight(glm::vec3 color, float constant,
+void LightingComponent::SetupPointLight(glm::vec3 color, float ambient,
+                                        float diffuse, float constant,
                                         float linear, float quadratic,
                                         glm::vec3 pos) {
   m_t = TYPE::POINT;
   PointLight *pLight = new PointLight();
   pLight->position = pos;
   pLight->color = color;
+  pLight->ambientIntensity = ambient;
+  pLight->diffuseIntensity = diffuse;
   pLight->constant = constant;
   pLight->linear = linear;
   pLight->quadratic = quadratic;

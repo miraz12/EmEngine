@@ -17,7 +17,8 @@
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
     : System(ECSManager, ComponentTypeEnum::POSITION,
              ComponentTypeEnum::GRAPHICS),
-      m_camera(cam), m_fboManager(FrameBufferManager::getInstance()) {}
+      m_camera(cam),
+      m_fboManager(FrameBufferManager::getInstance()) {}
 
 void GraphicsSystem::update(float /*dt*/) {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("gBuffer"));

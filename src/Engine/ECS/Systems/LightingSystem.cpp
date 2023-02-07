@@ -1,11 +1,13 @@
 #include "LightingSystem.hpp"
+
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
+
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "Managers/FrameBufferManager.hpp"
 #include "Types/LightTypes.hpp"
-#include <glm/gtx/string_cast.hpp>
-#include <iostream>
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -24,7 +26,7 @@ void LightingSystem::update(float /* dt */) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_shaderProgram.use();
 
-  unsigned int numPLights = 0;
+  int numPLights = 0;
   for (auto &e : m_entities) {
     LightingComponent *g = static_cast<LightingComponent *>(
         e->getComponent(ComponentTypeEnum::LIGHTING));
@@ -37,49 +39,54 @@ void LightingSystem::update(float /* dt */) {
           m_shaderProgram.getUniformLocation("directionalLight.direction"), 1,
           glm::value_ptr(light->direction));
 
-      glUniform3fv(m_shaderProgram.getUniformLocation("directionalLight.color"),
-                   1, glm::value_ptr(light->color));
+      glUniform3fv(
+          m_shaderProgram.getUniformLocation("directionalLight.base.color"), 1,
+          glm::value_ptr(light->color));
 
       glUniform1f(m_shaderProgram.getUniformLocation(
-                      "directionalLight.ambientIntensity"),
+                      "directionalLight.base.ambientIntensity"),
                   light->ambientIntensity);
 
       glUniform1f(m_shaderProgram.getUniformLocation(
-                      "directionalLight.diffuseIntensity"),
+                      "directionalLight.base.diffuseIntensity"),
                   light->diffuseIntensity);
 
     } else if (t == LightingComponent::POINT) {
       PointLight *light = static_cast<PointLight *>(g->getBaseLight());
       glUniform3fv(
           m_shaderProgram.getUniformLocation(
-              "gPointLights[" + std::to_string(numPLights) + "].position"),
+              "pointLights[" + std::to_string(numPLights) + "].position"),
           1, glm::value_ptr(light->position));
 
       glUniform3fv(
           m_shaderProgram.getUniformLocation(
-              "gPointLights[" + std::to_string(numPLights) + "].position"),
-          1, glm::value_ptr(light->position));
-
-      glUniform3fv(
-          m_shaderProgram.getUniformLocation(
-              "gPointLights[" + std::to_string(numPLights) + "].color"),
+              "pointLights[" + std::to_string(numPLights) + "].base.color"),
           1, glm::value_ptr(light->color));
 
+      glUniform1f(m_shaderProgram.getUniformLocation(
+                      "pointLights[" + std::to_string(numPLights) +
+                      "].base.ambientIntensity"),
+                  light->ambientIntensity);
+
+      glUniform1f(m_shaderProgram.getUniformLocation(
+                      "pointLights[" + std::to_string(numPLights) +
+                      "].base.diffuseIntensity"),
+                  light->diffuseIntensity);
+
       glUniform1f(
           m_shaderProgram.getUniformLocation(
-              "gPointLights[" + std::to_string(numPLights) + "].constant"),
+              "pointLights[" + std::to_string(numPLights) + "].constant"),
           light->constant);
 
-      glUniform1f(
-          m_shaderProgram.getUniformLocation(
-              "gPointLights[" + std::to_string(numPLights) + "].linear"),
-          light->linear);
+      glUniform1f(m_shaderProgram.getUniformLocation(
+                      "pointLights[" + std::to_string(numPLights) + "].linear"),
+                  light->linear);
 
       glUniform1f(
           m_shaderProgram.getUniformLocation(
-              "gPointLights[" + std::to_string(numPLights) + "].quadratic"),
+              "pointLights[" + std::to_string(numPLights) + "].quadratic"),
           light->quadratic);
-    numPLights++;
+      numPLights++;
     }
   }
 
@@ -101,7 +108,7 @@ void LightingSystem::update(float /* dt */) {
 
 void LightingSystem::initGL() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
+  glLineWidth(3.0f);  // Sets line width of things like wireframe and draw lines
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glColorMask(true, true, true, true);

@@ -8,18 +8,17 @@
 #include <memory>
 #include <string>
 
-#include "Entity.hpp"
-#include "Systems/LightingSystem.hpp"
-
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
+#include "Entity.hpp"
 #include "Objects/Mesh.hpp"
 #include "Objects/Quad.hpp"
 #include "ShaderPrograms/MeshShaderProgram.hpp"
 #include "ShaderPrograms/SimpleShaderProgram.hpp"
+#include "Systems/LightingSystem.hpp"
 
 class ECSManager {
-public:
+ public:
   static ECSManager &getInstance() {
     static ECSManager instance;
     return instance;
@@ -69,7 +68,7 @@ public:
 
   Camera &getCamera() { return m_camera; };
 
-private:
+ private:
   ECSManager();
   // Entities
   int m_idCounter;
@@ -98,4 +97,4 @@ private:
   void removeEntities();
   void removeComponents();
 };
-#endif // LIGHTINGSYSTEM_H_
+#endif  // LIGHTINGSYSTEM_H_

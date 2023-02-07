@@ -175,8 +175,8 @@ void Mesh::LoadFlile(std::string filename) {
   m_vaoAndEbos = loadModel(m_model);
 }
 
-std::pair<unsigned int, std::map<int, unsigned int>>
-Mesh::loadModel(tinygltf::Model &model) {
+std::pair<unsigned int, std::map<int, unsigned int>> Mesh::loadModel(
+    tinygltf::Model &model) {
   std::map<int, unsigned int> vbos;
   GLuint vao;
   glGenVertexArrays(1, &vao);

@@ -2,16 +2,17 @@
 #define LIGHTINGSYSTEM_H_
 
 #include "Camera.hpp"
-#include "System.hpp"
 #include "ShaderPrograms/LightingShaderProgram.hpp"
+#include "System.hpp"
+#include "Types/LightTypes.hpp"
 
 class LightingSystem : public System {
-public:
+ public:
   LightingSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
   void setViewport(unsigned int w, unsigned int h);
 
-private:
+ private:
   void initGL();
 
   Camera &m_camera;
@@ -23,4 +24,4 @@ private:
   LightingShaderProgram m_shaderProgram;
 };
 
-#endif // LIGHTINGSYSTEM_H_
+#endif  // LIGHTINGSYSTEM_H_
