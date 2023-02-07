@@ -2,28 +2,27 @@
 
 // Created many different constructors for different amount of required
 // components
-System::System(ECSManager* ECSManager, ComponentTypeEnum c1)
+System::System(ECSManager *ECSManager, ComponentTypeEnum c1)
     : m_manager(ECSManager), m_requiredComponents{c1}, m_entities() {}
-System::System(ECSManager* ECSManager, ComponentTypeEnum c1,
-               ComponentTypeEnum c2)
+System::System(ECSManager *ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2)
     : m_manager(ECSManager), m_requiredComponents{c1, c2}, m_entities() {}
-System::System(ECSManager* ECSManager, ComponentTypeEnum c1,
-               ComponentTypeEnum c2, ComponentTypeEnum c3)
+System::System(ECSManager *ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2,
+               ComponentTypeEnum c3)
     : m_manager(ECSManager), m_requiredComponents{c1, c2, c3}, m_entities() {}
 
 // Checks if entity has correct components
-bool System::entityHasCorrectComponents(Entity* entity) {
+bool System::entityHasCorrectComponents(Entity *entity) {
   // assumes entities has at most one of each type of component
   for (unsigned int i = 0; i < m_requiredComponents.size(); ++i) {
     if (!entity->hasComponent(m_requiredComponents[i])) {
-      return false;  // Component does not exist!
+      return false; // Component does not exist!
     }
   }
   return true;
 }
 
 // Adds entity to System if it contains the right components
-bool System::addEntity(Entity* entity) {
+bool System::addEntity(Entity *entity) {
   if (entityHasCorrectComponents(entity)) {
     // the right components exists in entity
     m_entities.push_back(entity);
@@ -35,7 +34,7 @@ bool System::addEntity(Entity* entity) {
 
 // checks if entity belongs to this system
 bool System::containsEntity(int entityID) {
-  for (auto& entity : m_entities) {
+  for (auto &entity : m_entities) {
     if (entity->getID() == entityID) {
       return true;
     }

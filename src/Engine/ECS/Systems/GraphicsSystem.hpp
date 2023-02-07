@@ -9,12 +9,12 @@
 #include "System.hpp"
 
 class GraphicsSystem : public System {
- public:
+public:
   GraphicsSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
 
- private:
+private:
   Camera &m_camera;
   FrameBufferManager &m_fboManager;
 };
-#endif  // GRAPHICSSYSTEM_H_
+#endif // GRAPHICSSYSTEM_H_

@@ -6,7 +6,7 @@
 #include "Component.hpp"
 
 class PositionComponent : public Component {
- public:
+public:
   glm::vec3 position;
   float rotation;
   glm::vec3 scale;
@@ -17,4 +17,4 @@ class PositionComponent : public Component {
   glm::mat4 calculateMatrix();
 };
 
-#endif  // POSITIONCOMPONENT_H_
+#endif // POSITIONCOMPONENT_H_

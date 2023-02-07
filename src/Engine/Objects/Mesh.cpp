@@ -33,8 +33,8 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
   p_shaderProgram.use();
   cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                          p_shaderProgram.getUniformLocation("viewMatrix"));
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
-                     GL_FALSE, glm::value_ptr(model));
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(model));
   GLint tex[5] = {0, 1, 2, 3, 4};
   glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
 
@@ -44,11 +44,9 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
   }
 }
 
-void Mesh::drawModelNodes(
-    const std::pair<unsigned int, std::map<int, unsigned int>> &vaoAndEbos,
-    tinygltf::Model &model, tinygltf::Node &node) {
-  if ((node.mesh >= 0) &&
-      (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
+void Mesh::drawModelNodes(const std::pair<unsigned int, std::map<int, unsigned int>> &vaoAndEbos,
+                          tinygltf::Model &model, tinygltf::Node &node) {
+  if ((node.mesh >= 0) && (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
     drawMesh(vaoAndEbos.second, model, model.meshes[node.mesh]);
   }
   for (size_t i = 0; i < node.children.size(); i++) {
@@ -56,8 +54,8 @@ void Mesh::drawModelNodes(
   }
 }
 
-void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
-                    tinygltf::Model &model, tinygltf::Mesh &mesh) {
+void Mesh::drawMesh(const std::map<int, unsigned int> &vbos, tinygltf::Model &model,
+                    tinygltf::Mesh &mesh) {
   TextureManager &texMan = TextureManager::getInstance();
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
     tinygltf::Primitive primitive = mesh.primitives[i];
@@ -111,11 +109,9 @@ void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
       if (loc > -1) {
         unsigned int vbo = vbos.at(accessor.bufferView);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        int byteStride =
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        glVertexAttribPointer(loc, accessor.type, accessor.componentType,
-                              accessor.normalized, byteStride,
-                              (void *)(sizeof(char) * (accessor.byteOffset)));
+        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
+                              byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
         glEnableVertexAttribArray(loc);
       }
     }
@@ -123,19 +119,16 @@ void Mesh::drawMesh(const std::map<int, unsigned int> &vbos,
     if (primitive.indices != -1) {
       tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.at(indexAccessor.bufferView));
-      glDrawElements(primitive.mode, indexAccessor.count,
-                     indexAccessor.componentType,
+      glDrawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType,
                      (void *)(sizeof(char) * (indexAccessor.byteOffset)));
     } else {
       for (auto &attrib : primitive.attributes) {
         tinygltf::Accessor accessor = model.accessors[attrib.second];
         unsigned int loc = vbos.at(accessor.bufferView);
         glBindBuffer(GL_ARRAY_BUFFER, loc);
-        int byteStride =
-            accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        glVertexAttribPointer(loc, accessor.type, accessor.componentType,
-                              accessor.normalized, byteStride,
-                              (void *)(sizeof(char) * (accessor.byteOffset)));
+        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
+                              byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
         glEnableVertexAttribArray(loc);
       }
       tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
@@ -175,8 +168,7 @@ void Mesh::LoadFlile(std::string filename) {
   m_vaoAndEbos = loadModel(m_model);
 }
 
-std::pair<unsigned int, std::map<int, unsigned int>> Mesh::loadModel(
-    tinygltf::Model &model) {
+std::pair<unsigned int, std::map<int, unsigned int>> Mesh::loadModel(tinygltf::Model &model) {
   std::map<int, unsigned int> vbos;
   GLuint vao;
   glGenVertexArrays(1, &vao);
@@ -222,8 +214,7 @@ void Mesh::loadTextures(tinygltf::Model &model) {
         std::cout << "WARNING: no matching type." << std::endl;
       }
 
-      texMan.loadTexture(format, type, image.width, image.height,
-                         &image.image.at(0));
+      texMan.loadTexture(format, type, image.width, image.height, &image.image.at(0));
     }
   }
 }
@@ -243,8 +234,7 @@ void Mesh::loadNode(tinygltf::Model &model, tinygltf::Node &node,
         glBindBuffer(bufferView.target, vbo);
 
         glBufferData(bufferView.target, bufferView.byteLength,
-                     &buffer.data.at(0) + bufferView.byteOffset,
-                     GL_STATIC_DRAW);
+                     &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
       }
     }
 
@@ -256,11 +246,9 @@ void Mesh::loadNode(tinygltf::Model &model, tinygltf::Node &node,
         if (loc > -1) {
           unsigned int vbo = vbos.at(accessor.bufferView);
           glBindBuffer(GL_ARRAY_BUFFER, vbo);
-          int byteStride =
-              accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-          glVertexAttribPointer(loc, accessor.type, accessor.componentType,
-                                accessor.normalized, byteStride,
-                                (void *)(sizeof(char) * (accessor.byteOffset)));
+          int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+          glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
+                                byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
           glEnableVertexAttribArray(loc);
         }
       }

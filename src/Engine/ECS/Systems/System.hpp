@@ -8,23 +8,22 @@
 
 class ECSManager;
 class System {
- public:
+public:
   // Created many different constructors for different amount of required
   // components
-  System(ECSManager* ECSManager, ComponentTypeEnum c1);
+  System(ECSManager *ECSManager, ComponentTypeEnum c1);
 
-  System(ECSManager* ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2);
+  System(ECSManager *ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2);
 
-  System(ECSManager* ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2,
-         ComponentTypeEnum c3);
+  System(ECSManager *ECSManager, ComponentTypeEnum c1, ComponentTypeEnum c2, ComponentTypeEnum c3);
 
   virtual ~System() = default;
 
   // Checks if entity has correct components
-  bool entityHasCorrectComponents(Entity* entity);
+  bool entityHasCorrectComponents(Entity *entity);
 
   // Adds entity to System if it contains the right components
-  bool addEntity(Entity* entity);
+  bool addEntity(Entity *entity);
 
   // checks if entity belongs to this system
   bool containsEntity(int entityID);
@@ -41,9 +40,9 @@ class System {
   // Initialize system
   virtual void initialize(){};
 
- protected:
-  ECSManager* m_manager;
+protected:
+  ECSManager *m_manager;
   std::vector<ComponentTypeEnum> m_requiredComponents;
-  std::vector<Entity*> m_entities;
+  std::vector<Entity *> m_entities;
 };
-#endif  // SYSTEM_H_
+#endif // SYSTEM_H_

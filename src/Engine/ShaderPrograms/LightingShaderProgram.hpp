@@ -4,8 +4,8 @@
 #include "ShaderProgram.hpp"
 
 class LightingShaderProgram : public ShaderProgram {
- public:
+public:
   LightingShaderProgram();
   ~LightingShaderProgram() = default;
 };
-#endif  // LIGHTINGSHADERPROGRAM_H_
+#endif // LIGHTINGSHADERPROGRAM_H_

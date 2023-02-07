@@ -4,8 +4,8 @@
 #include "ShaderProgram.hpp"
 
 class QuadShaderProgram : public ShaderProgram {
- public:
+public:
   QuadShaderProgram();
   ~QuadShaderProgram() = default;
 };
-#endif  // QUADSHADERPROGRAM_H_
+#endif // QUADSHADERPROGRAM_H_

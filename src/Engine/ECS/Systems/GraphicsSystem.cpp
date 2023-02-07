@@ -15,9 +15,7 @@
 #endif
 
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
-    : System(ECSManager, ComponentTypeEnum::POSITION,
-             ComponentTypeEnum::GRAPHICS),
-      m_camera(cam),
+    : System(ECSManager, ComponentTypeEnum::POSITION, ComponentTypeEnum::GRAPHICS), m_camera(cam),
       m_fboManager(FrameBufferManager::getInstance()) {}
 
 void GraphicsSystem::update(float /*dt*/) {
@@ -26,11 +24,11 @@ void GraphicsSystem::update(float /*dt*/) {
 
   // Draw geometry
   for (auto &e : m_entities) {
-    PositionComponent *p = static_cast<PositionComponent *>(
-        e->getComponent(ComponentTypeEnum::POSITION));
+    PositionComponent *p =
+        static_cast<PositionComponent *>(e->getComponent(ComponentTypeEnum::POSITION));
     glm::mat4 model = p->calculateMatrix();
-    GraphicsComponent *g = static_cast<GraphicsComponent *>(
-        e->getComponent(ComponentTypeEnum::GRAPHICS));
+    GraphicsComponent *g =
+        static_cast<GraphicsComponent *>(e->getComponent(ComponentTypeEnum::GRAPHICS));
     g->grapObj->draw(m_camera, model);
   }
 }

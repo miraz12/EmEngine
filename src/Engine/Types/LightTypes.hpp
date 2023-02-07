@@ -17,4 +17,4 @@ struct PointLight : public BaseLight {
   float quadratic;
 };
 
-#endif  // LIGHTTYPES_H_
+#endif // LIGHTTYPES_H_

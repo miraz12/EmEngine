@@ -6,7 +6,7 @@
 #include "Types/LightTypes.hpp"
 
 class LightingComponent : public Component {
- public:
+public:
   enum TYPE {
     NONE,
     POINT,
@@ -15,16 +15,14 @@ class LightingComponent : public Component {
   LightingComponent();
   virtual ~LightingComponent();
 
-  void SetupPointLight(glm::vec3 color, float ambient, float diffuse,
-                       float constant, float linear, float quadratic,
-                       glm::vec3 pos);
-  void SetupDirectionalLight(glm::vec3 color, float ambient, float diffuse,
-                             glm::vec3 dir);
+  void SetupPointLight(glm::vec3 color, float ambient, float diffuse, float constant, float linear,
+                       float quadratic, glm::vec3 pos);
+  void SetupDirectionalLight(glm::vec3 color, float ambient, float diffuse, glm::vec3 dir);
   TYPE getType() { return m_t; };
   BaseLight *getBaseLight() { return light; };
 
- private:
+private:
   TYPE m_t{NONE};
   BaseLight *light;
 };
-#endif  // LIGHTINGCOMPONENT_H_
+#endif // LIGHTINGCOMPONENT_H_

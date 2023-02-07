@@ -12,13 +12,13 @@
 #include "tiny_gltf.h"
 
 class TextureResource {
- public:
+public:
   TextureResource();
   virtual ~TextureResource();
   void LoadTexture(tinygltf::Image image);
 
- private:
+private:
   GLuint texid;
 };
 
-#endif  // TEXTURERESOURCE_H_
+#endif // TEXTURERESOURCE_H_

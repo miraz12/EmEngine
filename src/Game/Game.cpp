@@ -8,8 +8,7 @@
 #include "glm/geometric.hpp"
 
 Game::Game(GLFWwindow *window)
-    : m_window(window),
-      m_ECSManager(&ECSManager::getInstance()),
+    : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
   m_ECSManager->createPlayerEntity(0, 0, m_window);
 
@@ -31,8 +30,8 @@ Game::Game(GLFWwindow *window)
 
   Entity &en3 = m_ECSManager->createEntity();
   LightingComponent *lightComp2 = new LightingComponent();
-  lightComp2->SetupPointLight(glm::vec3(1.0f, 0.5f, 0.0f), 0.1f, 0.1f, 0.0f,
-                              0.1f, 0.0f, glm::vec3(3.0f, 1.0f, 0.0f));
+  lightComp2->SetupPointLight(glm::vec3(1.0f, 0.5f, 0.0f), 0.1f, 0.1f, 0.0f, 0.1f, 0.0f,
+                              glm::vec3(3.0f, 1.0f, 0.0f));
   m_ECSManager->addComponent(en3, lightComp2);
 }
 
@@ -47,16 +46,14 @@ void Game::handleInput(float dt) {
   // Parse input
   if (m_InputManager->keys.at(InputManager::KEY::A)) {
     glm::vec3 camPos =
-        cam.getPosition() -
-        glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
+        cam.getPosition() - glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
     if (!glm::all(glm::isnan(camPos))) {
       cam.setPosition(camPos);
     }
   }
   if (m_InputManager->keys.at(InputManager::KEY::D)) {
     glm::vec3 camPos =
-        cam.getPosition() +
-        glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
+        cam.getPosition() + glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
     if (!glm::all(glm::isnan(camPos))) {
       cam.setPosition(camPos);
     }

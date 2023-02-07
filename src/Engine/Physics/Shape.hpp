@@ -6,7 +6,7 @@
 #include <vector>
 
 class Shape {
- public:
+public:
   Shape();
   virtual ~Shape();
 
@@ -16,12 +16,12 @@ class Shape {
   void clearVertices();
   void clearNormals();
 
-  void setTransformMatrix(const glm::mat4& matrix);
+  void setTransformMatrix(const glm::mat4 &matrix);
 
-  const std::vector<glm::vec2>& getTransformedVertices();
-  const std::vector<glm::vec2>& getTransformedNormals();
+  const std::vector<glm::vec2> &getTransformedVertices();
+  const std::vector<glm::vec2> &getTransformedNormals();
 
- private:
+private:
   std::vector<glm::vec2> m_originalVertices;
   std::vector<glm::vec2> m_originalNormals;
 
@@ -33,4 +33,4 @@ class Shape {
 
   glm::mat4 m_transformMatrix;
 };
-#endif  // SHAPE_H_
+#endif // SHAPE_H_

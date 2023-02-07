@@ -2,7 +2,7 @@
 #define WINDOW_H_
 
 class Window {
- public:
+public:
   Window() = default;
   ~Window() = default;
 
@@ -12,4 +12,4 @@ class Window {
   static void renderImgui();
 };
 
-#endif  // WINDOW_H_
+#endif // WINDOW_H_

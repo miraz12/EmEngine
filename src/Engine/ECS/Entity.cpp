@@ -2,8 +2,7 @@
 
 #include <iostream>
 
-Entity::Entity(int ID)
-    : m_ID(ID), m_playable(false), m_name("none"), m_components() {}
+Entity::Entity(int ID) : m_ID(ID), m_playable(false), m_name("none"), m_components() {}
 
 // Dont know if this is the correct way to free components
 Entity::~Entity() {
@@ -15,7 +14,7 @@ Entity::~Entity() {
 
 int Entity::getID() { return m_ID; }
 
-bool Entity::addComponent(Component* component) {
+bool Entity::addComponent(Component *component) {
   if (!hasComponent(component->getComponentType())) {
     m_components.push_back(component);
     return true;
@@ -24,7 +23,7 @@ bool Entity::addComponent(Component* component) {
 }
 
 bool Entity::hasComponent(ComponentTypeEnum type) {
-  for (auto& c : m_components) {
+  for (auto &c : m_components) {
     if (c->getComponentType() == type) {
       return true;
     }
@@ -42,8 +41,8 @@ void Entity::removeComponent(ComponentTypeEnum removeComponent) {
   }
 }
 
-Component* Entity::getComponent(ComponentTypeEnum type) {
-  for (auto* c : m_components) {
+Component *Entity::getComponent(ComponentTypeEnum type) {
+  for (auto *c : m_components) {
     if ((c != nullptr) && c->getComponentType() == type) {
       return c;
     }

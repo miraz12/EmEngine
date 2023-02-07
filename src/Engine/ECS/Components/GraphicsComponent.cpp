@@ -2,8 +2,6 @@
 
 #include "ECS/ECSManager.hpp"
 
-GraphicsComponent::GraphicsComponent() {
-  m_componentType = ComponentTypeEnum::GRAPHICS;
-}
+GraphicsComponent::GraphicsComponent() { m_componentType = ComponentTypeEnum::GRAPHICS; }
 
 GraphicsComponent::~GraphicsComponent() { delete grapObj; }

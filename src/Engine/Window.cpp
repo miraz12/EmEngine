@@ -48,24 +48,23 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 
 #ifndef EMSCRIPTEN
-void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
-                                GLuint /* id */, GLenum severity,
+void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type, GLuint /* id */, GLenum severity,
                                 GLsizei /* length */, const GLchar *message,
                                 const void * /* userParam */) {
   std::string msg("[OPENGL DEBUG MESSAGE] ");
 
   // print error severity
   switch (severity) {
-    case GL_DEBUG_SEVERITY_LOW:
-      msg.append("\u001b[32m<Low severity> \u001b[0m");
+  case GL_DEBUG_SEVERITY_LOW:
+    msg.append("\u001b[32m<Low severity> \u001b[0m");
 
-      break;
-    case GL_DEBUG_SEVERITY_MEDIUM:
-      msg.append("\u001b[33m<Medium severity> \u001b[0m");
-      break;
-    case GL_DEBUG_SEVERITY_HIGH:
-      msg.append("\u001b[31m<High severity> \u001b[0m");
-      break;
+    break;
+  case GL_DEBUG_SEVERITY_MEDIUM:
+    msg.append("\u001b[33m<Medium severity> \u001b[0m");
+    break;
+  case GL_DEBUG_SEVERITY_HIGH:
+    msg.append("\u001b[31m<High severity> \u001b[0m");
+    break;
   }
 
   // append message to output
@@ -73,15 +72,15 @@ void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
 
   // print message
   switch (type) {
-    case GL_DEBUG_TYPE_ERROR:
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-      printf("Error: %s\n", msg.c_str());
-      break;
-    case GL_DEBUG_TYPE_PERFORMANCE:
-      printf("Performance issue: %s\n", msg.c_str());
-      break;
-    default:  // Portability, Deprecated, Other
-      break;
+  case GL_DEBUG_TYPE_ERROR:
+  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+    printf("Error: %s\n", msg.c_str());
+    break;
+  case GL_DEBUG_TYPE_PERFORMANCE:
+    printf("Performance issue: %s\n", msg.c_str());
+    break;
+  default: // Portability, Deprecated, Other
+    break;
   }
 }
 #endif
@@ -97,9 +96,11 @@ bool isBigEndian() {
 int convertToInt(char *buffer, int len) {
   int a = 0;
   if (!isBigEndian())
-    for (int i = 0; i < len; i++) ((char *)&a)[i] = buffer[i];
+    for (int i = 0; i < len; i++)
+      ((char *)&a)[i] = buffer[i];
   else
-    for (int i = 0; i < len; i++) ((char *)&a)[3 - i] = buffer[i];
+    for (int i = 0; i < len; i++)
+      ((char *)&a)[3 - i] = buffer[i];
   return a;
 }
 
@@ -112,10 +113,10 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
     return NULL;
   }
   in.read(buffer, 4);
-  in.read(buffer, 4);  // WAVE
-  in.read(buffer, 4);  // fmt
-  in.read(buffer, 4);  // 16
-  in.read(buffer, 2);  // 1
+  in.read(buffer, 4); // WAVE
+  in.read(buffer, 4); // fmt
+  in.read(buffer, 4); // 16
+  in.read(buffer, 2); // 1
   in.read(buffer, 2);
   chan = convertToInt(buffer, 2);
   in.read(buffer, 4);
@@ -124,7 +125,7 @@ char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
   in.read(buffer, 2);
   in.read(buffer, 2);
   bps = convertToInt(buffer, 2);
-  in.read(buffer, 4);  // data
+  in.read(buffer, 4); // data
   in.read(buffer, 4);
   size = convertToInt(buffer, 4);
   char *data = new char[size];
@@ -211,8 +212,7 @@ void Window::gameLoop() {
     tempFps = 0.0f;
     counter = 0;
     fpsUpdateTimer = 0.0f;
-    glfwSetWindowTitle(window,
-                       ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
+    glfwSetWindowTitle(window, ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
   }
 
   updateTimer += dt;
@@ -232,7 +232,7 @@ void Window::gameLoop() {
     updatesSinceRender++;
   }
 
-  if (updatesSinceRender == 0) {  // dt is faster than
+  if (updatesSinceRender == 0) { // dt is faster than
     game->update((float)updateTimer);
     updateTimer = 0.0f;
   }
@@ -272,23 +272,17 @@ void processInput(GLFWwindow *theWindow) {
     glfwSetWindowShouldClose(theWindow, true);
   }
 
-  inMgr.HandleInput(InputManager::KEY::Escape,
-                    glfwGetKey(theWindow, GLFW_KEY_ESCAPE));
+  inMgr.HandleInput(InputManager::KEY::Escape, glfwGetKey(theWindow, GLFW_KEY_ESCAPE));
   inMgr.HandleInput(InputManager::KEY::W, glfwGetKey(theWindow, GLFW_KEY_W));
   inMgr.HandleInput(InputManager::KEY::A, glfwGetKey(theWindow, GLFW_KEY_A));
   inMgr.HandleInput(InputManager::KEY::S, glfwGetKey(theWindow, GLFW_KEY_S));
   inMgr.HandleInput(InputManager::KEY::D, glfwGetKey(theWindow, GLFW_KEY_D));
   inMgr.HandleInput(InputManager::KEY::F, glfwGetKey(theWindow, GLFW_KEY_F));
-  inMgr.HandleInput(InputManager::KEY::ArrowUp,
-                    glfwGetKey(theWindow, GLFW_KEY_UP));
-  inMgr.HandleInput(InputManager::KEY::ArrowDown,
-                    glfwGetKey(theWindow, GLFW_KEY_DOWN));
-  inMgr.HandleInput(InputManager::KEY::ArrowRight,
-                    glfwGetKey(theWindow, GLFW_KEY_RIGHT));
-  inMgr.HandleInput(InputManager::KEY::ArrowLeft,
-                    glfwGetKey(theWindow, GLFW_KEY_LEFT));
-  inMgr.HandleInput(InputManager::KEY::Mouse1,
-                    glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
+  inMgr.HandleInput(InputManager::KEY::ArrowUp, glfwGetKey(theWindow, GLFW_KEY_UP));
+  inMgr.HandleInput(InputManager::KEY::ArrowDown, glfwGetKey(theWindow, GLFW_KEY_DOWN));
+  inMgr.HandleInput(InputManager::KEY::ArrowRight, glfwGetKey(theWindow, GLFW_KEY_RIGHT));
+  inMgr.HandleInput(InputManager::KEY::ArrowLeft, glfwGetKey(theWindow, GLFW_KEY_LEFT));
+  inMgr.HandleInput(InputManager::KEY::Mouse1, glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
 }
 
 void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
@@ -310,8 +304,10 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   SCR_YAW += xoffset;
   SCR_PITCH += yoffset;
 
-  if (SCR_PITCH > 89.0f) SCR_PITCH = 89.0f;
-  if (SCR_PITCH < -89.0f) SCR_PITCH = -89.0f;
+  if (SCR_PITCH > 89.0f)
+    SCR_PITCH = 89.0f;
+  if (SCR_PITCH < -89.0f)
+    SCR_PITCH = -89.0f;
 
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
@@ -332,10 +328,10 @@ void Window::renderImgui() {
 
   static float f = 0.0f;
 
-  ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
+  ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!"
   ImGui::Text("This is some useful text.");
   ImGui::SliderFloat("float", &f, 0.0f,
-                     1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
+                     1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
 
   ImGui::End();
   // Rendering

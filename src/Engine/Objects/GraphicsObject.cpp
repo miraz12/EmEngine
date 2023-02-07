@@ -10,7 +10,6 @@
 #include <glad/glad.h>
 #endif
 
-GraphicsObject::GraphicsObject(ShaderProgram &shaderProgram)
-    : p_shaderProgram(shaderProgram) {}
+GraphicsObject::GraphicsObject(ShaderProgram &shaderProgram) : p_shaderProgram(shaderProgram) {}
 
 GraphicsObject::~GraphicsObject() { delete &p_shaderProgram; }

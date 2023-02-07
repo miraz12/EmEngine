@@ -4,8 +4,8 @@
 #include "ShaderProgram.hpp"
 
 class MeshShaderProgram : public ShaderProgram {
- public:
+public:
   MeshShaderProgram();
   ~MeshShaderProgram();
 };
-#endif  // MESHSHADERPROGRAM_H_
+#endif // MESHSHADERPROGRAM_H_

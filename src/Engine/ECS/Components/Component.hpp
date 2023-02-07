@@ -16,12 +16,12 @@ enum class ComponentTypeEnum {
 
 // Basic component interface which all other components implement
 class Component {
- public:
+public:
   Component() = default;
   virtual ~Component() = default;
   virtual ComponentTypeEnum getComponentType() { return m_componentType; }
 
- protected:
+protected:
   ComponentTypeEnum m_componentType;
 };
-#endif  // COMPONENT_H_
+#endif // COMPONENT_H_

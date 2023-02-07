@@ -4,8 +4,8 @@
 #include "ShaderProgram.hpp"
 
 class SimpleShaderProgram : public ShaderProgram {
- public:
+public:
   SimpleShaderProgram();
   ~SimpleShaderProgram();
 };
-#endif  // SIMPLESHADERPROGRAM_H_
+#endif // SIMPLESHADERPROGRAM_H_

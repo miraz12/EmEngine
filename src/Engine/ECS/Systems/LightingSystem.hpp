@@ -7,12 +7,12 @@
 #include "Types/LightTypes.hpp"
 
 class LightingSystem : public System {
- public:
+public:
   LightingSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
   void setViewport(unsigned int w, unsigned int h);
 
- private:
+private:
   void initGL();
 
   Camera &m_camera;
@@ -24,4 +24,4 @@ class LightingSystem : public System {
   LightingShaderProgram m_shaderProgram;
 };
 
-#endif  // LIGHTINGSYSTEM_H_
+#endif // LIGHTINGSYSTEM_H_

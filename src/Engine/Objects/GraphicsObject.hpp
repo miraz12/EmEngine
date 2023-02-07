@@ -8,15 +8,15 @@
 #include "Camera.hpp"
 
 class GraphicsObject {
- public:
+public:
   GraphicsObject(ShaderProgram &shaderProgram);
   virtual ~GraphicsObject();
 
   virtual void draw(Camera &cam, glm::mat4 model) = 0;
 
- protected:
+protected:
   glm::mat4 p_modelMatrix = glm::mat4(1.0f);
   ShaderProgram &p_shaderProgram;
 };
 
-#endif  // GRAPHICSOBJECT_H_
+#endif // GRAPHICSOBJECT_H_

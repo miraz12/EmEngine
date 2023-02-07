@@ -17,7 +17,7 @@ out vec3 normal;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(POSITION, 1.0);
-    position = gl_Position.xyz;
+    position = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
     normal =  normalize(NORMAL);
     texCoords = TEXCOORD_0 ;
 }

@@ -7,20 +7,20 @@
 #include "Components/Component.hpp"
 
 class Entity {
- public:
+public:
   Entity(int ID);
 
   ~Entity();
-  Entity(const Entity&) = delete;
+  Entity(const Entity &) = delete;
 
   int getID();
 
   // Adds component
   // Can't have more than one type of component!
-  bool addComponent(Component* component);
+  bool addComponent(Component *component);
 
   // Returns component based on enum ComponentTypeEnum
-  Component* getComponent(ComponentTypeEnum type);
+  Component *getComponent(ComponentTypeEnum type);
 
   // Check if component exists
   bool hasComponent(ComponentTypeEnum type);
@@ -34,10 +34,10 @@ class Entity {
   void makePlayable() { m_playable = true; }
   bool isPlayable() { return m_playable; }
 
- private:
+private:
   int m_ID;
   bool m_playable;
   std::string m_name;
-  std::vector<Component*> m_components;
+  std::vector<Component *> m_components;
 };
-#endif  // ENTITY_H_
+#endif // ENTITY_H_

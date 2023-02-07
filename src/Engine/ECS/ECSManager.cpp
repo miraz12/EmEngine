@@ -5,11 +5,7 @@
 std::vector<Entity *> ECSManager::m_entities;
 
 ECSManager::ECSManager()
-    : m_idCounter(1),
-      m_addEntities(),
-      m_addComponents(),
-      m_removeEntities(),
-      m_removeComponents() {
+    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(), m_removeComponents() {
   initializeSystems();
 }
 
@@ -66,9 +62,7 @@ void ECSManager::addComponent(Entity &entity, Component *component) {
   m_addComponents.push_back(addComponent_t{entity, component});
 }
 
-void ECSManager::removeEntity(int entityID) {
-  m_removeEntities.push_back(entityID);
-}
+void ECSManager::removeEntity(int entityID) { m_removeEntities.push_back(entityID); }
 
 void ECSManager::removeComponent(Entity &entity, ComponentTypeEnum component) {
   m_removeComponents.push_back(removeComponent_t{entity, component});
@@ -141,8 +135,7 @@ void ECSManager::removeComponents() {
   m_removeComponents.clear();
 }
 
-int ECSManager::createPlayerEntity(float /* x */, float /* y */,
-                                   GLFWwindow * /* window */) {
+int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow * /* window */) {
   Entity &playerEntity = createEntity();
   playerEntity.setName("Player");
   playerEntity.makePlayable();
