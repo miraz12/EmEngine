@@ -41,7 +41,7 @@ double lastX, lastY;
 
 static InputManager &inMgr = InputManager::getInstance();
 
-#define _DEBUG_
+// #define _DEBUG_
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -181,7 +181,7 @@ bool Window::open() {
   }
 #endif
 
-#ifndef _DEBUG_
+#ifdef _DEBUG_
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(MessageCallback, 0);
 #endif

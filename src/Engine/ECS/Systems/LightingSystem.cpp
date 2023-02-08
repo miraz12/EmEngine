@@ -22,7 +22,8 @@ LightingSystem::LightingSystem(ECSManager *ECSManager, Camera &cam)
   initGL();
 }
 void LightingSystem::update(float /* dt */) {
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, FrameBufferManager::getInstance().getFBO("gBuffer"));
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_shaderProgram.use();
 
@@ -37,14 +38,11 @@ void LightingSystem::update(float /* dt */) {
       glUniform3fv(m_shaderProgram.getUniformLocation("directionalLight.direction"), 1,
                    glm::value_ptr(light->direction));
 
-      glUniform3fv(m_shaderProgram.getUniformLocation("directionalLight.base.color"), 1,
+      glUniform3fv(m_shaderProgram.getUniformLocation("directionalLight.color"), 1,
                    glm::value_ptr(light->color));
 
-      glUniform1f(m_shaderProgram.getUniformLocation("directionalLight.base.ambientIntensity"),
+      glUniform1f(m_shaderProgram.getUniformLocation("directionalLight.ambientIntensity"),
                   light->ambientIntensity);
-
-      glUniform1f(m_shaderProgram.getUniformLocation("directionalLight.base.diffuseIntensity"),
-                  light->diffuseIntensity);
 
     } else if (t == LightingComponent::POINT) {
       PointLight *light = static_cast<PointLight *>(g->getBaseLight());
@@ -53,16 +51,8 @@ void LightingSystem::update(float /* dt */) {
                    1, glm::value_ptr(light->position));
 
       glUniform3fv(m_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
-                                                      "].base.color"),
+                                                      "].color"),
                    1, glm::value_ptr(light->color));
-
-      glUniform1f(m_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
-                                                     "].base.ambientIntensity"),
-                  light->ambientIntensity);
-
-      glUniform1f(m_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
-                                                     "].base.diffuseIntensity"),
-                  light->diffuseIntensity);
 
       glUniform1f(m_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                      "].constant"),
@@ -75,6 +65,18 @@ void LightingSystem::update(float /* dt */) {
       glUniform1f(m_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                      "].quadratic"),
                   light->quadratic);
+      const float constant = 1.0f; // note that we don't send this to the shader, we assume it is
+                                   // always 1.0 (in our case)
+      float maxBrightness = std::fmaxf(std::fmaxf(light->color.r, light->color.g), light->color.b);
+      float radius =
+          (-light->linear +
+           std::sqrt(light->linear * light->linear -
+                     4 * light->quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) /
+          (2.0f * light->quadratic);
+      glUniform1f(m_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
+                                                     "].radius"),
+                  radius);
+
       numPLights++;
     }
   }

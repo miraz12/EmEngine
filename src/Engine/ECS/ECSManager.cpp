@@ -143,15 +143,16 @@ int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow * /*
   GraphicsComponent *graphComp = new GraphicsComponent();
   MeshShaderProgram *p = new MeshShaderProgram;
   Mesh *m = new Mesh(*p);
-  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
+  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
   // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
   // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/ToyCar/glTF-Binary/ToyCar.glb");
-  // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
   graphComp->grapObj = m;
 
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();
-  posComp->rotation = 30.0f;
+  posComp->scale = glm::vec3(0.008, 0.008, 0.008);
+  // posComp->rotation = 30.0f;
   addComponent(playerEntity, posComp);
   return playerEntity.getID();
 }

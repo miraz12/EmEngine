@@ -12,26 +12,25 @@ Game::Game(GLFWwindow *window)
       m_InputManager(&InputManager::getInstance()) {
   m_ECSManager->createPlayerEntity(0, 0, m_window);
 
-  Entity &en = m_ECSManager->createEntity();
-  en.setName("Quad");
-  GraphicsComponent *graphComp = new GraphicsComponent();
-  SimpleShaderProgram *p = new SimpleShaderProgram;
-  graphComp->grapObj = new Quad(*p);
-  m_ECSManager->addComponent(en, graphComp);
-  PositionComponent *posComp = new PositionComponent();
-  posComp->position = glm::vec3(0.0, 0.0, 2.0);
-  m_ECSManager->addComponent(en, posComp);
+  // Entity &en = m_ECSManager->createEntity();
+  // en.setName("Quad");
+  // GraphicsComponent *graphComp = new GraphicsComponent();
+  // SimpleShaderProgram *p = new SimpleShaderProgram;
+  // graphComp->grapObj = new Quad(*p);
+  // m_ECSManager->addComponent(en, graphComp);
+  // PositionComponent *posComp = new PositionComponent();
+  // posComp->position = glm::vec3(0.0, 0.0, 2.0);
+  // m_ECSManager->addComponent(en, posComp);
 
   Entity &en2 = m_ECSManager->createEntity();
   LightingComponent *lightComp = new LightingComponent();
-  lightComp->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.0f, 0.01f,
-                                   glm::vec3(1.0f, -1.0f, 0.0f));
+  lightComp->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f, glm::vec3(1.0f, -1.0f, 0.0f));
   m_ECSManager->addComponent(en2, lightComp);
 
   Entity &en3 = m_ECSManager->createEntity();
   LightingComponent *lightComp2 = new LightingComponent();
-  lightComp2->SetupPointLight(glm::vec3(1.0f, 0.5f, 0.0f), 0.1f, 0.1f, 0.0f, 0.1f, 0.0f,
-                              glm::vec3(3.0f, 1.0f, 0.0f));
+  lightComp2->SetupPointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.7f, 1.8f,
+                              glm::vec3(1.5f, 0.0f, 0.0f));
   m_ECSManager->addComponent(en3, lightComp2);
 }
 
@@ -41,7 +40,7 @@ void Game::update(float dt) {
 }
 
 void Game::handleInput(float dt) {
-  float camSpeed = 5.f;
+  float camSpeed = 1.f;
   Camera &cam = m_ECSManager->getCamera();
   // Parse input
   if (m_InputManager->keys.at(InputManager::KEY::A)) {

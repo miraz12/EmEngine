@@ -18,6 +18,8 @@ out vec3 normal;
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(POSITION, 1.0);
     position = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
-    normal =  normalize(NORMAL);
+    mat3 normalMatrix = inverse(mat3(modelMatrix));
+    normalMatrix = transpose(normalMatrix);
+    normal =  normalize(normalMatrix * NORMAL);
     texCoords = TEXCOORD_0 ;
 }

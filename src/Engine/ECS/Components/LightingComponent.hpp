@@ -15,9 +15,9 @@ public:
   LightingComponent();
   virtual ~LightingComponent();
 
-  void SetupPointLight(glm::vec3 color, float ambient, float diffuse, float constant, float linear,
-                       float quadratic, glm::vec3 pos);
-  void SetupDirectionalLight(glm::vec3 color, float ambient, float diffuse, glm::vec3 dir);
+  void SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
+                       glm::vec3 pos);
+  void SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
   TYPE getType() { return m_t; };
   BaseLight *getBaseLight() { return light; };
 
