@@ -11,15 +11,17 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
 
-out vec3 position;
-out vec2 texCoords;
-out vec3 normal;
+out vec3 pPosition;
+out vec2 pTexCoords;
+out vec3 pNormal;
+out vec3 pTangent;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(POSITION, 1.0);
-    position = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
+    pPosition = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
     mat3 normalMatrix = inverse(mat3(modelMatrix));
     normalMatrix = transpose(normalMatrix);
-    normal =  normalize(normalMatrix * NORMAL);
-    texCoords = TEXCOORD_0 ;
+    pNormal =  normalize(normalMatrix * NORMAL);
+    pTangent =  normalize(normalMatrix * TANGENT.xyz);
+    pTexCoords = TEXCOORD_0 ;
 }

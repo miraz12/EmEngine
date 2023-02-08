@@ -25,8 +25,15 @@ Game::Game(GLFWwindow *window)
 
   m_ECSManager->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f,
                                       glm::vec3(1.0f, -1.0f, 0.0f));
-  m_ECSManager->SetupPointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.7f, 1.8f,
+
+  m_ECSManager->SetupPointLight(glm::vec3(1.0f, .0f, .0f), 1.0f, 0.7f, 1.8f,
                                 glm::vec3(0.0f, 1.0f, 0.0f));
+
+  m_ECSManager->SetupPointLight(glm::vec3(.0f, .0f, 1.0f), 1.0f, 0.7f, 1.8f,
+                                glm::vec3(1.0f, 1.0f, 0.0f));
+
+  m_ECSManager->SetupPointLight(glm::vec3(.0f, 1.0f, .0f), 1.0f, 0.7f, 1.8f,
+                                glm::vec3(2.0f, 1.0f, 0.0f));
 }
 
 void Game::update(float dt) {
