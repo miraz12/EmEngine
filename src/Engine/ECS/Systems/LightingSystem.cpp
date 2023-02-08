@@ -22,9 +22,9 @@ LightingSystem::LightingSystem(ECSManager *ECSManager, Camera &cam)
   initGL();
 }
 void LightingSystem::update(float /* dt */) {
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, FrameBufferManager::getInstance().getFBO("gBuffer"));
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_DEPTH_TEST);
+  glClear(GL_COLOR_BUFFER_BIT);
   m_shaderProgram.use();
 
   int numPLights = 0;
@@ -94,6 +94,12 @@ void LightingSystem::update(float /* dt */) {
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, gAlbedo);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void LightingSystem::initGL() {

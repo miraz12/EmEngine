@@ -15,16 +15,15 @@ public:
   void LoadFlile(std::string filename);
 
 private:
-  void drawModelNodes(const std::pair<unsigned int, std::map<int, unsigned int>> &vaoAndEbos,
-                      tinygltf::Model &model, tinygltf::Node &node);
-  void drawMesh(const std::map<int, unsigned int> &vbos, tinygltf::Model &model,
-                tinygltf::Mesh &mesh);
-  std::pair<unsigned int, std::map<int, unsigned int>> loadModel(tinygltf::Model &model);
+  void drawModelNodes(tinygltf::Model &model, tinygltf::Node &node);
+  void drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh);
+  void loadModel(tinygltf::Model &model);
   void loadMaterials();
   void loadTextures(tinygltf::Model &model);
-  void loadNode(tinygltf::Model &model, tinygltf::Node &node, std::map<int, unsigned int> &vbos);
+  void loadNode(tinygltf::Model &model, tinygltf::Node &node);
 
-  std::pair<unsigned int, std::map<int, unsigned int>> m_vaoAndEbos;
+  std::map<int, unsigned int> m_buffers;
   tinygltf::Model m_model;
+  unsigned int m_vao;
 };
 #endif // MESH_H_

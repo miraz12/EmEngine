@@ -6,6 +6,7 @@
 #include <emscripten.h>
 #else
 #include <glad/glad.h>
+// #define _DEBUG_
 #endif
 
 #include <GLFW/glfw3.h>
@@ -41,7 +42,6 @@ double lastX, lastY;
 
 static InputManager &inMgr = InputManager::getInstance();
 
-// #define _DEBUG_
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);

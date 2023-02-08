@@ -1,5 +1,6 @@
 #include "ECSManager.hpp"
 
+#include "ECS/Components/LightingComponent.hpp"
 #include "Systems/GraphicsSystem.hpp"
 
 std::vector<Entity *> ECSManager::m_entities;
@@ -143,16 +144,40 @@ int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow * /*
   GraphicsComponent *graphComp = new GraphicsComponent();
   MeshShaderProgram *p = new MeshShaderProgram;
   Mesh *m = new Mesh(*p);
-  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
+  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
   // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
   // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/ToyCar/glTF-Binary/ToyCar.glb");
-  m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
   graphComp->grapObj = m;
 
   addComponent(playerEntity, graphComp);
   PositionComponent *posComp = new PositionComponent();
-  posComp->scale = glm::vec3(0.008, 0.008, 0.008);
-  // posComp->rotation = 30.0f;
+  // posComp->scale = glm::vec3(0.008, 0.008, 0.008);
+  posComp->rotation = 30.0f;
   addComponent(playerEntity, posComp);
   return playerEntity.getID();
+}
+
+void ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
+                                 glm::vec3 pos) {
+  Entity &en = createEntity();
+  PointLight *pLight = new PointLight();
+  pLight->position = pos;
+  pLight->color = color;
+  pLight->constant = constant;
+  pLight->linear = linear;
+  pLight->quadratic = quadratic;
+  LightingComponent *lightComp =
+      new LightingComponent(pLight, LightingComponent::TYPE::POINT);
+  addComponent(en, lightComp);
+}
+void ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir) {
+  Entity &en = createEntity();
+  DirectionalLight *dLight = new DirectionalLight();
+  dLight->direction = dir;
+  dLight->color = color;
+  dLight->ambientIntensity = ambient;
+  LightingComponent *lightComp =
+      new LightingComponent(dLight, LightingComponent::TYPE::DIRECTIONAL);
+  addComponent(en, lightComp);
 }

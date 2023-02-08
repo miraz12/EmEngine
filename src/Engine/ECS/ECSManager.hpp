@@ -58,6 +58,13 @@ public:
   // Create a controllable entity at position x,y
   int createPlayerEntity(float x, float y, GLFWwindow *window);
 
+  // Create point light
+  void SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
+                       glm::vec3 pos);
+
+  // Create directional light
+  void SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
+
   // Returns entity by ID, or NULL if it does not exist
   static Entity *getEntity(int entityID);
 
