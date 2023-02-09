@@ -11,17 +11,53 @@ Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
 
-  Entity &en = m_ECSManager->createEntity();
-  en.setName("Quad");
+  Entity &en0 = m_ECSManager->createEntity();
+  en0.setName("Quad");
   GraphicsComponent *graphComp = new GraphicsComponent();
   SimpleShaderProgram *p = new SimpleShaderProgram;
   graphComp->grapObj = new Quad(*p);
-  m_ECSManager->addComponent(en, graphComp);
+  m_ECSManager->addComponent(en0, graphComp);
   PositionComponent *posComp = new PositionComponent();
   posComp->position = glm::vec3(0.0, 0.0, 2.0);
+  m_ECSManager->addComponent(en0, posComp);
+
+
+  MeshShaderProgram *mp = new MeshShaderProgram;
+  Mesh *m = new Mesh(*mp);
+  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
+
+  // ----
+  Entity &en = m_ECSManager->createEntity();
+  graphComp = new GraphicsComponent();
+  graphComp->grapObj = m;
+  m_ECSManager->addComponent(en, graphComp);
+  posComp = new PositionComponent();
+  posComp->rotation = 30.0f;
   m_ECSManager->addComponent(en, posComp);
 
-  m_ECSManager->createPlayerEntity(0, 0, m_window);
+  // ----
+  Entity &en1 = m_ECSManager->createEntity();
+  graphComp = new GraphicsComponent();
+  graphComp->grapObj = m;
+  m_ECSManager->addComponent(en1, graphComp);
+  posComp = new PositionComponent();
+  posComp->rotation = 30.0f;
+  posComp->position = glm::vec3(1.5, 0.0, 0.0);
+  m_ECSManager->addComponent(en1, posComp);
+
+  // ----
+  Entity &en2 = m_ECSManager->createEntity();
+  graphComp = new GraphicsComponent();
+  graphComp->grapObj = m;
+  m_ECSManager->addComponent(en2, graphComp);
+  posComp = new PositionComponent();
+  posComp->rotation = 30.0f;
+  posComp->position = glm::vec3(-1.5, 0.0, 0.0);
+  m_ECSManager->addComponent(en2, posComp);
+
+
+
+  // ----
 
   m_ECSManager->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f,
                                       glm::vec3(1.0f, -1.0f, 0.0f));

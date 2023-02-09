@@ -24,6 +24,7 @@ LightingSystem::LightingSystem(ECSManager *ECSManager, Camera &cam)
 void LightingSystem::update(float /* dt */) {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glDisable(GL_DEPTH_TEST);
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   m_shaderProgram.use();
 
