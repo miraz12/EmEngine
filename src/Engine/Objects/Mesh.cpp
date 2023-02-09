@@ -58,6 +58,7 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
     tinygltf::Primitive primitive = mesh.primitives[i];
 
+    // TODO : Add flags for texutres to use in shader.
     tinygltf::Material m = model.materials[primitive.material];
     int texIdx = m.pbrMetallicRoughness.baseColorTexture.index;
     if (texIdx >= 0) {

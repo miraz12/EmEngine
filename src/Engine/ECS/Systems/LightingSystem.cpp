@@ -119,9 +119,9 @@ void LightingSystem::initGL() {
 
   setViewport(m_width, m_height);
 
-  glUniform1i(m_shaderProgram.getUniformLocation("gPosition"), 0);
-  glUniform1i(m_shaderProgram.getUniformLocation("gNormal"), 1);
-  glUniform1i(m_shaderProgram.getUniformLocation("gAlbedoSpec"), 2);
+  glUniform1i(m_shaderProgram.getUniformLocation("gPositionAo"), 0);
+  glUniform1i(m_shaderProgram.getUniformLocation("gNormalMetal"), 1);
+  glUniform1i(m_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
 
   unsigned int quadVBO;
   float quadVertices[] = {

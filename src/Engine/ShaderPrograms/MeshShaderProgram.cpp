@@ -11,7 +11,7 @@
 #endif
 
 MeshShaderProgram::MeshShaderProgram()
-    : ShaderProgram("resources/Shaders/meshVertex.glsl", "resources/Shaders/meshFragment.glsl") {
+    : ShaderProgram("resources/Shaders/meshVertex.glsl", "resources/Shaders/pbrMeshFragment.glsl") {
   use(); // Start using the shader
   m_uniformBindings["modelMatrix"] = glGetUniformLocation(p_shaderProgram, "modelMatrix");
   m_uniformBindings["viewMatrix"] = glGetUniformLocation(p_shaderProgram, "viewMatrix");

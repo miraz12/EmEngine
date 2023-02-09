@@ -9,10 +9,11 @@
 #endif
 
 LightingShaderProgram::LightingShaderProgram()
-    : ShaderProgram("resources/Shaders/lightVertex.glsl", "resources/Shaders/lightFragment.glsl") {
-  m_uniformBindings["gPosition"] = glGetUniformLocation(p_shaderProgram, "gPosition");
-  m_uniformBindings["gNormal"] = glGetUniformLocation(p_shaderProgram, "gNormal");
-  m_uniformBindings["gAlbedoSpec"] = glGetUniformLocation(p_shaderProgram, "gAlbedoSpec");
+    : ShaderProgram("resources/Shaders/lightVertex.glsl", "resources/Shaders/pbrLightFragment.glsl") {
+  m_uniformBindings["gPositionAo"] = glGetUniformLocation(p_shaderProgram, "gPositionAo");
+  m_uniformBindings["gNormalMetal"] = glGetUniformLocation(p_shaderProgram, "gNormalMetal");
+  m_uniformBindings["gAlbedoSpecRough"] = glGetUniformLocation(p_shaderProgram, "gAlbedoSpecRough");
+
   m_uniformBindings["nrOfPointLights"] = glGetUniformLocation(p_shaderProgram, "nrOfPointLights");
   m_uniformBindings["camPos"] = glGetUniformLocation(p_shaderProgram, "camPos");
 
