@@ -13,6 +13,7 @@ LightingShaderProgram::LightingShaderProgram()
   m_uniformBindings["gPositionAo"] = glGetUniformLocation(p_shaderProgram, "gPositionAo");
   m_uniformBindings["gNormalMetal"] = glGetUniformLocation(p_shaderProgram, "gNormalMetal");
   m_uniformBindings["gAlbedoSpecRough"] = glGetUniformLocation(p_shaderProgram, "gAlbedoSpecRough");
+  m_uniformBindings["gEmissive"] = glGetUniformLocation(p_shaderProgram, "gEmissive");
 
   m_uniformBindings["nrOfPointLights"] = glGetUniformLocation(p_shaderProgram, "nrOfPointLights");
   m_uniformBindings["camPos"] = glGetUniformLocation(p_shaderProgram, "camPos");

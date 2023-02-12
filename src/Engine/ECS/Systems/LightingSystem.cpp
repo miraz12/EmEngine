@@ -94,12 +94,18 @@ void LightingSystem::update(float /* dt */) {
   glBindTexture(GL_TEXTURE_2D, gNormal);
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, gAlbedo);
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, gEmissive);
+
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, 0);
   glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -114,6 +120,7 @@ void LightingSystem::initGL() {
   glGenTextures(1, &gPosition);
   glGenTextures(1, &gNormal);
   glGenTextures(1, &gAlbedo);
+  glGenTextures(1, &gEmissive);
   glGenRenderbuffers(1, &rboDepth);
   FrameBufferManager::getInstance().setFBO("gBuffer", gBuffer);
 
@@ -122,6 +129,7 @@ void LightingSystem::initGL() {
   glUniform1i(m_shaderProgram.getUniformLocation("gPositionAo"), 0);
   glUniform1i(m_shaderProgram.getUniformLocation("gNormalMetal"), 1);
   glUniform1i(m_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
+  glUniform1i(m_shaderProgram.getUniformLocation("gEmissive"), 3);
 
   unsigned int quadVBO;
   float quadVertices[] = {
@@ -141,6 +149,8 @@ void LightingSystem::initGL() {
   glBindTexture(GL_TEXTURE_2D, gNormal);
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D, gAlbedo);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, gEmissive);
 
   glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
@@ -177,11 +187,19 @@ void LightingSystem::setViewport(unsigned int w, unsigned int h) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
+  // - emissive color buffer
+  glBindTexture(GL_TEXTURE_2D, gEmissive);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gEmissive, 0);
+
   // - tell OpenGL which color attachments we'll use (of this framebuffer) for
   // rendering
-  unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+  unsigned int attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
+                                 GL_COLOR_ATTACHMENT3};
 
-  glDrawBuffers(3, attachments);
+  glDrawBuffers(4, attachments);
   // create and attach depth buffer (renderbuffer)
   glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);

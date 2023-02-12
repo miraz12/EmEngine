@@ -19,7 +19,7 @@ private:
   unsigned int m_width{800}, m_height{800};
   unsigned int quadVAO;
   unsigned int gBuffer;
-  unsigned int gPosition, gNormal, gAlbedo;
+  unsigned int gPosition, gNormal, gAlbedo, gEmissive;
   unsigned int rboDepth;
   LightingShaderProgram m_shaderProgram;
 };

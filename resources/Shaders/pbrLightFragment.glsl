@@ -20,6 +20,7 @@ struct DirectionalLight {
 uniform sampler2D gPositionAo;
 uniform sampler2D gNormalMetal;
 uniform sampler2D gAlbedoSpecRough;
+uniform sampler2D gEmissive;
 uniform vec3 camPos;
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
@@ -62,22 +63,21 @@ float GeometrySmith(vec3 normal, vec3 viewDir, vec3 L, float roughness) {
     return ggx1 * ggx2;
 }
 
-vec3 fresnelSchlick(float cosTheta, vec3 F0) {
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+vec3 fresnelSchlick(float cosTheta, vec3 specularColor) {
+    return specularColor + (1.0 - specularColor) * pow(1.0 - cosTheta, 5.0);
 }
 
-vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 F0) {
+vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor) {
     // calculate per-light radiance
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
-    float distance    = light.ambientIntensity;
-    float attenuation = 1.0 / (distance * distance);
+    float attenuation = light.ambientIntensity;
     vec3 radiance     = light.color * attenuation;
 
     // cook-torrance brdf
     float NDF = DistributionGGX(normal, H, roughness);
     float G   = GeometrySmith(normal, viewDir, L, roughness);
-    vec3 F    = fresnelSchlick(max(dot(H, viewDir), 0.0), F0);
+    vec3 F    = fresnelSchlick(max(dot(H, viewDir), 0.0), specularColor);
 
     vec3 kS = F;
     vec3 kD = vec3(1.0) - kS;
@@ -92,7 +92,7 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     return (kD / PI + specular) * radiance * NdotL;
 }
 
-vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 F0) {
+vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor) {
     // calculate per-light radiance
     vec3 L = normalize(light.position - fragPos);
     vec3 H = normalize(viewDir + L);
@@ -103,7 +103,7 @@ vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal
     // cook-torrance brdf
     float NDF = DistributionGGX(normal, H, roughness);
     float G   = GeometrySmith(normal, viewDir, L, roughness);
-    vec3 F    = fresnelSchlick(max(dot(H, viewDir), 0.0), F0);
+    vec3 F    = fresnelSchlick(max(dot(H, viewDir), 0.0), specularColor);
 
     vec3 kS = F;
     vec3 kD = vec3(1.0) - kS;
@@ -123,6 +123,7 @@ void main() {
     vec3 fragPos = texture(gPositionAo, texCoords).rgb;
     vec3 normal = texture(gNormalMetal, texCoords).rgb;
     vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
+    vec4 emissive = texture(gEmissive, texCoords);
     float ao = texture(gPositionAo, texCoords).a;
     float metallic = texture(gNormalMetal, texCoords).a;
     float roughness = texture(gAlbedoSpecRough, texCoords).a;
@@ -131,26 +132,25 @@ void main() {
     vec3 viewDir = normalize(camPos - fragPos);
 
     vec3 F0 = vec3(0.04);
-    F0 = mix(F0, albedo, metallic);
+    vec3 specularColor = mix(F0, albedo, metallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
 
-    Lo +=  CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, F0);
+    Lo +=  CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor);
 
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
         float distance = length(pointLights[i].position - fragPos);
         if(distance < pointLights[i].radius) {
-            Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, F0);
+            Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
         }
     }
 
-    vec3 ambient = vec3(0.03) * ao;
-    vec3 color = (ambient + Lo) * albedo;
+    vec3 color = Lo * ao * albedo;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2));
 
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(vec3(color), 1.0) + emissive;
 }

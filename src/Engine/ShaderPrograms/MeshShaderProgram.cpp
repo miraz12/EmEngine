@@ -17,6 +17,11 @@ MeshShaderProgram::MeshShaderProgram()
   m_uniformBindings["viewMatrix"] = glGetUniformLocation(p_shaderProgram, "viewMatrix");
   m_uniformBindings["projMatrix"] = glGetUniformLocation(p_shaderProgram, "projMatrix");
   m_uniformBindings["textures"] = glGetUniformLocation(p_shaderProgram, "textures");
+  m_uniformBindings["material"] = glGetUniformLocation(p_shaderProgram, "material");
+  m_uniformBindings["emissiveFactor"] = glGetUniformLocation(p_shaderProgram, "emissiveFactor");
+  m_uniformBindings["baseColorFactor"] = glGetUniformLocation(p_shaderProgram, "baseColorFactor");
+  m_uniformBindings["roughnessFactor"] = glGetUniformLocation(p_shaderProgram, "roughnessFactor");
+  m_uniformBindings["metallicFactor"] = glGetUniformLocation(p_shaderProgram, "metallicFactor");
 
   m_attribBindings["POSITION"] = glGetAttribLocation(p_shaderProgram, "POSITION");
   m_attribBindings["NORMAL"] = glGetAttribLocation(p_shaderProgram, "NORMAL");

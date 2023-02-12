@@ -6,7 +6,7 @@
 #include <emscripten.h>
 #else
 #include <glad/glad.h>
-// #define _DEBUG_
+#define _DEBUG_
 #endif
 
 #include <GLFW/glfw3.h>
@@ -270,6 +270,7 @@ bool Window::start() {
 void processInput(GLFWwindow *theWindow) {
   if (glfwGetKey(theWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(theWindow, true);
+    exit(0);
   }
 
   inMgr.HandleInput(InputManager::KEY::Escape, glfwGetKey(theWindow, GLFW_KEY_ESCAPE));

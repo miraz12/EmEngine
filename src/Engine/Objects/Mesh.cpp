@@ -29,7 +29,6 @@ Mesh::Mesh(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {}
 Mesh::~Mesh() { glDeleteVertexArrays(1, &m_vao); }
 
 void Mesh::draw(Camera &cam, glm::mat4 model) {
-  glBindVertexArray(m_vao);
   p_shaderProgram.use();
   cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                          p_shaderProgram.getUniformLocation("viewMatrix"));
@@ -37,7 +36,7 @@ void Mesh::draw(Camera &cam, glm::mat4 model) {
                      glm::value_ptr(model));
   GLint tex[5] = {0, 1, 2, 3, 4};
   glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
-
+  glBindVertexArray(m_vao);
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
     drawModelNodes(m_model, m_model.nodes[scene.nodes[i]]);
@@ -59,35 +58,61 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
     tinygltf::Primitive primitive = mesh.primitives[i];
 
     // TODO : Add flags for texutres to use in shader.
+
+    // Packed material.
+    // 0 = Base color
+    // 1 = Metall/Roughness
+    // 2 = Emissive
+    // 3 = Occlusion
+    // 4 = Normal
+    unsigned int material = 0;
     tinygltf::Material m = model.materials[primitive.material];
     int texIdx = m.pbrMetallicRoughness.baseColorTexture.index;
     if (texIdx >= 0) {
+      glUniform3f(p_shaderProgram.getUniformLocation("baseColorFactor"),
+                  m.pbrMetallicRoughness.baseColorFactor[0],
+                  m.pbrMetallicRoughness.baseColorFactor[1],
+                  m.pbrMetallicRoughness.baseColorFactor[2]);
       glActiveTexture(GL_TEXTURE0 + 0);
       texMan.bindTexture(texIdx);
+      material = material | (1 << 0);
     }
     texIdx = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
     if (texIdx >= 0) {
+      glUniform1f(p_shaderProgram.getUniformLocation("roughnessFactor"),
+                  m.pbrMetallicRoughness.roughnessFactor);
+      glUniform1f(p_shaderProgram.getUniformLocation("metallicFactor"),
+                  m.pbrMetallicRoughness.metallicFactor);
       glActiveTexture(GL_TEXTURE0 + 1);
       texMan.bindTexture(texIdx);
+      material = material | (1 << 1);
     }
 
     texIdx = m.emissiveTexture.index;
     if (texIdx >= 0) {
+      glUniform3fv(p_shaderProgram.getUniformLocation("emissiveFactor"), 1,
+                   (float *)m.emissiveFactor.data());
       glActiveTexture(GL_TEXTURE0 + 2);
       texMan.bindTexture(texIdx);
+      material = material | (1 << 2);
     }
 
     texIdx = m.occlusionTexture.index;
     if (texIdx >= 0) {
       glActiveTexture(GL_TEXTURE0 + 3);
       texMan.bindTexture(texIdx);
+      material = material | (1 << 3);
     }
 
     texIdx = m.normalTexture.index;
     if (texIdx >= 0) {
       glActiveTexture(GL_TEXTURE0 + 4);
       texMan.bindTexture(texIdx);
+      material = material | (1 << 4);
     }
+
+    glUniform1i(p_shaderProgram.getUniformLocation("material"), material);
+
     if (m.doubleSided) {
       glDisable(GL_CULL_FACE);
     } else {

@@ -11,63 +11,33 @@ Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
 
-  Entity &en0 = m_ECSManager->createEntity();
-  en0.setName("Quad");
-  GraphicsComponent *graphComp = new GraphicsComponent();
-  SimpleShaderProgram *p = new SimpleShaderProgram;
-  graphComp->grapObj = new Quad(*p);
-  m_ECSManager->addComponent(en0, graphComp);
-  PositionComponent *posComp = new PositionComponent();
-  posComp->position = glm::vec3(0.0, 0.0, 2.0);
-  m_ECSManager->addComponent(en0, posComp);
-
   MeshShaderProgram *mp = new MeshShaderProgram;
   Mesh *m = new Mesh(*mp);
-  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
-  m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  m->LoadFlile("resources/Models/gltf/helmet/embedded/DamagedHelmet.gltf");
+  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
 
   // ----
   Entity &en = m_ECSManager->createEntity();
-  graphComp = new GraphicsComponent();
+  GraphicsComponent *graphComp = new GraphicsComponent();
   graphComp->grapObj = m;
   m_ECSManager->addComponent(en, graphComp);
-  posComp = new PositionComponent();
-  // posComp->rotation = 30.0f;
-  posComp->scale = glm::vec3(0.008, 0.008, 0.008);
+  PositionComponent *posComp = new PositionComponent();
+  posComp->rotation = 30.0f;
+  // posComp->scale = glm::vec3(0.008, 0.008, 0.008);
   m_ECSManager->addComponent(en, posComp);
 
-  // // ----
-  // Entity &en1 = m_ECSManager->createEntity();
-  // graphComp = new GraphicsComponent();
-  // graphComp->grapObj = m;
-  // m_ECSManager->addComponent(en1, graphComp);
-  // posComp = new PositionComponent();
-  // posComp->rotation = 30.0f;
-  // posComp->position = glm::vec3(1.5, 0.0, 0.0);
-  // m_ECSManager->addComponent(en1, posComp);
-
-  // // ----
-  // Entity &en2 = m_ECSManager->createEntity();
-  // graphComp = new GraphicsComponent();
-  // graphComp->grapObj = m;
-  // m_ECSManager->addComponent(en2, graphComp);
-  // posComp = new PositionComponent();
-  // posComp->rotation = 30.0f;
-  // posComp->position = glm::vec3(-1.5, 0.0, 0.0);
-  // m_ECSManager->addComponent(en2, posComp);
-
   // ----
-  m_ECSManager->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.9f,
+  m_ECSManager->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f,
                                       glm::vec3(1.0f, -1.0f, 0.0f));
 
   m_ECSManager->SetupPointLight(glm::vec3(1.0f, .0f, .0f), 1.0f, 0.7f, 1.8f,
-                                glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::vec3(0.0f, 1.0f, 0.0f));
 
   m_ECSManager->SetupPointLight(glm::vec3(.0f, .0f, 1.0f), 1.0f, 0.7f, 1.8f,
-                                glm::vec3(1.5f, 1.0f, 0.0f));
+  glm::vec3(1.5f, 1.0f, 0.0f));
 
   m_ECSManager->SetupPointLight(glm::vec3(.0f, 1.0f, .0f), 1.0f, 0.7f, 1.8f,
-                                glm::vec3(-1.5f, 1.0f, 0.0f));
+  glm::vec3(-1.5f, 1.0f, 0.0f));
 }
 
 void Game::update(float dt) {
