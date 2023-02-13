@@ -2,6 +2,7 @@
 
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
+#include <stb_image.h>
 
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
@@ -107,6 +108,7 @@ void LightingSystem::update(float /* dt */) {
   glBindTexture(GL_TEXTURE_2D, 0);
   glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 void LightingSystem::initGL() {
@@ -125,6 +127,7 @@ void LightingSystem::initGL() {
   FrameBufferManager::getInstance().setFBO("gBuffer", gBuffer);
 
   setViewport(m_width, m_height);
+
 
   glUniform1i(m_shaderProgram.getUniformLocation("gPositionAo"), 0);
   glUniform1i(m_shaderProgram.getUniformLocation("gNormalMetal"), 1);
@@ -158,6 +161,7 @@ void LightingSystem::initGL() {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 }
+
 
 void LightingSystem::setViewport(unsigned int w, unsigned int h) {
   m_width = w;
@@ -209,3 +213,6 @@ void LightingSystem::setViewport(unsigned int w, unsigned int h) {
     std::cout << "Framebuffer not complete!" << std::endl;
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+
+

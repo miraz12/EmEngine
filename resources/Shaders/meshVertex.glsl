@@ -15,13 +15,21 @@ out vec3 pPosition;
 out vec2 pTexCoords;
 out vec3 pNormal;
 out vec3 pTangent;
+out vec3 pBiTangent;
+out mat3 pTBN;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(POSITION, 1.0);
     pPosition = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
-    mat3 normalMatrix = inverse(mat3(modelMatrix));
-    normalMatrix = transpose(normalMatrix);
-    pNormal =  normalize(normalMatrix * NORMAL);
-    pTangent =  normalize(normalMatrix * TANGENT.xyz);
-    pTexCoords = TEXCOORD_0 ;
+    mat4 normalMatrix = transpose(inverse(modelMatrix));
+
+    if (length(TANGENT) > 0.0) {
+        pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
+        pTangent =  normalize(vec3(normalMatrix * vec4(TANGENT.xyz, 0.0)));
+        pBiTangent = cross(pNormal, pTangent) * a_tangent.w 
+        pTBN = mat3(pTangent, pBiTangent, pNormal);
+    } else {
+        pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
+    }
+    pTexCoords = TEXCOORD_0;
 }
