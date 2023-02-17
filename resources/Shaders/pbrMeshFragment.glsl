@@ -5,14 +5,8 @@ in vec3 pPosition;
 in vec2 pTexCoords;
 in vec3 pNormal;
 in vec3 pTangent;
-in vec3 pBiTangent;
-in mat3 pTBN;
 
 // If uniforms change, also update SimpleShaderProgram to match
-// 0 = Base color
-// 1 = Metal/Roughness
-// 2 = Occlusion
-// 3 = Normal
 uniform sampler2D textures[5];
 uniform int material;
 uniform vec3 emissiveFactor;
@@ -38,21 +32,13 @@ vec3 CalcBumpedNormal() {
     vec3 tangent = normalize(pTangent);
     tangent = normalize(tangent - dot(tangent, normal) * normal);
     vec3 bitangent = cross(tangent, normal);
-    vec3 bumpMapNormal = normalize(pNormal * texture(textures[4], pTexCoords).xyz);
+    vec3 bumpMapNormal = texture(textures[4], pTexCoords).xyz;
     bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
     vec3 newNormal;
     mat3 TBN = mat3(tangent, bitangent, normal);
     newNormal = TBN * bumpMapNormal;
     newNormal = normalize(newNormal);
     return newNormal;
-}
-
-vec3 getNormal() {
-    vec3 tangent = pTangent;
-    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
-    vec3 bitangentW = cross(normalW, tangentW) * a_tangent.w;
-    v_TBN = mat3(tangentW, bitangentW, normalW);
 }
 
 void main()
@@ -62,18 +48,20 @@ void main()
         discard;
     }
 
-    float metal = metallicFactor;
-    vec4 baseRough = vec4(baseColorFactor, roughnessFactor);
+    float metal = 1.0;
+    vec4 baseRough = vec4(0.0, 0.0, 0.0, 1.0);
     if ((material & (1 << 0)) > 0) {
-        baseRough.rgb *= (texture(textures[0], pTexCoords)).rgb;
+        baseRough.rgb = (texture(textures[0], pTexCoords)).rgb * baseColorFactor;
+    } else {
+        baseRough.rgb = baseColorFactor;
     }
     if ((material & (1 << 1)) > 0) {
-       metal *= texture(textures[1], pTexCoords).b;
-       baseRough.a *= texture(textures[1], pTexCoords).g ;
+       metal = texture(textures[1], pTexCoords).b;
+       baseRough.a = texture(textures[1], pTexCoords).g;
     }
-    vec4 emissive = vec4(vec3(emissiveFactor), 1.0);
+    vec4 emissive = vec4(0.0, 0.0, 0.0, 1.0);
     if ((material & ( 1 << 2 )) > 0) {
-       emissive *= texture(textures[2], pTexCoords);
+       emissive = texture(textures[2], pTexCoords);
     }
     float ao = 1.0;
     if ((material & (1 << 3)) > 0) {
@@ -87,5 +75,5 @@ void main()
 
     gPositionAo = vec4(pPosition, ao);
     gAlbedoRough = baseRough;
-    gEmissive = emissive ;
+    gEmissive = emissive;
 }

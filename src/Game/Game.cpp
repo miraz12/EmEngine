@@ -13,8 +13,8 @@ Game::Game(GLFWwindow *window)
 
   MeshShaderProgram *mp = new MeshShaderProgram;
   Mesh *m = new Mesh(*mp);
-  //m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
-  m->LoadFlile("resources/Models/gltf/sponza/sponza.gltf");
+  m->LoadFlile("resources/Models/gltf/helmet/embedded/DamagedHelmet.gltf");
+  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
 
   // ----
   Entity &en = m_ECSManager->createEntity();
@@ -22,28 +22,25 @@ Game::Game(GLFWwindow *window)
   graphComp->grapObj = m;
   m_ECSManager->addComponent(en, graphComp);
   PositionComponent *posComp = new PositionComponent();
+  posComp->rotation = 30.0f;
+  // posComp->scale = glm::vec3(0.008, 0.008, 0.008);
   m_ECSManager->addComponent(en, posComp);
 
   // ----
-  dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-  dirLightAmbient = 0.8f;
-  dirLightDir = glm::vec3(0.0f, -1.0f, -1.0f);
-  dLight = m_ECSManager->SetupDirectionalLight(dirLightColor, dirLightAmbient, dirLightDir);
+  m_ECSManager->SetupDirectionalLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f,
+                                      glm::vec3(1.0f, -1.0f, 0.0f));
 
-  // m_ECSManager->SetupPointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.7f, 1.8f,
-  //                               glm::vec3(0.0f, 1.0f, 0.0f));
+  m_ECSManager->SetupPointLight(glm::vec3(1.0f, .0f, .0f), 1.0f, 0.7f, 1.8f,
+  glm::vec3(0.0f, 1.0f, 0.0f));
 
-  // m_ECSManager->SetupPointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.7f, 1.8f,
-  //                               glm::vec3(1.5f, 1.0f, 0.0f));
+  m_ECSManager->SetupPointLight(glm::vec3(.0f, .0f, 1.0f), 1.0f, 0.7f, 1.8f,
+  glm::vec3(1.5f, 1.0f, 0.0f));
 
-  // m_ECSManager->SetupPointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.7f, 1.8f,
-  //                               glm::vec3(-1.5f, 1.0f, 0.0f));
+  m_ECSManager->SetupPointLight(glm::vec3(.0f, 1.0f, .0f), 1.0f, 0.7f, 1.8f,
+  glm::vec3(-1.5f, 1.0f, 0.0f));
 }
 
 void Game::update(float dt) {
-  dLight->color = dirLightColor;
-  dLight->ambientIntensity = dirLightAmbient;
-  dLight->direction = dirLightDir;
   handleInput(dt);
   m_ECSManager->update(dt);
 }

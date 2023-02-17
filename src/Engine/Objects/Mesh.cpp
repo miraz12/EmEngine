@@ -28,16 +28,15 @@ Mesh::Mesh(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {}
 
 Mesh::~Mesh() { glDeleteVertexArrays(1, &m_vao); }
 
-void Mesh::draw(Camera &cam, glm::mat4 /* model */) {
+void Mesh::draw(Camera &cam, glm::mat4 model) {
   p_shaderProgram.use();
   cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                          p_shaderProgram.getUniformLocation("viewMatrix"));
-  // glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-  // glm::value_ptr(model));
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(model));
   GLint tex[5] = {0, 1, 2, 3, 4};
   glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
   glBindVertexArray(m_vao);
-
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
     drawModelNodes(m_model, m_model.nodes[scene.nodes[i]]);
@@ -45,22 +44,6 @@ void Mesh::draw(Camera &cam, glm::mat4 /* model */) {
 }
 
 void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node) {
-  glm::mat4 modelMat = glm::identity<glm::mat4>();
-  if (!node.rotation.empty()) {
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[0]), glm::vec3(1.0, 0.0, 0.0));
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[1]), glm::vec3(0.0, 1.0, 0.0));
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[2]), glm::vec3(0.0, 0.0, 1.0));
-  }
-  if (!node.scale.empty()) {
-    modelMat = glm::scale(modelMat, glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
-  }
-  if (!node.translation.empty()) {
-    modelMat = glm::translate(
-        modelMat, glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
-  }
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(modelMat));
-
   if ((node.mesh >= 0) && (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
     drawMesh(model, model.meshes[node.mesh]);
   }
@@ -68,6 +51,7 @@ void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node) {
     drawModelNodes(model, model.nodes[node.children[i]]);
   }
 }
+
 void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
   TextureManager &texMan = TextureManager::getInstance();
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
@@ -106,8 +90,8 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
 
     texIdx = m.emissiveTexture.index;
     if (texIdx >= 0) {
-      glUniform3f(p_shaderProgram.getUniformLocation("emissiveFactor"), m.emissiveFactor[0],
-                  m.emissiveFactor[1], m.emissiveFactor[2]);
+      glUniform3fv(p_shaderProgram.getUniformLocation("emissiveFactor"), 1,
+                   (float *)m.emissiveFactor.data());
       glActiveTexture(GL_TEXTURE0 + 2);
       texMan.bindTexture(texIdx);
       material = material | (1 << 2);
@@ -144,7 +128,7 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
     for (auto &attrib : primitive.attributes) {
       tinygltf::Accessor accessor = model.accessors[attrib.second];
       int loc = p_shaderProgram.getAttribLocation(attrib.first);
-      if (loc > -1 && !m_buffers.empty()) {
+      if (loc > -1) {
         unsigned int vbo = m_buffers.at(accessor.bufferView);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
@@ -204,7 +188,6 @@ void Mesh::LoadFlile(std::string filename) {
   }
 
   loadModel(m_model);
-  std::cout << "Load done!" << std::endl;
 }
 
 void Mesh::loadModel(tinygltf::Model &model) {
@@ -265,12 +248,10 @@ void Mesh::loadNode(tinygltf::Model &model, tinygltf::Node &node) {
         GLuint vbo;
         glGenBuffers(1, &vbo);
         m_buffers[i] = vbo;
-        std::cout << "buffer[" << i << "] is :" << vbo << std::endl;
         glBindBuffer(bufferView.target, vbo);
+
         glBufferData(bufferView.target, bufferView.byteLength,
                      &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-      } else {
-        std::cout << "Warning buffer view target = 0!" << std::endl;
       }
     }
 

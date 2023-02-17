@@ -16,7 +16,6 @@
 #include "ShaderPrograms/MeshShaderProgram.hpp"
 #include "ShaderPrograms/SimpleShaderProgram.hpp"
 #include "Systems/LightingSystem.hpp"
-#include "ECS/Components/LightingComponent.hpp"
 
 class ECSManager {
 public:
@@ -60,11 +59,11 @@ public:
   int createPlayerEntity(float x, float y, GLFWwindow *window);
 
   // Create point light
-  PointLight* SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
+  void SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
                        glm::vec3 pos);
 
   // Create directional light
-  DirectionalLight* SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
+  void SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   // Returns entity by ID, or NULL if it does not exist
   static Entity *getEntity(int entityID);

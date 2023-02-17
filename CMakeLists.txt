@@ -26,7 +26,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
                         $<$<CXX_COMPILER_ID:MSVC>:
                         /W4;>)
 # target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
-set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 if (DEFINED EMSCRIPTEN)
 set_target_properties(${PROJECT_NAME}

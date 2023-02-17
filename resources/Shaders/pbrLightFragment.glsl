@@ -84,7 +84,7 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     kD *= 1.0 - metallic;
 
     vec3 numerator    = NDF * G * F;
-    float denominator = max(4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0), 0.00001);
+    float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0) + 0.0001;
     vec3 specular     = numerator / denominator;
 
     // add to outgoing radiance Lo
@@ -131,7 +131,8 @@ void main() {
     normal = normalize(normal);
     vec3 viewDir = normalize(camPos - fragPos);
 
-    vec3 specularColor = mix(vec3(0.04), albedo, metallic);
+    vec3 F0 = vec3(0.04);
+    vec3 specularColor = mix(F0, albedo, metallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -141,9 +142,9 @@ void main() {
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
         float distance = length(pointLights[i].position - fragPos);
-        // if(distance < pointLights[i].radius) {
-        //Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
-        // }
+        if(distance < pointLights[i].radius) {
+            Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
+        }
     }
 
     vec3 color = Lo * ao * albedo;

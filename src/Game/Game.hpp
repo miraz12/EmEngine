@@ -16,11 +16,6 @@ public:
     m_yaw = y;
   }
   void setViewport(unsigned int w, unsigned int h);
-  // Dir light
-  DirectionalLight* dLight;
-  glm::vec3 dirLightColor;
-  float dirLightAmbient;
-  glm::vec3 dirLightDir;
 
 private:
   void init();
@@ -32,7 +27,6 @@ private:
   InputManager *m_InputManager;
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
-
 };
 
 #endif // GAME_H_

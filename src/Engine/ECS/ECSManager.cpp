@@ -1,5 +1,6 @@
 #include "ECSManager.hpp"
 
+#include "ECS/Components/LightingComponent.hpp"
 #include "Systems/GraphicsSystem.hpp"
 
 std::vector<Entity *> ECSManager::m_entities;
@@ -157,7 +158,7 @@ int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow * /*
   return playerEntity.getID();
 }
 
-PointLight* ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
+void ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
                                  glm::vec3 pos) {
   Entity &en = createEntity();
   PointLight *pLight = new PointLight();
@@ -169,9 +170,8 @@ PointLight* ECSManager::SetupPointLight(glm::vec3 color, float constant, float l
   LightingComponent *lightComp =
       new LightingComponent(pLight, LightingComponent::TYPE::POINT);
   addComponent(en, lightComp);
-  return pLight;
 }
-DirectionalLight* ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir) {
+void ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir) {
   Entity &en = createEntity();
   DirectionalLight *dLight = new DirectionalLight();
   dLight->direction = dir;
@@ -180,5 +180,4 @@ DirectionalLight* ECSManager::SetupDirectionalLight(glm::vec3 color, float ambie
   LightingComponent *lightComp =
       new LightingComponent(dLight, LightingComponent::TYPE::DIRECTIONAL);
   addComponent(en, lightComp);
-  return dLight;
 }
