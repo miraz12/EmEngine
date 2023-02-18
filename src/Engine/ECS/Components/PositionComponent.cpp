@@ -12,9 +12,8 @@ PositionComponent::PositionComponent(float startX, float startY)
 }
 
 glm::mat4 PositionComponent::calculateMatrix() {
-  glm::mat4 tempMatrix = glm::translate(glm::mat4(1.0f), position);
+  glm::mat4 tempMatrix = glm::scale(glm::identity<glm::mat4>(), scale);
   tempMatrix = glm::rotate(tempMatrix, rotation, glm::vec3(-1.0f, 0.0f, 0.0f));
-  tempMatrix = glm::scale(tempMatrix, scale);
-
+  tempMatrix = glm::translate(tempMatrix, position);
   return tempMatrix;
 }

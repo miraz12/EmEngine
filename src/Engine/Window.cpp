@@ -42,10 +42,10 @@ double lastX, lastY;
 
 static InputManager &inMgr = InputManager::getInstance();
 
-
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
+void keyPressCallback(GLFWwindow *win, int key, int scancode, int action, int mods);
+void mousePressCallback(GLFWwindow *win, int button, int action, int mods);
 
 #ifndef EMSCRIPTEN
 void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type, GLuint /* id */, GLenum severity,
@@ -158,6 +158,8 @@ bool Window::open() {
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetKeyCallback(window, keyPressCallback);
+  glfwSetMouseButtonCallback(window, mousePressCallback);
 
   // Setup IMGUI
   IMGUI_CHECKVERSION();
@@ -193,7 +195,6 @@ void Window::gameLoop() {
   // input
   // -----
   glfwPollEvents();
-  processInput(window);
 
   renderImgui();
 
@@ -267,26 +268,8 @@ bool Window::start() {
   return true;
 }
 
-void processInput(GLFWwindow *theWindow) {
-  if (glfwGetKey(theWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(theWindow, true);
-    exit(0);
-  }
-
-  inMgr.HandleInput(InputManager::KEY::Escape, glfwGetKey(theWindow, GLFW_KEY_ESCAPE));
-  inMgr.HandleInput(InputManager::KEY::W, glfwGetKey(theWindow, GLFW_KEY_W));
-  inMgr.HandleInput(InputManager::KEY::A, glfwGetKey(theWindow, GLFW_KEY_A));
-  inMgr.HandleInput(InputManager::KEY::S, glfwGetKey(theWindow, GLFW_KEY_S));
-  inMgr.HandleInput(InputManager::KEY::D, glfwGetKey(theWindow, GLFW_KEY_D));
-  inMgr.HandleInput(InputManager::KEY::F, glfwGetKey(theWindow, GLFW_KEY_F));
-  inMgr.HandleInput(InputManager::KEY::ArrowUp, glfwGetKey(theWindow, GLFW_KEY_UP));
-  inMgr.HandleInput(InputManager::KEY::ArrowDown, glfwGetKey(theWindow, GLFW_KEY_DOWN));
-  inMgr.HandleInput(InputManager::KEY::ArrowRight, glfwGetKey(theWindow, GLFW_KEY_RIGHT));
-  inMgr.HandleInput(InputManager::KEY::ArrowLeft, glfwGetKey(theWindow, GLFW_KEY_LEFT));
-  inMgr.HandleInput(InputManager::KEY::Mouse1, glfwGetMouseButton(theWindow, GLFW_MOUSE_BUTTON_1));
-}
-
 void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
+
   if (!inMgr.keys.at(InputManager::KEY::Mouse1)) {
     lastX = xpos;
     lastY = ypos;
@@ -313,6 +296,51 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
+void keyPressCallback(GLFWwindow *win, int key, int scancode, int action, int mods) {
+  switch (key) {
+  case GLFW_KEY_ESCAPE:
+    glfwSetWindowShouldClose(win, true);
+    break;
+  case GLFW_KEY_W:
+    inMgr.HandleInput(InputManager::KEY::W, action);
+    break;
+  case GLFW_KEY_A:
+    inMgr.HandleInput(InputManager::KEY::A, action);
+    break;
+  case GLFW_KEY_S:
+    inMgr.HandleInput(InputManager::KEY::S, action);
+    break;
+  case GLFW_KEY_D:
+    inMgr.HandleInput(InputManager::KEY::D, action);
+    break;
+  case GLFW_KEY_F:
+    inMgr.HandleInput(InputManager::KEY::F, action);
+    break;
+  case GLFW_KEY_UP:
+    inMgr.HandleInput(InputManager::KEY::ArrowUp, action);
+    break;
+  case GLFW_KEY_DOWN:
+    inMgr.HandleInput(InputManager::KEY::ArrowDown, action);
+    break;
+  case GLFW_KEY_RIGHT:
+    inMgr.HandleInput(InputManager::KEY::ArrowRight, action);
+    break;
+  case GLFW_KEY_LEFT:
+    inMgr.HandleInput(InputManager::KEY::ArrowLeft, action);
+    break;
+  default:
+    break;
+  }
+}
+
+void mousePressCallback(GLFWwindow *win, int button, int action, int mods) {
+  ImGuiIO &io = ImGui::GetIO();
+  io.AddMouseButtonEvent(button, action);
+  if (!io.WantCaptureMouse) {
+    inMgr.HandleInput(InputManager::KEY::Mouse1, action);
+  }
+}
+
 void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
   SCR_WIDTH = width;
   SCR_HEIGHT = height;
@@ -327,12 +355,11 @@ void Window::renderImgui() {
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  static float f = 0.0f;
 
-  ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!"
-  ImGui::Text("This is some useful text.");
-  ImGui::SliderFloat("float", &f, 0.0f,
-                     1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+  ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysAutoResize); // Create a window called "Hello, world!"
+  ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
+  ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 1.0f);
+  ImGui::SliderFloat3("Color", glm::value_ptr(game->dirLightColor), 0.0f, 1.0f);
 
   ImGui::End();
   // Rendering
