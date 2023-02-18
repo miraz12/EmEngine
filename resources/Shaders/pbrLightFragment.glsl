@@ -141,9 +141,9 @@ void main() {
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
         float distance = length(pointLights[i].position - fragPos);
-        // if(distance < pointLights[i].radius) {
-        //Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
-        // }
+        if(distance < pointLights[i].radius) {
+            Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
+        }
     }
 
     vec3 color = Lo * ao * albedo;

@@ -33,26 +33,8 @@ mat4 thresholdMatrix = mat4(
     16.0, 8.0, 14.0, 6.0
 );
 
-vec3 CalcBumpedNormal() {
-    vec3 normal = normalize(pNormal);
-    vec3 tangent = normalize(pTangent);
-    tangent = normalize(tangent - dot(tangent, normal) * normal);
-    vec3 bitangent = cross(tangent, normal);
-    vec3 bumpMapNormal = normalize(pNormal * texture(textures[4], pTexCoords).xyz);
-    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
-    vec3 newNormal;
-    mat3 TBN = mat3(tangent, bitangent, normal);
-    newNormal = TBN * bumpMapNormal;
-    newNormal = normalize(newNormal);
-    return newNormal;
-}
-
 vec3 getNormal() {
-    vec3 tangent = pTangent;
-    vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(getNormal(), 0.0)));
-    vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
-    vec3 bitangentW = cross(normalW, tangentW) * a_tangent.w;
-    v_TBN = mat3(tangentW, bitangentW, normalW);
+    return pTBN * (texture(textures[4], pTexCoords).xyz * 2.0 - 1.0);
 }
 
 void main()
@@ -80,7 +62,7 @@ void main()
         ao = texture(textures[3], pTexCoords).r;
     }
     if (length(pTangent) > 0.0) {
-        gNormalMetal = vec4(CalcBumpedNormal(), metal);
+    gNormalMetal = vec4(getNormal(), metal);
     } else {
         gNormalMetal = vec4(normalize(pNormal * texture(textures[4], pTexCoords).xyz), metal);
     }

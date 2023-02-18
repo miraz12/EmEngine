@@ -296,7 +296,7 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
-void keyPressCallback(GLFWwindow *win, int key, int scancode, int action, int mods) {
+void keyPressCallback(GLFWwindow *win, int key, int /* scancode */, int action, int /* mods */) {
   switch (key) {
   case GLFW_KEY_ESCAPE:
     glfwSetWindowShouldClose(win, true);
@@ -333,7 +333,7 @@ void keyPressCallback(GLFWwindow *win, int key, int scancode, int action, int mo
   }
 }
 
-void mousePressCallback(GLFWwindow *win, int button, int action, int mods) {
+void mousePressCallback(GLFWwindow */* win */, int button, int action, int /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {

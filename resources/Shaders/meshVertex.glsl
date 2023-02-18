@@ -23,13 +23,9 @@ void main() {
     pPosition = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
     mat4 normalMatrix = transpose(inverse(modelMatrix));
 
-    if (length(TANGENT) > 0.0) {
-        pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
-        pTangent =  normalize(vec3(normalMatrix * vec4(TANGENT.xyz, 0.0)));
-        pBiTangent = cross(pNormal, pTangent) * a_tangent.w 
-        pTBN = mat3(pTangent, pBiTangent, pNormal);
-    } else {
-        pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
-    }
+    pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
+    pTangent =  normalize(vec3(normalMatrix * vec4(TANGENT.xyz, 0.0)));
+    pBiTangent = cross(pNormal, pTangent) * TANGENT.w;
+    pTBN = mat3(pTangent, pBiTangent, pNormal);
     pTexCoords = TEXCOORD_0;
 }
