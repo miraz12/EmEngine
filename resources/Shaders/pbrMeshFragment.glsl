@@ -34,7 +34,11 @@ mat4 thresholdMatrix = mat4(
 );
 
 vec3 getNormal() {
-    return pTBN * (texture(textures[4], pTexCoords).xyz * 2.0 - 1.0);
+    if (length(pTangent) > 0.0) {
+        return normalize(pTBN * (texture(textures[4], pTexCoords).xyz * 2.0 - 1.0));
+    } else {
+        return normalize(pNormal * texture(textures[4], pTexCoords).xyz);
+    }
 }
 
 void main()
@@ -61,12 +65,8 @@ void main()
     if ((material & (1 << 3)) > 0) {
         ao = texture(textures[3], pTexCoords).r;
     }
-    if (length(pTangent) > 0.0) {
-    gNormalMetal = vec4(getNormal(), metal);
-    } else {
-        gNormalMetal = vec4(normalize(pNormal * texture(textures[4], pTexCoords).xyz), metal);
-    }
 
+    gNormalMetal = vec4(getNormal(), metal);
     gPositionAo = vec4(pPosition, ao);
     gAlbedoRough = baseRough;
     gEmissive = emissive ;

@@ -12,7 +12,6 @@ public:
   LightingSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
   void setViewport(unsigned int w, unsigned int h);
-  void setCubeMap();
 
 private:
   void initGL();

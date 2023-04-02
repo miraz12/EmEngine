@@ -110,7 +110,7 @@ vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal
     kD *= 1.0 - metallic;
 
     vec3 numerator    = NDF * G * F;
-    float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0) + 0.0001;
+    float denominator = max(4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0), 0.0001);
     vec3 specular     = numerator / denominator;
 
     // add to outgoing radiance Lo
