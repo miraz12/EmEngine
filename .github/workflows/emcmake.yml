@@ -35,4 +35,4 @@ jobs:
       run: |
         rm -r /home/shaggy/public
         mkdir /home/shaggy/public
-        cp embuild/* /home/shaggy/public/     
+        cp embuild/* /home/shaggy/public/ -r     
