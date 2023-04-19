@@ -13,8 +13,8 @@ Game::Game(GLFWwindow *window)
 
   MeshShaderProgram *mp = new MeshShaderProgram;
   Mesh *m = new Mesh(*mp);
-  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
-  m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
+  // m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
 
   // ----
   Entity &en = m_ECSManager->createEntity();
