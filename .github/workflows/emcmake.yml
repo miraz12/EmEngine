@@ -30,4 +30,11 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/embuild --config ${{env.BUILD_TYPE}}
+    
+    - name: Deploy
+      run: |
+        mkdir /home/shaggy/public
+        cp embuild/* /home/shaggy/public/
+      
+      
 
