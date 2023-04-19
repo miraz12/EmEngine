@@ -33,4 +33,6 @@ jobs:
     
     - name: Deploy
       run: |
-        ln -sf embuild /home/shaggy/public      
+        rm -r /home/shaggy/public
+        mkdir /home/shaggy/public
+        cp embuild/* /home/shaggy/public/     
