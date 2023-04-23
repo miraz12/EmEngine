@@ -33,6 +33,6 @@ jobs:
     
     - name: Deploy
       run: |
-        rm -r /home/shaggy/public
-        mkdir /home/shaggy/public
-        cp embuild/* /home/shaggy/public/ -r     
+        rm -r /home/alarm/public
+        mkdir /home/alarm/public
+        cp embuild/* /home/alarm/public/ -r     
