@@ -10,13 +10,14 @@
 
 #include "Components/GraphicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
-#include "Entity.hpp"
+#include "ECS/Components/LightingComponent.hpp"
 #include "Objects/Mesh.hpp"
 #include "Objects/Quad.hpp"
 #include "ShaderPrograms/MeshShaderProgram.hpp"
 #include "ShaderPrograms/SimpleShaderProgram.hpp"
 #include "Systems/LightingSystem.hpp"
-#include "ECS/Components/LightingComponent.hpp"
+
+using Entity = std::size_t;
 
 class ECSManager {
 public:
@@ -41,38 +42,35 @@ public:
   void updateRenderingSystems(float dt);
 
   // creates and returns a new entity
-  Entity &createEntity();
+  Entity createEntity();
 
   // adds entity and inserts it into to all matching systems
   void addEntity(Entity *entity);
 
   // adds component to entity and inserts it to matching systems
-  void addComponent(Entity &entity, Component *component);
+  template <typename T> void addComponent(Entity entity, T component);
 
   // Removes an entity from all systems
+  template <typename T>
   void removeEntity(int entityID);
 
   // Removes  componenet from entity and then the entity from all concerned
   // systems
-  void removeComponent(Entity &entity, ComponentTypeEnum component);
+  template <typename T>
+  void removeComponent(Entity &entity, T component);
 
   // Create a controllable entity at position x,y
   int createPlayerEntity(float x, float y, GLFWwindow *window);
 
   // Create point light
-  PointLight* SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
-                       glm::vec3 pos);
+  PointLight *SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
+                              glm::vec3 pos);
 
   // Create directional light
-  DirectionalLight* SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
+  DirectionalLight *SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   // Returns entity by ID, or NULL if it does not exist
-  static Entity *getEntity(int entityID);
-
-  // Get rendering system
-  LightingSystem *getLightingSystem() {
-    return dynamic_cast<LightingSystem *>(m_systems["LIGHTS"]);
-  };
+  Entity *getEntity(int entityID);
 
   Camera &getCamera() { return m_camera; };
 
@@ -80,29 +78,11 @@ private:
   ECSManager();
   // Entities
   int m_idCounter;
-  static std::vector<Entity *> m_entities;
+  std::vector<Entity> m_entities;
+  std::unordered_map<Entity, ComponentType> m_components;
 
-  // Systems
-  std::map<std::string, System *> m_systems;
+  size_t m_entityCount = 0;  // Number of entities created so far
 
-  // Events
-  std::vector<Entity *> m_addEntities;
-  struct addComponent_t {
-    Entity &ent;
-    Component *cmp;
-  };
-  std::vector<addComponent_t> m_addComponents;
-  std::vector<int> m_removeEntities;
-  struct removeComponent_t {
-    Entity &ent;
-    ComponentTypeEnum cmp;
-  };
-  std::vector<removeComponent_t> m_removeComponents;
   Camera m_camera;
-
-  void addEntities();
-  void addComponents();
-  void removeEntities();
-  void removeComponents();
 };
 #endif // LIGHTINGSYSTEM_H_

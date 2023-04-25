@@ -1,27 +1,20 @@
 #ifndef COMPONENT_H_
 #define COMPONENT_H_
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
-// enum class containing all types of components. Add new enum if new component
-// type is created
-enum class ComponentTypeEnum {
-  GRAPHICS,
-  POSITION,
-  CAMERAFOCUS,
-  LIGHTING,
-};
+using ComponentType = std::size_t;
 
 // Basic component interface which all other components implement
-class Component {
+template <typename T> class Component {
 public:
   Component() = default;
   virtual ~Component() = default;
-  virtual ComponentTypeEnum getComponentType() { return m_componentType; }
+
+  ComponentType getComponentType() { return m_type; }
 
 protected:
-  ComponentTypeEnum m_componentType;
+  ComponentType m_type = m_nextComponentType++;
 };
+
+static ComponentType m_nextComponentType = 0;
+
 #endif // COMPONENT_H_

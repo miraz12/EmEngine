@@ -1,43 +1,42 @@
-#ifndef ENTITY_H_
-#define ENTITY_H_
+// #ifndef ENTITY_H_
+// #define ENTITY_H_
 
-#include <string>
-#include <vector>
+// #include <string>
+// #include <vector>
 
-#include "Components/Component.hpp"
+// #include "Components/Component.hpp"
 
-class Entity {
-public:
-  Entity(int ID);
+// class Entity {
+// public:
+//   Entity(int ID);
 
-  ~Entity();
-  Entity(const Entity &) = delete;
+//   ~Entity();
+//   Entity(const Entity &) = delete;
 
-  int getID();
+//   int getID();
 
-  // Adds component
-  // Can't have more than one type of component!
-  bool addComponent(Component *component);
+//   // Adds component
+//   // Can't have more than one type of component!
+//   template <typename T> bool addComponent(T *component);
 
-  // Returns component based on enum ComponentTypeEnum
-  Component *getComponent(ComponentTypeEnum type);
+//   // Returns component based on enum ComponentTypeEnum
+//   template <typename T> T *getComponent();
 
-  // Check if component exists
-  bool hasComponent(ComponentTypeEnum type);
+//   // Check if component exists
+//   bool hasComponent(ComponentType type);
 
-  // Removes component
-  void removeComponent(ComponentTypeEnum removeComponent);
+//   // Removes component
+//   void removeComponent(ComponentType removeComponent);
 
-  void setName(std::string name) { m_name = name; };
-  std::string getName() { return m_name; };
+//   void setName(std::string name) { m_name = name; };
+//   std::string getName() { return m_name; };
 
-  void makePlayable() { m_playable = true; }
-  bool isPlayable() { return m_playable; }
+//   void makePlayable() { m_playable = true; }
+//   bool isPlayable() { return m_playable; }
 
-private:
-  int m_ID;
-  bool m_playable;
-  std::string m_name;
-  std::vector<Component *> m_components;
-};
-#endif // ENTITY_H_
+// private:
+//   int m_ID;
+//   bool m_playable;
+//   std::string m_name;
+// };
+// #endif // ENTITY_H_

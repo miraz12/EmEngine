@@ -5,7 +5,7 @@
 
 #include "Component.hpp"
 
-class PositionComponent : public Component {
+class PositionComponent : public Component<PositionComponent> {
 public:
   glm::vec3 position;
   float rotation;

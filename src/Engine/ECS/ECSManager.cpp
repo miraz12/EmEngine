@@ -2,183 +2,91 @@
 
 #include "Systems/GraphicsSystem.hpp"
 
-std::vector<Entity *> ECSManager::m_entities;
-
-ECSManager::ECSManager()
-    : m_idCounter(1), m_addEntities(), m_addComponents(), m_removeEntities(), m_removeComponents() {
-  initializeSystems();
-}
+ECSManager::ECSManager() : m_idCounter(1) { initializeSystems(); }
 
 ECSManager::~ECSManager() {
   // Delete all entities and systems
-  for (auto &e : m_entities) {
-    delete e;
-  }
-  for (auto &s : m_systems) {
-    delete s.second;
-  }
+  // for (auto &e : m_entities) {
+  //   delete e;
+  // }
+  // for (auto &s : m_systems) {
+  //   delete s.second;
+  // }
 }
 
 void ECSManager::initializeSystems() {
-  m_systems["LIGHTS"] = new LightingSystem(this, m_camera);
-  m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
+  // m_systems["LIGHTS"] = new LightingSystem(this, m_camera);
+  // m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
 }
 
 void ECSManager::update(float dt) {
-  // for all entities, remove/add components
-  // remove/add entities from systems
-  addEntities();
-  addComponents();
-  removeEntities();
-  removeComponents();
-
   // update all systems
-  for (auto &s : m_systems) {
-    s.second->update(dt);
-  }
+  // for (auto &s : m_systems) {
+  //   s.second->update(dt);
+  // }
 }
 
-void ECSManager::reset() {
-  // Delete all entities
-  for (auto &e : m_entities) {
-    delete e;
-  }
-  m_entities.clear();
-  m_idCounter = 0;
-
-  // re-init systems
-  initializeSystems();
+Entity ECSManager::createEntity() {
+  Entity entity = m_entityCount++;
+  m_entities.push_back(entity);
+  return entity;
 }
 
-Entity &ECSManager::createEntity() {
-  Entity *e = new Entity(m_idCounter++);
-  m_addEntities.push_back(e);
-  return *e;
+template <typename T> void ECSManager::addComponent(Entity entity, T component) {
+  m_components[Entity] = component;
 }
 
-void ECSManager::addEntity(Entity *entity) { m_addEntities.push_back(entity); }
-
-void ECSManager::addComponent(Entity &entity, Component *component) {
-  m_addComponents.push_back(addComponent_t{entity, component});
-}
-
-void ECSManager::removeEntity(int entityID) { m_removeEntities.push_back(entityID); }
-
-void ECSManager::removeComponent(Entity &entity, ComponentTypeEnum component) {
-  m_removeComponents.push_back(removeComponent_t{entity, component});
-}
-
-Entity *ECSManager::getEntity(int entityID) {
-  for (auto &entity : m_entities) {
-    if (entity->getID() == entityID) {
-      return entity;
-    }
-  }
-  return nullptr;
-}
-
-// PRIVATE
-
-void ECSManager::addEntities() {
-  for (auto &newEntity : m_addEntities) {
-    // add to manager
-    m_entities.push_back(newEntity);
-
-    // add to systems
-    for (auto &system : m_systems) {
-      system.second->addEntity(m_entities.back());
-    }
-  }
-  m_addEntities.clear();
-}
-
-void ECSManager::addComponents() {
-  for (auto &components : m_addComponents) {
-    // if enitity does not already have component, proceed
-    if (components.ent.addComponent(components.cmp)) {
-      for (auto &system : m_systems) {
-        // if entity is not already belonging to the system, try and add it
-        if (!system.second->containsEntity(components.ent.getID())) {
-          system.second->addEntity(&components.ent);
-        }
-      }
-    }
-  }
-  m_addComponents.clear();
-}
-
-void ECSManager::removeEntities() {
-  for (auto &i : m_removeEntities) {
-    // delete in systems
-    for (auto &system : m_systems) {
-      system.second->removeEntity(i);
-    }
-
-    // delete in manager
-    for (unsigned int j = 0; j < m_entities.size(); j++) {
-      if (m_entities[j]->getID() == i) {
-        delete m_entities[j];
-        m_entities.erase(m_entities.begin() + j);
-      }
-    }
-  }
-  m_removeEntities.clear();
-}
-
-void ECSManager::removeComponents() {
-  for (auto &components : m_removeComponents) {
-    components.ent.removeComponent(components.cmp);
-    for (auto &system : m_systems) {
-      system.second->removeFaultyEntity(components.ent.getID());
-    }
-  }
-  m_removeComponents.clear();
+template <typename T> void ECSManager::removeComponent(Entity &entity, T component) {
+  // Check if the entity has a component of the given type
+  if (m_components.find(entity) != m_components.end()) {
+    // Remove the component from the entity's component vector
+    m_components[entity][T] = ;
 }
 
 int ECSManager::createPlayerEntity(float /* x */, float /* y */, GLFWwindow * /* window */) {
-  Entity &playerEntity = createEntity();
-  playerEntity.setName("Player");
-  playerEntity.makePlayable();
-  // Add components to player
-  GraphicsComponent *graphComp = new GraphicsComponent();
-  MeshShaderProgram *p = new MeshShaderProgram;
-  Mesh *m = new Mesh(*p);
-  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
-  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
-  // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/ToyCar/glTF-Binary/ToyCar.glb");
-  // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
-  graphComp->grapObj = m;
+  // Entity &playerEntity = createEntity();
+  // playerEntity.setName("Player");
+  // playerEntity.makePlayable();
+  // // Add components to player
+  // GraphicsComponent *graphComp = new GraphicsComponent();
+  // MeshShaderProgram *p = new MeshShaderProgram;
+  // Mesh *m = new Mesh(*p);
+  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.glb");
+  // // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  // // m->LoadFlile("/home/shaggy/git/glTF-Sample-Models/2.0/ToyCar/glTF-Binary/ToyCar.glb");
+  // // m->LoadFlile("resources/Models/gltf/sponza/Sponza.gltf");
+  // graphComp->grapObj = m;
 
-  addComponent(playerEntity, graphComp);
-  PositionComponent *posComp = new PositionComponent();
-  // posComp->scale = glm::vec3(0.008, 0.008, 0.008);
-  posComp->rotation = 30.0f;
-  addComponent(playerEntity, posComp);
-  return playerEntity.getID();
+  // addComponent(playerEntity, graphComp);
+  // PositionComponent *posComp = new PositionComponent();
+  // // posComp->scale = glm::vec3(0.008, 0.008, 0.008);
+  // posComp->rotation = 30.0f;
+  // addComponent(playerEntity, posComp);
+  // return playerEntity.getID();
 }
 
-PointLight* ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
-                                 glm::vec3 pos) {
-  Entity &en = createEntity();
-  PointLight *pLight = new PointLight();
-  pLight->position = pos;
-  pLight->color = color;
-  pLight->constant = constant;
-  pLight->linear = linear;
-  pLight->quadratic = quadratic;
-  LightingComponent *lightComp =
-      new LightingComponent(pLight, LightingComponent::TYPE::POINT);
-  addComponent(en, lightComp);
-  return pLight;
-}
-DirectionalLight* ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir) {
-  Entity &en = createEntity();
-  DirectionalLight *dLight = new DirectionalLight();
-  dLight->direction = dir;
-  dLight->color = color;
-  dLight->ambientIntensity = ambient;
-  LightingComponent *lightComp =
-      new LightingComponent(dLight, LightingComponent::TYPE::DIRECTIONAL);
-  addComponent(en, lightComp);
-  return dLight;
-}
+// PointLight *ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear,
+//                                         float quadratic, glm::vec3 pos) {
+//   Entity &en = createEntity();
+//   PointLight *pLight = new PointLight();
+//   pLight->position = pos;
+//   pLight->color = color;
+//   pLight->constant = constant;
+//   pLight->linear = linear;
+//   pLight->quadratic = quadratic;
+//   LightingComponent *lightComp = new LightingComponent(pLight, LightingComponent::TYPE::POINT);
+//   addComponent(en, lightComp);
+//   return pLight;
+// }
+// DirectionalLight *ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3
+// dir) {
+//   Entity &en = createEntity();
+//   DirectionalLight *dLight = new DirectionalLight();
+//   dLight->direction = dir;
+//   dLight->color = color;
+//   dLight->ambientIntensity = ambient;
+//   LightingComponent *lightComp =
+//       new LightingComponent(dLight, LightingComponent::TYPE::DIRECTIONAL);
+//   addComponent(en, lightComp);
+//   return dLight;
+// }

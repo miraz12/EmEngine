@@ -5,13 +5,14 @@
 #include "Component.hpp"
 #include "Types/LightTypes.hpp"
 
-class LightingComponent : public Component {
+class LightingComponent : public Component<LightingComponent> {
 public:
   enum TYPE {
     NONE,
     POINT,
     DIRECTIONAL,
   };
+
   LightingComponent(BaseLight *light, TYPE type);
   virtual ~LightingComponent();
 
