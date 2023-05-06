@@ -33,6 +33,4 @@ jobs:
     
     - name: Deploy
       run: |
-        rm -r /home/alarm/public
-        mkdir /home/alarm/public
-        cp embuild/* /srv/http/ -r     
+        cp embuild/* /srv/http/ -r
