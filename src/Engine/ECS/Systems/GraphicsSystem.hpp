@@ -1,6 +1,7 @@
 #ifndef GRAPHICSSYSTEM_H_
 #define GRAPHICSSYSTEM_H_
 
+#include <RenderPasses/FrameGraph.hpp>
 #include <array>
 
 #include "Camera.hpp"
@@ -12,9 +13,11 @@ class GraphicsSystem : public System {
 public:
   GraphicsSystem(ECSManager *ECSManager, Camera &cam);
   void update(float dt);
+  void setViewport(unsigned int w, unsigned int h);
 
 private:
   Camera &m_camera;
   FrameBufferManager &m_fboManager;
+  FrameGraph &m_fGraph;
 };
 #endif // GRAPHICSSYSTEM_H_

@@ -11,6 +11,8 @@ public:
   ShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath);
   virtual ~ShaderProgram();
 
+  void setUniformBinding(std::string u);
+  void setAttribBinding(std::string a);
   unsigned int getUniformLocation(std::string uniformName);
   int getAttribLocation(std::string attribName);
   unsigned int getId() { return p_shaderProgram; }

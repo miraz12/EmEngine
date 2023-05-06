@@ -1,17 +1,12 @@
 #include "ECSManager.hpp"
-
+#include "ECS/Systems/System.hpp"
 #include "Systems/GraphicsSystem.hpp"
-#include <ECS/Systems/LightingSystem.hpp>
-#include <ECS/Systems/System.hpp>
 
 ECSManager::ECSManager() { initializeSystems(); }
 
 ECSManager::~ECSManager() {}
 
-void ECSManager::initializeSystems() {
-  m_systems["LIGHT"] = new LightingSystem(this, m_camera);
-  m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
-}
+void ECSManager::initializeSystems() { m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera); }
 
 void ECSManager::update(float dt) {
   // update all systems
@@ -54,5 +49,6 @@ DirectionalLight *ECSManager::SetupDirectionalLight(glm::vec3 color, float ambie
 }
 
 void ECSManager::setViewport(unsigned int w, unsigned int h) {
-  static_cast<LightingSystem *>(m_systems["LIGHT"])->setViewport(w, h);
+  m_camera.setSize(w, h);
+  static_cast<GraphicsSystem *>(m_systems["GRAPHICS"])->setViewport(w, h);
 };

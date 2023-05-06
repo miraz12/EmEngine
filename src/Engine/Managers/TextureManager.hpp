@@ -1,5 +1,7 @@
 #ifndef TEXTUREMANAGER_H_
 #define TEXTUREMANAGER_H_
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 class TextureManager {
@@ -10,12 +12,16 @@ public:
   }
   TextureManager(TextureManager const &) = delete;
   void operator=(TextureManager const &) = delete;
-  void loadTexture(unsigned int format, unsigned int type, unsigned int width, unsigned int height,
-                   unsigned char *data);
-  void bindTexture(unsigned int texIdx);
+  unsigned int loadTexture(unsigned int internalFormat, unsigned int format, unsigned int type,
+                                           unsigned int width, unsigned int height,
+                                           unsigned char *data);
+  unsigned int loadTexture(std::string name, unsigned int internalFormat, unsigned int format,
+                           unsigned int type, unsigned int width, unsigned int height,
+                           unsigned char *data);
+  void bindTexture(std::string name);
 
 private:
-  std::vector<unsigned int> texIds;
+  std::unordered_map<std::string, unsigned int> texIds;
   TextureManager() = default;
 };
 

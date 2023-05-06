@@ -1,6 +1,7 @@
 #include "GraphicsSystem.hpp"
 
 #include <ECS/Systems/System.hpp>
+#include <RenderPasses/FrameGraph.hpp>
 #include <iostream>
 #include <vector>
 
@@ -19,19 +20,11 @@
 #include "ECS/ECSManager.hpp"
 
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
-    : System(ECSManager), m_camera(cam), m_fboManager(FrameBufferManager::getInstance()) {}
+    : System(ECSManager), m_camera(cam), m_fboManager(FrameBufferManager::getInstance()),
+      m_fGraph(*new FrameGraph(cam)) {}
 
-void GraphicsSystem::update(float /*dt*/) {
-  glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("gBuffer"));
-  glEnable(GL_DEPTH_TEST);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
 
-  std::vector<Entity> view = m_manager->view<GraphicsComponent, PositionComponent>();
-  for (auto e : view) {
-    PositionComponent *p = m_manager->getComponent<PositionComponent>(e);
-    glm::mat4 model = p->calculateMatrix();
-    GraphicsComponent *g = m_manager->getComponent<GraphicsComponent>(e);
-    g->grapObj->draw(m_camera, model);
-  }
+void GraphicsSystem::setViewport(unsigned int w, unsigned int h) {
+  m_fGraph.setViewport(w, h);
 }

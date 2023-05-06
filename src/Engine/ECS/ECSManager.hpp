@@ -24,7 +24,6 @@
 #include "Objects/Quad.hpp"
 #include "ShaderPrograms/MeshShaderProgram.hpp"
 #include "ShaderPrograms/SimpleShaderProgram.hpp"
-#include "Systems/LightingSystem.hpp"
 
 using Entity = std::size_t;
 using ComponentType = std::type_index;

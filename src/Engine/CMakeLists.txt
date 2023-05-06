@@ -7,11 +7,11 @@ file(GLOB_RECURSE ENGINE_FILES
 
 # Add source files as libraries
 add_library(Engine ${ENGINE_FILES})
-target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Engine ${CMAKE_SOURCE_DIR}/src/)
-target_link_libraries(Engine PUBLIC exts)
+target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Engine )
+target_link_libraries(Engine PUBLIC exts Game)
 target_compile_options(Engine PRIVATE
 						$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                        -pedantic -Wall -Wextra -Werror>
+                        -pedantic -Wall -Wextra -g3 -O0>
 						$<$<CXX_COMPILER_ID:MSVC>:
 						/W4;>)
 set_target_properties(Engine PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CMAKE_CXX_EXTENSIONS OFF)

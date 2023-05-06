@@ -18,6 +18,14 @@ ShaderProgram::ShaderProgram(std::string vertexShaderPath, std::string fragmentS
 
 ShaderProgram::~ShaderProgram() { glDeleteProgram(p_shaderProgram); }
 
+void ShaderProgram::setUniformBinding(std::string u) {
+  m_uniformBindings[u] = glGetUniformLocation(p_shaderProgram, u.c_str());
+}
+
+void ShaderProgram::setAttribBinding(std::string a) {
+  m_attribBindings[a] = glGetAttribLocation(p_shaderProgram, a.c_str());
+}
+
 void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
   // vertex shader
   std::string vertexShaderString = "";

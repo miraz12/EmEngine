@@ -1,8 +1,8 @@
 #ifndef GAME_H_
 #define GAME_H_
 
-#include "Engine/ECS/ECSManager.hpp"
-#include "Engine/InputManager.hpp"
+#include "ECS/ECSManager.hpp"
+#include "InputManager.hpp"
 
 class Game {
 public:

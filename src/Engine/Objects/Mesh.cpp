@@ -1,4 +1,5 @@
 #include <Objects/GraphicsObject.hpp>
+#include <string>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -90,7 +91,7 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
                   m.pbrMetallicRoughness.baseColorFactor[1],
                   m.pbrMetallicRoughness.baseColorFactor[2]);
       glActiveTexture(GL_TEXTURE0 + 0);
-      texMan.bindTexture(texIdx);
+      texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 0);
     }
     texIdx = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
@@ -100,7 +101,7 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
       glUniform1f(p_shaderProgram.getUniformLocation("metallicFactor"),
                   m.pbrMetallicRoughness.metallicFactor);
       glActiveTexture(GL_TEXTURE0 + 1);
-      texMan.bindTexture(texIdx);
+      texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 1);
     }
 
@@ -109,21 +110,21 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh) {
       glUniform3f(p_shaderProgram.getUniformLocation("emissiveFactor"), m.emissiveFactor[0],
                   m.emissiveFactor[1], m.emissiveFactor[2]);
       glActiveTexture(GL_TEXTURE0 + 2);
-      texMan.bindTexture(texIdx);
+      texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 2);
     }
 
     texIdx = m.occlusionTexture.index;
     if (texIdx >= 0) {
       glActiveTexture(GL_TEXTURE0 + 3);
-      texMan.bindTexture(texIdx);
+      texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 3);
     }
 
     texIdx = m.normalTexture.index;
     if (texIdx >= 0) {
       glActiveTexture(GL_TEXTURE0 + 4);
-      texMan.bindTexture(texIdx);
+      texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 4);
     }
 
@@ -221,6 +222,7 @@ void Mesh::loadModel(tinygltf::Model &model) {
 }
 
 void Mesh::loadTextures(tinygltf::Model &model) {
+  int i = 0;
   for (auto &tex : model.textures) {
     TextureManager &texMan = TextureManager::getInstance();
 
@@ -249,7 +251,7 @@ void Mesh::loadTextures(tinygltf::Model &model) {
         std::cout << "WARNING: no matching type." << std::endl;
       }
 
-      texMan.loadTexture(format, type, image.width, image.height, &image.image.at(0));
+      texMan.loadTexture(std::to_string(i++), GL_RGBA, format, type, image.width, image.height, &image.image.at(0));
     }
   }
 }
