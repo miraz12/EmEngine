@@ -1,6 +1,8 @@
 #include "GraphicsSystem.hpp"
 
+#include <ECS/Systems/System.hpp>
 #include <iostream>
+#include <vector>
 
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
@@ -14,9 +16,10 @@
 #include <glad/glad.h>
 #endif
 
+#include "ECS/ECSManager.hpp"
+
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
-    : System(ECSManager), m_camera(cam),
-      m_fboManager(FrameBufferManager::getInstance()) {}
+    : System(ECSManager), m_camera(cam), m_fboManager(FrameBufferManager::getInstance()) {}
 
 void GraphicsSystem::update(float /*dt*/) {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("gBuffer"));
@@ -24,13 +27,11 @@ void GraphicsSystem::update(float /*dt*/) {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  // Draw geometry
-  // for (auto &e : m_entities) {
-  //   PositionComponent *p =
-  //       static_cast<PositionComponent *>(e->getComponent(ComponentTypeEnum::POSITION));
-  //   glm::mat4 model = p->calculateMatrix();
-  //   GraphicsComponent *g =
-  //       static_cast<GraphicsComponent *>(e->getComponent(ComponentTypeEnum::GRAPHICS));
-  //   g->grapObj->draw(m_camera, model);
-  // }
+  std::vector<Entity> view = m_manager->view<GraphicsComponent, PositionComponent>();
+  for (auto e : view) {
+    PositionComponent *p = m_manager->getComponent<PositionComponent>(e);
+    glm::mat4 model = p->calculateMatrix();
+    GraphicsComponent *g = m_manager->getComponent<GraphicsComponent>(e);
+    g->grapObj->draw(m_camera, model);
+  }
 }

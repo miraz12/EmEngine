@@ -1,20 +1,26 @@
 #ifndef COMPONENT_H_
 #define COMPONENT_H_
 
-using ComponentType = std::size_t;
+#include <bitset>
+#include <cstddef>
 
-// Basic component interface which all other components implement
-template <typename T> class Component {
+
+
+class Component {
 public:
   Component() = default;
-  virtual ~Component() = default;
-
-  ComponentType getComponentType() { return m_type; }
-
-protected:
-  ComponentType m_type = m_nextComponentType++;
+  virtual ~Component() {}
 };
 
-static ComponentType m_nextComponentType = 0;
+template <typename T> class ComponentHandle {
+public:
+  ComponentHandle(T *component) : component_(component) {}
+  T *operator->() const { return component_; }
+  T &operator*() const { return *component_; }
+  operator bool() const { return component_ != nullptr; }
+
+private:
+  T *component_;
+};
 
 #endif // COMPONENT_H_

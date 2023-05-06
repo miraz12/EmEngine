@@ -5,7 +5,7 @@
 #include "Component.hpp"
 #include "Types/LightTypes.hpp"
 
-class LightingComponent : public Component<LightingComponent> {
+class LightingComponent : public Component {
 public:
   enum TYPE {
     NONE,

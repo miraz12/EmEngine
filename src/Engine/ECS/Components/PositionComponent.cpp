@@ -2,14 +2,10 @@
 
 #include <glm/ext.hpp>
 
-PositionComponent::PositionComponent() : position(0.0f, 0.0f, 0.0f), rotation(0.0f), scale(1.0f) {
-  m_componentType = ComponentTypeEnum::POSITION;
-}
+PositionComponent::PositionComponent() : position(0.0f, 0.0f, 0.0f), rotation(0.0f), scale(1.0f) {}
 
 PositionComponent::PositionComponent(float startX, float startY)
-    : position(startX, startY, -0.1f), rotation(0.0f), scale(1.0f) {
-  m_componentType = ComponentTypeEnum::POSITION;
-}
+    : position(startX, startY, -0.1f), rotation(0.0f), scale(1.0f) {}
 
 glm::mat4 PositionComponent::calculateMatrix() {
   glm::mat4 tempMatrix = glm::scale(glm::identity<glm::mat4>(), scale);

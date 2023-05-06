@@ -1,15 +1,5 @@
 #include "LightingSystem.hpp"
 
-#include <glm/gtx/string_cast.hpp>
-#include <iostream>
-#include <stb_image.h>
-
-#include "ECS/Components/GraphicsComponent.hpp"
-#include "ECS/Components/LightingComponent.hpp"
-#include "ECS/Components/PositionComponent.hpp"
-#include "Managers/FrameBufferManager.hpp"
-#include "Types/LightTypes.hpp"
-
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
 #include <GLES3/gl3.h>
@@ -18,8 +8,19 @@
 #include <glad/glad.h>
 #endif
 
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
+#include <stb_image.h>
+
+#include "ECS/Components/GraphicsComponent.hpp"
+#include "ECS/Components/LightingComponent.hpp"
+#include "ECS/Components/PositionComponent.hpp"
+#include "ECS/ECSManager.hpp"
+#include "Managers/FrameBufferManager.hpp"
+#include "Types/LightTypes.hpp"
+
 LightingSystem::LightingSystem(ECSManager *ECSManager, Camera &cam)
-    : System(ECSManager, ComponentTypeEnum::LIGHTING), m_camera(cam) {
+    : System(ECSManager), m_camera(cam) {
   initGL();
 }
 void LightingSystem::update(float /* dt */) {
@@ -29,10 +30,12 @@ void LightingSystem::update(float /* dt */) {
   glClear(GL_COLOR_BUFFER_BIT);
   m_shaderProgram.use();
 
+  std::vector<Entity> view = m_manager->view<LightingComponent>();
+
   int numPLights = 0;
-  for (auto &e : m_entities) {
+  for (auto e : view) {
     LightingComponent *g =
-        static_cast<LightingComponent *>(e->getComponent(ComponentTypeEnum::LIGHTING));
+        static_cast<LightingComponent *>(m_manager->getComponent<LightingComponent>(e));
 
     LightingComponent::TYPE t = g->getType();
     if (t == LightingComponent::DIRECTIONAL) {

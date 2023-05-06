@@ -1,6 +1,9 @@
 #include "Game.hpp"
 
+#include <ECS/Components/GraphicsComponent.hpp>
 #include <ECS/Components/LightingComponent.hpp>
+#include <ECS/Components/PositionComponent.hpp>
+#include <ECS/ECSManager.hpp>
 #include <algorithm>
 #include <glm/glm.hpp>
 
@@ -17,12 +20,11 @@ Game::Game(GLFWwindow *window)
   // m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
 
   // ----
-  Entity &en = m_ECSManager->createEntity();
+  Entity en = m_ECSManager->createEntity();
   GraphicsComponent *graphComp = new GraphicsComponent();
   graphComp->grapObj = m;
-  m_ECSManager->addComponent(en, graphComp);
   PositionComponent *posComp = new PositionComponent();
-  m_ECSManager->addComponent(en, posComp);
+  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // ----
   dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -88,8 +90,6 @@ void Game::handleInput(float dt) {
   }
 }
 
-void Game::setViewport(unsigned int w, unsigned int h) {
-  m_ECSManager->getLightingSystem()->setViewport(w, h);
-}
+void Game::setViewport(unsigned int w, unsigned int h) { m_ECSManager->setViewport(w, h); }
 
 Game::~Game() {}

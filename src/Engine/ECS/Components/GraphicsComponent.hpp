@@ -4,10 +4,12 @@
 #include "Component.hpp"
 #include "Objects/GraphicsObject.hpp"
 
-class GraphicsComponent : public Component<GraphicsComponent> {
+class GraphicsComponent : public Component {
 public:
+  GraphicsComponent() = default;
+  virtual ~GraphicsComponent();
+
   GraphicsObject *grapObj;
 
-  virtual ~GraphicsComponent();
 };
 #endif // GRAPHICSCOMPONENT_H_
