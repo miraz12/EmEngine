@@ -3,6 +3,7 @@
 
 #include "ECS/ECSManager.hpp"
 #include "InputManager.hpp"
+#include "glm/fwd.hpp"
 
 class Game {
 public:

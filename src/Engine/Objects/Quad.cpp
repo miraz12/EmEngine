@@ -13,7 +13,7 @@
 #include <glad/glad.h>
 #endif
 
-Quad::Quad(ShaderProgram &shaderProgram) : GraphicsObject(shaderProgram) {
+Quad::Quad(ShaderProgram &/* shaderProgram */) {
   glGenBuffers(1, &m_VBO);
   glGenBuffers(1, &m_EBO);
 
@@ -55,12 +55,12 @@ void Quad::setIndexData(std::size_t dataSize, const void *data) {
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
 }
 
-void Quad::draw(Camera &cam, glm::mat4 model) {
-  p_shaderProgram.use();
-  cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
-                         p_shaderProgram.getUniformLocation("viewMatrix"));
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(model));
+void Quad::draw(ShaderProgram &sPrg) {
+  sPrg.use();
+  // cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
+  //                        p_shaderProgram.getUniformLocation("viewMatrix"));
+  // glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+  //                    glm::value_ptr(model));
   glBindVertexArray(m_VAO);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

@@ -1,4 +1,6 @@
 #include "LightPass.hpp"
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 #include <Managers/TextureManager.hpp>
 
 #ifdef EMSCRIPTEN
@@ -18,11 +20,13 @@ LightPass::LightPass()
   p_shaderProgram.setUniformBinding("gNormalMetal");
   p_shaderProgram.setUniformBinding("gAlbedoSpecRough");
   p_shaderProgram.setUniformBinding("gEmissive");
+  p_shaderProgram.setUniformBinding("depthMap");
   p_shaderProgram.setUniformBinding("nrOfPointLights");
   p_shaderProgram.setUniformBinding("camPos");
   p_shaderProgram.setUniformBinding("directionalLight.direction");
   p_shaderProgram.setUniformBinding("directionalLight.color");
   p_shaderProgram.setUniformBinding("directionalLight.ambientIntensity");
+  p_shaderProgram.setUniformBinding("lightSpaceMatrix");
 
   glGenRenderbuffers(1, &rboDepth);
   p_shaderProgram.use();
@@ -33,6 +37,7 @@ LightPass::LightPass()
   glUniform1i(p_shaderProgram.getUniformLocation("gNormalMetal"), 1);
   glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
   glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
+  glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
 
   for (unsigned int i = 0; i < 10; i++) {
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].position");
@@ -71,8 +76,24 @@ void LightPass::Execute(ECSManager &eManager) {
 
   p_shaderProgram.use();
 
-  std::vector<Entity> view = eManager.view<LightingComponent>();
+  glUniform1i(p_shaderProgram.getUniformLocation("gPositionAo"), 0);
+  glUniform1i(p_shaderProgram.getUniformLocation("gNormalMetal"), 1);
+  glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
+  glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
+  glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
 
+  glm::mat4 lightProjection, lightView;
+  glm::mat4 lightSpaceMatrix;
+  float shadowBox = 9.0f;
+  lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox,
+                               1.0f, 30.0f);
+  glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
+  lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+  lightSpaceMatrix = lightProjection * lightView;
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(lightSpaceMatrix));
+
+  std::vector<Entity> view = eManager.view<LightingComponent>();
   int numPLights = 0;
   for (auto e : view) {
     LightingComponent *g =
@@ -142,6 +163,8 @@ void LightPass::Execute(ECSManager &eManager) {
   p_textureManager.bindTexture("gAlbedo");
   glActiveTexture(GL_TEXTURE3);
   p_textureManager.bindTexture("gEmissive");
+  glActiveTexture(GL_TEXTURE4);
+  p_textureManager.bindTexture("depthMap");
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -153,11 +176,15 @@ void LightPass::Execute(ECSManager &eManager) {
   glBindTexture(GL_TEXTURE_2D, 0);
   glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void LightPass::setViewport(unsigned int w, unsigned int h) {
   p_width = w;
   p_height = h;
+
+  // TODO: Move to geo pass
 
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
 

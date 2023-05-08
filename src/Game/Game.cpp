@@ -14,9 +14,10 @@ Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
 
-  MeshShaderProgram *mp = new MeshShaderProgram;
-  Mesh *m = new Mesh(*mp);
+  Mesh *m = new Mesh();
+  // TODO dynamic shadow projection and view
   m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
+  // m->LoadFlile("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
   // m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
 
   // ----
@@ -26,9 +27,17 @@ Game::Game(GLFWwindow *window)
   PositionComponent *posComp = new PositionComponent();
   m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
+  // Entity en = m_ECSManager->createEntity();
+  // GraphicsComponent *graphComp = new GraphicsComponent();
+  // graphComp->grapObj = m;
+  // PositionComponent *posComp = new PositionComponent();
+  // m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
+
+
+
   // ----
   dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-  dirLightAmbient = 0.2f;
+  dirLightAmbient = 0.6f;
   dirLightDir = glm::vec3(0.0f, -1.0f, -1.0f);
   dLight = m_ECSManager->SetupDirectionalLight(dirLightColor, dirLightAmbient, dirLightDir);
 
@@ -48,6 +57,7 @@ void Game::update(float dt) {
   dLight->direction = dirLightDir;
   handleInput(dt);
   m_ECSManager->update(dt);
+  m_ECSManager->dDir = dirLightDir;
 }
 
 void Game::handleInput(float dt) {

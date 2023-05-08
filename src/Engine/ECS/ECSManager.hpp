@@ -142,6 +142,8 @@ public:
   Camera &getCamera() { return m_camera; };
   void setViewport(unsigned int w, unsigned int h);
 
+  glm::vec3 dDir;
+
 private:
   ECSManager();
   // Entities

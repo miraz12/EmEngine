@@ -27,14 +27,14 @@ unsigned int TextureManager::loadTexture(unsigned int internalFormat, GLenum for
   glGenerateMipmap(GL_TEXTURE_2D);
 
   std::string name = std::to_string(texId);
-  texIds.erase(name);
+  deleteTexture(name);
   texIds.insert({name, texId});
   return texId;
 }
 unsigned int TextureManager::loadTexture(std::string name, unsigned int internalFormat,
                                          GLenum format, GLenum type, unsigned int width,
                                          unsigned int height, unsigned char *data) {
-  texIds.erase(name);
+  deleteTexture(name);
   GLuint texId;
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
@@ -50,6 +50,19 @@ unsigned int TextureManager::loadTexture(std::string name, unsigned int internal
   return texId;
 }
 
+void TextureManager::setTexture(std::string name, unsigned int texId) {
+  deleteTexture(name);
+  texIds.insert({name, texId});
+}
+
 void TextureManager::bindTexture(std::string name) {
   glBindTexture(GL_TEXTURE_2D, texIds.at(name));
+}
+
+void TextureManager::deleteTexture(std::string name) {
+  auto iter = texIds.find(name);
+  if (iter != texIds.end()) {
+    glDeleteTextures(1, &iter->second);
+    texIds.erase(name);
+  }
 }

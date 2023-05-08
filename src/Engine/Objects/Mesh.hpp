@@ -1,6 +1,7 @@
 #ifndef MESH_H_
 #define MESH_H_
 
+#include <ShaderPrograms/ShaderProgram.hpp>
 #include <map>
 #include <vector>
 
@@ -8,15 +9,19 @@
 #include "tiny_gltf.h"
 class Mesh : public GraphicsObject {
 public:
-  Mesh(ShaderProgram &p);
+  Mesh();
   virtual ~Mesh();
-  void draw(Camera &cam, glm::mat4 model) override;
+  void draw(ShaderProgram &sPrg) override;
+  void drawGeom(ShaderProgram &sPrg) override;
 
   void LoadFlile(std::string filename);
 
 private:
-  void drawModelNodes(tinygltf::Model &model, tinygltf::Node &node);
-  void drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh);
+  void drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderProgram &sPrg);
+  void drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram &sPrg);
+  void drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram &sPrg);
+  void drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderProgram &sPrg);
+
   void loadModel(tinygltf::Model &model);
   void loadMaterials();
   void loadTextures(tinygltf::Model &model);

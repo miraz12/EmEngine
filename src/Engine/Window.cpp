@@ -356,7 +356,7 @@ void Window::renderImgui() {
   ImGui::NewFrame();
 
 
-  ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysAutoResize); // Create a window called "Hello, world!"
+  ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysAutoResize);
   ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
   ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 1.0f);
   ImGui::SliderFloat3("Color", glm::value_ptr(game->dirLightColor), 0.0f, 1.0f);

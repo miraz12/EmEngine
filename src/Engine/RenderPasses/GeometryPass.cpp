@@ -16,10 +16,6 @@
 GeometryPass::GeometryPass()
     : RenderPass("resources/Shaders/meshVertex.glsl", "resources/Shaders/pbrMeshFragment.glsl") {
   glGenFramebuffers(1, &gBuffer);
-  glGenTextures(1, &gPosition);
-  glGenTextures(1, &gNormal);
-  glGenTextures(1, &gAlbedo);
-  glGenTextures(1, &gEmissive);
   glGenRenderbuffers(1, &rboDepth);
   p_fboManager.setFBO("gBuffer", gBuffer);
 
@@ -47,16 +43,27 @@ void GeometryPass::Execute(ECSManager &eManager) {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+  p_shaderProgram.use();
+
+  eManager.getCamera().bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
+                                          p_shaderProgram.getUniformLocation("viewMatrix"));
+
+  // glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+  // glm::value_ptr(model));
+  GLint tex[5] = {0, 1, 2, 3, 4};
+  glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
+
   std::vector<Entity> view = eManager.view<GraphicsComponent, PositionComponent>();
   for (auto e : view) {
-    PositionComponent *p = eManager.getComponent<PositionComponent>(e);
-    glm::mat4 model = p->calculateMatrix();
+    // PositionComponent *p = eManager.getComponent<PositionComponent>(e);
+    // glm::mat4 model = p->calculateMatrix();
     GraphicsComponent *g = eManager.getComponent<GraphicsComponent>(e);
-    g->grapObj->draw(eManager.getCamera(), model);
+    g->grapObj->draw(p_shaderProgram);
   }
 }
 
 void GeometryPass::setViewport(unsigned int w, unsigned int h) {
   p_width = w;
   p_height = h;
+
 }

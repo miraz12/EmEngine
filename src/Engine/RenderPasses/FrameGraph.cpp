@@ -3,6 +3,7 @@
 #include <Camera.hpp>
 #include <RenderPasses/GeometryPass.hpp>
 #include <RenderPasses/LightPass.hpp>
+#include <RenderPasses/ShadowPass.hpp>
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -21,11 +22,15 @@ FrameGraph::FrameGraph(Camera &cam) : m_camera(cam) {
 
   setViewport(m_width, m_height);
 
+  m_renderPass.push_back(new ShadowPass());
   m_renderPass.push_back(new GeometryPass());
   m_renderPass.push_back(new LightPass());
 }
 
 void FrameGraph::draw(ECSManager &eManager) {
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
   for (auto pass : m_renderPass) {
     pass->Execute(eManager);
   }
