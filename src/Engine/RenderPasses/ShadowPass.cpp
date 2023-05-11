@@ -21,13 +21,19 @@ ShadowPass::ShadowPass()
 
   p_shaderProgram.setAttribBinding("POSITION");
 
-  glGenFramebuffers(1, &m_depthMapFBO);
+  unsigned int depthMapFbo;
+  glGenFramebuffers(1, &depthMapFbo);
+  p_fboManager.setFBO("depthMapFbo", depthMapFbo);
+
+  unsigned int depthMap;
+  glGenTextures(1, &depthMap);
+  p_textureManager.setTexture("depthMap", depthMap);
 
   setViewport(p_width, p_height);
 }
 
 void ShadowPass::Execute(ECSManager &eManager) {
-  glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
+  p_fboManager.bindFBO("depthMapFbo");
   glEnable(GL_DEPTH_TEST);
   glClear(GL_DEPTH_BUFFER_BIT);
   glCullFace(GL_FRONT);
@@ -61,21 +67,17 @@ void ShadowPass::setViewport(unsigned int w, unsigned int h) {
   p_width = w;
   p_height = h;
 
-  p_fboManager.setFBO("depthMap", m_depthMapFBO);
-  // m_depthMap = p_textureManager.loadTexture("depthMap", GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
-  // GL_FLOAT, p_width, p_height, 0);
-  glGenTextures(1, &m_depthMap);
-  glBindTexture(GL_TEXTURE_2D, m_depthMap);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  p_textureManager.bindTexture("depthMap");
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, p_width, p_height, 0, GL_DEPTH_COMPONENT,
+               GL_FLOAT, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  p_textureManager.setTexture("depthMap", m_depthMap);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_depthMapFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthMap, 0);
-  GLuint buffer = GL_NONE;
+  unsigned int depthMap = p_fboManager.bindFBO("depthMapFbo");
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+  GLuint buffer = GL_NONE; // Emscripten strangeness
   glDrawBuffers(1, &buffer);
   glReadBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

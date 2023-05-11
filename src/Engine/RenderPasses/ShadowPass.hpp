@@ -11,8 +11,6 @@ public:
   void setViewport(unsigned int w, unsigned int h) override;
 
 private:
-  unsigned int m_depthMapFBO;
-  unsigned int m_depthMap;
 };
 
 #endif // SHADOWPASS_H_

@@ -14,6 +14,7 @@ public:
 
   unsigned int getFBO(std::string name) { return fbos.at(name); };
   void setFBO(std::string name, unsigned int &fbo) { fbos[name] = fbo; };
+  unsigned int bindFBO(std::string name);
 
 private:
   FrameBufferManager() = default;

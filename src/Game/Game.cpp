@@ -16,9 +16,9 @@ Game::Game(GLFWwindow *window)
 
   Mesh *m = new Mesh();
   // TODO dynamic shadow projection and view
-  m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
+  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
   // m->LoadFlile("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
-  // m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
 
   // ----
   Entity en = m_ECSManager->createEntity();
@@ -38,7 +38,7 @@ Game::Game(GLFWwindow *window)
   // ----
   dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
   dirLightAmbient = 0.6f;
-  dirLightDir = glm::vec3(0.0f, -1.0f, -1.0f);
+  dirLightDir = glm::vec3(0.01f, -1.0f, 0.0f);
   dLight = m_ECSManager->SetupDirectionalLight(dirLightColor, dirLightAmbient, dirLightDir);
 
   m_ECSManager->SetupPointLight(glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 0.7f, 1.8f,
