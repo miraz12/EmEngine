@@ -16,8 +16,8 @@ Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
 
-  GltfObject *g = new GltfObject("../glTF-Sample-Models/2.0/BoxTextured/glTF/BoxTextured.gltf");
-  // GltfObject *g = new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf");
+  GltfObject *g = new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  //GltfObject *g = new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf");
   // GltfObject *g =
       // new GltfObject("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
 

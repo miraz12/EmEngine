@@ -74,6 +74,21 @@ void GltfObject::drawGeom(const ShaderProgram &sPrg) {
 }
 
 void GltfObject::loadModel(tinygltf::Model &model) {
+  tinygltf::Node node = model.nodes[0];
+  glm::mat4 modelMat = glm::identity<glm::mat4>();
+  if (!node.rotation.empty()) {
+    modelMat = glm::rotate(modelMat, (float)(node.rotation[0]), glm::vec3(1.0, 0.0, 0.0));
+    modelMat = glm::rotate(modelMat, (float)(node.rotation[1]), glm::vec3(0.0, 1.0, 0.0));
+    modelMat = glm::rotate(modelMat, (float)(node.rotation[2]), glm::vec3(0.0, 0.0, 1.0));
+  }
+  if (!node.scale.empty()) {
+    modelMat = glm::scale(modelMat, glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
+  }
+  if (!node.translation.empty()) {
+    modelMat = glm::translate(
+        modelMat, glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
+  }
+  p_modelMatrix = modelMat;
   loadTextures(model);
   loadMaterials(model);
   loadMeshes(model);
@@ -101,8 +116,8 @@ void GltfObject::loadMaterials(tinygltf::Model &model) {
       newmat->m_occlusionTexture = std::to_string(mat.occlusionTexture.index);
     }
     if (mat.normalTexture.index >= 0) {
-      // materialMast = materialMast | (1 << 4);
-      // newmat->m_normalTexture = std::to_string(mat.normalTexture.index);
+      materialMast = materialMast | (1 << 4);
+      newmat->m_normalTexture = std::to_string(mat.normalTexture.index);
     }
 
     newmat->m_material = materialMast;

@@ -110,8 +110,8 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     // calculate per-light radiance
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
-    // float shadow = ShadowCalculation(lightPos, normal, light.direction);
-    float attenuation = light.ambientIntensity;// - shadow;
+    float shadow = ShadowCalculation(lightPos, normal, light.direction);
+    float attenuation = light.ambientIntensity - shadow;
     vec3 radiance     = light.color * attenuation;
 
     // cook-torrance brdf
@@ -163,7 +163,7 @@ void main() {
     vec3 fragPos = texture(gPositionAo, texCoords).rgb;
     vec3 normal = texture(gNormalMetal, texCoords).rgb;
     vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
-    vec4 emissive = texture(gEmissive, texCoords);
+    vec4 emissive = vec4(0.0) + texture(gEmissive, texCoords);
     float ao = texture(gPositionAo, texCoords).a;
     float metallic = texture(gNormalMetal, texCoords).a;
     float roughness = texture(gAlbedoSpecRough, texCoords).a;

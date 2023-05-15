@@ -183,6 +183,7 @@ void Mesh::drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node,
     drawMeshGeom(model, model.meshes[node.mesh], sPrg);
   }
   for (size_t i = 0; i < node.children.size(); i++) {
+    std::cout << "Has childern.." << std::endl;
     drawModelGeomNodes(model, model.nodes[node.children[i]], sPrg);
   }
 }

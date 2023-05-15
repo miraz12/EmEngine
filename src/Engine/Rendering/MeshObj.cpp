@@ -11,6 +11,7 @@
 void MeshObj::draw(const ShaderProgram &sPrg) {
   glBindVertexArray(m_vao);
   glDrawElements(m_mode, m_eboCount, m_eboType, (void *)(sizeof(char) * (m_eboOffset)));
+  glBindVertexArray(0);
 
   // if (!m_positions.empty()) {
   //   loc = sPrg.getAttribLocation("POSITION");
@@ -63,5 +64,5 @@ void MeshObj::draw(const ShaderProgram &sPrg) {
   //   // glDrawArrays(primitive.mode, 0, model.accessors[primitive.indices].count);
   // }
 
-  glBindVertexArray(m_vao);
+ 
 }

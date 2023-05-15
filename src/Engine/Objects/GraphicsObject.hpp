@@ -20,7 +20,7 @@ public:
   virtual void drawGeom(const ShaderProgram &sPrg) = 0;
 
 protected:
-  glm::mat4 p_modelMatrix = glm::mat4(1.0f);
+  glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();
   std::vector<float> p_vertices;
   std::vector<float> p_normals;
   std::vector<float> p_texCoords;

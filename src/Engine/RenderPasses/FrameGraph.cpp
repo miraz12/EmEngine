@@ -22,7 +22,7 @@ FrameGraph::FrameGraph(Camera &cam) : m_camera(cam) {
 
   setViewport(m_width, m_height);
 
-  // m_renderPass.push_back(new ShadowPass());
+  m_renderPass.push_back(new ShadowPass());
   m_renderPass.push_back(new GeometryPass());
   m_renderPass.push_back(new LightPass());
 }
