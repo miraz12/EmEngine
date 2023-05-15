@@ -51,8 +51,8 @@ void GeometryPass::Execute(ECSManager &eManager) {
 
   // glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
   // glm::value_ptr(model));
-  GLint tex[5] = {0, 1, 2, 3, 4};
-  glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
+  // GLint tex[5] = {0, 1, 2, 3, 4};
+  // glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
 
   std::vector<Entity> view = eManager.view<GraphicsComponent, PositionComponent>();
   for (auto e : view) {

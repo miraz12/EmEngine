@@ -12,6 +12,7 @@ public:
   }
   TextureManager(TextureManager const &) = delete;
   void operator=(TextureManager const &) = delete;
+  // TODO: Make a new function that regenerates textures
   unsigned int loadTexture(unsigned int internalFormat, unsigned int format, unsigned int type,
                            unsigned int width, unsigned int height, unsigned char *data);
   unsigned int loadTexture(std::string name, unsigned int internalFormat, unsigned int format,

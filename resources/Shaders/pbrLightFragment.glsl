@@ -110,8 +110,8 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     // calculate per-light radiance
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
-    float shadow = ShadowCalculation(lightPos, normal, light.direction);
-    float attenuation = light.ambientIntensity - shadow;
+    // float shadow = ShadowCalculation(lightPos, normal, light.direction);
+    float attenuation = light.ambientIntensity;// - shadow;
     vec3 radiance     = light.color * attenuation;
 
     // cook-torrance brdf

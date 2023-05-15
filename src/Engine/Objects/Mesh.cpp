@@ -29,7 +29,7 @@ Mesh::Mesh() {}
 
 Mesh::~Mesh() { glDeleteVertexArrays(1, &m_vao); }
 
-void Mesh::draw(ShaderProgram &sPrg) {
+void Mesh::draw(const ShaderProgram &sPrg) {
   glBindVertexArray(m_vao);
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
@@ -37,7 +37,7 @@ void Mesh::draw(ShaderProgram &sPrg) {
   }
 }
 
-void Mesh::drawGeom(ShaderProgram &sPrg) {
+void Mesh::drawGeom(const ShaderProgram &sPrg) {
   glBindVertexArray(m_vao);
   const tinygltf::Scene &scene = m_model.scenes[m_model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
@@ -45,7 +45,7 @@ void Mesh::drawGeom(ShaderProgram &sPrg) {
   }
 }
 
-void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderProgram &sPrg) {
+void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, const ShaderProgram &sPrg) {
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   if (!node.rotation.empty()) {
     modelMat = glm::rotate(modelMat, (float)(node.rotation[0]), glm::vec3(1.0, 0.0, 0.0));
@@ -59,8 +59,7 @@ void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderPr
     modelMat = glm::translate(
         modelMat, glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
   }
-  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(modelMat));
+  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMat));
 
   if ((node.mesh >= 0) && (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
     drawMesh(model, model.meshes[node.mesh], sPrg);
@@ -70,7 +69,7 @@ void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderPr
   }
 }
 
-void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram &sPrg) {
+void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, const ShaderProgram &sPrg) {
   TextureManager &texMan = TextureManager::getInstance();
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
     tinygltf::Primitive primitive = mesh.primitives[i];
@@ -87,10 +86,9 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram 
     tinygltf::Material m = model.materials[primitive.material];
     int texIdx = m.pbrMetallicRoughness.baseColorTexture.index;
     if (texIdx >= 0) {
-      glUniform3f(sPrg.getUniformLocation("baseColorFactor"),
-                  m.pbrMetallicRoughness.baseColorFactor[0],
-                  m.pbrMetallicRoughness.baseColorFactor[1],
-                  m.pbrMetallicRoughness.baseColorFactor[2]);
+      glUniform3f(
+          sPrg.getUniformLocation("baseColorFactor"), m.pbrMetallicRoughness.baseColorFactor[0],
+          m.pbrMetallicRoughness.baseColorFactor[1], m.pbrMetallicRoughness.baseColorFactor[2]);
       glActiveTexture(GL_TEXTURE0 + 0);
       texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 0);
@@ -99,8 +97,7 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram 
     if (texIdx >= 0) {
       glUniform1f(sPrg.getUniformLocation("roughnessFactor"),
                   m.pbrMetallicRoughness.roughnessFactor);
-      glUniform1f(sPrg.getUniformLocation("metallicFactor"),
-                  m.pbrMetallicRoughness.metallicFactor);
+      glUniform1f(sPrg.getUniformLocation("metallicFactor"), m.pbrMetallicRoughness.metallicFactor);
       glActiveTexture(GL_TEXTURE0 + 1);
       texMan.bindTexture(std::to_string(texIdx));
       material = material | (1 << 1);
@@ -161,24 +158,12 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram 
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buffers.at(indexAccessor.bufferView));
       glDrawElements(primitive.mode, indexAccessor.count, indexAccessor.componentType,
                      (void *)(sizeof(char) * (indexAccessor.byteOffset)));
-    } else {
-      for (auto &attrib : primitive.attributes) {
-        tinygltf::Accessor accessor = model.accessors[attrib.second];
-        unsigned int loc = m_buffers.at(accessor.bufferView);
-        glBindBuffer(GL_ARRAY_BUFFER, loc);
-        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
-                              byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
-        glEnableVertexAttribArray(loc);
-      }
-      tinygltf::Accessor indexAccessor = model.accessors[primitive.indices];
-      glBindBuffer(GL_ARRAY_BUFFER, m_buffers.at(indexAccessor.bufferView));
-      glDrawArrays(primitive.mode, 0, model.accessors[primitive.indices].count);
     }
   }
 }
 
-void Mesh::drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderProgram &sPrg) {
+void Mesh::drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node,
+                              const ShaderProgram &sPrg) {
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   if (!node.rotation.empty()) {
     modelMat = glm::rotate(modelMat, (float)(node.rotation[0]), glm::vec3(1.0, 0.0, 0.0));
@@ -192,8 +177,7 @@ void Mesh::drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node, Shad
     modelMat = glm::translate(
         modelMat, glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
   }
-  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(modelMat));
+  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMat));
 
   if ((node.mesh >= 0) && (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
     drawMeshGeom(model, model.meshes[node.mesh], sPrg);
@@ -203,7 +187,7 @@ void Mesh::drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node, Shad
   }
 }
 
-void Mesh::drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram &sPrg) {
+void Mesh::drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, const ShaderProgram &sPrg) {
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
     tinygltf::Primitive primitive = mesh.primitives[i];
     tinygltf::Accessor accessor = model.accessors[primitive.attributes["POSITION"]];

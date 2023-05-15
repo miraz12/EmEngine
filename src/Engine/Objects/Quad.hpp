@@ -12,8 +12,8 @@ class Quad : public GraphicsObject {
 public:
   Quad(ShaderProgram &shaderProgram);
   virtual ~Quad();
-  void draw(ShaderProgram &sPrg) override;
-  void drawGeom(ShaderProgram &sPrg) override;
+  void draw(const ShaderProgram &sPrg) override;
+  void drawGeom(const ShaderProgram &sPrg) override;
 
   glm::mat4 &getModelMatrix();
   unsigned int getQuadIndex();

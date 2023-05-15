@@ -55,7 +55,7 @@ void Quad::setIndexData(std::size_t dataSize, const void *data) {
       glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
 }
 
-void Quad::draw(ShaderProgram &sPrg) {
+void Quad::draw(const ShaderProgram &sPrg) {
   sPrg.use();
   // cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
   //                        p_shaderProgram.getUniformLocation("viewMatrix"));

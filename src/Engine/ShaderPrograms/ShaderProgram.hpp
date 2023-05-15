@@ -8,16 +8,18 @@
 // setupVertexAttributePointers that matches the shaders
 class ShaderProgram {
 public:
+  ShaderProgram() = delete;
   ShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath);
   virtual ~ShaderProgram();
+  ShaderProgram(const ShaderProgram&) = delete;
 
   void setUniformBinding(std::string u);
   void setAttribBinding(std::string a);
-  unsigned int getUniformLocation(std::string uniformName);
-  int getAttribLocation(std::string attribName);
+  unsigned int getUniformLocation(std::string uniformName) const;
+  unsigned int getAttribLocation(std::string attribName) const;
   unsigned int getId() { return p_shaderProgram; }
   void loadShaders(std::string vertexShaderPath, std::string fragmentShaderPath);
-  void use();
+  void use() const;
 
 protected:
   unsigned int p_shaderProgram;

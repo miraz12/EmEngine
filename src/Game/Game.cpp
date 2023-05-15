@@ -4,7 +4,9 @@
 #include <ECS/Components/LightingComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
+#include <Objects/GltfObject.hpp>
 #include <algorithm>
+
 #include <glm/glm.hpp>
 
 #include "Window.hpp"
@@ -14,16 +16,22 @@ Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
 
-  Mesh *m = new Mesh();
+  GltfObject *g = new GltfObject("../glTF-Sample-Models/2.0/BoxTextured/glTF/BoxTextured.gltf");
+  // GltfObject *g = new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf");
+  // GltfObject *g =
+      // new GltfObject("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
+
   // TODO dynamic shadow projection and view
+  // Mesh *m = new Mesh();
   // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
   // m->LoadFlile("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
-  m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  // m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
 
   // ----
   Entity en = m_ECSManager->createEntity();
   GraphicsComponent *graphComp = new GraphicsComponent();
-  graphComp->grapObj = m;
+  // graphComp->grapObj = m;
+  graphComp->grapObj = g;
   PositionComponent *posComp = new PositionComponent();
   m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
@@ -32,8 +40,6 @@ Game::Game(GLFWwindow *window)
   // graphComp->grapObj = m;
   // PositionComponent *posComp = new PositionComponent();
   // m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
-
-
 
   // ----
   dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);

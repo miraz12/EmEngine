@@ -79,9 +79,9 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragme
   glDeleteShader(fragmentShader);
 }
 
-void ShaderProgram::use() { glUseProgram(p_shaderProgram); }
+void ShaderProgram::use() const { glUseProgram(p_shaderProgram); }
 
-unsigned int ShaderProgram::getUniformLocation(std::string uniformName) {
+unsigned int ShaderProgram::getUniformLocation(std::string uniformName) const {
   if (m_uniformBindings.find(uniformName) == m_uniformBindings.end()) {
     std::cout << "No uniform with name " << uniformName << "\n";
   } else {
@@ -90,7 +90,7 @@ unsigned int ShaderProgram::getUniformLocation(std::string uniformName) {
   return 0;
 }
 
-int ShaderProgram::getAttribLocation(std::string attribName) {
+unsigned int ShaderProgram::getAttribLocation(std::string attribName) const {
   if (m_attribBindings.find(attribName) == m_attribBindings.end()) {
     std::cout << "No attribute with name " << attribName << "\n";
   } else {

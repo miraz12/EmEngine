@@ -11,16 +11,16 @@ class Mesh : public GraphicsObject {
 public:
   Mesh();
   virtual ~Mesh();
-  void draw(ShaderProgram &sPrg) override;
-  void drawGeom(ShaderProgram &sPrg) override;
+  void draw(const ShaderProgram &sPrg) override;
+  void drawGeom(const ShaderProgram &sPrg) override;
 
   void LoadFlile(std::string filename);
 
 private:
-  void drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderProgram &sPrg);
-  void drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram &sPrg);
-  void drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, ShaderProgram &sPrg);
-  void drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node, ShaderProgram &sPrg);
+  void drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, const ShaderProgram &sPrg);
+  void drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, const ShaderProgram &sPrg);
+  void drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, const ShaderProgram &sPrg);
+  void drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node, const ShaderProgram &sPrg);
 
   void loadModel(tinygltf::Model &model);
   void loadMaterials();
