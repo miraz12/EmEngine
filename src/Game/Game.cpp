@@ -16,22 +16,14 @@ Game::Game(GLFWwindow *window)
     : m_window(window), m_ECSManager(&ECSManager::getInstance()),
       m_InputManager(&InputManager::getInstance()) {
 
-  GltfObject *g = new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
-  //GltfObject *g = new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf");
-  // GltfObject *g =
-      // new GltfObject("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
-
   // TODO dynamic shadow projection and view
-  // Mesh *m = new Mesh();
-  // m->LoadFlile("resources/Models/gltf/helmet/DamagedHelmet.gltf");
-  // m->LoadFlile("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
-  // m->LoadFlile("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  // GltfObject *g = new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
+  // GltfObject *g =
+  // new GltfObject("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
 
   // ----
   Entity en = m_ECSManager->createEntity();
-  GraphicsComponent *graphComp = new GraphicsComponent();
-  // graphComp->grapObj = m;
-  graphComp->grapObj = g;
+  GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   PositionComponent *posComp = new PositionComponent();
   m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
@@ -42,7 +34,7 @@ Game::Game(GLFWwindow *window)
   // m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // ----
-  dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+  dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
   dirLightAmbient = 0.6f;
   dirLightDir = glm::vec3(0.01f, -1.0f, 0.0f);
   dLight = m_ECSManager->SetupDirectionalLight(dirLightColor, dirLightAmbient, dirLightDir);

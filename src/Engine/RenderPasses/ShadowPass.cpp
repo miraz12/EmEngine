@@ -18,6 +18,7 @@ ShadowPass::ShadowPass()
   p_shaderProgram.use();
   p_shaderProgram.setUniformBinding("modelMatrix");
   p_shaderProgram.setUniformBinding("lightSpaceMatrix");
+  p_shaderProgram.setUniformBinding("meshMatrix");
 
   p_shaderProgram.setAttribBinding("POSITION");
 
@@ -44,8 +45,7 @@ void ShadowPass::Execute(ECSManager &eManager) {
   glm::mat4 lightProjection, lightView;
   glm::mat4 lightSpaceMatrix;
   float shadowBox = 9.0f;
-  lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox,
-                               1.0f, 30.0f);
+  lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
   glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
   lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   lightSpaceMatrix = lightProjection * lightView;
@@ -57,7 +57,7 @@ void ShadowPass::Execute(ECSManager &eManager) {
     // PositionComponent *p = eManager.getComponent<PositionComponent>(e);
     // glm::mat4 model = p->calculateMatrix();
     GraphicsComponent *g = eManager.getComponent<GraphicsComponent>(e);
-    g->grapObj->drawGeom(p_shaderProgram);
+    g->m_grapObj.drawGeom(p_shaderProgram);
   }
 
   glCullFace(GL_BACK);

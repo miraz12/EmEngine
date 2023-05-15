@@ -21,10 +21,8 @@
 
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
     : System(ECSManager), m_camera(cam), m_fboManager(FrameBufferManager::getInstance()),
-      m_fGraph(*new FrameGraph(cam)) {}
+      m_fGraph(*new FrameGraph()) {}
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
 
-void GraphicsSystem::setViewport(unsigned int w, unsigned int h) {
-  m_fGraph.setViewport(w, h);
-}
+void GraphicsSystem::setViewport(unsigned int w, unsigned int h) { m_fGraph.setViewport(w, h); }

@@ -24,6 +24,24 @@ static std::string GetFilePathExtension(const std::string &FileName) {
   return "";
 }
 
+void GltfObject::draw(const ShaderProgram &sPrg) {
+  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(p_modelMatrix));
+
+  for (size_t i = 0; i < p_meshes.size(); i++) {
+    p_materials.at(p_meshes[i]->m_material)->bind(sPrg);
+    p_meshes.at(i)->draw(sPrg);
+  }
+}
+void GltfObject::drawGeom(const ShaderProgram &sPrg) {
+  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(p_modelMatrix));
+
+  for (size_t i = 0; i < p_meshes.size(); i++) {
+    p_meshes[i]->draw(sPrg);
+  }
+}
+
 GltfObject::GltfObject(std::string filename) {
   std::string ext = GetFilePathExtension(filename);
   tinygltf::TinyGLTF loader;
@@ -55,43 +73,29 @@ GltfObject::GltfObject(std::string filename) {
   loadModel(model);
   std::cout << "Load done!" << std::endl;
 }
-void GltfObject::draw(const ShaderProgram &sPrg) {
-  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(p_modelMatrix));
-
-  for (size_t i = 0; i < p_meshes.size(); i++) {
-    p_materials.at(p_meshes[i]->m_material)->bind(sPrg);
-    p_meshes.at(i)->draw(sPrg);
-  }
-}
-void GltfObject::drawGeom(const ShaderProgram &sPrg) {
-  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(p_modelMatrix));
-
-  for (size_t i = 0; i < p_meshes.size(); i++) {
-    p_meshes[i]->draw(sPrg);
-  }
-}
 
 void GltfObject::loadModel(tinygltf::Model &model) {
-  tinygltf::Node node = model.nodes[0];
-  glm::mat4 modelMat = glm::identity<glm::mat4>();
-  if (!node.rotation.empty()) {
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[0]), glm::vec3(1.0, 0.0, 0.0));
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[1]), glm::vec3(0.0, 1.0, 0.0));
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[2]), glm::vec3(0.0, 0.0, 1.0));
+  const tinygltf::Scene &scene = model.scenes[model.defaultScene];
+  for (size_t i = 0; i < scene.nodes.size(); ++i) {
+    tinygltf::Node node = model.nodes[i];
+    glm::mat4 modelMat = glm::identity<glm::mat4>();
+    if (!node.rotation.empty()) {
+      modelMat = glm::rotate(modelMat, (float)(node.rotation[0]), glm::vec3(1.0, 0.0, 0.0));
+      modelMat = glm::rotate(modelMat, (float)(node.rotation[1]), glm::vec3(0.0, 1.0, 0.0));
+      modelMat = glm::rotate(modelMat, (float)(node.rotation[2]), glm::vec3(0.0, 0.0, 1.0));
+    }
+    if (!node.scale.empty()) {
+      modelMat = glm::scale(modelMat, glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
+    }
+    if (!node.translation.empty()) {
+      modelMat = glm::translate(
+          modelMat, glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
+    }
+    loadMesh(model, model.meshes[node.mesh], modelMat);
   }
-  if (!node.scale.empty()) {
-    modelMat = glm::scale(modelMat, glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
-  }
-  if (!node.translation.empty()) {
-    modelMat = glm::translate(
-        modelMat, glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
-  }
-  p_modelMatrix = modelMat;
+
   loadTextures(model);
   loadMaterials(model);
-  loadMeshes(model);
 }
 
 void GltfObject::loadMaterials(tinygltf::Model &model) {
@@ -121,10 +125,13 @@ void GltfObject::loadMaterials(tinygltf::Model &model) {
     }
 
     newmat->m_material = materialMast;
-    newmat->m_baseColorFactor = glm::vec3(1.0f);
-    newmat->m_emissiveFactor = glm::vec3(1.0f);
-    newmat->m_roughnessFactor = 1.0f;
-    newmat->m_metallicFactor = 1.0f;
+    newmat->m_baseColorFactor = glm::vec3(mat.pbrMetallicRoughness.baseColorFactor[0],
+                                          mat.pbrMetallicRoughness.baseColorFactor[1],
+                                          mat.pbrMetallicRoughness.baseColorFactor[2]);
+    newmat->m_roughnessFactor = mat.pbrMetallicRoughness.roughnessFactor;
+    newmat->m_metallicFactor = mat.pbrMetallicRoughness.metallicFactor;
+    newmat->m_emissiveFactor =
+        glm::vec3(mat.emissiveFactor[0], mat.emissiveFactor[1], mat.emissiveFactor[2]);
     newmat->m_doubleSided = mat.doubleSided;
     newmat->m_alphaMode = mat.alphaMode;
     p_materials.push_back(newmat);
@@ -168,73 +175,71 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
   }
 }
 
-void GltfObject::loadMeshes(tinygltf::Model &model) {
-  for (auto &mesh : model.meshes) {
-    for (auto &primitive : mesh.primitives) {
-      unsigned int vao;
-      glGenVertexArrays(1, &vao);
-      glBindVertexArray(vao);
+void GltfObject::loadMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, glm::mat4 meshmat) {
+  for (auto &primitive : mesh.primitives) {
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
-      MeshObj *newmesh = new MeshObj;
-      newmesh->m_vao = vao;
-      newmesh->m_mode = primitive.mode;
-      newmesh->m_material = primitive.material;
+    MeshObj *newmesh = new MeshObj;
+    newmesh->m_vao = vao;
+    newmesh->m_mode = primitive.mode;
+    newmesh->m_material = primitive.material;
+    newmesh->m_meshMatrix = meshmat;
 
-      // Check if using element buffer
-      if (primitive.indices != -1) {
-        GLuint ebo;
-        glGenBuffers(1, &ebo);
-        tinygltf::Accessor accessor = model.accessors[primitive.indices];
-        const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferView.byteLength,
-                     &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-        newmesh->m_ebo = ebo;
-        newmesh->m_eboCount = accessor.count;
-        newmesh->m_eboType = accessor.componentType;
-        newmesh->m_eboOffset = accessor.byteOffset;
-      }
-      // Load all vertex attributes
-      for (auto &attrib : primitive.attributes) {
-        unsigned int loc = 0;
-        std::cout << attrib.first << std::endl;
-        if (attrib.first == "POSITION") {
-          loc = 0;
-        } else if (attrib.first == "NORMAL") {
-          loc = 1;
-        } else if (attrib.first == "TANGENT") {
-          loc = 2;
-        } else if (attrib.first == "TEXCOORD_0") {
-          loc = 3;
-        }
-        tinygltf::Accessor accessor = model.accessors[attrib.second];
-        const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-
-        unsigned int vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(bufferView.target, bufferView.byteLength,
-                     &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-
-        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
-                              byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
-        glEnableVertexAttribArray(loc);
-
-        MeshObj::AttribInfo attribInfo;
-        attribInfo.vbo = loc;
-        attribInfo.type = accessor.type;
-        attribInfo.componentType = accessor.componentType;
-        attribInfo.byteOffset = accessor.byteOffset;
-        attribInfo.byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        attribInfo.normalized = accessor.normalized;
-        newmesh->attributes[attrib.first] = attribInfo;
-        loc++;
-      }
-      p_meshes.push_back(newmesh);
+    // Check if using element buffer
+    if (primitive.indices != -1) {
+      GLuint ebo;
+      glGenBuffers(1, &ebo);
+      tinygltf::Accessor accessor = model.accessors[primitive.indices];
+      const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
+      const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferView.byteLength,
+                   &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
+      newmesh->m_ebo = ebo;
+      newmesh->m_eboCount = accessor.count;
+      newmesh->m_eboType = accessor.componentType;
+      newmesh->m_eboOffset = accessor.byteOffset;
     }
+    // Load all vertex attributes
+    for (auto &attrib : primitive.attributes) {
+      unsigned int loc = 0;
+      if (attrib.first == "POSITION") {
+        loc = 0;
+      } else if (attrib.first == "NORMAL") {
+        loc = 1;
+      } else if (attrib.first == "TANGENT") {
+        loc = 2;
+      } else if (attrib.first == "TEXCOORD_0") {
+        loc = 3;
+      }
+      tinygltf::Accessor accessor = model.accessors[attrib.second];
+      const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
+      const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+
+      unsigned int vbo;
+      glGenBuffers(1, &vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferData(bufferView.target, bufferView.byteLength,
+                   &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
+
+      int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+      glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
+                            byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
+      glEnableVertexAttribArray(loc);
+
+      MeshObj::AttribInfo attribInfo;
+      attribInfo.vbo = loc;
+      attribInfo.type = accessor.type;
+      attribInfo.componentType = accessor.componentType;
+      attribInfo.byteOffset = accessor.byteOffset;
+      attribInfo.byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+      attribInfo.normalized = accessor.normalized;
+      newmesh->attributes[attrib.first] = attribInfo;
+      loc++;
+    }
+    p_meshes.push_back(newmesh);
   }
   glBindVertexArray(0);
 }

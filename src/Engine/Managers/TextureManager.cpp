@@ -1,6 +1,8 @@
 #include "TextureManager.hpp"
 
+#include <cassert>
 #include <iostream>
+#include <stb_image.h>
 #include <string>
 
 #ifdef EMSCRIPTEN

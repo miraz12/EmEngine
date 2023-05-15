@@ -1,4 +1,5 @@
 #include "MeshObj.hpp"
+#include <glm/gtc/type_ptr.hpp>
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
@@ -9,6 +10,10 @@
 #endif
 
 void MeshObj::draw(const ShaderProgram &sPrg) {
+
+  glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(m_meshMatrix));
+
   glBindVertexArray(m_vao);
   glDrawElements(m_mode, m_eboCount, m_eboType, (void *)(sizeof(char) * (m_eboOffset)));
   glBindVertexArray(0);
@@ -63,6 +68,4 @@ void MeshObj::draw(const ShaderProgram &sPrg) {
   //   // glBindBuffer(GL_ARRAY_BUFFER, m_buffers.at(indexAccessor.bufferView));
   //   // glDrawArrays(primitive.mode, 0, model.accessors[primitive.indices].count);
   // }
-
- 
 }

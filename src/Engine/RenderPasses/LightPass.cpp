@@ -84,8 +84,7 @@ void LightPass::Execute(ECSManager &eManager) {
   glm::mat4 lightProjection, lightView;
   glm::mat4 lightSpaceMatrix;
   float shadowBox = 9.0f;
-  lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox,
-                               1.0f, 30.0f);
+  lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
   glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
   lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   lightSpaceMatrix = lightProjection * lightView;

@@ -16,7 +16,7 @@ private:
   void loadModel(tinygltf::Model &model);
   void loadMaterials(tinygltf::Model &model);
   void loadTextures(tinygltf::Model &model);
-  void loadMeshes(tinygltf::Model &model);
+  void loadMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, glm::mat4 meshMat);
   unsigned int m_vao;
 };
 

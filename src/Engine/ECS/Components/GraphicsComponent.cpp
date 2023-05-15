@@ -2,4 +2,5 @@
 
 #include "ECS/ECSManager.hpp"
 
-GraphicsComponent::~GraphicsComponent() { delete grapObj; }
+GraphicsComponent::GraphicsComponent(GraphicsObject &grapComp) : m_grapObj(grapComp) {}
+GraphicsComponent::~GraphicsComponent() { delete &m_grapObj; }

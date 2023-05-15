@@ -1,6 +1,7 @@
 #ifndef MESHOBJ_H_
 #define MESHOBJ_H_
 
+#include "glm/ext/matrix_transform.hpp"
 #include <ShaderPrograms/ShaderProgram.hpp>
 #include <cstddef>
 #include <glm/glm.hpp>
@@ -23,7 +24,6 @@ public:
     int type;
   };
 
-
   unsigned int m_material;
 
   unsigned int m_vbo;
@@ -37,7 +37,7 @@ public:
   unsigned int m_mode;
   // std::vector<unsigned char> data;
   std::map<std::string, AttribInfo> attributes;
-  glm::mat4 m_model;
+  glm::mat4 m_meshMatrix{glm::identity<glm::mat4>()};
 };
 
 #endif // MESHOBJ_H_

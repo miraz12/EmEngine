@@ -25,7 +25,7 @@ public:
 
   std::string m_baseColorTexture;
   std::string m_metallicRoughnessTexture;
-  std::string m_emissiveTexture;
+  std::string m_emissiveTexture{"black_default"};
   std::string m_occlusionTexture;
   std::string m_normalTexture;
 };

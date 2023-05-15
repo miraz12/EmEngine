@@ -8,6 +8,7 @@ layout (location = 3) in vec2 TEXCOORD_0;
 
 // If uniforms change, also update SimpleShaderProgram to match
 uniform mat4 modelMatrix;
+uniform mat4 meshMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
 
@@ -19,7 +20,7 @@ out vec3 pBiTangent;
 out mat3 pTBN;
 
 void main() {
-    gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(POSITION, 1.0);
+    gl_Position = projMatrix * viewMatrix * modelMatrix * meshMatrix * vec4(POSITION, 1.0);
     pPosition = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
     mat4 normalMatrix = transpose(inverse(modelMatrix));
 

@@ -29,6 +29,7 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setUniformBinding("baseColorFactor");
   p_shaderProgram.setUniformBinding("roughnessFactor");
   p_shaderProgram.setUniformBinding("metallicFactor");
+  p_shaderProgram.setUniformBinding("meshMatrix");
 
   p_shaderProgram.setAttribBinding("POSITION");
   p_shaderProgram.setAttribBinding("NORMAL");
@@ -49,17 +50,12 @@ void GeometryPass::Execute(ECSManager &eManager) {
   eManager.getCamera().bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                                           p_shaderProgram.getUniformLocation("viewMatrix"));
 
-  // glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-  // glm::value_ptr(model));
-  // GLint tex[5] = {0, 1, 2, 3, 4};
-  // glUniform1iv(p_shaderProgram.getUniformLocation("textures"), 5, tex);
-
   std::vector<Entity> view = eManager.view<GraphicsComponent, PositionComponent>();
   for (auto e : view) {
     // PositionComponent *p = eManager.getComponent<PositionComponent>(e);
     // glm::mat4 model = p->calculateMatrix();
     GraphicsComponent *g = eManager.getComponent<GraphicsComponent>(e);
-    g->grapObj->draw(p_shaderProgram);
+    g->m_grapObj.draw(p_shaderProgram);
   }
 }
 
