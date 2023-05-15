@@ -84,8 +84,8 @@ void ShaderProgram::use() const { glUseProgram(p_shaderProgram); }
 
 unsigned int ShaderProgram::getUniformLocation(std::string uniformName) const {
   if (m_uniformBindings.find(uniformName) == m_uniformBindings.end()) {
-    assert(false);
     std::cout << "No uniform with name " << uniformName << "\n";
+    assert(false);
   } else {
     return m_uniformBindings.at(uniformName);
   }

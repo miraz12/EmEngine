@@ -12,9 +12,7 @@ public:
   void setViewport(unsigned int w, unsigned int h) override;
 
 private:
-  unsigned int quadVAO;
   unsigned int gBuffer;
-  unsigned int gPosition, gNormal, gAlbedo, gEmissive;
   unsigned int rboDepth;
 };
 

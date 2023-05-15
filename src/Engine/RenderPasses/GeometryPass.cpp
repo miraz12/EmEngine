@@ -57,6 +57,7 @@ void GeometryPass::Execute(ECSManager &eManager) {
     GraphicsComponent *g = eManager.getComponent<GraphicsComponent>(e);
     g->m_grapObj.draw(p_shaderProgram);
   }
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GeometryPass::setViewport(unsigned int w, unsigned int h) {
@@ -99,4 +100,6 @@ void GeometryPass::setViewport(unsigned int w, unsigned int h) {
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
   }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
