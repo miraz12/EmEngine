@@ -1,6 +1,7 @@
 #include "FrameGraph.hpp"
 #include "Managers/FrameBufferManager.hpp"
 #include <Camera.hpp>
+#include <RenderPasses/CubeMapPass.hpp>
 #include <RenderPasses/GeometryPass.hpp>
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
@@ -25,6 +26,7 @@ FrameGraph::FrameGraph() {
   m_renderPass.push_back(new ShadowPass());
   m_renderPass.push_back(new GeometryPass());
   m_renderPass.push_back(new LightPass());
+  m_renderPass.push_back(new CubeMapPass());
 }
 
 void FrameGraph::draw(ECSManager &eManager) {
