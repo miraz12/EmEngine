@@ -33,4 +33,5 @@ jobs:
     
     - name: Deploy
       run: |
+        rm /srv/http/*
         cp embuild/* /srv/http/ -r
