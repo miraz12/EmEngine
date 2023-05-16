@@ -24,9 +24,9 @@ FrameGraph::FrameGraph() {
   setViewport(m_width, m_height);
 
   m_renderPass.push_back(new ShadowPass());
-  m_renderPass.push_back(new CubeMapPass());
   m_renderPass.push_back(new GeometryPass());
   m_renderPass.push_back(new LightPass());
+  m_renderPass.push_back(new CubeMapPass());
 }
 
 void FrameGraph::draw(ECSManager &eManager) {

@@ -147,8 +147,8 @@ bool Window::open() {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  SCR_WIDTH = 1000;
-  SCR_HEIGHT = 1000;
+  SCR_WIDTH = 800;
+  SCR_HEIGHT = 800;
   window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
   if (window == NULL) {
     std::cout << "Failed to create GLFW window" << std::endl;

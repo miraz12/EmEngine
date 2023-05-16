@@ -114,9 +114,22 @@ CubeMapPass::CubeMapPass()
 
 void CubeMapPass::Execute(ECSManager &eManager) {
   // render skybox (render as last to prevent overdraw)
-  p_shaderProgram.use();
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glBlitFramebuffer(0, 0, p_width, p_height, 0, 0, p_width, p_height, GL_DEPTH_BUFFER_BIT,
+                    GL_NEAREST);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glEnable(GL_BLEND);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendEquation(GL_FUNC_ADD);
+  glDisable(GL_CULL_FACE);
+
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
+
+  p_shaderProgram.use();
   eManager.getCamera().bindProjViewMatrix(p_shaderProgram.getUniformLocation("projection"),
                                           p_shaderProgram.getUniformLocation("view"));
 
@@ -127,7 +140,10 @@ void CubeMapPass::Execute(ECSManager &eManager) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void CubeMapPass::setViewport(unsigned int w, unsigned int h) {}
+void CubeMapPass::setViewport(unsigned int w, unsigned int h) {
+  p_width = w;
+  p_height = h;
+}
 
 void CubeMapPass::renderCube() {
   // initialize (if necessary)

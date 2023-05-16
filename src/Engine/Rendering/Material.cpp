@@ -14,8 +14,6 @@ Material::Material() : m_textureMan(TextureManager::getInstance()) {}
 
 void Material::bind(const ShaderProgram &sPrg) {
 
-  //std::cout << "Bind textures" << std::endl;
-
   glUniform1i(sPrg.getUniformLocation("material"), m_material);
 
   glUniform3f(sPrg.getUniformLocation("baseColorFactor"), m_baseColorFactor.x, m_baseColorFactor.y,
@@ -32,22 +30,18 @@ void Material::bind(const ShaderProgram &sPrg) {
 
   if ((m_material & (1 << 0)) > 0) {
     glActiveTexture(GL_TEXTURE0 + 0);
-    //std::cout << "Bount tex0" << std::endl;
     m_textureMan.bindTexture(m_baseColorTexture);
   }
   if ((m_material & (1 << 1)) > 0) {
     glActiveTexture(GL_TEXTURE0 + 1);
-    //std::cout << "Bount tex1" << std::endl;
     m_textureMan.bindTexture(m_metallicRoughnessTexture);
   }
   if ((m_material & (1 << 2)) > 0) {
     glActiveTexture(GL_TEXTURE0 + 2);
-    //std::cout << "Bount tex2" << std::endl;
     m_textureMan.bindTexture(m_emissiveTexture);
   }
   if ((m_material & (1 << 3)) > 0) {
     glActiveTexture(GL_TEXTURE0 + 3);
-    //std::cout << "Bount tex3" << std::endl;
     m_textureMan.bindTexture(m_occlusionTexture);
   }
   if ((m_material & (1 << 4)) > 0) {

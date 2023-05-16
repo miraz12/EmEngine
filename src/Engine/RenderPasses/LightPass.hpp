@@ -13,7 +13,6 @@ public:
   void setViewport(unsigned int w, unsigned int h) override;
 
 private:
-  unsigned int rboDepth;
   unsigned int quadVAO;
 };
 
