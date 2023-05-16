@@ -77,8 +77,8 @@ void GeometryPass::setViewport(unsigned int w, unsigned int h) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
   // - color
-  unsigned int gAlbedo =
-      p_textureManager.loadTexture("gAlbedo", GL_RGBA, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  unsigned int gAlbedo = p_textureManager.loadTexture("gAlbedo", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                      p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
   // - emissive color buffer

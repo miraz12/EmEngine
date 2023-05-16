@@ -17,8 +17,6 @@
 FrameGraph::FrameGraph() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
   glColorMask(true, true, true, true);
 
   setViewport(m_width, m_height);

@@ -29,7 +29,6 @@ uniform int nrOfPointLights;
 uniform mat4 lightSpaceMatrix;
 
 in vec2 texCoords;
-out vec4 lightPos;
 out vec4 FragColor;
 
 const float PI = 3.14159265359;
@@ -193,5 +192,4 @@ void main() {
     color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(vec3(color), 1.0) + emissive;
-    // FragColor = vec4(lightPos.rgb, 1.0);
 }

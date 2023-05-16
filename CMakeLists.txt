@@ -30,7 +30,9 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CM
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if (DEFINED EMSCRIPTEN)
+target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra -g)
+
 set_target_properties(${PROJECT_NAME}
         PROPERTIES SUFFIX ".html"
-        LINK_FLAGS " --bind -sFULL_ES3 -s USE_GLFW=3 -s WASM=1 -s ALLOW_MEMORY_GROWTH -gsource-map --source-map-base http://localhost:8000/ --preload-file ../resources ")
+        LINK_FLAGS " --bind -sFULL_ES3 -sUSE_GLFW=3  -sWASM=1 -sALLOW_MEMORY_GROWTH -gsource-map --source-map-base http://localhost:8000/ --preload-file ../resources ")
 endif (DEFINED EMSCRIPTEN)
