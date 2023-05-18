@@ -21,8 +21,8 @@ out mat3 pTBN;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * meshMatrix * vec4(POSITION, 1.0);
-    pPosition = (modelMatrix * vec4(POSITION.xyz, 1.0)).xyz;
-    mat4 normalMatrix = transpose(inverse(modelMatrix));
+    pPosition = (modelMatrix * meshMatrix * vec4(POSITION.xyz, 1.0)).xyz;
+    mat4 normalMatrix = transpose(inverse(modelMatrix * meshMatrix));
 
     pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
     pTangent =  normalize(vec3(normalMatrix * vec4(TANGENT.xyz, 0.0)));
