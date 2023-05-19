@@ -19,7 +19,8 @@ public:
                            unsigned int type, unsigned int width, unsigned int height,
                            unsigned char *data);
   void setTexture(std::string name, unsigned int texId);
-  void bindTexture(std::string name);
+  unsigned int bindTexture(std::string name);
+  void bindCubeTexture(std::string name);
   void deleteTexture(std::string name);
 
 private:

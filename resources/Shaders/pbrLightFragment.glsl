@@ -22,6 +22,8 @@ uniform sampler2D gNormalMetal;
 uniform sampler2D gAlbedoSpecRough;
 uniform sampler2D gEmissive;
 uniform sampler2D depthMap; // shadow map
+uniform samplerCube irradianceMap;
+
 uniform vec3 camPos;
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
@@ -185,11 +187,14 @@ void main() {
             Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
         }
     }
+    vec3 irradiance = texture(irradianceMap, normal).rgb;
+    vec3 diffuse      = albedo;
 
-    vec3 color = (Lo  * ao * albedo);
+    vec3 color = (Lo  * diffuse) * ao;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(vec3(color), 1.0) + emissive;
+    // FragColor = vec4(irradiance, 1.0);
 }

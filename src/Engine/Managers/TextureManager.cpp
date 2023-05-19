@@ -58,8 +58,14 @@ void TextureManager::setTexture(std::string name, unsigned int texId) {
   texIds.insert({name, texId});
 }
 
-void TextureManager::bindTexture(std::string name) {
-  glBindTexture(GL_TEXTURE_2D, texIds.at(name));
+unsigned int TextureManager::bindTexture(std::string name) {
+  unsigned int texId = texIds.at(name);
+  glBindTexture(GL_TEXTURE_2D, texId);
+  return texId;
+}
+
+void TextureManager::bindCubeTexture(std::string name) {
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texIds.at(name));
 }
 
 void TextureManager::deleteTexture(std::string name) {

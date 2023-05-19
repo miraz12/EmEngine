@@ -15,8 +15,11 @@ public:
 
 private:
   void renderCube();
-  unsigned int m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_envCubemap{0};
-  ShaderProgram m_equirectangularToCubemapShader;
+  void generateCubeMap();
+  void generateIrradianceMap();
+  unsigned int m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_envCubemap{0},
+      m_irradianceMap{0};
+  ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader;
 };
 
 #endif // CUBEMAPPASS_H_

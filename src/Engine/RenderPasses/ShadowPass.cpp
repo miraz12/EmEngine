@@ -67,7 +67,8 @@ void ShadowPass::setViewport(unsigned int w, unsigned int h) {
   p_width = w;
   p_height = h;
 
-  p_textureManager.bindTexture("depthMap");
+  p_fboManager.bindFBO("depthMapFbo");
+  unsigned int depthMap = p_textureManager.bindTexture("depthMap");
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, p_width, p_height, 0, GL_DEPTH_COMPONENT,
                GL_UNSIGNED_INT, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -75,7 +76,6 @@ void ShadowPass::setViewport(unsigned int w, unsigned int h) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  unsigned int depthMap = p_fboManager.bindFBO("depthMapFbo");
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
   GLuint buffer = GL_NONE; // Emscripten strangeness
   glDrawBuffers(1, &buffer);

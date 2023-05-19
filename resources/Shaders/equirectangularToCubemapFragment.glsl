@@ -2,7 +2,7 @@
 precision highp float;
 
 out vec4 FragColor;
-in vec3 localPos;
+in vec3 worldPos;
 
 uniform sampler2D equirectangularMap;
 
@@ -17,7 +17,7 @@ vec2 SampleSphericalMap(vec3 v)
 
 void main()
 {
-    vec2 uv = SampleSphericalMap(normalize(localPos)); // make sure to normalize localPos
+    vec2 uv = SampleSphericalMap(normalize(worldPos));
     vec3 color = texture(equirectangularMap, uv).rgb;
 
     FragColor = vec4(color, 1.0);

@@ -20,13 +20,14 @@ LightPass::LightPass()
   p_shaderProgram.setUniformBinding("gNormalMetal");
   p_shaderProgram.setUniformBinding("gAlbedoSpecRough");
   p_shaderProgram.setUniformBinding("gEmissive");
-  p_shaderProgram.setUniformBinding("depthMap");
   p_shaderProgram.setUniformBinding("nrOfPointLights");
   p_shaderProgram.setUniformBinding("camPos");
   p_shaderProgram.setUniformBinding("directionalLight.direction");
   p_shaderProgram.setUniformBinding("directionalLight.color");
   p_shaderProgram.setUniformBinding("directionalLight.ambientIntensity");
   p_shaderProgram.setUniformBinding("lightSpaceMatrix");
+  p_shaderProgram.setUniformBinding("depthMap");
+  p_shaderProgram.setUniformBinding("irradianceMap");
 
   p_shaderProgram.use();
 
@@ -37,6 +38,7 @@ LightPass::LightPass()
   glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
   glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
   glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
+  glUniform1i(p_shaderProgram.getUniformLocation("irradianceMap"), 5);
 
   for (unsigned int i = 0; i < 10; i++) {
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].position");
@@ -80,6 +82,7 @@ void LightPass::Execute(ECSManager &eManager) {
   glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
   glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
   glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
+  glUniform1i(p_shaderProgram.getUniformLocation("irradianceMap"), 5);
 
   glm::mat4 lightProjection, lightView;
   glm::mat4 lightSpaceMatrix;
@@ -163,6 +166,8 @@ void LightPass::Execute(ECSManager &eManager) {
   p_textureManager.bindTexture("gEmissive");
   glActiveTexture(GL_TEXTURE4);
   p_textureManager.bindTexture("depthMap");
+  // glActiveTexture(GL_TEXTURE5);
+  // p_textureManager.bindCubeTexture("irradianceMap");
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
