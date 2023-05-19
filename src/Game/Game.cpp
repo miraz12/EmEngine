@@ -36,7 +36,7 @@ Game::Game(GLFWwindow *window)
 
   // ----
   dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
-  dirLightAmbient = 0.6f;
+  dirLightAmbient = 80.0f;
   dirLightDir = glm::vec3(0.01f, -1.0f, 0.0f);
   dLight = m_ECSManager->SetupDirectionalLight(dirLightColor, dirLightAmbient, dirLightDir);
 

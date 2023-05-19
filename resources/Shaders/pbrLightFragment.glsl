@@ -111,8 +111,7 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     // calculate per-light radiance
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
-    float shadow = ShadowCalculation(lightPos, normal, light.direction);
-    float attenuation = light.ambientIntensity - shadow;
+    float attenuation = light.ambientIntensity;
     vec3 radiance     = light.color * attenuation;
 
     // cook-torrance brdf
@@ -133,7 +132,9 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     return ((kD / PI + specular) * radiance * NdotL);
 }
 
-vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor) {
+vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec3 albedo) {
+
+//---
     // calculate per-light radiance
     vec3 L = normalize(light.position - fragPos);
     vec3 H = normalize(viewDir + L);
@@ -156,7 +157,8 @@ vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal
 
     // add to outgoing radiance Lo
     float NdotL = max(dot(normal, L), 0.0);
-    return (kD / PI + specular) * radiance * NdotL;
+    return (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    // return (kD / PI + specular) * radiance * NdotL;
 }
 
 
@@ -164,6 +166,7 @@ void main() {
     vec3 fragPos = texture(gPositionAo, texCoords).rgb;
     vec3 normal = texture(gNormalMetal, texCoords).rgb;
     vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
+    // vec3 albedo     = pow(texture(gAlbedoSpecRough, texCoords).rgb, vec3(2.2));
     vec4 emissive = vec4(0.0) + texture(gEmissive, texCoords);
     float ao = texture(gPositionAo, texCoords).a;
     float metallic = texture(gNormalMetal, texCoords).a;
@@ -176,25 +179,27 @@ void main() {
     vec3 specularColor = mix(vec3(0.04), albedo, metallic);
 
     // reflectance equation
+    vec3 dirLight =  CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos);
+
     vec3 Lo = vec3(0.0);
-
-    Lo +=  CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos);
-
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
         float distance = length(pointLights[i].position - fragPos);
         if(distance < pointLights[i].radius) {
-            Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor);
+            Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor, albedo);
         }
     }
     vec3 irradiance = texture(irradianceMap, normal).rgb;
-    vec3 diffuse      = albedo;
+    // vec3 ambient = irradiance * albedo;
+    vec3 ambient = vec3(0.03) * albedo * ao;
+    // TODO: I'm not sure that this is the right way to apply shadows but it look okay
+    float shadows = ShadowCalculation(lightPos, normal, directionalLight.direction);
+    vec3 ambientDiffuse = ((dirLight * (1.0 - shadows)) * ambient);// * ao;
 
-    vec3 color = (Lo  * diffuse) * ao;
+    vec3 color = ambientDiffuse + Lo;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(vec3(color), 1.0) + emissive;
-    // FragColor = vec4(irradiance, 1.0);
 }

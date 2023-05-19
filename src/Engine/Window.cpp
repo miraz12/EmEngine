@@ -358,7 +358,7 @@ void Window::renderImgui() {
 
   ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysAutoResize);
   ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
-  ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 1.0f);
+  ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 100.0f);
   ImGui::SliderFloat3("Color", glm::value_ptr(game->dirLightColor), 0.0f, 1.0f);
 
   ImGui::End();
