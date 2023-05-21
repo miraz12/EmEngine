@@ -28,6 +28,8 @@ LightPass::LightPass()
   p_shaderProgram.setUniformBinding("lightSpaceMatrix");
   p_shaderProgram.setUniformBinding("depthMap");
   p_shaderProgram.setUniformBinding("irradianceMap");
+  p_shaderProgram.setUniformBinding("prefilterMap");
+  p_shaderProgram.setUniformBinding("brdfLUT");
 
   p_shaderProgram.use();
 
@@ -39,6 +41,8 @@ LightPass::LightPass()
   glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
   glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
   glUniform1i(p_shaderProgram.getUniformLocation("irradianceMap"), 5);
+  glUniform1i(p_shaderProgram.getUniformLocation("prefilterMap"), 6);
+  glUniform1i(p_shaderProgram.getUniformLocation("brdfLUT"), 7);
 
   for (unsigned int i = 0; i < 10; i++) {
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].position");
@@ -83,6 +87,8 @@ void LightPass::Execute(ECSManager &eManager) {
   glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
   glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
   glUniform1i(p_shaderProgram.getUniformLocation("irradianceMap"), 5);
+  glUniform1i(p_shaderProgram.getUniformLocation("prefilterMap"), 6);
+  glUniform1i(p_shaderProgram.getUniformLocation("brdfLUT"), 7);
 
   glm::mat4 lightProjection, lightView;
   glm::mat4 lightSpaceMatrix;
@@ -166,8 +172,12 @@ void LightPass::Execute(ECSManager &eManager) {
   p_textureManager.bindTexture("gEmissive");
   glActiveTexture(GL_TEXTURE4);
   p_textureManager.bindTexture("depthMap");
-  // glActiveTexture(GL_TEXTURE5);
-  // p_textureManager.bindCubeTexture("irradianceMap");
+  glActiveTexture(GL_TEXTURE5);
+  p_textureManager.bindCubeTexture("irradianceMap");
+  glActiveTexture(GL_TEXTURE6);
+  p_textureManager.bindCubeTexture("prefilterMap");
+  glActiveTexture(GL_TEXTURE7);
+  p_textureManager.bindTexture("brdfLUTTexture");
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -180,6 +190,14 @@ void LightPass::Execute(ECSManager &eManager) {
   glActiveTexture(GL_TEXTURE3);
   glBindTexture(GL_TEXTURE_2D, 0);
   glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE6);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glActiveTexture(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 

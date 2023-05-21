@@ -165,8 +165,8 @@ vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal
 void main() {
     vec3 fragPos = texture(gPositionAo, texCoords).rgb;
     vec3 normal = texture(gNormalMetal, texCoords).rgb;
-    vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
-    // vec3 albedo     = pow(texture(gAlbedoSpecRough, texCoords).rgb, vec3(2.2));
+    // vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
+    vec3 albedo     = pow(texture(gAlbedoSpecRough, texCoords).rgb, vec3(2.2));
     vec4 emissive = vec4(0.0) + texture(gEmissive, texCoords);
     float ao = texture(gPositionAo, texCoords).a;
     float metallic = texture(gNormalMetal, texCoords).a;
@@ -190,11 +190,11 @@ void main() {
         }
     }
     vec3 irradiance = texture(irradianceMap, normal).rgb;
-    // vec3 ambient = irradiance * albedo;
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 ambient = irradiance * albedo;
+    // vec3 ambient = vec3(0.03) * albedo * ao;
     // TODO: I'm not sure that this is the right way to apply shadows but it look okay
     float shadows = ShadowCalculation(lightPos, normal, directionalLight.direction);
-    vec3 ambientDiffuse = ((dirLight * (1.0 - shadows)) * ambient);// * ao;
+    vec3 ambientDiffuse = ((dirLight * (1.0 - shadows)) * ambient) * ao;
 
     vec3 color = ambientDiffuse + Lo;
 

@@ -14,12 +14,17 @@ public:
   void setViewport(unsigned int w, unsigned int h) override;
 
 private:
-  void renderCube();
   void generateCubeMap();
   void generateIrradianceMap();
-  unsigned int m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_envCubemap{0},
-      m_irradianceMap{0};
-  ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader;
+  void generatePrefilterMap();
+  void generateBRDF();
+  void renderCube();
+  void renderQuad();
+
+  unsigned int m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_quadVAO{0},
+      m_quadVBO{0}, m_envCubemap{0}, m_irradianceMap{0};
+  ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader, m_prefilterShader,
+      m_brdfShader;
 
   glm::mat4 m_captureProjection{glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f)};
   glm::mat4 m_captureViews[6] = {
