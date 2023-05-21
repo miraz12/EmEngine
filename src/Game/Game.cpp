@@ -17,11 +17,6 @@ Game::Game(GLFWwindow *window)
       m_InputManager(&InputManager::getInstance()) {
 
   // TODO dynamic shadow projection and view
-  // GltfObject *g = new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf");
-  // GltfObject *g =
-  // new GltfObject("../glTF-Sample-Models/2.0/ABeautifulGame/glTF/ABeautifulGame.gltf");
-
-  // ----
   Entity en = m_ECSManager->createEntity();
   GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));

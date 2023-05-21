@@ -20,13 +20,13 @@ unsigned int TextureManager::loadTexture(unsigned int internalFormat, GLenum for
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
-  // glGenerateMipmap(GL_TEXTURE_2D);
+  glGenerateMipmap(GL_TEXTURE_2D);
 
   std::string name = std::to_string(texId);
   deleteTexture(name);
@@ -42,13 +42,13 @@ unsigned int TextureManager::loadTexture(std::string name, unsigned int internal
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
-  // glGenerateMipmap(GL_TEXTURE_2D);
+  glGenerateMipmap(GL_TEXTURE_2D);
   texIds.insert({name, texId});
   return texId;
 }
