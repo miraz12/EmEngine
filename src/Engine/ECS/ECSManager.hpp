@@ -143,6 +143,7 @@ public:
   void setViewport(unsigned int w, unsigned int h);
 
   glm::vec3 dDir;
+  int debugView;
 
 private:
   ECSManager();

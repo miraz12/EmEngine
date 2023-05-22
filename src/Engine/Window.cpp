@@ -361,6 +361,19 @@ void Window::renderImgui() {
   ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 100.0f);
   ImGui::SliderFloat3("Color", glm::value_ptr(game->dirLightColor), 0.0f, 1.0f);
 
+  int32_t debugViewInputs = 0;
+	int32_t debugViewEquation = 0;
+  const std::vector<std::string> debugNamesInputs = {
+				"none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"
+	};
+  std::vector<const char*> charitems;
+		charitems.reserve(debugNamesInputs.size());
+		for (size_t i = 0; i < debugNamesInputs.size(); i++) {
+			charitems.push_back(debugNamesInputs[i].c_str());
+  }
+
+  ImGui::Combo("Debug views", &game->debugView, &charitems[0], 7, 7);
+
   ImGui::End();
   // Rendering
   ImGui::Render();

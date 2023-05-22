@@ -17,12 +17,15 @@ struct DirectionalLight {
     float ambientIntensity;
 };
 
+uniform int debugView;
 uniform sampler2D gPositionAo;
 uniform sampler2D gNormalMetal;
 uniform sampler2D gAlbedoSpecRough;
 uniform sampler2D gEmissive;
 uniform sampler2D depthMap; // shadow map
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
 
 uniform vec3 camPos;
 uniform DirectionalLight directionalLight;
@@ -71,6 +74,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 specularColor) {
     return specularColor + (1.0 - specularColor) * pow(1.0 - cosTheta, 5.0);
 }
 
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}   
 
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
@@ -167,21 +174,20 @@ void main() {
     vec3 normal = texture(gNormalMetal, texCoords).rgb;
     // vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
     vec3 albedo     = pow(texture(gAlbedoSpecRough, texCoords).rgb, vec3(2.2));
-    vec4 emissive = vec4(0.0) + texture(gEmissive, texCoords);
+    vec3 emissive = texture(gEmissive, texCoords).rgb;
     float ao = texture(gPositionAo, texCoords).a;
     float metallic = texture(gNormalMetal, texCoords).a;
     float roughness = texture(gAlbedoSpecRough, texCoords).a;
     vec4 lightPos = lightSpaceMatrix * vec4(texture(gPositionAo, texCoords).rgb, 1.0);
 
-    normal = normalize(normal);
     vec3 viewDir = normalize(camPos - fragPos);
+    vec3 reflection = reflect(-viewDir, normal); 
 
     vec3 specularColor = mix(vec3(0.04), albedo, metallic);
 
     // reflectance equation
-    vec3 dirLight =  CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos);
+    vec3 Lo = vec3(0.0); // CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos);
 
-    vec3 Lo = vec3(0.0);
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
         float distance = length(pointLights[i].position - fragPos);
@@ -189,17 +195,42 @@ void main() {
             Lo +=  CalcPointLightPBR(pointLights[i], fragPos, viewDir, normal, roughness, metallic, specularColor, albedo);
         }
     }
-    vec3 irradiance = texture(irradianceMap, normal).rgb;
-    vec3 ambient = irradiance * albedo;
-    // vec3 ambient = vec3(0.03) * albedo * ao;
-    // TODO: I'm not sure that this is the right way to apply shadows but it look okay
-    float shadows = ShadowCalculation(lightPos, normal, directionalLight.direction);
-    vec3 ambientDiffuse = ((dirLight * (1.0 - shadows)) * ambient) * ao;
+    
+    // ambient lighting (we now use IBL as the ambient term)
+    vec3 F = fresnelSchlickRoughness(max(dot(normal, viewDir), 0.0), specularColor, roughness); 
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;	  
 
-    vec3 color = ambientDiffuse + Lo;
+    vec3 irradiance = texture(irradianceMap, normal).rgb;
+    vec3 diffuse      = irradiance * albedo;
+
+    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilterMap, reflection,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec2 brdf  = texture(brdfLUT, vec2(max(dot(normal, viewDir), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+    vec3 ambient = (kD * diffuse + specular) * ao;
+
+    vec3 color = ambient + Lo;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0/2.2));
 
-    FragColor = vec4(vec3(color), 1.0) + emissive;
+    if (debugView == 0) {
+        FragColor = vec4(vec3(color) + emissive, 1.0) ;
+    } else if (debugView == 1) {
+        FragColor = vec4(vec3(albedo), 1.0) ;
+    } else if (debugView == 2) {
+        FragColor = vec4(vec3(normal), 1.0);
+    } else if (debugView == 3) {
+        FragColor = vec4(vec3(ao), 1.0);
+    } else if (debugView == 4) {
+        FragColor = vec4(vec3(emissive), 1.0);
+    } else if (debugView == 5) {
+        FragColor = vec4(vec3(metallic), 1.0);
+    } else if (debugView == 6) {
+        FragColor = vec4(vec3(roughness), 1.0);
+    }
 }

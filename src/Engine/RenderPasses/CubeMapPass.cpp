@@ -92,8 +92,9 @@ void CubeMapPass::Execute(ECSManager &eManager) {
                                           p_shaderProgram.getUniformLocation("view"));
 
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
-  // glBindTexture(GL_TEXTURE_CUBE_MAP, m_irradianceMap);
+  p_textureManager.bindCubeTexture("envCubemap");
+  // p_textureManager.bindCubeTexture("irradianceMap");
+  // p_textureManager.bindCubeTexture("prefilterMap");
   renderCube();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -115,7 +116,7 @@ void CubeMapPass::generateCubeMap() {
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
@@ -145,12 +146,17 @@ void CubeMapPass::generateCubeMap() {
 
     renderCube(); // renders a 1x1 cube
   }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
+  glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }
 
 void CubeMapPass::generateIrradianceMap() {
-  glGenTextures(1, &m_irradianceMap);
-  p_textureManager.setTexture("irradianceMap", m_irradianceMap);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, m_irradianceMap);
+  unsigned int irradianceMap;
+  glGenTextures(1, &irradianceMap);
+  p_textureManager.setTexture("irradianceMap", irradianceMap);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
   for (unsigned int i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 32, 32, 0, GL_RGBA, GL_FLOAT,
                  nullptr);
@@ -183,17 +189,18 @@ void CubeMapPass::generateIrradianceMap() {
     glUniformMatrix4fv(m_irradianceShader.getUniformLocation("view"), 1, GL_FALSE,
                        glm::value_ptr(m_captureViews[i]));
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                           m_irradianceMap, 0);
+                           irradianceMap, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderCube();
   }
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void CubeMapPass::generatePrefilterMap() {
   unsigned int prefilterMap;
   glGenTextures(1, &prefilterMap);
-  p_textureManager.setTexture("prefilterMap", m_irradianceMap);
+  p_textureManager.setTexture("prefilterMap", prefilterMap);
   glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
   for (unsigned int i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 128, 128, 0, GL_RGBA, GL_FLOAT,
@@ -209,13 +216,13 @@ void CubeMapPass::generatePrefilterMap() {
   glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
   m_prefilterShader.use();
-  m_irradianceShader.setUniformBinding("environmentMap");
-  m_irradianceShader.setUniformBinding("projection");
-  m_irradianceShader.setUniformBinding("view");
-  m_irradianceShader.setUniformBinding("roughness");
+  m_prefilterShader.setUniformBinding("environmentMap");
+  m_prefilterShader.setUniformBinding("projection");
+  m_prefilterShader.setUniformBinding("view");
+  m_prefilterShader.setUniformBinding("roughness");
 
-  glUniform1i(m_irradianceShader.getUniformLocation("environmentMap"), 0);
-  glUniformMatrix4fv(m_irradianceShader.getUniformLocation("projection"), 1, GL_FALSE,
+  glUniform1i(m_prefilterShader.getUniformLocation("environmentMap"), 0);
+  glUniformMatrix4fv(m_prefilterShader.getUniformLocation("projection"), 1, GL_FALSE,
                      glm::value_ptr(m_captureProjection));
 
   glActiveTexture(GL_TEXTURE0);
@@ -232,9 +239,9 @@ void CubeMapPass::generatePrefilterMap() {
     glViewport(0, 0, mipWidth, mipHeight);
 
     float roughness = (float)mip / (float)(maxMipLevels - 1);
-    glUniform1f(m_irradianceShader.getUniformLocation("roughness"), roughness);
+    glUniform1f(m_prefilterShader.getUniformLocation("roughness"), roughness);
     for (unsigned int i = 0; i < 6; ++i) {
-      glUniformMatrix4fv(m_irradianceShader.getUniformLocation("view"), 1, GL_FALSE,
+      glUniformMatrix4fv(m_prefilterShader.getUniformLocation("view"), 1, GL_FALSE,
                          glm::value_ptr(m_captureViews[i]));
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);

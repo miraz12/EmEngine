@@ -16,6 +16,7 @@
 LightPass::LightPass()
     : RenderPass("resources/Shaders/lightVertex.glsl", "resources/Shaders/pbrLightFragment.glsl") {
 
+  p_shaderProgram.setUniformBinding("debugView");
   p_shaderProgram.setUniformBinding("gPositionAo");
   p_shaderProgram.setUniformBinding("gNormalMetal");
   p_shaderProgram.setUniformBinding("gAlbedoSpecRough");
@@ -81,6 +82,7 @@ void LightPass::Execute(ECSManager &eManager) {
 
   p_shaderProgram.use();
 
+  glUniform1i(p_shaderProgram.getUniformLocation("debugView"), eManager.debugView);
   glUniform1i(p_shaderProgram.getUniformLocation("gPositionAo"), 0);
   glUniform1i(p_shaderProgram.getUniformLocation("gNormalMetal"), 1);
   glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);

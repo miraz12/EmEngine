@@ -20,15 +20,9 @@ Game::Game(GLFWwindow *window)
   Entity en = m_ECSManager->createEntity();
 
   GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
-  // GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
+  // GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/1.0/Sponza/glTF/Sponza.gltf"));
   PositionComponent *posComp = new PositionComponent();
   m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
-
-  // Entity en = m_ECSManager->createEntity();
-  // GraphicsComponent *graphComp = new GraphicsComponent();
-  // graphComp->grapObj = m;
-  // PositionComponent *posComp = new PositionComponent();
-  // m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // ----
   dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
@@ -53,6 +47,7 @@ void Game::update(float dt) {
   handleInput(dt);
   m_ECSManager->update(dt);
   m_ECSManager->dDir = dirLightDir;
+  m_ECSManager->debugView = debugView;
 }
 
 void Game::handleInput(float dt) {

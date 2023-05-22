@@ -4,15 +4,13 @@ precision highp float;
 in vec3 pPosition;
 in vec2 pTexCoords;
 in vec3 pNormal;
-in vec3 pTangent;
-in vec3 pBiTangent;
-in mat3 pTBN;
 
 // If uniforms change, also update SimpleShaderProgram to match
 // 0 = Base color
 // 1 = Metal/Roughness
-// 2 = Occlusion
-// 3 = Normal
+// 2 = Emissive
+// 3 = Occlusion
+// 4 = Normal
 uniform sampler2D textures[5];
 uniform int material;
 uniform vec3 emissiveFactor;
@@ -33,16 +31,25 @@ mat4 thresholdMatrix = mat4(
     16.0, 8.0, 14.0, 6.0
 );
 
+// Find the normal for this fragment
 vec3 getNormal() {
-    if (length(pTangent) > 0.0) {
-        return normalize(pTBN * (texture(textures[4], pTexCoords).xyz * 2.0 - 1.0));
-    } else {
-        return normalize(pNormal * texture(textures[4], pTexCoords).xyz);
-    }
+	// Perturb normal, see http://www.thetenthplanet.de/archives/1180
+	vec3 tangentNormal = texture(textures[4], pTexCoords).xyz * 2.0 - 1.0;
+
+	vec3 q1 = dFdx(pPosition);
+	vec3 q2 = dFdy(pPosition);
+	vec2 st1 = dFdx(pTexCoords);
+	vec2 st2 = dFdy(pTexCoords);
+
+	vec3 N = normalize(pNormal);
+	vec3 T = normalize(q1 * st2.t - q2 * st1.t);
+	vec3 B = -normalize(cross(N, T));
+	mat3 TBN = mat3(T, B, N);
+
+	return normalize(TBN * tangentNormal);
 }
 
-void main()
-{
+void main() {
     float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
     if (threshold >= texture(textures[0], pTexCoords).a) {
         discard;

@@ -15,18 +15,12 @@ uniform mat4 projMatrix;
 out vec3 pPosition;
 out vec2 pTexCoords;
 out vec3 pNormal;
-out vec3 pTangent;
-out vec3 pBiTangent;
-out mat3 pTBN;
 
 void main() {
     gl_Position = projMatrix * viewMatrix * modelMatrix * meshMatrix * vec4(POSITION, 1.0);
     pPosition = (modelMatrix * meshMatrix * vec4(POSITION.xyz, 1.0)).xyz;
-    mat4 normalMatrix = transpose(inverse(modelMatrix * meshMatrix));
+    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix * meshMatrix)));
 
-    pNormal =  normalize(vec3(normalMatrix * vec4(NORMAL, 0.0)));
-    pTangent =  normalize(vec3(normalMatrix * vec4(TANGENT.xyz, 0.0)));
-    pBiTangent = cross(pNormal, pTangent) * TANGENT.w;
-    pTBN = mat3(pTangent, pBiTangent, pNormal);
+    pNormal =  normalize(normalMatrix * NORMAL);
     pTexCoords = TEXCOORD_0;
 }

@@ -22,7 +22,7 @@ private:
   void renderQuad();
 
   unsigned int m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_quadVAO{0},
-      m_quadVBO{0}, m_envCubemap{0}, m_irradianceMap{0};
+      m_quadVBO{0}, m_envCubemap{0};
   ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader, m_prefilterShader,
       m_brdfShader;
 
