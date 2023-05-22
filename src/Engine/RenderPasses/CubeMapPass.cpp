@@ -30,7 +30,7 @@ CubeMapPass::CubeMapPass()
   stbi_set_flip_vertically_on_load(true);
   int width, height, nrComponents;
   float *data =
-      stbi_loadf("resources/Textures/newport_loft.hdr", &width, &height, &nrComponents, 0);
+      stbi_loadf("resources/Textures/clarens_midday_1k.hdr", &width, &height, &nrComponents, 0);
   unsigned int hdrTexture;
   if (data) {
     glGenTextures(1, &hdrTexture);

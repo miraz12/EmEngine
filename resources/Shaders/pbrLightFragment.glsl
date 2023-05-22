@@ -114,7 +114,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
     return shadow;
 }
 
-vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec4 lightPos) {
+vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec4 lightPos, vec3 albedo) {
     // calculate per-light radiance
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
@@ -136,7 +136,7 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
 
     // add to outgoing radiance Lo
     float NdotL = max(dot(normal, L), 0.0);
-    return ((kD / PI + specular) * radiance * NdotL);
+    return (kD * albedo / PI + specular) * radiance * NdotL; 
 }
 
 vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec3 albedo) {
@@ -164,8 +164,7 @@ vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal
 
     // add to outgoing radiance Lo
     float NdotL = max(dot(normal, L), 0.0);
-    return (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    // return (kD / PI + specular) * radiance * NdotL;
+    return (kD * albedo / PI + specular) * radiance * NdotL; 
 }
 
 
@@ -186,7 +185,7 @@ void main() {
     vec3 specularColor = mix(vec3(0.04), albedo, metallic);
 
     // reflectance equation
-    vec3 Lo = vec3(0.0); // CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos);
+    vec3 Lo = CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos, albedo);
 
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
@@ -211,7 +210,9 @@ void main() {
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(normal, viewDir), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    vec3 ambient = (kD * diffuse + specular) * ao;
+    //TODO: Does shadows and directional lights work like this in PBR??
+    float shadows = ShadowCalculation(lightPos, normal, directionalLight.direction);
+    vec3 ambient = (kD * diffuse + specular) * (1.0 - shadows)  * ao;
 
     vec3 color = ambient + Lo;
 
