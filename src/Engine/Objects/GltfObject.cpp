@@ -25,18 +25,12 @@ static std::string GetFilePathExtension(const std::string &FileName) {
 }
 
 void GltfObject::draw(const ShaderProgram &sPrg) {
-  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(p_modelMatrix));
-
   for (size_t i = 0; i < p_meshes.size(); i++) {
     p_materials.at(p_meshes[i]->m_material)->bind(sPrg);
     p_meshes.at(i)->draw(sPrg);
   }
 }
 void GltfObject::drawGeom(const ShaderProgram &sPrg) {
-  glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                     glm::value_ptr(p_modelMatrix));
-
   for (size_t i = 0; i < p_meshes.size(); i++) {
     p_meshes[i]->draw(sPrg);
   }

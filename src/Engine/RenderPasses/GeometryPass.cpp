@@ -52,8 +52,10 @@ void GeometryPass::Execute(ECSManager &eManager) {
 
   std::vector<Entity> view = eManager.view<GraphicsComponent, PositionComponent>();
   for (auto e : view) {
-    // PositionComponent *p = eManager.getComponent<PositionComponent>(e);
-    // glm::mat4 model = p->calculateMatrix();
+    PositionComponent *p = eManager.getComponent<PositionComponent>(e);
+    glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                       glm::value_ptr(p->model));
+
     GraphicsComponent *g = eManager.getComponent<GraphicsComponent>(e);
     g->m_grapObj.draw(p_shaderProgram);
   }
@@ -77,8 +79,8 @@ void GeometryPass::setViewport(unsigned int w, unsigned int h) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
   // - color
-  unsigned int gAlbedo = p_textureManager.loadTexture("gAlbedo", GL_RGBA16F, GL_RGBA, GL_FLOAT,
-                                                      p_width, p_height, 0);
+  unsigned int gAlbedo =
+      p_textureManager.loadTexture("gAlbedo", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
   // - emissive color buffer

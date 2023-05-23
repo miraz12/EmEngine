@@ -142,6 +142,8 @@ public:
   Camera &getCamera() { return m_camera; };
   void setViewport(unsigned int w, unsigned int h);
 
+  System *getSystem(std::string s) { return m_systems[s]; }
+
   glm::vec3 dDir;
   int debugView;
 

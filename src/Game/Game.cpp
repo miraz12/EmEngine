@@ -2,6 +2,7 @@
 
 #include <ECS/Components/GraphicsComponent.hpp>
 #include <ECS/Components/LightingComponent.hpp>
+#include <ECS/Components/PhysicsComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
 #include <Objects/GltfObject.hpp>
@@ -19,10 +20,14 @@ Game::Game(GLFWwindow *window)
   // TODO dynamic shadow projection and view
   Entity en = m_ECSManager->createEntity();
 
-  GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
-  // GraphicsComponent *graphComp = new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
+  GraphicsComponent *graphComp =
+      new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
+  // GraphicsComponent *graphComp = new GraphicsComponent(*new
+  // GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   PositionComponent *posComp = new PositionComponent();
-  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
+  PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
+  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(
+      en, graphComp, posComp, phyComp);
 
   // Entity en = m_ECSManager->createEntity();
   // GraphicsComponent *graphComp = new GraphicsComponent();
