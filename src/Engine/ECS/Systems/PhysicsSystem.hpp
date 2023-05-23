@@ -8,6 +8,7 @@
 #include "Managers/FrameBufferManager.hpp"
 #include "ShaderPrograms/QuadShaderProgram.hpp"
 #include "System.hpp"
+#include <btBulletDynamicsCommon.h>
 
 class PhysicsSystem : public System {
 public:

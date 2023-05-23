@@ -1,5 +1,4 @@
 #include "PhysicsSystem.hpp"
-#include <btBulletDynamicsCommon.h>
 
 PhysicsSystem::PhysicsSystem(ECSManager *ECSManager, Camera &cam) : System(ECSManager) {
   /// collision configuration contains default setup for memory, collision setup. Advanced users can
