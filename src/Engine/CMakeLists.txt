@@ -8,7 +8,7 @@ file(GLOB_RECURSE ENGINE_FILES
 # Add source files as libraries
 add_library(Engine ${ENGINE_FILES})
 target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Engine )
-target_link_libraries(Engine PUBLIC exts Game)
+target_link_libraries(Engine PUBLIC exts)
 target_compile_options(Engine PRIVATE
 						$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
                         -pedantic -Wall -Wextra -g3 -O0>

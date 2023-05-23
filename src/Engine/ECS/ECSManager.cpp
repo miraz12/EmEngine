@@ -1,12 +1,16 @@
 #include "ECSManager.hpp"
 #include "ECS/Systems/System.hpp"
 #include "Systems/GraphicsSystem.hpp"
+#include "Systems/PhysicsSystem.hpp"
 
 ECSManager::ECSManager() { initializeSystems(); }
 
 ECSManager::~ECSManager() {}
 
-void ECSManager::initializeSystems() { m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera); }
+void ECSManager::initializeSystems() {
+  m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
+  m_systems["PHYSICS"] = new PhysicsSystem(this, m_camera);
+}
 
 void ECSManager::update(float dt) {
   // update all systems

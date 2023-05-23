@@ -7,7 +7,6 @@
 
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
-#include "Window.hpp"
 
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
