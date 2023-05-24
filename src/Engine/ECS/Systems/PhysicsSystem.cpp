@@ -3,7 +3,7 @@
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
 
-PhysicsSystem::PhysicsSystem(ECSManager *ECSManager, Camera &cam) : System(ECSManager) {
+PhysicsSystem::PhysicsSystem(ECSManager *ECSManager) : System(ECSManager) {
   /// collision configuration contains default setup for memory, collision setup. Advanced users can
   /// create their own configuration.
   m_collisionConfiguration = new btDefaultCollisionConfiguration();

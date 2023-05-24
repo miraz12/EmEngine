@@ -13,10 +13,10 @@
 
 class PhysicsSystem : public System {
 public:
-  PhysicsSystem(ECSManager *ECSManager, Camera &cam);
+  PhysicsSystem(ECSManager *ECSManager);
   ~PhysicsSystem();
   void update(float dt);
-  void setViewport(unsigned int w, unsigned int h){};
+  void setViewport(unsigned int /* w */, unsigned int /* h */){};
   void addRigidBody(btRigidBody *body) { m_dynamicsWorld->addRigidBody(body); };
 
 private:

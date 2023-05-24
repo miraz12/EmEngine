@@ -360,8 +360,6 @@ void Window::renderImgui() {
   ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
   ImGui::SliderFloat3("Color", glm::value_ptr(game->dirLightColor), 0.0f, 1.0f);
 
-  int32_t debugViewInputs = 0;
-  int32_t debugViewEquation = 0;
   const std::vector<std::string> debugNamesInputs = {
       "none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"};
   std::vector<const char *> charitems;

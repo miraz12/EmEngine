@@ -20,11 +20,11 @@ add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine Game)
-target_compile_options(${PROJECT_NAME} PRIVATE
-                        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                        -pedantic -Wall -Wextra -g3 -O0>
-                        $<$<CXX_COMPILER_ID:MSVC>:
-                        /W4;>)
+# target_compile_options(${PROJECT_NAME} PRIVATE
+#                         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+#                         -pedantic -Wall -Wextra -g3 -O0>
+#                         $<$<CXX_COMPILER_ID:MSVC>:
+#                         /W4;>)
 # target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

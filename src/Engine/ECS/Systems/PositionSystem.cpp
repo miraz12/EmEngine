@@ -1,7 +1,7 @@
 #include "PositionSystem.hpp"
 #include <ECS/ECSManager.hpp>
 
-PositionSystem::PositionSystem(ECSManager *ECSManager, Camera &cam) : System(ECSManager) {}
+PositionSystem::PositionSystem(ECSManager *ECSManager) : System(ECSManager) {}
 
 void PositionSystem::update(float dt) {
 
