@@ -333,7 +333,7 @@ void keyPressCallback(GLFWwindow *win, int key, int /* scancode */, int action, 
   }
 }
 
-void mousePressCallback(GLFWwindow */* win */, int button, int action, int /* mods */) {
+void mousePressCallback(GLFWwindow * /* win */, int button, int action, int /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {
@@ -355,21 +355,19 @@ void Window::renderImgui() {
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-
   ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysAutoResize);
   ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
   ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
   ImGui::SliderFloat3("Color", glm::value_ptr(game->dirLightColor), 0.0f, 1.0f);
 
   int32_t debugViewInputs = 0;
-	int32_t debugViewEquation = 0;
+  int32_t debugViewEquation = 0;
   const std::vector<std::string> debugNamesInputs = {
-				"none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"
-	};
-  std::vector<const char*> charitems;
-		charitems.reserve(debugNamesInputs.size());
-		for (size_t i = 0; i < debugNamesInputs.size(); i++) {
-			charitems.push_back(debugNamesInputs[i].c_str());
+      "none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"};
+  std::vector<const char *> charitems;
+  charitems.reserve(debugNamesInputs.size());
+  for (size_t i = 0; i < debugNamesInputs.size(); i++) {
+    charitems.push_back(debugNamesInputs[i].c_str());
   }
 
   ImGui::Combo("Debug views", &game->debugView, &charitems[0], 7, 7);

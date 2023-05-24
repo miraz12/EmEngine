@@ -6,10 +6,10 @@
 
 class GraphicsComponent : public Component {
 public:
-  GraphicsComponent(GraphicsObject& grapComp);
+  GraphicsComponent(GraphicsObject &grapComp);
   GraphicsComponent() = delete;
   virtual ~GraphicsComponent();
 
-  GraphicsObject& m_grapObj;
+  GraphicsObject &m_grapObj;
 };
 #endif // GRAPHICSCOMPONENT_H_

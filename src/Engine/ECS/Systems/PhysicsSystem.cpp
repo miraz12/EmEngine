@@ -81,7 +81,7 @@ void PhysicsSystem::update(float dt) {
       p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
                               btTrans.getOrigin().getZ());
       printf("world pos object = %f,%f,%f\n", float(btTrans.getOrigin().getX()),
-      float(btTrans.getOrigin().getY()), float(btTrans.getOrigin().getZ()));
+             float(btTrans.getOrigin().getY()), float(btTrans.getOrigin().getZ()));
     }
   }
 }

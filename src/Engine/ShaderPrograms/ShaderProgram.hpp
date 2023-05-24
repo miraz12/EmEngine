@@ -11,7 +11,7 @@ public:
   ShaderProgram() = delete;
   ShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath);
   virtual ~ShaderProgram();
-  ShaderProgram(const ShaderProgram&) = delete;
+  ShaderProgram(const ShaderProgram &) = delete;
 
   void setUniformBinding(std::string u);
   void setAttribBinding(std::string a);

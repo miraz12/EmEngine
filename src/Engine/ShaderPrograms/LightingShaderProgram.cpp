@@ -9,7 +9,8 @@
 #endif
 
 LightingShaderProgram::LightingShaderProgram()
-    : ShaderProgram("resources/Shaders/lightVertex.glsl", "resources/Shaders/pbrLightFragment.glsl") {
+    : ShaderProgram("resources/Shaders/lightVertex.glsl",
+                    "resources/Shaders/pbrLightFragment.glsl") {
   m_uniformBindings["gPositionAo"] = glGetUniformLocation(p_shaderProgram, "gPositionAo");
   m_uniformBindings["gNormalMetal"] = glGetUniformLocation(p_shaderProgram, "gNormalMetal");
   m_uniformBindings["gAlbedoSpecRough"] = glGetUniformLocation(p_shaderProgram, "gAlbedoSpecRough");

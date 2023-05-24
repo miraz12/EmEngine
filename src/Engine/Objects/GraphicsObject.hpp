@@ -25,8 +25,8 @@ protected:
   std::vector<float> p_normals;
   std::vector<float> p_texCoords;
   std::vector<int> p_indices;
-  std::vector<Material*> p_materials;
-  std::vector<MeshObj*> p_meshes;
+  std::vector<Material *> p_materials;
+  std::vector<MeshObj *> p_meshes;
 };
 
 #endif // GRAPHICSOBJECT_H_

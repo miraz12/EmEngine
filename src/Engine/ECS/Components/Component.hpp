@@ -4,8 +4,6 @@
 #include <bitset>
 #include <cstddef>
 
-
-
 class Component {
 public:
   Component() = default;

@@ -15,7 +15,6 @@ public:
 
   PositionComponent();
   PositionComponent(float startX, float startY);
-
 };
 
 #endif // POSITIONCOMPONENT_H_

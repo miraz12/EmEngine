@@ -26,8 +26,8 @@ Game::Game(GLFWwindow *window)
   // GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   PositionComponent *posComp = new PositionComponent();
   PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
-  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(
-      en, graphComp, posComp, phyComp);
+  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp,
+                                                                    phyComp);
 
   // Entity en = m_ECSManager->createEntity();
   // GraphicsComponent *graphComp = new GraphicsComponent();

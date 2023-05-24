@@ -13,7 +13,7 @@
 #include <glad/glad.h>
 #endif
 
-Quad::Quad(ShaderProgram &/* shaderProgram */) {
+Quad::Quad(ShaderProgram & /* shaderProgram */) {
   glGenBuffers(1, &m_VBO);
   glGenBuffers(1, &m_EBO);
 

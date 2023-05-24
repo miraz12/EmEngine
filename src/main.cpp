@@ -17,12 +17,12 @@ void handle_eptr(std::exception_ptr eptr) {
 int main() {
   std::exception_ptr eptr;
   // try {
-    if (Window::open()) {
-      return Window::start();
-    }
-    return -1;
+  if (Window::open()) {
+    return Window::start();
+  }
+  return -1;
   // } catch (...) {
-    // eptr = std::current_exception();
+  // eptr = std::current_exception();
   // }
   // handle_eptr(eptr);
 }
