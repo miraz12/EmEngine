@@ -11,12 +11,11 @@
 
 class GraphicsSystem : public System {
 public:
-  GraphicsSystem(ECSManager *ECSManager, Camera &cam);
+  GraphicsSystem(ECSManager *ECSManager);
   void update(float dt);
   void setViewport(unsigned int w, unsigned int h);
 
 private:
-  Camera &m_camera;
   FrameBufferManager &m_fboManager;
   FrameGraph &m_fGraph;
 };

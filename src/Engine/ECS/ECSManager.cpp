@@ -11,7 +11,7 @@ ECSManager::~ECSManager() {}
 void ECSManager::initializeSystems() {
   m_systems["PHYSICS"] = new PhysicsSystem(this);
   m_systems["POSITION"] = new PositionSystem(this);
-  m_systems["GRAPHICS"] = new GraphicsSystem(this, m_camera);
+  m_systems["GRAPHICS"] = new GraphicsSystem(this);
 }
 
 void ECSManager::update(float dt) {

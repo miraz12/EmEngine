@@ -3,7 +3,7 @@
 
 PositionSystem::PositionSystem(ECSManager *ECSManager) : System(ECSManager) {}
 
-void PositionSystem::update(float dt) {
+void PositionSystem::update(float /* dt */) {
 
   std::vector<Entity> view = m_manager->view<PositionComponent>();
 

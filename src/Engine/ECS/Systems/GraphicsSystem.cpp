@@ -18,8 +18,8 @@
 
 #include "ECS/ECSManager.hpp"
 
-GraphicsSystem::GraphicsSystem(ECSManager *ECSManager, Camera &cam)
-    : System(ECSManager), m_camera(cam), m_fboManager(FrameBufferManager::getInstance()),
+GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
+    : System(ECSManager), m_fboManager(FrameBufferManager::getInstance()),
       m_fGraph(*new FrameGraph()) {}
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
