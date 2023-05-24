@@ -17,7 +17,6 @@ private:
   void loadMaterials(tinygltf::Model &model);
   void loadTextures(tinygltf::Model &model);
   void loadMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, glm::mat4 meshMat);
-  unsigned int m_vao;
 };
 
 #endif // GLTFOBJECT_H_
