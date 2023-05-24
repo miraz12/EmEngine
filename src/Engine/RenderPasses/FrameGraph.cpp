@@ -6,13 +6,7 @@
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
 
-#ifdef EMSCRIPTEN
-#define GL_OES_vertex_array_object
-#include <GLES3/gl3.h>
-#include <emscripten.h>
-#else
-#include <glad/glad.h>
-#endif
+
 
 FrameGraph::FrameGraph() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);

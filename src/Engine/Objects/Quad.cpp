@@ -5,13 +5,7 @@
 #include "ShaderPrograms/ShaderProgram.hpp"
 #include "glm/fwd.hpp"
 
-#ifdef EMSCRIPTEN
-#define GL_OES_vertex_array_object
-#include <GLES3/gl3.h>
-#include <emscripten.h>
-#else
-#include <glad/glad.h>
-#endif
+
 
 Quad::Quad(ShaderProgram & /* shaderProgram */) {
   glGenBuffers(1, &m_VBO);

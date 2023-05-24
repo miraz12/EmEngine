@@ -1,12 +1,6 @@
 #include "CubeMapPass.hpp"
 
-#ifdef EMSCRIPTEN
-#define GL_OES_vertex_array_object
-#include <GLES3/gl3.h>
-#include <emscripten.h>
-#else
-#include <glad/glad.h>
-#endif
+
 
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"

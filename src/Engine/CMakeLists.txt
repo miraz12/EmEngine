@@ -8,7 +8,8 @@ file(GLOB_RECURSE ENGINE_FILES
 # Add source files as libraries
 add_library(Engine ${ENGINE_FILES})
 target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Engine )
-target_link_libraries(Engine PUBLIC exts)
+target_link_libraries(Engine PRIVATE exts)
+target_precompile_headers(Engine PRIVATE engine_pch.hpp)
 
 target_compile_options(Engine PRIVATE
 						$<$<CONFIG:Debug>:

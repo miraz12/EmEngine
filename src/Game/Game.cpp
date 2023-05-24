@@ -4,7 +4,6 @@
 #include <ECS/Components/LightingComponent.hpp>
 #include <ECS/Components/PhysicsComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
-#include <ECS/ECSManager.hpp>
 #include <Objects/GltfObject.hpp>
 #include <algorithm>
 
@@ -23,9 +22,9 @@ Game::Game(GLFWwindow *window)
   GraphicsComponent *graphComp =
       new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // GraphicsComponent *graphComp = new GraphicsComponent(*new
-  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheresNoTextures/glTF/MetalRoughSpheresNoTextures.gltf"));
+  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   PositionComponent *posComp = new PositionComponent();
-  // PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
+  PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
   m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // Entity en = m_ECSManager->createEntity();

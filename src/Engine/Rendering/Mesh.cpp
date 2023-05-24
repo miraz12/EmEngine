@@ -1,9 +1,6 @@
-#include "MeshObj.hpp"
-#include <glm/gtc/type_ptr.hpp>
+#include "Mesh.hpp"
 
-
-
-void MeshObj::draw() {
+void Mesh::draw() {
 
   glBindVertexArray(m_vao);
   if (m_drawType == 0) {

@@ -1,13 +1,7 @@
 #include "ShadowPass.hpp"
 #include "glm/geometric.hpp"
 
-#ifdef EMSCRIPTEN
-#define GL_OES_vertex_array_object
-#include <GLES3/gl3.h>
-#include <emscripten.h>
-#else
-#include <glad/glad.h>
-#endif
+
 
 #include "ECS/ECSManager.hpp"
 #include "RenderPasses/RenderPass.hpp"
