@@ -14,13 +14,14 @@ public:
   void bind(const ShaderProgram &sPrg);
 
   TextureManager &m_textureMan;
-  int m_material = -1;
-  glm::vec3 m_emissiveFactor = glm::vec3(1.0f);
+  int m_material{0};
+  glm::vec3 m_emissiveFactor = glm::vec3(0.0f);
   glm::vec3 m_baseColorFactor = glm::vec3(1.0f);
   float m_roughnessFactor = 1.0f;
   float m_metallicFactor = 1.0f;
-  bool m_doubleSided;
-  std::string m_alphaMode;
+  bool m_doubleSided{false};
+  float m_alphaCutoff{0.5};
+  std::string m_alphaMode{"OPAQUE"};
   std::vector<std::string> m_textures;
 
   std::string m_baseColorTexture;

@@ -14,9 +14,10 @@ public:
 
 private:
   void loadModel(tinygltf::Model &model);
+  void loadNode(tinygltf::Model &model, tinygltf::Node &node, glm::mat4 mat);
   void loadMaterials(tinygltf::Model &model);
   void loadTextures(tinygltf::Model &model);
-  void loadMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, glm::mat4 meshMat);
+  void loadMeshes(tinygltf::Model &model);
 };
 
 #endif // GLTFOBJECT_H_

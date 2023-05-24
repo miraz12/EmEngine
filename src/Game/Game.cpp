@@ -23,11 +23,10 @@ Game::Game(GLFWwindow *window)
   GraphicsComponent *graphComp =
       new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // GraphicsComponent *graphComp = new GraphicsComponent(*new
-  // GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
+  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheresNoTextures/glTF/MetalRoughSpheresNoTextures.gltf"));
   PositionComponent *posComp = new PositionComponent();
-  PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
-  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp,
-                                                                    phyComp);
+  // PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
+  m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // Entity en = m_ECSManager->createEntity();
   // GraphicsComponent *graphComp = new GraphicsComponent();

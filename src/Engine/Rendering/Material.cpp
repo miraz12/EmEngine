@@ -58,6 +58,9 @@ void Material::bind(const ShaderProgram &sPrg) {
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
+  }  else if (m_alphaMode == "MASK") {
+    // TODO implement
+    glDisable(GL_BLEND);
   } else {
     glDisable(GL_BLEND);
   }

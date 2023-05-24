@@ -3,6 +3,7 @@
 
 #include <Rendering/Material.hpp>
 #include <Rendering/MeshObj.hpp>
+#include <Rendering/Node.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <map>
@@ -27,6 +28,8 @@ protected:
   std::vector<int> p_indices;
   std::vector<Material *> p_materials;
   std::vector<MeshObj *> p_meshes;
+  std::vector<Node *> p_nodes;
+  Material defaultMat;
 };
 
 #endif // GRAPHICSOBJECT_H_
