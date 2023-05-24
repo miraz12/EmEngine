@@ -2,14 +2,9 @@ cmake_minimum_required(VERSION 3.12)
 project(emEngine)
 # Generate compile_commands.json for LSP
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(EMCC_DEBUG 1)
 set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+# set(EMCC_DEBUG 1)
 
-
-# Add source files
-file(GLOB_RECURSE GAME_FILES
-    ${CMAKE_SOURCE_DIR}/src/Game/*.cpp
-    ${CMAKE_SOURCE_DIR}/src/Game/*.hpp)
 # Add external libs
 add_subdirectory(exts)
 add_subdirectory(src/Engine)

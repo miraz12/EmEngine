@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
+# Add source files
+file(GLOB_RECURSE GAME_FILES
+    ${CMAKE_SOURCE_DIR}/src/Game/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/Game/*.hpp)
+
 # Add source files as libraries
 add_library(Game ${GAME_FILES})
 target_include_directories(Game SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Game)
