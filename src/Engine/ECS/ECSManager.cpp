@@ -54,7 +54,7 @@ DirectionalLight *ECSManager::SetupDirectionalLight(glm::vec3 color, float ambie
   return dLight;
 }
 
-void ECSManager::setViewport(unsigned int w, unsigned int h) {
+void ECSManager::setViewport(uint32_t w, uint32_t h) {
   m_camera.setSize(w, h);
   static_cast<GraphicsSystem *>(m_systems["GRAPHICS"])->setViewport(w, h);
 };

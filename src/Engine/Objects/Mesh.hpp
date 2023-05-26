@@ -27,8 +27,8 @@ private:
   void loadTextures(tinygltf::Model &model);
   void loadNode(tinygltf::Model &model, tinygltf::Node &node);
 
-  std::map<int, unsigned int> m_buffers;
+  std::map<int32_t, uint32_t> m_buffers;
   tinygltf::Model m_model;
-  unsigned int m_vao;
+  uint32_t m_vao;
 };
 #endif // MESH_H_

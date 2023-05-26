@@ -9,11 +9,11 @@ public:
   GeometryPass();
   virtual ~GeometryPass() = default;
   void Execute(ECSManager &eManager) override;
-  void setViewport(unsigned int w, unsigned int h) override;
+  void setViewport(uint32_t w, uint32_t h) override;
 
 private:
-  unsigned int gBuffer;
-  unsigned int rboDepth;
+  uint32_t gBuffer;
+  uint32_t rboDepth;
 };
 
 #endif // GEOMETRYPASS_H_

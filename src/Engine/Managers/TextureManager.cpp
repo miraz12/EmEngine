@@ -5,11 +5,8 @@
 #include <stb_image.h>
 #include <string>
 
-
-
-unsigned int TextureManager::loadTexture(unsigned int internalFormat, GLenum format, GLenum type,
-                                         unsigned int width, unsigned int height,
-                                         unsigned char *data) {
+uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format, GLenum type,
+                                     uint32_t width, uint32_t height, unsigned char *data) {
   GLuint texId;
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
@@ -27,9 +24,9 @@ unsigned int TextureManager::loadTexture(unsigned int internalFormat, GLenum for
   texIds.insert({name, texId});
   return texId;
 }
-unsigned int TextureManager::loadTexture(std::string name, unsigned int internalFormat,
-                                         GLenum format, GLenum type, unsigned int width,
-                                         unsigned int height, unsigned char *data) {
+uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat, GLenum format,
+                                     GLenum type, uint32_t width, uint32_t height,
+                                     unsigned char *data) {
   std::cout << "Warning texture reload" << std::endl;
   deleteTexture(name);
   GLuint texId;
@@ -47,13 +44,13 @@ unsigned int TextureManager::loadTexture(std::string name, unsigned int internal
   return texId;
 }
 
-void TextureManager::setTexture(std::string name, unsigned int texId) {
+void TextureManager::setTexture(std::string name, uint32_t texId) {
   deleteTexture(name);
   texIds.insert({name, texId});
 }
 
-unsigned int TextureManager::bindTexture(std::string name) {
-  unsigned int texId = texIds.at(name);
+uint32_t TextureManager::bindTexture(std::string name) {
+  uint32_t texId = texIds.at(name);
   glBindTexture(GL_TEXTURE_2D, texId);
   return texId;
 }

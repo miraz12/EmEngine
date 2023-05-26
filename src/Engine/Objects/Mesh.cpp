@@ -7,8 +7,6 @@
 
 #include "Mesh.hpp"
 
-
-
 #include "Managers/TextureManager.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
@@ -55,7 +53,7 @@ void Mesh::drawModelNodes(tinygltf::Model &model, tinygltf::Node &node, const Sh
   }
   glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMat));
 
-  if ((node.mesh >= 0) && (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
+  if ((node.mesh >= 0) && (static_cast<uint32_t>(node.mesh) < model.meshes.size())) {
     drawMesh(model, model.meshes[node.mesh], sPrg);
   }
   for (size_t i = 0; i < node.children.size(); i++) {
@@ -76,9 +74,9 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, const ShaderPr
     // 2 = Emissive
     // 3 = Occlusion
     // 4 = Normal
-    unsigned int material = 0;
+    uint32_t material = 0;
     tinygltf::Material m = model.materials[primitive.material];
-    int texIdx = m.pbrMetallicRoughness.baseColorTexture.index;
+    int32_t texIdx = m.pbrMetallicRoughness.baseColorTexture.index;
     if (texIdx >= 0) {
       glUniform3f(
           sPrg.getUniformLocation("baseColorFactor"), m.pbrMetallicRoughness.baseColorFactor[0],
@@ -136,11 +134,11 @@ void Mesh::drawMesh(tinygltf::Model &model, tinygltf::Mesh &mesh, const ShaderPr
     }
     for (auto &attrib : primitive.attributes) {
       tinygltf::Accessor accessor = model.accessors[attrib.second];
-      int loc = sPrg.getAttribLocation(attrib.first);
+      int32_t loc = sPrg.getAttribLocation(attrib.first);
       if (loc > -1 && !m_buffers.empty()) {
-        unsigned int vbo = m_buffers.at(accessor.bufferView);
+        uint32_t vbo = m_buffers.at(accessor.bufferView);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        int32_t byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
         glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
                               byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
         glEnableVertexAttribArray(loc);
@@ -173,7 +171,7 @@ void Mesh::drawModelGeomNodes(tinygltf::Model &model, tinygltf::Node &node,
   }
   glUniformMatrix4fv(sPrg.getUniformLocation("modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMat));
 
-  if ((node.mesh >= 0) && (static_cast<unsigned int>(node.mesh) < model.meshes.size())) {
+  if ((node.mesh >= 0) && (static_cast<uint32_t>(node.mesh) < model.meshes.size())) {
     drawMeshGeom(model, model.meshes[node.mesh], sPrg);
   }
   for (size_t i = 0; i < node.children.size(); i++) {
@@ -186,11 +184,11 @@ void Mesh::drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, const Shad
   for (size_t i = 0; i < mesh.primitives.size(); ++i) {
     tinygltf::Primitive primitive = mesh.primitives[i];
     tinygltf::Accessor accessor = model.accessors[primitive.attributes["POSITION"]];
-    int loc = sPrg.getAttribLocation("POSITION");
+    int32_t loc = sPrg.getAttribLocation("POSITION");
     if (loc > -1 && !m_buffers.empty()) {
-      unsigned int vbo = m_buffers.at(accessor.bufferView);
+      uint32_t vbo = m_buffers.at(accessor.bufferView);
       glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+      int32_t byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
       glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
                             byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
       glEnableVertexAttribArray(loc);
@@ -204,9 +202,9 @@ void Mesh::drawMeshGeom(tinygltf::Model &model, tinygltf::Mesh &mesh, const Shad
     } else {
       for (auto &attrib : primitive.attributes) {
         tinygltf::Accessor accessor = model.accessors[attrib.second];
-        unsigned int loc = m_buffers.at(accessor.bufferView);
+        uint32_t loc = m_buffers.at(accessor.bufferView);
         glBindBuffer(GL_ARRAY_BUFFER, loc);
-        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        int32_t byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
         glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
                               byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
         glEnableVertexAttribArray(loc);
@@ -256,14 +254,13 @@ void Mesh::loadModel(tinygltf::Model &model) {
 
   const tinygltf::Scene &scene = model.scenes[model.defaultScene];
   for (size_t i = 0; i < scene.nodes.size(); ++i) {
-    assert((scene.nodes[i] >= 0) &&
-           (static_cast<unsigned int>(scene.nodes[i]) < model.nodes.size()));
+    assert((scene.nodes[i] >= 0) && (static_cast<uint32_t>(scene.nodes[i]) < model.nodes.size()));
     loadNode(model, model.nodes[scene.nodes[i]]);
   }
 }
 
 void Mesh::loadTextures(tinygltf::Model &model) {
-  int i = 0;
+  int32_t i = 0;
   for (auto &tex : model.textures) {
     TextureManager &texMan = TextureManager::getInstance();
 

@@ -16,7 +16,7 @@ public:
   PhysicsSystem(ECSManager *ECSManager);
   ~PhysicsSystem();
   void update(float dt);
-  void setViewport(unsigned int /* w */, unsigned int /* h */){};
+  void setViewport(uint32_t /* w */, uint32_t /* h */){};
   void addRigidBody(btRigidBody *body) { m_dynamicsWorld->addRigidBody(body); };
 
 private:

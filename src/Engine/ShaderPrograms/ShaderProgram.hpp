@@ -15,16 +15,16 @@ public:
 
   void setUniformBinding(std::string u);
   void setAttribBinding(std::string a);
-  unsigned int getUniformLocation(std::string uniformName) const;
-  unsigned int getAttribLocation(std::string attribName) const;
-  unsigned int getId() { return p_shaderProgram; }
+  uint32_t getUniformLocation(std::string uniformName) const;
+  uint32_t getAttribLocation(std::string attribName) const;
+  uint32_t getId() { return p_shaderProgram; }
   void loadShaders(std::string vertexShaderPath, std::string fragmentShaderPath);
   void use() const;
 
 protected:
-  unsigned int p_shaderProgram;
-  std::unordered_map<std::string, unsigned int> m_uniformBindings;
-  std::unordered_map<std::string, int> m_attribBindings;
+  uint32_t p_shaderProgram;
+  std::unordered_map<std::string, uint32_t> m_uniformBindings;
+  std::unordered_map<std::string, int32_t> m_attribBindings;
 
 private:
   void readFile(std::string filePath, std::string *result);

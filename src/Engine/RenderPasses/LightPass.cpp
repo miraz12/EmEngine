@@ -3,8 +3,6 @@
 #include "glm/geometric.hpp"
 #include <Managers/TextureManager.hpp>
 
-
-
 #include <ECS/ECSManager.hpp>
 
 LightPass::LightPass()
@@ -39,7 +37,7 @@ LightPass::LightPass()
   glUniform1i(p_shaderProgram.getUniformLocation("prefilterMap"), 6);
   glUniform1i(p_shaderProgram.getUniformLocation("brdfLUT"), 7);
 
-  for (unsigned int i = 0; i < 10; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].position");
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].color");
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].diffuseIntensity");
@@ -49,7 +47,7 @@ LightPass::LightPass()
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].radius");
   }
 
-  unsigned int quadVBO;
+  uint32_t quadVBO;
   float quadVertices[] = {
       // positions        // texture Coords
       -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
@@ -97,7 +95,7 @@ void LightPass::Execute(ECSManager &eManager) {
                      glm::value_ptr(lightSpaceMatrix));
 
   std::vector<Entity> view = eManager.view<LightingComponent>();
-  int numPLights = 0;
+  int32_t numPLights = 0;
   for (auto e : view) {
     LightingComponent *g =
         static_cast<LightingComponent *>(eManager.getComponent<LightingComponent>(e));
@@ -197,7 +195,7 @@ void LightPass::Execute(ECSManager &eManager) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void LightPass::setViewport(unsigned int w, unsigned int h) {
+void LightPass::setViewport(uint32_t w, uint32_t h) {
   p_width = w;
   p_height = h;
 }

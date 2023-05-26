@@ -1,7 +1,5 @@
 #include "GeometryPass.hpp"
 
-
-
 #include <ECS/ECSManager.hpp>
 #include <Managers/FrameBufferManager.hpp>
 #include <RenderPasses/RenderPass.hpp>
@@ -56,36 +54,36 @@ void GeometryPass::Execute(ECSManager &eManager) {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GeometryPass::setViewport(unsigned int w, unsigned int h) {
+void GeometryPass::setViewport(uint32_t w, uint32_t h) {
   p_width = w;
   p_height = h;
 
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
 
   // - position color buffer
-  unsigned int gPosition = p_textureManager.loadTexture("gPosition", GL_RGBA16F, GL_RGBA, GL_FLOAT,
-                                                        p_width, p_height, 0);
+  uint32_t gPosition = p_textureManager.loadTexture("gPosition", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                    p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
   // - normal color buffer
-  unsigned int gNormal =
+  uint32_t gNormal =
       p_textureManager.loadTexture("gNormal", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
   // - color
-  unsigned int gAlbedo =
+  uint32_t gAlbedo =
       p_textureManager.loadTexture("gAlbedo", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
   // - emissive color buffer
-  unsigned int gEmissive = p_textureManager.loadTexture("gEmissive", GL_RGBA16F, GL_RGBA, GL_FLOAT,
-                                                        p_width, p_height, 0);
+  uint32_t gEmissive = p_textureManager.loadTexture("gEmissive", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                    p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gEmissive, 0);
 
   // - tell OpenGL which color attachments we'll use (of this framebuffer) for
   // rendering
-  unsigned int attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
-                                 GL_COLOR_ATTACHMENT3};
+  uint32_t attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
+                             GL_COLOR_ATTACHMENT3};
 
   glDrawBuffers(4, attachments);
   // create and attach depth buffer (renderbuffer)

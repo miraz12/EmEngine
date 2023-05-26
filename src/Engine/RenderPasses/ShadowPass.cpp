@@ -1,8 +1,6 @@
 #include "ShadowPass.hpp"
 #include "glm/geometric.hpp"
 
-
-
 #include "ECS/ECSManager.hpp"
 #include "RenderPasses/RenderPass.hpp"
 
@@ -16,11 +14,11 @@ ShadowPass::ShadowPass()
 
   p_shaderProgram.setAttribBinding("POSITION");
 
-  unsigned int depthMapFbo;
+  uint32_t depthMapFbo;
   glGenFramebuffers(1, &depthMapFbo);
   p_fboManager.setFBO("depthMapFbo", depthMapFbo);
 
-  unsigned int depthMap;
+  uint32_t depthMap;
   glGenTextures(1, &depthMap);
   p_textureManager.setTexture("depthMap", depthMap);
 
@@ -58,12 +56,12 @@ void ShadowPass::Execute(ECSManager &eManager) {
   glCullFace(GL_BACK);
 }
 
-void ShadowPass::setViewport(unsigned int w, unsigned int h) {
+void ShadowPass::setViewport(uint32_t w, uint32_t h) {
   p_width = w;
   p_height = h;
 
   p_fboManager.bindFBO("depthMapFbo");
-  unsigned int depthMap = p_textureManager.bindTexture("depthMap");
+  uint32_t depthMap = p_textureManager.bindTexture("depthMap");
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, p_width, p_height, 0, GL_DEPTH_COMPONENT,
                GL_UNSIGNED_INT, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

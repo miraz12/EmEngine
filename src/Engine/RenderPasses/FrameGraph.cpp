@@ -6,8 +6,6 @@
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
 
-
-
 FrameGraph::FrameGraph() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
@@ -31,7 +29,7 @@ void FrameGraph::draw(ECSManager &eManager) {
   }
 }
 
-void FrameGraph::setViewport(unsigned int w, unsigned int h) {
+void FrameGraph::setViewport(uint32_t w, uint32_t h) {
   for (auto pass : m_renderPass) {
     pass->setViewport(w, h);
   }

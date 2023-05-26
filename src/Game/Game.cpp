@@ -20,9 +20,9 @@ Game::Game(GLFWwindow *window)
   Entity en = m_ECSManager->createEntity();
 
   GraphicsComponent *graphComp =
-  new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
+      new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // GraphicsComponent *graphComp = new GraphicsComponent(
-      // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
+  // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   PositionComponent *posComp = new PositionComponent();
   PhysicsComponent *phyComp = new PhysicsComponent(m_ECSManager);
   m_ECSManager->addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
@@ -100,6 +100,6 @@ void Game::handleInput(float dt) {
   }
 }
 
-void Game::setViewport(unsigned int w, unsigned int h) { m_ECSManager->setViewport(w, h); }
+void Game::setViewport(uint32_t w, uint32_t h) { m_ECSManager->setViewport(w, h); }
 
 Game::~Game() {}

@@ -19,7 +19,7 @@ inline float getOverlap(const glm::vec2 &overlapVector,
 
   float tempDot = 0.0f;
 
-  for (unsigned int i = 1; i < shapeAVertices.size(); i++) {
+  for (uint32_t i = 1; i < shapeAVertices.size(); i++) {
     tempDot = glm::dot(overlapVector, shapeAVertices[i]);
     if (tempDot < minA) {
       minA = tempDot;
@@ -29,7 +29,7 @@ inline float getOverlap(const glm::vec2 &overlapVector,
     }
   }
 
-  for (unsigned int i = 1; i < shapeBVertices.size(); i++) {
+  for (uint32_t i = 1; i < shapeBVertices.size(); i++) {
     tempDot = glm::dot(overlapVector, shapeBVertices[i]);
     if (tempDot < minB) {
       minB = tempDot;
@@ -57,21 +57,21 @@ inline float getOverlap(const glm::vec2 &overlapVector,
 inline void calculateIntersectionPoint(const glm::vec2 &intersectionLine,
                                        const std::vector<glm::vec2> &shapeAVertices,
                                        const std::vector<glm::vec2> &shapeBVertices,
-                                       const std::vector<unsigned int> &shapeAIndices,
-                                       const std::vector<unsigned int> &shapeBIndices,
+                                       const std::vector<uint32_t> &shapeAIndices,
+                                       const std::vector<uint32_t> &shapeBIndices,
                                        glm::vec2 &intersectionPoint) {
   float maxA = glm::dot(intersectionLine, shapeAVertices[shapeAIndices[0]]);
-  unsigned int maxAIndex = shapeAIndices[0];
+  uint32_t maxAIndex = shapeAIndices[0];
   float minA = maxA;
-  unsigned int minAIndex = maxAIndex;
+  uint32_t minAIndex = maxAIndex;
   float maxB = glm::dot(intersectionLine, shapeBVertices[shapeBIndices[0]]);
-  unsigned int maxBIndex = shapeBIndices[0];
+  uint32_t maxBIndex = shapeBIndices[0];
   float minB = maxB;
-  unsigned int minBIndex = maxBIndex;
+  uint32_t minBIndex = maxBIndex;
 
   float tempDot = 0.0f;
 
-  for (unsigned int i = 1; i < shapeAIndices.size(); i++) {
+  for (uint32_t i = 1; i < shapeAIndices.size(); i++) {
     tempDot = glm::dot(intersectionLine, shapeAVertices[shapeAIndices[i]]);
     if (tempDot < minA) {
       minA = tempDot;
@@ -83,7 +83,7 @@ inline void calculateIntersectionPoint(const glm::vec2 &intersectionLine,
     }
   }
 
-  for (unsigned int i = 1; i < shapeBIndices.size(); i++) {
+  for (uint32_t i = 1; i < shapeBIndices.size(); i++) {
     tempDot = glm::dot(intersectionLine, shapeBVertices[shapeBIndices[i]]);
     if (tempDot < minB) {
       minB = tempDot;
@@ -117,7 +117,7 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   auto shapeBVertices = shapeB.getTransformedVertices();
 
   auto shapeANormals = shapeA.getTransformedNormals();
-  for (unsigned int i = 0; i < shapeANormals.size(); i++) {
+  for (uint32_t i = 0; i < shapeANormals.size(); i++) {
     bool reverse = false;
     float overlap = getOverlap(shapeANormals[i], shapeAVertices, shapeBVertices, reverse);
 
@@ -132,7 +132,7 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   }
 
   auto shapeBNormals = shapeB.getTransformedNormals();
-  for (unsigned int i = 0; i < shapeBNormals.size(); i++) {
+  for (uint32_t i = 0; i < shapeBNormals.size(); i++) {
     bool reverse = false;
     float overlap = getOverlap(shapeBNormals[i], shapeAVertices, shapeBVertices, reverse);
 
@@ -157,7 +157,7 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   auto shapeBVertices = shapeB.getTransformedVertices();
 
   auto shapeANormals = shapeA.getTransformedNormals();
-  for (unsigned int i = 0; i < shapeANormals.size(); i++) {
+  for (uint32_t i = 0; i < shapeANormals.size(); i++) {
     bool reverse = false;
     float overlap = getOverlap(shapeANormals[i], shapeAVertices, shapeBVertices, reverse);
 
@@ -172,7 +172,7 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   }
 
   auto shapeBNormals = shapeB.getTransformedNormals();
-  for (unsigned int i = 0; i < shapeBNormals.size(); i++) {
+  for (uint32_t i = 0; i < shapeBNormals.size(); i++) {
     bool reverse = false;
     float overlap = getOverlap(shapeBNormals[i], shapeAVertices, shapeBVertices, reverse);
 
@@ -187,8 +187,8 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   }
 
   // Intersection occured, find out intersection point
-  std::vector<unsigned int> shapeAIntersectionPointIndices;
-  std::vector<unsigned int> shapeBIntersectionPointIndices;
+  std::vector<uint32_t> shapeAIntersectionPointIndices;
+  std::vector<uint32_t> shapeBIntersectionPointIndices;
   // Vector is always pointing from B to A so only have to keep track of max
   // projection for B and min projection for A
   float minA = glm::dot(shapeAVertices[0], intersectionAxis);
@@ -200,7 +200,7 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   float tempDot = 0.0f;
 
   // Find for A
-  for (unsigned int i = 1; i < shapeAVertices.size(); i++) {
+  for (uint32_t i = 1; i < shapeAVertices.size(); i++) {
     tempDot = glm::dot(shapeAVertices[i], intersectionAxis);
     if (tempDot < minA - 0.00001f) {
       minA = tempDot;
@@ -212,7 +212,7 @@ inline bool getIntersection(Shape &shapeA, Shape &shapeB, glm::vec2 &intersectio
   }
 
   // Find for B
-  for (unsigned int i = 1; i < shapeBVertices.size(); i++) {
+  for (uint32_t i = 1; i < shapeBVertices.size(); i++) {
     tempDot = glm::dot(shapeBVertices[i], intersectionAxis);
     if (tempDot > maxB + 0.00001f) {
       maxB = tempDot;

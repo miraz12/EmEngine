@@ -25,7 +25,7 @@ protected:
   std::vector<float> p_vertices;
   std::vector<float> p_normals;
   std::vector<float> p_texCoords;
-  std::vector<int> p_indices;
+  std::vector<int32_t> p_indices;
   std::vector<Material *> p_materials;
   std::vector<MeshObj *> p_meshes;
   std::vector<Node *> p_nodes;

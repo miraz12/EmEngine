@@ -16,8 +16,8 @@ public:
   void drawGeom(const ShaderProgram &sPrg) override;
 
   glm::mat4 &getModelMatrix();
-  unsigned int getQuadIndex();
-  void setTextureIndex(unsigned int index);
+  uint32_t getQuadIndex();
+  void setTextureIndex(uint32_t index);
 
 private:
   float m_vertices[36] = {
@@ -26,15 +26,15 @@ private:
       0.5f,  0.0f,  0.0f, 0.5f, 0.5f, 0.0f, 1.0f,  1.0f, 0.0f, 0.5f, 1.0f,  0.0f,
   };
 
-  unsigned int m_indices[6] = {
+  uint32_t m_indices[6] = {
       0, 1, 2, 2, 1, 3,
   };
 
   void setVertexData(std::size_t dataSize, const void *data);
   void setIndexData(std::size_t dataSize, const void *data);
-  unsigned int m_VBO;
-  unsigned int m_EBO; // Optional
+  uint32_t m_VBO;
+  uint32_t m_EBO; // Optional
 
-  unsigned int m_VAO;
+  uint32_t m_VAO;
 };
 #endif // QUAD_H_

@@ -8,8 +8,6 @@
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 
-
-
 #include "ECS/ECSManager.hpp"
 
 GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
@@ -18,4 +16,4 @@ GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
 
-void GraphicsSystem::setViewport(unsigned int w, unsigned int h) { m_fGraph.setViewport(w, h); }
+void GraphicsSystem::setViewport(uint32_t w, uint32_t h) { m_fGraph.setViewport(w, h); }

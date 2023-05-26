@@ -26,7 +26,7 @@ LightingShaderProgram::LightingShaderProgram()
   m_uniformBindings["directionalLight.ambientIntensity"] =
       glGetUniformLocation(p_shaderProgram, "directionalLight.ambientIntensity");
 
-  for (unsigned int i = 0; i < 10; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     m_uniformBindings["pointLights[" + std::to_string(i) + "].position"] = glGetUniformLocation(
         p_shaderProgram, std::string("pointLights[" + std::to_string(i) + "].position").c_str());
 

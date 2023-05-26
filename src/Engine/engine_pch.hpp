@@ -9,4 +9,7 @@
 #include <glad/glad.h>
 #endif
 
+#include <cstdint>
+#include <memory>
+
 #endif // ENGINE_PCH_

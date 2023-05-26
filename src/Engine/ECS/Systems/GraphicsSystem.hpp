@@ -13,7 +13,7 @@ class GraphicsSystem : public System {
 public:
   GraphicsSystem(ECSManager *ECSManager);
   void update(float dt);
-  void setViewport(unsigned int w, unsigned int h);
+  void setViewport(uint32_t w, uint32_t h);
 
 private:
   FrameBufferManager &m_fboManager;

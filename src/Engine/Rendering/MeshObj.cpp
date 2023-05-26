@@ -1,8 +1,6 @@
 #include "MeshObj.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
-
-
 void MeshObj::draw() {
 
   glBindVertexArray(m_vao);

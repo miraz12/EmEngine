@@ -10,8 +10,6 @@
 #include <iostream>
 #include <ostream>
 
-
-
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 static std::string GetFilePathExtension(const std::string &FileName) {
@@ -107,7 +105,7 @@ void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node, glm::mat
     n->nodeMat = modelMat;
     p_nodes.push_back(n);
   }
-  for (int c : node.children) {
+  for (int32_t c : node.children) {
     loadNode(model, model.nodes[c], modelMat);
   }
 }
@@ -115,7 +113,7 @@ void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node, glm::mat
 void GltfObject::loadMaterials(tinygltf::Model &model) {
   for (auto &mat : model.materials) {
     Material *newmat = new Material;
-    unsigned int materialMast = 0;
+    uint32_t materialMast = 0;
     if (mat.pbrMetallicRoughness.baseColorTexture.index >= 0) {
       materialMast = materialMast | (1 << 0);
       newmat->m_baseColorTexture = std::to_string(mat.pbrMetallicRoughness.baseColorTexture.index);
@@ -154,7 +152,7 @@ void GltfObject::loadMaterials(tinygltf::Model &model) {
 
 void GltfObject::loadTextures(tinygltf::Model &model) {
 
-  int i = 0;
+  int32_t i = 0;
   for (auto &tex : model.textures) {
     TextureManager &texMan = TextureManager::getInstance();
 
@@ -192,7 +190,7 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
 void GltfObject::loadMeshes(tinygltf::Model &model) {
   for (auto &mesh : model.meshes) {
     for (auto &primitive : mesh.primitives) {
-      unsigned int vao;
+      uint32_t vao;
       glGenVertexArrays(1, &vao);
       glBindVertexArray(vao);
 
@@ -220,7 +218,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
       }
       // Load all vertex attributes
       for (auto &attrib : primitive.attributes) {
-        unsigned int loc = 0;
+        uint32_t loc = 0;
         if (attrib.first == "POSITION") {
           loc = 0;
         } else if (attrib.first == "NORMAL") {
@@ -234,13 +232,13 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
         const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
-        unsigned int vbo;
+        uint32_t vbo;
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(bufferView.target, bufferView.byteLength,
                      &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
 
-        int byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
+        int32_t byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
         glVertexAttribPointer(loc, accessor.type, accessor.componentType, accessor.normalized,
                               byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
         glEnableVertexAttribArray(loc);

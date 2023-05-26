@@ -8,12 +8,12 @@
 
 // class Entity {
 // public:
-//   Entity(int ID);
+//   Entity(int32_t  ID);
 
 //   ~Entity();
 //   Entity(const Entity &) = delete;
 
-//   int getID();
+//   int32_t  getID();
 
 //   // Adds component
 //   // Can't have more than one type of component!
@@ -35,7 +35,7 @@
 //   bool isPlayable() { return m_playable; }
 
 // private:
-//   int m_ID;
+//   int32_t  m_ID;
 //   bool m_playable;
 //   std::string m_name;
 // };

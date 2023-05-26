@@ -11,7 +11,7 @@ public:
   CubeMapPass();
   virtual ~CubeMapPass(){};
   void Execute(ECSManager &eManager) override;
-  void setViewport(unsigned int w, unsigned int h) override;
+  void setViewport(uint32_t w, uint32_t h) override;
 
 private:
   void generateCubeMap();
@@ -21,8 +21,8 @@ private:
   void renderCube();
   void renderQuad();
 
-  unsigned int m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_quadVAO{0},
-      m_quadVBO{0}, m_envCubemap{0};
+  uint32_t m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_quadVAO{0}, m_quadVBO{0},
+      m_envCubemap{0};
   ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader, m_prefilterShader,
       m_brdfShader;
 

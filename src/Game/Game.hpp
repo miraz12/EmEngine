@@ -16,13 +16,13 @@ public:
     m_pitch = p;
     m_yaw = y;
   }
-  void setViewport(unsigned int w, unsigned int h);
+  void setViewport(uint32_t w, uint32_t h);
   // Dir light
   DirectionalLight *dLight;
   glm::vec3 dirLightColor;
   float dirLightAmbient;
   glm::vec3 dirLightDir;
-  int debugView{0};
+  int32_t debugView{0};
 
 private:
   void init();

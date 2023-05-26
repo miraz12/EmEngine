@@ -12,10 +12,10 @@ public:
   virtual ~FrameGraph(){};
 
   void draw(ECSManager &eManager);
-  void setViewport(unsigned int w, unsigned int h);
+  void setViewport(uint32_t w, uint32_t h);
 
 private:
-  unsigned int m_width{800}, m_height{800};
+  uint32_t m_width{800}, m_height{800};
   QuadShaderProgram m_quadShader;
   std::vector<RenderPass *> m_renderPass;
 };

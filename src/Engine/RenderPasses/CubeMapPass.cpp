@@ -1,7 +1,5 @@
 #include "CubeMapPass.hpp"
 
-
-
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/fwd.hpp"
@@ -22,10 +20,10 @@ CubeMapPass::CubeMapPass()
       m_brdfShader("resources/Shaders/quadVertex.glsl", "resources/Shaders/brdfFragment.glsl") {
 
   stbi_set_flip_vertically_on_load(true);
-  int width, height, nrComponents;
+  int32_t width, height, nrComponents;
   float *data =
       stbi_loadf("resources/Textures/clarens_midday_1k.hdr", &width, &height, &nrComponents, 0);
-  unsigned int hdrTexture;
+  uint32_t hdrTexture;
   if (data) {
     glGenTextures(1, &hdrTexture);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
@@ -94,7 +92,7 @@ void CubeMapPass::Execute(ECSManager &eManager) {
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void CubeMapPass::setViewport(unsigned int w, unsigned int h) {
+void CubeMapPass::setViewport(uint32_t w, uint32_t h) {
   p_width = w;
   p_height = h;
 }
@@ -103,7 +101,7 @@ void CubeMapPass::generateCubeMap() {
   glGenTextures(1, &m_envCubemap);
   p_textureManager.setTexture("envCubemap", m_envCubemap);
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
-  for (unsigned int i = 0; i < 6; ++i) {
+  for (uint32_t i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 512, 512, 0, GL_RGBA, GL_FLOAT,
                  nullptr);
   }
@@ -131,7 +129,7 @@ void CubeMapPass::generateCubeMap() {
 
   glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
   glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
-  for (unsigned int i = 0; i < 6; ++i) {
+  for (uint32_t i = 0; i < 6; ++i) {
     glUniformMatrix4fv(m_equirectangularToCubemapShader.getUniformLocation("view"), 1, GL_FALSE,
                        glm::value_ptr(m_captureViews[i]));
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -147,11 +145,11 @@ void CubeMapPass::generateCubeMap() {
 }
 
 void CubeMapPass::generateIrradianceMap() {
-  unsigned int irradianceMap;
+  uint32_t irradianceMap;
   glGenTextures(1, &irradianceMap);
   p_textureManager.setTexture("irradianceMap", irradianceMap);
   glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-  for (unsigned int i = 0; i < 6; ++i) {
+  for (uint32_t i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 32, 32, 0, GL_RGBA, GL_FLOAT,
                  nullptr);
   }
@@ -179,7 +177,7 @@ void CubeMapPass::generateIrradianceMap() {
 
   glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
   glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
-  for (unsigned int i = 0; i < 6; ++i) {
+  for (uint32_t i = 0; i < 6; ++i) {
     glUniformMatrix4fv(m_irradianceShader.getUniformLocation("view"), 1, GL_FALSE,
                        glm::value_ptr(m_captureViews[i]));
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -192,11 +190,11 @@ void CubeMapPass::generateIrradianceMap() {
 }
 
 void CubeMapPass::generatePrefilterMap() {
-  unsigned int prefilterMap;
+  uint32_t prefilterMap;
   glGenTextures(1, &prefilterMap);
   p_textureManager.setTexture("prefilterMap", prefilterMap);
   glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-  for (unsigned int i = 0; i < 6; ++i) {
+  for (uint32_t i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 128, 128, 0, GL_RGBA, GL_FLOAT,
                  nullptr);
   }
@@ -223,18 +221,18 @@ void CubeMapPass::generatePrefilterMap() {
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
 
   glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
-  unsigned int maxMipLevels = 5;
-  for (unsigned int mip = 0; mip < maxMipLevels; ++mip) {
+  uint32_t maxMipLevels = 5;
+  for (uint32_t mip = 0; mip < maxMipLevels; ++mip) {
     // reisze framebuffer according to mip-level size.
-    unsigned int mipWidth = static_cast<unsigned int>(128 * std::pow(0.5, mip));
-    unsigned int mipHeight = static_cast<unsigned int>(128 * std::pow(0.5, mip));
+    uint32_t mipWidth = static_cast<uint32_t>(128 * std::pow(0.5, mip));
+    uint32_t mipHeight = static_cast<uint32_t>(128 * std::pow(0.5, mip));
     glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
     glViewport(0, 0, mipWidth, mipHeight);
 
     float roughness = (float)mip / (float)(maxMipLevels - 1);
     glUniform1f(m_prefilterShader.getUniformLocation("roughness"), roughness);
-    for (unsigned int i = 0; i < 6; ++i) {
+    for (uint32_t i = 0; i < 6; ++i) {
       glUniformMatrix4fv(m_prefilterShader.getUniformLocation("view"), 1, GL_FALSE,
                          glm::value_ptr(m_captureViews[i]));
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -247,7 +245,7 @@ void CubeMapPass::generatePrefilterMap() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void CubeMapPass::generateBRDF() {
-  unsigned int brdfLUTTexture;
+  uint32_t brdfLUTTexture;
   glGenTextures(1, &brdfLUTTexture);
   p_textureManager.setTexture("brdfLUTTexture", brdfLUTTexture);
 

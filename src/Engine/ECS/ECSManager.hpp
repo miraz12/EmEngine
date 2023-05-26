@@ -94,7 +94,7 @@ public:
       return type;
     } else {
       // T has not been registered yet, assign it a new ID and return it
-      int next = m_nextComponentTypeID++;
+      int32_t next = m_nextComponentTypeID++;
       m_componentTypeToIndex.insert({type, next});
       return type;
     }
@@ -140,12 +140,12 @@ public:
   DirectionalLight *SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
-  void setViewport(unsigned int w, unsigned int h);
+  void setViewport(uint32_t w, uint32_t h);
 
   System *getSystem(std::string s) { return m_systems[s]; }
 
   glm::vec3 dDir;
-  int debugView;
+  int32_t debugView;
 
 private:
   ECSManager();

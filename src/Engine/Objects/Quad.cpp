@@ -5,8 +5,6 @@
 #include "ShaderPrograms/ShaderProgram.hpp"
 #include "glm/fwd.hpp"
 
-
-
 Quad::Quad(ShaderProgram & /* shaderProgram */) {
   glGenBuffers(1, &m_VBO);
   glGenBuffers(1, &m_EBO);

@@ -8,7 +8,7 @@ public:
   PositionSystem(ECSManager *ECSManager);
   ~PositionSystem(){};
   void update(float dt);
-  void setViewport(unsigned int /* w */, unsigned int /* h */){};
+  void setViewport(uint32_t /* w */, uint32_t /* h */){};
 };
 
 #endif // POSITIONSYSTEM_H_

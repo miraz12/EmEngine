@@ -5,8 +5,6 @@
 #include <iostream>
 #include <string>
 
-
-
 ShaderProgram::ShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath) {
   loadShaders(vertexShaderPath, fragmentShaderPath);
 }
@@ -27,11 +25,11 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragme
   readFile(vertexShaderPath, &vertexShaderString);
   const char *vertexShaderSrc = vertexShaderString.c_str();
 
-  unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
   glCompileShader(vertexShader);
   // check for shader compile errors
-  int success;
+  int32_t success;
   char infoLog[512];
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
@@ -46,7 +44,7 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragme
   readFile(fragmentShaderPath, &fragmentShaderString);
   const char *fragmentShaderSrc = fragmentShaderString.c_str();
 
-  unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSrc, NULL);
   glCompileShader(fragmentShader);
   // check for shader compile errors
@@ -76,7 +74,7 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragme
 
 void ShaderProgram::use() const { glUseProgram(p_shaderProgram); }
 
-unsigned int ShaderProgram::getUniformLocation(std::string uniformName) const {
+uint32_t ShaderProgram::getUniformLocation(std::string uniformName) const {
   if (m_uniformBindings.find(uniformName) == m_uniformBindings.end()) {
     std::cout << "No uniform with name " << uniformName << "\n";
     assert(false);
@@ -86,7 +84,7 @@ unsigned int ShaderProgram::getUniformLocation(std::string uniformName) const {
   return 0;
 }
 
-unsigned int ShaderProgram::getAttribLocation(std::string attribName) const {
+uint32_t ShaderProgram::getAttribLocation(std::string attribName) const {
   if (m_attribBindings.find(attribName) == m_attribBindings.end()) {
     std::cout << "No attribute with name " << attribName << "\n";
   } else {

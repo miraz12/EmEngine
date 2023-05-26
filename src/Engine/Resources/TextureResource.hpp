@@ -1,8 +1,6 @@
 #ifndef TEXTURERESOURCE_H_
 #define TEXTURERESOURCE_H_
 
-
-
 #include "tiny_gltf.h"
 
 class TextureResource {

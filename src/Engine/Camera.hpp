@@ -4,7 +4,6 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-
 class Camera {
 public:
   Camera();
@@ -21,7 +20,7 @@ public:
     m_front = f;
     m_matrixNeedsUpdate = true;
   };
-  void setSize(unsigned int w, unsigned int h) {
+  void setSize(uint32_t w, uint32_t h) {
     m_width = w;
     m_height = h;
     m_matrixNeedsUpdate = true;
@@ -31,7 +30,7 @@ public:
   glm::vec3 getFront() { return m_front; };
   glm::vec3 getUp() { return m_up; };
 
-  void bindProjViewMatrix(unsigned int proj, unsigned int view);
+  void bindProjViewMatrix(uint32_t proj, uint32_t view);
 
 private:
   glm::mat4 m_viewMatrix;

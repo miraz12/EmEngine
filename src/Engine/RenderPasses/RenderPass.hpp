@@ -12,10 +12,10 @@ public:
   RenderPass(std::string vs, std::string fs);
   virtual ~RenderPass() = default;
   virtual void Execute(ECSManager &eManager) = 0;
-  virtual void setViewport(unsigned int w, unsigned int h) = 0;
+  virtual void setViewport(uint32_t w, uint32_t h) = 0;
 
 protected:
-  unsigned int p_width{800}, p_height{800};
+  uint32_t p_width{800}, p_height{800};
   ShaderProgram p_shaderProgram;
   FrameBufferManager &p_fboManager;
   TextureManager &p_textureManager;

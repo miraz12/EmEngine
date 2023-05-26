@@ -13,28 +13,28 @@ public:
   void draw();
 
   struct AttribInfo {
-    unsigned int vbo;
+    uint32_t vbo;
     size_t byteOffset;
     size_t byteStride;
     bool normalized;
-    int componentType;
+    int32_t componentType;
     size_t count;
-    int type;
+    int32_t type;
   };
 
-  int m_material{0};
+  int32_t m_material{0};
 
-  unsigned int m_vbo;
+  uint32_t m_vbo;
 
-  unsigned int m_drawType{0}; // Either 0 = drawArrays or 1 
+  uint32_t m_drawType{0}; // Either 0 = drawArrays or 1
 
-  unsigned int m_ebo;
+  uint32_t m_ebo;
   size_t m_count;
-  unsigned int m_type;
+  uint32_t m_type;
   size_t m_offset;
 
-  unsigned int m_vao;
-  unsigned int m_mode;
+  uint32_t m_vao;
+  uint32_t m_mode;
   // std::vector<unsigned char> data;
   std::map<std::string, AttribInfo> attributes;
 };

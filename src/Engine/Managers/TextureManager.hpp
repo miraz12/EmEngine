@@ -13,18 +13,17 @@ public:
   TextureManager(TextureManager const &) = delete;
   void operator=(TextureManager const &) = delete;
   // TODO: Make a new function that regenerates textures
-  unsigned int loadTexture(unsigned int internalFormat, unsigned int format, unsigned int type,
-                           unsigned int width, unsigned int height, unsigned char *data);
-  unsigned int loadTexture(std::string name, unsigned int internalFormat, unsigned int format,
-                           unsigned int type, unsigned int width, unsigned int height,
-                           unsigned char *data);
-  void setTexture(std::string name, unsigned int texId);
-  unsigned int bindTexture(std::string name);
+  uint32_t loadTexture(uint32_t internalFormat, uint32_t format, uint32_t type, uint32_t width,
+                       uint32_t height, unsigned char *data);
+  uint32_t loadTexture(std::string name, uint32_t internalFormat, uint32_t format, uint32_t type,
+                       uint32_t width, uint32_t height, unsigned char *data);
+  void setTexture(std::string name, uint32_t texId);
+  uint32_t bindTexture(std::string name);
   void bindCubeTexture(std::string name);
   void deleteTexture(std::string name);
 
 private:
-  std::unordered_map<std::string, unsigned int> texIds;
+  std::unordered_map<std::string, uint32_t> texIds;
   TextureManager() = default;
 };
 

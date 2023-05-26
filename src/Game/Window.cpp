@@ -25,16 +25,16 @@ static double dt = 0.0;
 
 static float fps = 0.0f;
 static float tempFps = 0.0f;
-static int counter = 0;
+static int32_t counter = 0;
 static float fpsUpdate = 1.0f;
 static float fpsUpdateTimer = 0.0f;
 
 static double minUpdateRate = 1.0f / 60.0f;
 static double updateTimer = 0.0f;
-static int updatesSinceRender = 0;
+static int32_t updatesSinceRender = 0;
 
-static unsigned int SCR_WIDTH = 800;
-static unsigned int SCR_HEIGHT = 800;
+static uint32_t SCR_WIDTH = 800;
+static uint32_t SCR_HEIGHT = 800;
 static double SCR_PITCH = 0.0;
 static double SCR_YAW = -90.0;
 
@@ -43,9 +43,9 @@ double lastX, lastY;
 static InputManager &inMgr = InputManager::getInstance();
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void keyPressCallback(GLFWwindow *win, int key, int scancode, int action, int mods);
-void mousePressCallback(GLFWwindow *win, int button, int action, int mods);
+void framebuffer_size_callback(GLFWwindow *window, int32_t width, int32_t height);
+void keyPressCallback(GLFWwindow *win, int32_t key, int32_t scancode, int32_t action, int32_t mods);
+void mousePressCallback(GLFWwindow *win, int32_t button, int32_t action, int32_t mods);
 
 #ifndef EMSCRIPTEN
 void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type, GLuint /* id */, GLenum severity,
@@ -89,12 +89,12 @@ static GLFWwindow *window;
 static Game *game;
 
 bool isBigEndian() {
-  int a = 1;
+  int32_t a = 1;
   return !((char *)&a)[0];
 }
 
-int convertToInt(char *buffer, int len) {
-  int a = 0;
+int convertToInt(char *buffer, int32_t len) {
+  int32_t a = 0;
   if (!isBigEndian())
     for (int i = 0; i < len; i++)
       ((char *)&a)[i] = buffer[i];
@@ -104,7 +104,7 @@ int convertToInt(char *buffer, int len) {
   return a;
 }
 
-char *loadWAV(const char *fn, int &chan, int &samplerate, int &bps, int &size) {
+char *loadWAV(const char *fn, int32_t &chan, int32_t &samplerate, int32_t &bps, int32_t &size) {
   char buffer[4];
   std::ifstream in(fn, std::ios::binary);
   in.read(buffer, 4);
@@ -296,7 +296,8 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
-void keyPressCallback(GLFWwindow *win, int key, int /* scancode */, int action, int /* mods */) {
+void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */, int32_t action,
+                      int32_t /* mods */) {
   switch (key) {
   case GLFW_KEY_ESCAPE:
     glfwSetWindowShouldClose(win, true);
@@ -333,7 +334,8 @@ void keyPressCallback(GLFWwindow *win, int key, int /* scancode */, int action, 
   }
 }
 
-void mousePressCallback(GLFWwindow * /* win */, int button, int action, int /* mods */) {
+void mousePressCallback(GLFWwindow * /* win */, int32_t button, int32_t action,
+                        int32_t /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {
@@ -341,7 +343,7 @@ void mousePressCallback(GLFWwindow * /* win */, int button, int action, int /* m
   }
 }
 
-void framebuffer_size_callback(GLFWwindow * /*window*/, int width, int height) {
+void framebuffer_size_callback(GLFWwindow * /*window*/, int32_t width, int32_t height) {
   SCR_WIDTH = width;
   SCR_HEIGHT = height;
   game->setViewport(width, height);
