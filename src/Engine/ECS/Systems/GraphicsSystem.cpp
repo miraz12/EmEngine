@@ -10,10 +10,10 @@
 
 #include "ECS/ECSManager.hpp"
 
-GraphicsSystem::GraphicsSystem(ECSManager *ECSManager)
+GraphicsSystem::GraphicsSystem(ECSManager &ECSManager)
     : System(ECSManager), m_fboManager(FrameBufferManager::getInstance()),
       m_fGraph(*new FrameGraph()) {}
 
-void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
+void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(m_manager); }
 
 void GraphicsSystem::setViewport(uint32_t w, uint32_t h) { m_fGraph.setViewport(w, h); }

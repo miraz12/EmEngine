@@ -142,7 +142,7 @@ public:
   Camera &getCamera() { return m_camera; };
   void setViewport(uint32_t w, uint32_t h);
 
-  System *getSystem(std::string s) { return m_systems[s]; }
+  System *getSystem(std::string s) { return m_systems[s].get(); }
 
   glm::vec3 dDir;
   int32_t debugView;
@@ -151,7 +151,7 @@ private:
   ECSManager();
   // Entities
   std::vector<Entity> m_entities;
-  std::unordered_map<std::string, System *> m_systems;
+  std::unordered_map<std::string, std::unique_ptr<System>> m_systems;
 
   std::unordered_map<Entity, std::vector<Component *>> m_components;
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;

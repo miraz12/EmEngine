@@ -3,7 +3,7 @@
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <LinearMath/btDefaultMotionState.h>
 
-PhysicsComponent::PhysicsComponent(ECSManager *ECSManager) {
+PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   // create a dynamic rigidbody
 
   // btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
@@ -30,6 +30,6 @@ PhysicsComponent::PhysicsComponent(ECSManager *ECSManager) {
   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
   body = new btRigidBody(rbInfo);
 
-  PhysicsSystem *pSys = static_cast<PhysicsSystem *>(ECSManager->getSystem("PHYSICS"));
+  PhysicsSystem *pSys = static_cast<PhysicsSystem *>(ECSManager.getSystem("PHYSICS"));
   pSys->addRigidBody(body);
 }

@@ -246,7 +246,7 @@ bool Window::start() {
   currentTime = glfwGetTime();
   previousTime = currentTime;
 
-  game = new Game(window);
+  game = new Game(*window);
 
 #ifdef EMSCRIPTEN
   emscripten_set_main_loop(&gameLoop, 0, 1);

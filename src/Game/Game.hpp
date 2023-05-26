@@ -7,7 +7,7 @@
 
 class Game {
 public:
-  Game(GLFWwindow *window);
+  Game(GLFWwindow &window);
   ~Game();
 
   void update(float dt);
@@ -29,9 +29,9 @@ private:
   void setupEntities();
   void handleInput(float dt);
 
-  GLFWwindow *m_window;
-  ECSManager *m_ECSManager;
-  InputManager *m_InputManager;
+  ECSManager &m_ECSManager;
+  GLFWwindow &m_window;
+  InputManager &m_InputManager;
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
 };

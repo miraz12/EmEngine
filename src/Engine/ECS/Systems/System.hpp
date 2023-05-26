@@ -12,7 +12,7 @@ public:
   // Created many different constructors for different amount of required
   // components
 
-  System(ECSManager *ECSManager);
+  System(ECSManager &ECSManager);
 
   virtual ~System() = default;
 
@@ -23,6 +23,6 @@ public:
   virtual void initialize(){};
 
 protected:
-  ECSManager *m_manager;
+  ECSManager &m_manager;
 };
 #endif // SYSTEM_H_

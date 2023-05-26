@@ -11,7 +11,7 @@
 
 class GraphicsSystem : public System {
 public:
-  GraphicsSystem(ECSManager *ECSManager);
+  GraphicsSystem(ECSManager &ECSManager);
   void update(float dt);
   void setViewport(uint32_t w, uint32_t h);
 

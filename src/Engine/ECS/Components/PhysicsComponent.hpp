@@ -9,7 +9,7 @@
 
 class PhysicsComponent : public Component {
 public:
-  PhysicsComponent(ECSManager *ECSManager);
+  PhysicsComponent(ECSManager &ECSManager);
   PhysicsComponent() = delete;
   virtual ~PhysicsComponent(){};
   btRigidBody *getRigidBody() { return body; }

@@ -3,7 +3,7 @@
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
 
-PhysicsSystem::PhysicsSystem(ECSManager *ECSManager) : System(ECSManager) {
+PhysicsSystem::PhysicsSystem(ECSManager &ECSManager) : System(ECSManager) {
   /// collision configuration contains default setup for memory, collision setup. Advanced users can
   /// create their own configuration.
   m_collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -69,10 +69,10 @@ PhysicsSystem::~PhysicsSystem() {
 void PhysicsSystem::update(float dt) {
 
   m_dynamicsWorld->stepSimulation(dt, 10);
-  std::vector<Entity> view = m_manager->view<PositionComponent, PhysicsComponent>();
+  std::vector<Entity> view = m_manager.view<PositionComponent, PhysicsComponent>();
   for (auto e : view) {
-    PositionComponent *p = m_manager->getComponent<PositionComponent>(e);
-    PhysicsComponent *phy = m_manager->getComponent<PhysicsComponent>(e);
+    PositionComponent *p = m_manager.getComponent<PositionComponent>(e);
+    PhysicsComponent *phy = m_manager.getComponent<PhysicsComponent>(e);
     btRigidBody *body = phy->getRigidBody();
     btTransform btTrans;
     if (body) {
