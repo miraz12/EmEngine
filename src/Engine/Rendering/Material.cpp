@@ -48,12 +48,15 @@ void Material::bind(const ShaderProgram &sPrg) {
   }
   if (m_alphaMode == "BLEND") {
     glEnable(GL_BLEND);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   } else if (m_alphaMode == "MASK") {
-    // TODO implement
+    // glEnable(GL_ALPHA_TEST);
+    // glAlphaFunc(GL_GREATER, m_alphaCutoff);
+    // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  } else if (m_alphaMode == "OPAQUE") {
     glDisable(GL_BLEND);
-  } else {
-    glDisable(GL_BLEND);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
   }
 }

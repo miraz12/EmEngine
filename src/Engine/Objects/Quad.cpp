@@ -5,54 +5,70 @@
 #include "ShaderPrograms/ShaderProgram.hpp"
 #include "glm/fwd.hpp"
 
-Quad::Quad(ShaderProgram & /* shaderProgram */) {
-  glGenBuffers(1, &m_VBO);
-  glGenBuffers(1, &m_EBO);
+Quad::Quad() {
+  glm::mat4 modelMat = glm::identity<glm::mat4>();
+  Node *n = new Node;
+  n->mesh = 0;
+  n->nodeMat = modelMat;
+  p_nodes.push_back(n);
 
-  glGenVertexArrays(1, &m_VAO);
-  glBindVertexArray(m_VAO);
+  p_numMeshes = 1;
+  p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
+  p_meshes[0].numPrims = 1;
+  p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
+  Primitive *newPrim = &p_meshes[0].m_primitives[0];
+  uint32_t vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
 
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+  newPrim->m_vao = vao;
+  newPrim->m_mode = GL_TRIANGLES;
+
+  newPrim->m_count = 6;
+  newPrim->m_type = GL_UNSIGNED_INT;
+  newPrim->m_offset = 0;
+
+  GLuint ebo;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
+  newPrim->m_ebo = ebo;
+  newPrim->m_drawType = 1;
+
+  uint32_t vbo;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
+  Primitive::AttribInfo attribInfo;
+  attribInfo.vbo = 0;
+  attribInfo.type = 3;
+  attribInfo.componentType = GL_FLOAT;
+  attribInfo.normalized = GL_FALSE;
+  attribInfo.byteStride = 9 * sizeof(float);
+  attribInfo.byteOffset = 0;
+  newPrim->attributes["POSITION"] = attribInfo;
 
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+  // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(3 * sizeof(float)));
+  // glEnableVertexAttribArray(1);
+  // attribInfo.vbo = 1;
+  // attribInfo.type = 4;
+  // attribInfo.componentType = GL_FLOAT;
+  // attribInfo.normalized = GL_FALSE;
+  // attribInfo.byteStride = 9 * sizeof(float);
+  // attribInfo.byteOffset = 3 * sizeof(float);
+  // newPrim->attributes["NORMAL"] = attribInfo;
 
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(7 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
-  setVertexData(sizeof(m_vertices), m_vertices);
-  setIndexData(sizeof(m_indices), m_indices);
-}
-
-Quad::~Quad() {
-  glDeleteVertexArrays(1, &m_VAO);
-  glDeleteBuffers(1, &m_VBO);
-  glDeleteBuffers(1, &m_EBO);
-}
-
-void Quad::setVertexData(std::size_t dataSize, const void *data) {
-  glBindVertexArray(m_VAO);
-
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-  glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-}
-
-void Quad::setIndexData(std::size_t dataSize, const void *data) {
-  glBindVertexArray(m_VAO);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO),
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-}
-
-void Quad::draw(const ShaderProgram &sPrg) {
-  sPrg.use();
-  // cam.bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
-  //                        p_shaderProgram.getUniformLocation("viewMatrix"));
-  // glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-  //                    glm::value_ptr(model));
-  glBindVertexArray(m_VAO);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(7 * sizeof(float)));
+  // glEnableVertexAttribArray(2);
+  // attribInfo.vbo = 2;
+  // attribInfo.type = 2;
+  // attribInfo.componentType = GL_FLOAT;
+  // attribInfo.normalized = GL_FALSE;
+  // attribInfo.byteStride = 9 * sizeof(float);
+  // attribInfo.byteOffset = 7 * sizeof(float);
+  // newPrim->attributes["TEXCOORD_0"] = attribInfo;
+  glBindVertexArray(0);
 }

@@ -18,8 +18,8 @@ public:
   GraphicsObject() = default;
   virtual ~GraphicsObject();
 
-  virtual void draw(const ShaderProgram &sPrg) = 0;
-  virtual void drawGeom(const ShaderProgram &sPrg) = 0;
+  virtual void draw(const ShaderProgram &sPrg);
+  virtual void drawGeom(const ShaderProgram &sPrg);
 
 protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();

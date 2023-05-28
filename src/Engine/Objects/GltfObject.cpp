@@ -22,32 +22,6 @@ static std::string GetFilePathExtension(const std::string &FileName) {
   return "";
 }
 
-void GltfObject::draw(const ShaderProgram &sPrg) {
-
-  for (auto &n : p_nodes) {
-    glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(n->nodeMat));
-    Mesh &m = p_meshes[n->mesh];
-    for (uint32_t i = 0; i < m.numPrims; i++) {
-      Material *mat = m.m_primitives[i].m_material > -1 ? &p_materials[m.m_primitives[i].m_material]
-                                                        : &defaultMat;
-      mat->bind(sPrg);
-      m.m_primitives[i].draw();
-    }
-  }
-}
-void GltfObject::drawGeom(const ShaderProgram &sPrg) {
-  for (auto &n : p_nodes) {
-    glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(n->nodeMat));
-    Mesh &m = p_meshes[n->mesh];
-
-    for (uint32_t i = 0; i < m.numPrims; i++) {
-      m.m_primitives[i].draw();
-    }
-  }
-}
-
 GltfObject::GltfObject(std::string filename) {
   std::string ext = GetFilePathExtension(filename);
   tinygltf::TinyGLTF loader;
