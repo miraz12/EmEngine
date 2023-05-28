@@ -17,7 +17,7 @@ uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format, GLe
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
-  // glGenerateMipmap(GL_TEXTURE_2D);
+  glGenerateMipmap(GL_TEXTURE_2D);
 
   std::string name = std::to_string(texId);
   deleteTexture(name);
@@ -39,7 +39,7 @@ uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat, 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
-  // glGenerateMipmap(GL_TEXTURE_2D);
+  glGenerateMipmap(GL_TEXTURE_2D);
   texIds.insert({name, texId});
   return texId;
 }

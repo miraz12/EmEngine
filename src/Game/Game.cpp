@@ -20,14 +20,13 @@ Game::Game(GLFWwindow &window)
   Entity en = m_ECSManager.createEntity();
 
   GraphicsComponent *graphComp =
-  new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
+      new GraphicsComponent(*new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // GraphicsComponent *graphComp = new GraphicsComponent(
   // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   // GraphicsComponent *graphComp =
-      // new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
+  // new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   PositionComponent *posComp = new PositionComponent();
-  m_ECSManager.addComponents<GraphicsComponent, PositionComponent>(
-      en, graphComp, posComp);
+  m_ECSManager.addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // Entity en = m_ECSManager->createEntity();
   // GraphicsComponent *graphComp = new GraphicsComponent();

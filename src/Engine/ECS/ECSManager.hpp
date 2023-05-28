@@ -20,7 +20,6 @@
 #include "ECS/Components/Component.hpp"
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Systems/System.hpp"
-#include "Objects/Mesh.hpp"
 #include "Objects/Quad.hpp"
 #include "ShaderPrograms/MeshShaderProgram.hpp"
 #include "ShaderPrograms/SimpleShaderProgram.hpp"

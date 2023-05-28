@@ -7,7 +7,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "GltfObject.hpp"
 #include <Rendering/Material.hpp>
-#include <Rendering/MeshObj.hpp>
+#include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
 #include <cstddef>
 #include <glm/gtc/type_ptr.hpp>
@@ -27,13 +27,12 @@ void GltfObject::draw(const ShaderProgram &sPrg) {
   for (auto &n : p_nodes) {
     glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
                        glm::value_ptr(n->nodeMat));
-    MeshObj *m = p_meshes[n->mesh];
-    for (uint32_t i = 0; i < m->numPrims; i++) {
-      Material *mat = m->m_primitives[i].m_material > -1
-                          ? p_materials.at(m->m_primitives[i].m_material)
-                          : &defaultMat;
+    Mesh &m = p_meshes[n->mesh];
+    for (uint32_t i = 0; i < m.numPrims; i++) {
+      Material *mat = m.m_primitives[i].m_material > -1 ? &p_materials[m.m_primitives[i].m_material]
+                                                        : &defaultMat;
       mat->bind(sPrg);
-      m->m_primitives[i].draw();
+      m.m_primitives[i].draw();
     }
   }
 }
@@ -41,10 +40,10 @@ void GltfObject::drawGeom(const ShaderProgram &sPrg) {
   for (auto &n : p_nodes) {
     glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
                        glm::value_ptr(n->nodeMat));
-    MeshObj *m = p_meshes[n->mesh];
+    Mesh &m = p_meshes[n->mesh];
 
-    for (uint32_t i = 0; i < m->numPrims; i++) {
-      m->m_primitives[i].draw();
+    for (uint32_t i = 0; i < m.numPrims; i++) {
+      m.m_primitives[i].draw();
     }
   }
 }
@@ -121,42 +120,45 @@ void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node, glm::mat
 }
 
 void GltfObject::loadMaterials(tinygltf::Model &model) {
+  p_numMats = model.materials.size();
+  p_materials = std::make_unique<Material[]>(p_numMats);
+  uint32_t numNodes = 0;
   for (auto &mat : model.materials) {
-    Material *newmat = new Material;
     uint32_t materialMast = 0;
     if (mat.pbrMetallicRoughness.baseColorTexture.index >= 0) {
       materialMast = materialMast | (1 << 0);
-      newmat->m_baseColorTexture = std::to_string(mat.pbrMetallicRoughness.baseColorTexture.index);
+      p_materials[numNodes].m_baseColorTexture =
+          std::to_string(mat.pbrMetallicRoughness.baseColorTexture.index);
     }
     if (mat.pbrMetallicRoughness.metallicRoughnessTexture.index >= 0) {
       materialMast = materialMast | (1 << 1);
-      newmat->m_metallicRoughnessTexture =
+      p_materials[numNodes].m_metallicRoughnessTexture =
           std::to_string(mat.pbrMetallicRoughness.metallicRoughnessTexture.index);
     }
     if (mat.emissiveTexture.index >= 0) {
       materialMast = materialMast | (1 << 2);
-      newmat->m_emissiveTexture = std::to_string(mat.emissiveTexture.index);
+      p_materials[numNodes].m_emissiveTexture = std::to_string(mat.emissiveTexture.index);
     }
     if (mat.occlusionTexture.index >= 0) {
       materialMast = materialMast | (1 << 3);
-      newmat->m_occlusionTexture = std::to_string(mat.occlusionTexture.index);
+      p_materials[numNodes].m_occlusionTexture = std::to_string(mat.occlusionTexture.index);
     }
     if (mat.normalTexture.index >= 0) {
       materialMast = materialMast | (1 << 4);
-      newmat->m_normalTexture = std::to_string(mat.normalTexture.index);
+      p_materials[numNodes].m_normalTexture = std::to_string(mat.normalTexture.index);
     }
 
-    newmat->m_material = materialMast;
-    newmat->m_baseColorFactor = glm::vec3(mat.pbrMetallicRoughness.baseColorFactor[0],
-                                          mat.pbrMetallicRoughness.baseColorFactor[1],
-                                          mat.pbrMetallicRoughness.baseColorFactor[2]);
-    newmat->m_roughnessFactor = mat.pbrMetallicRoughness.roughnessFactor;
-    newmat->m_metallicFactor = mat.pbrMetallicRoughness.metallicFactor;
-    newmat->m_emissiveFactor =
+    p_materials[numNodes].m_material = materialMast;
+    p_materials[numNodes].m_baseColorFactor = glm::vec3(
+        mat.pbrMetallicRoughness.baseColorFactor[0], mat.pbrMetallicRoughness.baseColorFactor[1],
+        mat.pbrMetallicRoughness.baseColorFactor[2]);
+    p_materials[numNodes].m_roughnessFactor = mat.pbrMetallicRoughness.roughnessFactor;
+    p_materials[numNodes].m_metallicFactor = mat.pbrMetallicRoughness.metallicFactor;
+    p_materials[numNodes].m_emissiveFactor =
         glm::vec3(mat.emissiveFactor[0], mat.emissiveFactor[1], mat.emissiveFactor[2]);
-    newmat->m_doubleSided = mat.doubleSided;
-    newmat->m_alphaMode = mat.alphaMode;
-    p_materials.push_back(newmat);
+    p_materials[numNodes].m_doubleSided = mat.doubleSided;
+    p_materials[numNodes].m_alphaMode = mat.alphaMode;
+    numNodes++;
   }
 }
 
@@ -198,15 +200,17 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
 }
 
 void GltfObject::loadMeshes(tinygltf::Model &model) {
+  p_numMeshes = model.meshes.size();
+  p_meshes = std::make_unique<Mesh[]>(p_numMats);
+  uint32_t meshCount = 0;
   for (auto &mesh : model.meshes) {
-    MeshObj *newmesh = new MeshObj;
-    newmesh->m_primitives = std::make_unique<Primitive[]>(mesh.primitives.size());
+    p_meshes[meshCount].m_primitives = std::make_unique<Primitive[]>(mesh.primitives.size());
     for (auto &primitive : mesh.primitives) {
       uint32_t vao;
       glGenVertexArrays(1, &vao);
       glBindVertexArray(vao);
 
-      Primitive *newPrim = &newmesh->m_primitives[newmesh->numPrims++];
+      Primitive *newPrim = &p_meshes[meshCount].m_primitives[p_meshes[meshCount].numPrims++];
       newPrim->m_vao = vao;
       newPrim->m_mode = primitive.mode;
       newPrim->m_material = primitive.material;
@@ -266,7 +270,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         loc++;
       }
     }
-    p_meshes.push_back(newmesh);
+    meshCount++;
   }
   glBindVertexArray(0);
 }
