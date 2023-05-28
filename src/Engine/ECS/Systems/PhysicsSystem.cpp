@@ -27,8 +27,7 @@ PhysicsSystem::PhysicsSystem(ECSManager &ECSManager) : System(ECSManager) {
   ///-----initialization_end-----
 
   {
-    btCollisionShape *groundShape =
-        new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+    groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
 
     btTransform groundTransform;
     groundTransform.setIdentity();
@@ -45,9 +44,9 @@ PhysicsSystem::PhysicsSystem(ECSManager &ECSManager) : System(ECSManager) {
 
     // using motionstate is optional, it provides interpolation capabilities, and only synchronizes
     // 'active' objects
-    btDefaultMotionState *myMotionState = new btDefaultMotionState(groundTransform);
+    myMotionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-    btRigidBody *body = new btRigidBody(rbInfo);
+    body = new btRigidBody(rbInfo);
 
     // add the body to the dynamics world
     m_dynamicsWorld->addRigidBody(body);
@@ -64,6 +63,10 @@ PhysicsSystem::~PhysicsSystem() {
   // delete dispatcher
   delete m_dispatcher;
   delete m_collisionConfiguration;
+
+  delete body;
+  delete myMotionState;
+  delete groundShape;
 }
 
 void PhysicsSystem::update(float dt) {
@@ -71,8 +74,8 @@ void PhysicsSystem::update(float dt) {
   m_dynamicsWorld->stepSimulation(dt, 10);
   std::vector<Entity> view = m_manager.view<PositionComponent, PhysicsComponent>();
   for (auto e : view) {
-    PositionComponent *p = m_manager.getComponent<PositionComponent>(e);
-    PhysicsComponent *phy = m_manager.getComponent<PhysicsComponent>(e);
+    std::shared_ptr<PositionComponent> p = m_manager.getComponent<PositionComponent>(e);
+    std::shared_ptr<PhysicsComponent> phy = m_manager.getComponent<PhysicsComponent>(e);
     btRigidBody *body = phy->getRigidBody();
     btTransform btTrans;
     if (body) {

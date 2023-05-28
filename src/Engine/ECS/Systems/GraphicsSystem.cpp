@@ -13,6 +13,7 @@
 GraphicsSystem::GraphicsSystem(ECSManager &ECSManager)
     : System(ECSManager), m_fboManager(FrameBufferManager::getInstance()),
       m_fGraph(*new FrameGraph()) {}
+GraphicsSystem::~GraphicsSystem() { delete &m_fGraph; }
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(m_manager); }
 

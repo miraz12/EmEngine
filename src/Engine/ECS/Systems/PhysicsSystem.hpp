@@ -25,5 +25,8 @@ private:
   btCollisionDispatcher *m_dispatcher;
   btBroadphaseInterface *m_overlappingPairCache;
   btSequentialImpulseConstraintSolver *m_solver;
+  btRigidBody *body;
+  btDefaultMotionState *myMotionState;
+  btCollisionShape *groundShape;
 };
 #endif // PHYSICSSYSTEM_H_

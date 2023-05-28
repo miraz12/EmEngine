@@ -13,14 +13,14 @@ public:
     DIRECTIONAL,
   };
 
-  LightingComponent(BaseLight *light, TYPE type);
-  virtual ~LightingComponent();
+  LightingComponent(std::shared_ptr<BaseLight> light, TYPE type);
+  virtual ~LightingComponent() = default;
 
   TYPE getType() { return m_t; };
-  BaseLight *getBaseLight() { return light; };
+  BaseLight &getBaseLight() { return *light.get(); };
 
 private:
   TYPE m_t{NONE};
-  BaseLight *light;
+  std::shared_ptr<BaseLight> light;
 };
 #endif // LIGHTINGCOMPONENT_H_

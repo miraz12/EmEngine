@@ -9,7 +9,7 @@
 class FrameGraph {
 public:
   FrameGraph();
-  virtual ~FrameGraph(){};
+  virtual ~FrameGraph();
 
   void draw(ECSManager &eManager);
   void setViewport(uint32_t w, uint32_t h);

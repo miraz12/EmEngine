@@ -3,6 +3,7 @@
 #include "Systems/GraphicsSystem.hpp"
 #include "Systems/PhysicsSystem.hpp"
 #include <ECS/Systems/PositionSystem.hpp>
+#include <Types/LightTypes.hpp>
 #include <memory>
 
 ECSManager::ECSManager() { initializeSystems(); }
@@ -24,34 +25,34 @@ void ECSManager::update(float dt) {
 
 Entity ECSManager::createEntity() {
   Entity newEntity = m_entityCount++;
-  m_components[newEntity] = std::vector<Component *>(MAX_COMPONENTS, nullptr);
+  m_components[newEntity] = std::vector<std::shared_ptr<Component>>(MAX_COMPONENTS, nullptr);
   m_entities.push_back(newEntity);
   return m_entities.back();
 }
 
-PointLight *ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear,
-                                        float quadratic, glm::vec3 pos) {
+std::shared_ptr<PointLight> ECSManager::SetupPointLight(glm::vec3 color, float constant,
+                                                        float linear, float quadratic,
+                                                        glm::vec3 pos) {
   Entity en = createEntity();
-  PointLight *pLight = new PointLight();
+  std::shared_ptr<PointLight> pLight = std::make_shared<PointLight>();
   pLight->position = pos;
   pLight->color = color;
   pLight->constant = constant;
   pLight->linear = linear;
   pLight->quadratic = quadratic;
-  LightingComponent *lightComp = new LightingComponent(pLight, LightingComponent::TYPE::POINT);
-  addComponent(en, lightComp);
+  addComponent(en, std::make_shared<LightingComponent>(pLight, LightingComponent::TYPE::POINT));
   return pLight;
 }
 
-DirectionalLight *ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir) {
+std::shared_ptr<DirectionalLight> ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient,
+                                                                    glm::vec3 dir) {
   Entity en = createEntity();
-  DirectionalLight *dLight = new DirectionalLight();
+  std::shared_ptr<DirectionalLight> dLight = std::make_shared<DirectionalLight>();
   dLight->direction = dir;
   dLight->color = color;
   dLight->ambientIntensity = ambient;
-  LightingComponent *lightComp =
-      new LightingComponent(dLight, LightingComponent::TYPE::DIRECTIONAL);
-  addComponent(en, lightComp);
+  addComponent(en,
+               std::make_shared<LightingComponent>(dLight, LightingComponent::TYPE::DIRECTIONAL));
   return dLight;
 }
 

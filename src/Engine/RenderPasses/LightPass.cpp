@@ -1,6 +1,7 @@
 #include "LightPass.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
+#include <ECS/Components/LightingComponent.hpp>
 #include <Managers/TextureManager.hpp>
 
 #include <ECS/ECSManager.hpp>
@@ -97,50 +98,48 @@ void LightPass::Execute(ECSManager &eManager) {
   std::vector<Entity> view = eManager.view<LightingComponent>();
   int32_t numPLights = 0;
   for (auto e : view) {
-    LightingComponent *g =
-        static_cast<LightingComponent *>(eManager.getComponent<LightingComponent>(e));
+    std::shared_ptr<LightingComponent> g = eManager.getComponent<LightingComponent>(e);
 
     LightingComponent::TYPE t = g->getType();
     if (t == LightingComponent::DIRECTIONAL) {
-      DirectionalLight *light = static_cast<DirectionalLight *>(g->getBaseLight());
+      DirectionalLight &light = static_cast<DirectionalLight &>(g->getBaseLight());
       glUniform3fv(p_shaderProgram.getUniformLocation("directionalLight.direction"), 1,
-                   glm::value_ptr(light->direction));
+                   glm::value_ptr(light.direction));
 
       glUniform3fv(p_shaderProgram.getUniformLocation("directionalLight.color"), 1,
-                   glm::value_ptr(light->color));
+                   glm::value_ptr(light.color));
 
       glUniform1f(p_shaderProgram.getUniformLocation("directionalLight.ambientIntensity"),
-                  light->ambientIntensity);
+                  light.ambientIntensity);
 
     } else if (t == LightingComponent::POINT) {
-      PointLight *light = static_cast<PointLight *>(g->getBaseLight());
+      PointLight &light = static_cast<PointLight &>(g->getBaseLight());
       glUniform3fv(p_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                       "].position"),
-                   1, glm::value_ptr(light->position));
+                   1, glm::value_ptr(light.position));
 
       glUniform3fv(p_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                       "].color"),
-                   1, glm::value_ptr(light->color));
+                   1, glm::value_ptr(light.color));
 
       glUniform1f(p_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                      "].constant"),
-                  light->constant);
+                  light.constant);
 
       glUniform1f(p_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                      "].linear"),
-                  light->linear);
+                  light.linear);
 
       glUniform1f(p_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                      "].quadratic"),
-                  light->quadratic);
+                  light.quadratic);
       const float constant = 1.0f; // note that we don't send this to the shader, we assume it is
                                    // always 1.0 (in our case)
-      float maxBrightness = std::fmaxf(std::fmaxf(light->color.r, light->color.g), light->color.b);
-      float radius =
-          (-light->linear +
-           std::sqrt(light->linear * light->linear -
-                     4 * light->quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) /
-          (2.0f * light->quadratic);
+      float maxBrightness = std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
+      float radius = (-light.linear + std::sqrt(light.linear * light.linear -
+                                                4 * light.quadratic *
+                                                    (constant - (256.0f / 5.0f) * maxBrightness))) /
+                     (2.0f * light.quadratic);
       glUniform1f(p_shaderProgram.getUniformLocation("pointLights[" + std::to_string(numPLights) +
                                                      "].radius"),
                   radius);

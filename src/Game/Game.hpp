@@ -18,7 +18,7 @@ public:
   }
   void setViewport(uint32_t w, uint32_t h);
   // Dir light
-  DirectionalLight *dLight;
+  std::shared_ptr<DirectionalLight> dLight;
   glm::vec3 dirLightColor;
   float dirLightAmbient;
   glm::vec3 dirLightDir;

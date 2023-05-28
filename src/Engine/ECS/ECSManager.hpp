@@ -2,6 +2,7 @@
 #define ECSMANAGER_H_
 
 #include <GLFW/glfw3.h>
+#include <Types/LightTypes.hpp>
 #include <bitset>
 #include <cassert>
 #include <cstddef>
@@ -56,14 +57,14 @@ public:
   // creates and returns a new entity
   Entity createEntity();
 
-  template <typename T> void addComponent(Entity entity, T *component) {
+  template <typename T> void addComponent(Entity entity, std::shared_ptr<T> component) {
     size_t index = getComponentTypeID<T>();
     m_components[entity][index] = component;
     m_entityComponentMasks[entity] |= (1 << index);
   }
 
-  template <typename... Args> void addComponents(Entity entity, Args *...args) {
-    (addComponent(entity, std::forward<Args *>(args)), ...);
+  template <typename... Args> void addComponents(Entity entity, std::shared_ptr<Args>... args) {
+    (addComponent(entity, std::forward<std::shared_ptr<Args>>(args)), ...);
   }
 
   template <typename T> bool hasComponent(Entity entity) {
@@ -126,17 +127,17 @@ public:
     return matchingEntities;
   }
 
-  template <typename T> T *getComponent(Entity entity) {
+  template <typename T> std::shared_ptr<T> getComponent(Entity entity) {
     // Return the component at the specified entity's index in the array
     assert(!hasComponent<T>(entity));
-    return static_cast<T *>(m_components.at(entity).at(getComponentTypeID<T>()));
+    return std::static_pointer_cast<T>(m_components.at(entity).at(getComponentTypeID<T>()));
   }
 
   // // Create point light
-  PointLight *SetupPointLight(glm::vec3 color, float constant, float linear, float quadratic,
-                              glm::vec3 pos);
+  std::shared_ptr<PointLight> SetupPointLight(glm::vec3 color, float constant, float linear,
+                                              float quadratic, glm::vec3 pos);
   // // Create directional light
-  DirectionalLight *SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
+  std::shared_ptr<DirectionalLight> SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
   void setViewport(uint32_t w, uint32_t h);
@@ -152,7 +153,7 @@ private:
   std::vector<Entity> m_entities;
   std::unordered_map<std::string, std::unique_ptr<System>> m_systems;
 
-  std::unordered_map<Entity, std::vector<Component *>> m_components;
+  std::unordered_map<Entity, std::vector<std::shared_ptr<Component>>> m_components;
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
   std::unordered_map<Entity, Signature> m_entityComponentMasks;
 
