@@ -4,6 +4,7 @@
 #include <Rendering/Material.hpp>
 #include <Rendering/MeshObj.hpp>
 #include <Rendering/Node.hpp>
+#include <Rendering/Primitive.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <map>
@@ -22,10 +23,6 @@ public:
 
 protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();
-  std::vector<float> p_vertices;
-  std::vector<float> p_normals;
-  std::vector<float> p_texCoords;
-  std::vector<int32_t> p_indices;
   std::vector<Material *> p_materials;
   std::vector<MeshObj *> p_meshes;
   std::vector<Node *> p_nodes;

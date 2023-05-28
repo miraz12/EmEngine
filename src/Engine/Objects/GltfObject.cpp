@@ -1,3 +1,7 @@
+#include "glm/ext/matrix_transform.hpp"
+#include <Rendering/Primitive.hpp>
+#include <cstdint>
+#include <memory>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -23,19 +27,25 @@ void GltfObject::draw(const ShaderProgram &sPrg) {
   for (auto &n : p_nodes) {
     glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
                        glm::value_ptr(n->nodeMat));
-    MeshObj *m = p_meshes.at(n->mesh);
-    Material *mat =
-        m->m_material > -1 ? p_materials.at(p_meshes[m->m_material]->m_material) : &defaultMat;
-    mat->bind(sPrg);
-    m->draw();
+    MeshObj *m = p_meshes[n->mesh];
+    for (uint32_t i = 0; i < m->numPrims; i++) {
+      Material *mat = m->m_primitives[i].m_material > -1
+                          ? p_materials.at(m->m_primitives[i].m_material)
+                          : &defaultMat;
+      mat->bind(sPrg);
+      m->m_primitives[i].draw();
+    }
   }
 }
 void GltfObject::drawGeom(const ShaderProgram &sPrg) {
   for (auto &n : p_nodes) {
     glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
                        glm::value_ptr(n->nodeMat));
-    MeshObj *m = p_meshes.at(n->mesh);
-    m->draw();
+    MeshObj *m = p_meshes[n->mesh];
+
+    for (uint32_t i = 0; i < m->numPrims; i++) {
+      m->m_primitives[i].draw();
+    }
   }
 }
 
@@ -189,20 +199,22 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
 
 void GltfObject::loadMeshes(tinygltf::Model &model) {
   for (auto &mesh : model.meshes) {
+    MeshObj *newmesh = new MeshObj;
+    newmesh->m_primitives = std::make_unique<Primitive[]>(mesh.primitives.size());
     for (auto &primitive : mesh.primitives) {
       uint32_t vao;
       glGenVertexArrays(1, &vao);
       glBindVertexArray(vao);
 
-      MeshObj *newmesh = new MeshObj;
-      newmesh->m_vao = vao;
-      newmesh->m_mode = primitive.mode;
-      newmesh->m_material = primitive.material;
+      Primitive *newPrim = &newmesh->m_primitives[newmesh->numPrims++];
+      newPrim->m_vao = vao;
+      newPrim->m_mode = primitive.mode;
+      newPrim->m_material = primitive.material;
 
       tinygltf::Accessor accessor = model.accessors[primitive.indices];
-      newmesh->m_count = accessor.count;
-      newmesh->m_type = accessor.componentType;
-      newmesh->m_offset = accessor.byteOffset;
+      newPrim->m_count = accessor.count;
+      newPrim->m_type = accessor.componentType;
+      newPrim->m_offset = accessor.byteOffset;
 
       // Check if using element buffer
       if (primitive.indices != -1) {
@@ -213,8 +225,8 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferView.byteLength,
                      &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-        newmesh->m_ebo = ebo;
-        newmesh->m_drawType = 1;
+        newPrim->m_ebo = ebo;
+        newPrim->m_drawType = 1;
       }
       // Load all vertex attributes
       for (auto &attrib : primitive.attributes) {
@@ -243,18 +255,18 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
                               byteStride, (void *)(sizeof(char) * (accessor.byteOffset)));
         glEnableVertexAttribArray(loc);
 
-        MeshObj::AttribInfo attribInfo;
+        Primitive::AttribInfo attribInfo;
         attribInfo.vbo = loc;
         attribInfo.type = accessor.type;
         attribInfo.componentType = accessor.componentType;
         attribInfo.byteOffset = accessor.byteOffset;
         attribInfo.byteStride = accessor.ByteStride(model.bufferViews[accessor.bufferView]);
         attribInfo.normalized = accessor.normalized;
-        newmesh->attributes[attrib.first] = attribInfo;
+        newPrim->attributes[attrib.first] = attribInfo;
         loc++;
       }
-      p_meshes.push_back(newmesh);
     }
+    p_meshes.push_back(newmesh);
   }
   glBindVertexArray(0);
 }
