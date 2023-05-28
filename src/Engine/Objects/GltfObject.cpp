@@ -201,7 +201,7 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
 
 void GltfObject::loadMeshes(tinygltf::Model &model) {
   p_numMeshes = model.meshes.size();
-  p_meshes = std::make_unique<Mesh[]>(p_numMats);
+  p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
   uint32_t meshCount = 0;
   for (auto &mesh : model.meshes) {
     p_meshes[meshCount].m_primitives = std::make_unique<Primitive[]>(mesh.primitives.size());
