@@ -190,13 +190,14 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
       newPrim->m_mode = primitive.mode;
       newPrim->m_material = primitive.material;
 
-      tinygltf::Accessor accessor = model.accessors[primitive.indices];
-      newPrim->m_count = accessor.count;
-      newPrim->m_type = accessor.componentType;
-      newPrim->m_offset = accessor.byteOffset;
+
 
       // Check if using element buffer
       if (primitive.indices != -1) {
+        tinygltf::Accessor accessor = model.accessors[primitive.indices];
+        newPrim->m_count = accessor.count;
+        newPrim->m_type = accessor.componentType;
+        newPrim->m_offset = accessor.byteOffset;
         const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
         const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
         GLuint ebo;

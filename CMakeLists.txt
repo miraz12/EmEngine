@@ -38,9 +38,15 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CM
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if (DEFINED EMSCRIPTEN)
+configure_file(${CMAKE_SOURCE_DIR}resources/js/HandleTouchMove.js ${CMAKE_CURRENT_BINARY_DIR}/HandleTouchMove.js COPYONLY)
+
 target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra -g)
 
 set_target_properties(${PROJECT_NAME}
         PROPERTIES SUFFIX ".html"
-        LINK_FLAGS " --bind -sFULL_ES3 -sUSE_GLFW=3  -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH -gsource-map --source-map-base http://localhost:8000/build/ --preload-file ../resources ")
+        LINK_FLAGS " --bind -sFULL_ES3 -sUSE_GLFW=3  
+                     -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH 
+                     -gsource-map --source-map-base http://localhost:8000/build/ 
+                     --preload-file ../resources
+                     --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/HandleTouchMove.js")
 endif (DEFINED EMSCRIPTEN)
