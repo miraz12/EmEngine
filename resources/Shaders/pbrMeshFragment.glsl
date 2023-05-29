@@ -31,22 +31,43 @@ mat4 thresholdMatrix = mat4(
     16.0, 8.0, 14.0, 6.0
 );
 
-// Find the normal for this fragment
+
 vec3 getNormal() {
-	// Perturb normal, see http://www.thetenthplanet.de/archives/1180
 	vec3 tangentNormal = texture(textures[4], pTexCoords).xyz * 2.0 - 1.0;
 
-	vec3 q1 = dFdx(pPosition);
-	vec3 q2 = dFdy(pPosition);
-	vec2 st1 = dFdx(pTexCoords);
-	vec2 st2 = dFdy(pTexCoords);
+    vec2 UV = pTexCoords;
+    vec2 uv_dx = dFdx(UV);
+    vec2 uv_dy = dFdy(UV);
 
-	vec3 N = normalize(pNormal);
-	vec3 T = normalize(q1 * st2.t - q2 * st1.t);
-	vec3 B = -normalize(cross(N, T));
-	mat3 TBN = mat3(T, B, N);
+    if (length(uv_dx) + length(uv_dy) <= 1e-6) {
+        uv_dx = vec2(1.0, 0.0);
+        uv_dy = vec2(0.0, 1.0);
+    }
 
-	return normalize(TBN * tangentNormal);
+    vec3 t_ = (uv_dy.t * dFdx(pPosition) - uv_dx.t * dFdy(pPosition)) /
+        (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
+
+    vec3 n, t, b, ng;
+
+   
+    if ((material & (1 << 4)) > 0) {
+      ng = normalize(pNormal);
+      t = normalize(t_ - ng * dot(ng, t_));
+      b = cross(ng, t);
+    } else {
+       ng = normalize(cross(dFdx(pPosition), dFdy(pPosition)));
+       t = normalize(t_ - ng * dot(ng, t_));
+       b = cross(ng, t);
+    }
+
+    // For a back-facing surface, the tangential basis vectors are negated.
+    if (gl_FrontFacing == false) {
+        t *= -1.0;
+        b *= -1.0;
+        ng *= -1.0;
+    }
+
+    return normalize(mat3(t, b, ng) * tangentNormal);
 }
 
 void main() {

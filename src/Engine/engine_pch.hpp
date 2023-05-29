@@ -11,5 +11,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <map>
+#include <string>
 
 #endif // ENGINE_PCH_

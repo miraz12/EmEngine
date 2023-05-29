@@ -22,7 +22,7 @@ PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   if (isDynamic)
     colShape->calculateLocalInertia(mass, localInertia);
 
-  startTransform.setOrigin(btVector3(0, 1, -.1));
+  startTransform.setOrigin(btVector3(0.f, 1.f, -.1f));
 
   // using motionstate is recommended, it provides interpolation capabilities, and only
   // synchronizes 'active' objects
