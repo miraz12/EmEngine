@@ -13,6 +13,8 @@ in vec3 pNormal;
 // 4 = Normal
 uniform sampler2D textures[5];
 uniform int material;
+uniform int alphaMode;
+uniform float alphaCutoff;
 uniform vec3 emissiveFactor;
 uniform vec3 baseColorFactor;
 uniform float roughnessFactor;
@@ -71,10 +73,8 @@ vec3 getNormal() {
 }
 
 void main() {
-    float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
-    if (threshold >= texture(textures[0], pTexCoords).a) {
-        discard;
-    }
+
+
 
     float metal = metallicFactor;
     vec4 baseRough = vec4(baseColorFactor, roughnessFactor);
@@ -93,6 +93,19 @@ void main() {
     if ((material & (1 << 3)) > 0) {
         ao = texture(textures[3], pTexCoords).r;
     }
+
+    if (alphaMode < 2){
+        float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
+        if (alphaMode == 1) {
+          if (texture(textures[0], pTexCoords).a < alphaCutoff) {
+            discard;
+          }
+        }
+        if (threshold >= texture(textures[0], pTexCoords).a) {
+          discard;
+        }
+    }
+   
 
     gNormalMetal = vec4(getNormal(), metal);
     gPositionAo = vec4(pPosition, ao);

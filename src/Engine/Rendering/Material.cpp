@@ -46,10 +46,15 @@ void Material::bind(const ShaderProgram &sPrg) {
   } else {
     glEnable(GL_CULL_FACE);
   }
+
   if (m_alphaMode == "BLEND") {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glUniform1i(sPrg.getUniformLocation("alphaMode"), 0);
+
   } else if (m_alphaMode == "MASK") {
+    glUniform1i(sPrg.getUniformLocation("alphaMode"), 1);
+    glUniform1f(sPrg.getUniformLocation("alphaCutoff"), m_alphaCutoff);
     // glEnable(GL_ALPHA_TEST);
     // glAlphaFunc(GL_GREATER, m_alphaCutoff);
     // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -58,5 +63,7 @@ void Material::bind(const ShaderProgram &sPrg) {
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
     glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+    glUniform1i(sPrg.getUniformLocation("alphaMode"), 2);
+
   }
 }

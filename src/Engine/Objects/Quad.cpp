@@ -1,8 +1,6 @@
 #include "Quad.hpp"
 
 #include <iostream>
-
-#include "ShaderPrograms/ShaderProgram.hpp"
 #include "glm/fwd.hpp"
 
 Quad::Quad() {

@@ -22,8 +22,7 @@
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Systems/System.hpp"
 #include "Objects/Quad.hpp"
-#include "ShaderPrograms/MeshShaderProgram.hpp"
-#include "ShaderPrograms/SimpleShaderProgram.hpp"
+
 
 using Entity = std::size_t;
 using ComponentType = std::type_index;
@@ -58,7 +57,7 @@ public:
   Entity createEntity();
 
   template <typename T> void addComponent(Entity entity, std::shared_ptr<T> component) {
-    size_t index = getComponentTypeID<T>();
+    uint32_t index = getComponentTypeID<T>();
     m_components[entity][index] = component;
     m_entityComponentMasks[entity] |= (1 << index);
   }

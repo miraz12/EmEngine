@@ -76,7 +76,6 @@ void PhysicsSystem::update(float dt) {
   for (auto e : view) {
     std::shared_ptr<PositionComponent> p = m_manager.getComponent<PositionComponent>(e);
     std::shared_ptr<PhysicsComponent> phy = m_manager.getComponent<PhysicsComponent>(e);
-    btRigidBody *body = phy->getRigidBody();
     btTransform btTrans;
     if (body) {
       body->getMotionState()->getWorldTransform(btTrans);

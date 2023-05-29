@@ -17,6 +17,8 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setUniformBinding("projMatrix");
   p_shaderProgram.setUniformBinding("textures");
   p_shaderProgram.setUniformBinding("material");
+  p_shaderProgram.setUniformBinding("alphaMode");
+  p_shaderProgram.setUniformBinding("alphaCutoff");
   p_shaderProgram.setUniformBinding("emissiveFactor");
   p_shaderProgram.setUniformBinding("baseColorFactor");
   p_shaderProgram.setUniformBinding("roughnessFactor");

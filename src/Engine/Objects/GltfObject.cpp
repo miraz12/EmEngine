@@ -132,6 +132,7 @@ void GltfObject::loadMaterials(tinygltf::Model &model) {
         glm::vec3(mat.emissiveFactor[0], mat.emissiveFactor[1], mat.emissiveFactor[2]);
     p_materials[numNodes].m_doubleSided = mat.doubleSided;
     p_materials[numNodes].m_alphaMode = mat.alphaMode;
+    p_materials[numNodes].m_alphaCutoff = mat.alphaCutoff;
     numNodes++;
   }
 }

@@ -1,7 +1,6 @@
 #ifndef PRIMITIVE_H_
 #define PRIMITIVE_H_
 
-#include <map>
 class Primitive {
 public:
   void draw();
