@@ -2,6 +2,7 @@
 #define SHADOWPASS_H_
 
 #include "RenderPasses/RenderPass.hpp"
+#include "glm/fwd.hpp"
 
 class ShadowPass : public RenderPass {
 public:
@@ -11,6 +12,7 @@ public:
   void setViewport(uint32_t w, uint32_t h) override;
 
 private:
+  bool m_dirty{false};
 };
 
 #endif // SHADOWPASS_H_

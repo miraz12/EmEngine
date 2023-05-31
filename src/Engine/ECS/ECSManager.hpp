@@ -23,7 +23,6 @@
 #include "ECS/Systems/System.hpp"
 #include "Objects/Quad.hpp"
 
-
 using Entity = std::size_t;
 using ComponentType = std::type_index;
 
@@ -136,7 +135,8 @@ public:
   std::shared_ptr<PointLight> SetupPointLight(glm::vec3 color, float constant, float linear,
                                               float quadratic, glm::vec3 pos);
   // // Create directional light
-  std::shared_ptr<DirectionalLight> SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
+  std::shared_ptr<DirectionalLight> SetupDirectionalLight(glm::vec3 color, float ambient,
+                                                          glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
   void setViewport(uint32_t w, uint32_t h);
@@ -144,6 +144,7 @@ public:
   System *getSystem(std::string s) { return m_systems[s].get(); }
 
   glm::vec3 dDir;
+  bool dirDirty{false};
   int32_t debugView;
 
 private:

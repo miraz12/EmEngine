@@ -22,18 +22,11 @@ Game::Game(GLFWwindow &window)
 
   std::shared_ptr<GraphicsComponent> graphComp = std::make_shared<GraphicsComponent>(
       *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
-  // GraphicsComponent *graphComp = new GraphicsComponent(
-  // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
-  // GraphicsComponent *graphComp =
-  // new GraphicsComponent(*new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
+  // *new
+  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
+  // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
-
-  // Entity en = m_ECSManager->createEntity();
-  // GraphicsComponent *graphComp = new GraphicsComponent();
-  // graphComp->grapObj = m;
-  // PositionComponent *posComp = new PositionComponent();
-  // m_ECSManager->addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // ----
   dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
@@ -57,7 +50,10 @@ void Game::update(float dt) {
   dLight->direction = dirLightDir;
   handleInput(dt);
   m_ECSManager.update(dt);
-  m_ECSManager.dDir = dirLightDir;
+  if (m_ECSManager.dDir != dirLightDir) {
+    m_ECSManager.dDir = dirLightDir;
+    m_ECSManager.dirDirty = true;
+  }
   m_ECSManager.debugView = debugView;
 }
 

@@ -29,6 +29,6 @@ void GraphicsObject::drawGeom(const ShaderProgram &sPrg) {
 
 GraphicsObject::~GraphicsObject() {
   for (auto &n : p_nodes) {
-      delete n;
+    delete n;
   }
 }
