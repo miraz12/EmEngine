@@ -30,18 +30,10 @@ using ComponentType = std::type_index;
 #define MAX_ENTITIES 10
 typedef std::bitset<MAX_COMPONENTS> Signature;
 
-class ECSManager {
+class ECSManager : public Singleton<ECSManager> {
+  friend class Singleton<ECSManager>;
+
 public:
-  static ECSManager &getInstance() {
-    static ECSManager instance;
-    return instance;
-  }
-
-  ECSManager(ECSManager const &) = delete;
-  void operator=(ECSManager const &) = delete;
-
-  ~ECSManager();
-
   void initializeSystems();
 
   // Runs through all systems
@@ -141,7 +133,7 @@ public:
   Camera &getCamera() { return m_camera; };
   void setViewport(uint32_t w, uint32_t h);
 
-  System *getSystem(std::string s) { return m_systems[s].get(); }
+  System &getSystem(std::string s) { return *m_systems[s]; }
 
   glm::vec3 dDir;
   bool dirDirty{false};
@@ -149,9 +141,10 @@ public:
 
 private:
   ECSManager();
+  ~ECSManager();
   // Entities
   std::vector<Entity> m_entities;
-  std::unordered_map<std::string, std::unique_ptr<System>> m_systems;
+  std::unordered_map<std::string, System *> m_systems;
 
   std::unordered_map<Entity, std::vector<std::shared_ptr<Component>>> m_components;
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;

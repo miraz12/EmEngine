@@ -1,17 +1,13 @@
 #ifndef INPUTMANAGER_H_
 #define INPUTMANAGER_H_
 
+#include <Singleton.hpp>
 #include <unordered_map>
 
-class InputManager {
-public:
-  static InputManager &getInstance() {
-    static InputManager instance;
-    return instance;
-  }
-  InputManager(InputManager const &) = delete;
-  void operator=(InputManager const &) = delete;
+class InputManager : public Singleton<InputManager> {
+  friend class Singleton<InputManager>;
 
+public:
   enum KEY { Escape, W, A, S, D, F, ArrowUp, ArrowDown, ArrowRight, ArrowLeft, Mouse1 };
 
   void HandleInput(KEY k, bool pressed);
@@ -20,6 +16,7 @@ public:
 
 private:
   InputManager();
+  ~InputManager() = default;
 };
 
 #endif // INPUTMANAGER_H_

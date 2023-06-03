@@ -26,6 +26,7 @@ Game::Game(GLFWwindow &window)
   // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
+  // std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(m_ECSManager);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
 
   // ----

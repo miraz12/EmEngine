@@ -11,15 +11,18 @@
 #include "System.hpp"
 #include <btBulletDynamicsCommon.h>
 
-class PhysicsSystem : public System {
+class PhysicsSystem : public System, public Singleton<PhysicsSystem> {
+  friend class Singleton<PhysicsSystem>;
+
 public:
-  PhysicsSystem(ECSManager &ECSManager);
-  ~PhysicsSystem();
-  void update(float dt);
+  void initialize(ECSManager &ecsManager) override;
+  void update(float dt) override;
   void setViewport(uint32_t /* w */, uint32_t /* h */){};
   void addRigidBody(btRigidBody *body) { m_dynamicsWorld->addRigidBody(body); };
 
 private:
+  PhysicsSystem() = default;
+  ~PhysicsSystem() override;
   btDiscreteDynamicsWorld *m_dynamicsWorld;
   btDefaultCollisionConfiguration *m_collisionConfiguration;
   btCollisionDispatcher *m_dispatcher;

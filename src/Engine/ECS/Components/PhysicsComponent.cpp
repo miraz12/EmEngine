@@ -30,6 +30,6 @@ PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
   body = new btRigidBody(rbInfo);
 
-  PhysicsSystem *pSys = static_cast<PhysicsSystem *>(ECSManager.getSystem("PHYSICS"));
-  pSys->addRigidBody(body);
+  PhysicsSystem &pSys = static_cast<PhysicsSystem &>(ECSManager.getSystem("PHYSICS"));
+  pSys.addRigidBody(body);
 }

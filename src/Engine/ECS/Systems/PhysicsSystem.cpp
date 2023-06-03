@@ -3,7 +3,21 @@
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
 
-PhysicsSystem::PhysicsSystem(ECSManager &ECSManager) : System(ECSManager) {
+PhysicsSystem::~PhysicsSystem() {
+  delete m_dynamicsWorld;
+  delete m_solver;
+  delete m_overlappingPairCache;
+  delete m_dispatcher;
+  delete m_collisionConfiguration;
+
+  delete body;
+  delete myMotionState;
+  delete groundShape;
+}
+
+void PhysicsSystem::initialize(ECSManager &ecsManager) {
+  m_manager = &ecsManager;
+
   /// collision configuration contains default setup for memory, collision setup. Advanced users can
   /// create their own configuration.
   m_collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -22,7 +36,7 @@ PhysicsSystem::PhysicsSystem(ECSManager &ECSManager) : System(ECSManager) {
   m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver,
                                                 m_collisionConfiguration);
 
-  m_dynamicsWorld->setGravity(btVector3(0, -1, 0));
+  m_dynamicsWorld->setGravity(btVector3(0, -0.01, 0));
 
   ///-----initialization_end-----
 
@@ -53,29 +67,13 @@ PhysicsSystem::PhysicsSystem(ECSManager &ECSManager) : System(ECSManager) {
   }
 }
 
-PhysicsSystem::~PhysicsSystem() {
-  // delete dynamics world
-  delete m_dynamicsWorld;
-  // delete solver
-  delete m_solver;
-  // delete broadphase
-  delete m_overlappingPairCache;
-  // delete dispatcher
-  delete m_dispatcher;
-  delete m_collisionConfiguration;
-
-  delete body;
-  delete myMotionState;
-  delete groundShape;
-}
-
 void PhysicsSystem::update(float dt) {
 
   m_dynamicsWorld->stepSimulation(dt, 10);
-  std::vector<Entity> view = m_manager.view<PositionComponent, PhysicsComponent>();
+  std::vector<Entity> view = m_manager->view<PositionComponent, PhysicsComponent>();
   for (auto e : view) {
-    std::shared_ptr<PositionComponent> p = m_manager.getComponent<PositionComponent>(e);
-    std::shared_ptr<PhysicsComponent> phy = m_manager.getComponent<PhysicsComponent>(e);
+    std::shared_ptr<PositionComponent> p = m_manager->getComponent<PositionComponent>(e);
+    std::shared_ptr<PhysicsComponent> phy = m_manager->getComponent<PhysicsComponent>(e);
     btTransform btTrans;
     if (body) {
       body->getMotionState()->getWorldTransform(btTrans);

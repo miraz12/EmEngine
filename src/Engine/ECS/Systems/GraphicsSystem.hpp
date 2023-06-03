@@ -9,14 +9,16 @@
 #include "ShaderPrograms/QuadShaderProgram.hpp"
 #include "System.hpp"
 
-class GraphicsSystem : public System {
+class GraphicsSystem : public System, public Singleton<GraphicsSystem> {
+  friend class Singleton<GraphicsSystem>;
+
 public:
-  GraphicsSystem(ECSManager &ECSManager);
-  ~GraphicsSystem();
-  void update(float dt);
+  void update(float dt) override;
   void setViewport(uint32_t w, uint32_t h);
 
 private:
+  GraphicsSystem();
+  ~GraphicsSystem();
   FrameBufferManager &m_fboManager;
   FrameGraph &m_fGraph;
 };

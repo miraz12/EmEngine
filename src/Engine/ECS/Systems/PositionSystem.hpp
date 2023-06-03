@@ -3,12 +3,17 @@
 
 #include <Camera.hpp>
 #include <ECS/Systems/System.hpp>
-class PositionSystem : public System {
+#include <Singleton.hpp>
+
+class PositionSystem : public System, public Singleton<PositionSystem> {
+  friend class Singleton<PositionSystem>;
+
 public:
-  PositionSystem(ECSManager &ECSManager);
-  ~PositionSystem(){};
-  void update(float dt);
+  void update(float dt) override;
   void setViewport(uint32_t /* w */, uint32_t /* h */){};
+
+private:
+  PositionSystem() = default;
 };
 
 #endif // POSITIONSYSTEM_H_

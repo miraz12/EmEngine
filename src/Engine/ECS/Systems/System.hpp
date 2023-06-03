@@ -1,6 +1,7 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
+#include <Singleton.hpp>
 #include <vector>
 
 #include "../Components/Component.hpp"
@@ -8,21 +9,17 @@
 
 class ECSManager;
 class System {
+
 public:
-  // Created many different constructors for different amount of required
-  // components
-
-  System(ECSManager &ECSManager);
-
-  virtual ~System() = default;
-
   // this function is called when the system should do its thing
   virtual void update(float dt) = 0;
-
   // Initialize system
-  virtual void initialize(){};
+  virtual void initialize(ECSManager &ecsManager) { m_manager = &ecsManager; };
 
 protected:
-  ECSManager &m_manager;
+  System() = default;
+  virtual ~System() = default;
+
+  ECSManager *m_manager;
 };
 #endif // SYSTEM_H_
