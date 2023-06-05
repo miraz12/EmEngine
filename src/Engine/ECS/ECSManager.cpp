@@ -6,7 +6,7 @@
 #include <Types/LightTypes.hpp>
 #include <memory>
 
-ECSManager::ECSManager()  { initializeSystems(); }
+ECSManager::ECSManager() { initializeSystems(); }
 
 ECSManager::~ECSManager() {}
 

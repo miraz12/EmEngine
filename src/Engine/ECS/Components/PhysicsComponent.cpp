@@ -7,10 +7,9 @@ PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   // create a dynamic rigidbody
 
   // btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-  colShape = new btSphereShape(btScalar(1.));
+  btSphereShape *colShape = new btSphereShape(btScalar(1.));
 
   /// Create Dynamic Objects
-  btTransform startTransform;
   startTransform.setIdentity();
 
   btScalar mass(1.f);
@@ -22,7 +21,7 @@ PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   if (isDynamic)
     colShape->calculateLocalInertia(mass, localInertia);
 
-  startTransform.setOrigin(btVector3(0.f, 1.f, -.1f));
+  startTransform.setOrigin(btVector3(0., 1., -.1));
 
   // using motionstate is recommended, it provides interpolation capabilities, and only
   // synchronizes 'active' objects

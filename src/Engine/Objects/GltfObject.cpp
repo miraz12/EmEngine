@@ -190,8 +190,6 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
       newPrim->m_mode = primitive.mode;
       newPrim->m_material = primitive.material;
 
-
-
       // Check if using element buffer
       if (primitive.indices != -1) {
         tinygltf::Accessor accessor = model.accessors[primitive.indices];

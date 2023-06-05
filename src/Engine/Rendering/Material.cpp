@@ -64,6 +64,5 @@ void Material::bind(const ShaderProgram &sPrg) {
     glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
     glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
     glUniform1i(sPrg.getUniformLocation("alphaMode"), 2);
-
   }
 }

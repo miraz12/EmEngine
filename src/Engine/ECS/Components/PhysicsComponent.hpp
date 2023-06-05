@@ -13,10 +13,8 @@ public:
   PhysicsComponent() = delete;
   virtual ~PhysicsComponent(){};
   btRigidBody *getRigidBody() { return body; }
-
-private:
-  btCollisionShape *colShape;
   btRigidBody *body;
+  btTransform startTransform;
 };
 
 #endif // PHYSICSCOMPONENT_H_

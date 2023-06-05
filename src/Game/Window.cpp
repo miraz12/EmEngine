@@ -317,6 +317,9 @@ void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */, int3
   case GLFW_KEY_F:
     inMgr.HandleInput(InputManager::KEY::F, action);
     break;
+  case GLFW_KEY_O:
+    inMgr.HandleInput(InputManager::KEY::O, action);
+    break;
   case GLFW_KEY_UP:
     inMgr.HandleInput(InputManager::KEY::ArrowUp, action);
     break;

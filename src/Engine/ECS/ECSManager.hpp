@@ -138,6 +138,8 @@ public:
   glm::vec3 dDir;
   bool dirDirty{false};
   int32_t debugView;
+  // set to true to deactivate physics simulation
+  bool debugMode{true};
 
 private:
   ECSManager();

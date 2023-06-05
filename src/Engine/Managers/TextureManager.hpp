@@ -5,10 +5,10 @@
 #include <unordered_map>
 #include <vector>
 
-class TextureManager : public Singleton<TextureManager>{
-    friend class Singleton<TextureManager>;
-public:
+class TextureManager : public Singleton<TextureManager> {
+  friend class Singleton<TextureManager>;
 
+public:
   // TODO: Make a new function that regenerates textures
   uint32_t loadTexture(uint32_t internalFormat, uint32_t format, uint32_t type, uint32_t width,
                        uint32_t height, unsigned char *data);

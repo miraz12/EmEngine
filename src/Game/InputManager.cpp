@@ -7,6 +7,7 @@ InputManager::InputManager() {
   keys.insert({KEY::S, false});
   keys.insert({KEY::D, false});
   keys.insert({KEY::F, false});
+  keys.insert({KEY::O, false});
   keys.insert({KEY::ArrowUp, false});
   keys.insert({KEY::ArrowDown, false});
   keys.insert({KEY::ArrowRight, false});

@@ -26,8 +26,9 @@ Game::Game(GLFWwindow &window)
   // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
-  // std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(m_ECSManager);
-  m_ECSManager.addComponents<GraphicsComponent, PositionComponent>(en, graphComp, posComp);
+  std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(m_ECSManager);
+  m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
+      en, graphComp, posComp, physComp);
 
   // ----
   dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
@@ -87,6 +88,9 @@ void Game::handleInput(float dt) {
     if (!glm::all(glm::isnan(camPos))) {
       cam.setPosition(camPos);
     }
+  }
+  if (m_InputManager.keys.at(InputManager::KEY::O)) {
+    m_ECSManager.debugMode = m_ECSManager.debugMode ? false : true;
   }
   if (m_InputManager.keys.at(InputManager::KEY::Mouse1)) {
     glm::vec3 direction;

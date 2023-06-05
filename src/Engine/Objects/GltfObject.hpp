@@ -9,6 +9,7 @@ class GltfObject : public GraphicsObject {
 public:
   GltfObject(std::string filename);
   virtual ~GltfObject() = default;
+
 private:
   void loadModel(tinygltf::Model &model);
   void loadNode(tinygltf::Model &model, tinygltf::Node &node, glm::mat4 mat);

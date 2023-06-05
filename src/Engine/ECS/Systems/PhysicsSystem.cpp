@@ -10,7 +10,7 @@ PhysicsSystem::~PhysicsSystem() {
   delete m_dispatcher;
   delete m_collisionConfiguration;
 
-  delete body;
+  delete m_body;
   delete myMotionState;
   delete groundShape;
 }
@@ -36,7 +36,7 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
   m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver,
                                                 m_collisionConfiguration);
 
-  m_dynamicsWorld->setGravity(btVector3(0, -0.01, 0));
+  m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
 
   ///-----initialization_end-----
 
@@ -60,28 +60,29 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
     // 'active' objects
     myMotionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-    body = new btRigidBody(rbInfo);
+
+    m_body = new btRigidBody(rbInfo);
 
     // add the body to the dynamics world
-    m_dynamicsWorld->addRigidBody(body);
+    m_dynamicsWorld->addRigidBody(m_body);
   }
 }
 
 void PhysicsSystem::update(float dt) {
-
-  m_dynamicsWorld->stepSimulation(dt, 10);
-  std::vector<Entity> view = m_manager->view<PositionComponent, PhysicsComponent>();
-  for (auto e : view) {
-    std::shared_ptr<PositionComponent> p = m_manager->getComponent<PositionComponent>(e);
-    std::shared_ptr<PhysicsComponent> phy = m_manager->getComponent<PhysicsComponent>(e);
-    btTransform btTrans;
-    if (body) {
-      body->getMotionState()->getWorldTransform(btTrans);
-      btTrans = body->getWorldTransform();
-      p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
-                              btTrans.getOrigin().getZ());
-      printf("world pos object = %f,%f,%f\n", float(btTrans.getOrigin().getX()),
-             float(btTrans.getOrigin().getY()), float(btTrans.getOrigin().getZ()));
+  if (m_manager->debugMode) {
+    m_dynamicsWorld->stepSimulation(dt, 10);
+    std::vector<Entity> view = m_manager->view<PositionComponent, PhysicsComponent>();
+    for (auto e : view) {
+      std::shared_ptr<PositionComponent> p = m_manager->getComponent<PositionComponent>(e);
+      std::shared_ptr<PhysicsComponent> phy = m_manager->getComponent<PhysicsComponent>(e);
+      btTransform btTrans;
+      btRigidBody *body = phy->body;
+      if (body) {
+        body->getMotionState()->getWorldTransform(btTrans);
+        btTrans = body->getWorldTransform();
+        p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
+                                btTrans.getOrigin().getZ());
+      }
     }
   }
 }

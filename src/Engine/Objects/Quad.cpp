@@ -1,7 +1,7 @@
 #include "Quad.hpp"
 
-#include <iostream>
 #include "glm/fwd.hpp"
+#include <iostream>
 
 Quad::Quad() {
   glm::mat4 modelMat = glm::identity<glm::mat4>();
@@ -49,20 +49,16 @@ Quad::Quad() {
   attribInfo.byteOffset = 0;
   newPrim->attributes["POSITION"] = attribInfo;
 
-  // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(3 * sizeof(float)));
-  // glEnableVertexAttribArray(1);
-  // attribInfo.vbo = 1;
-  // attribInfo.type = 4;
+  // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(3 *
+  // sizeof(float))); glEnableVertexAttribArray(1); attribInfo.vbo = 1; attribInfo.type = 4;
   // attribInfo.componentType = GL_FLOAT;
   // attribInfo.normalized = GL_FALSE;
   // attribInfo.byteStride = 9 * sizeof(float);
   // attribInfo.byteOffset = 3 * sizeof(float);
   // newPrim->attributes["NORMAL"] = attribInfo;
 
-  // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(7 * sizeof(float)));
-  // glEnableVertexAttribArray(2);
-  // attribInfo.vbo = 2;
-  // attribInfo.type = 2;
+  // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(7 *
+  // sizeof(float))); glEnableVertexAttribArray(2); attribInfo.vbo = 2; attribInfo.type = 2;
   // attribInfo.componentType = GL_FLOAT;
   // attribInfo.normalized = GL_FALSE;
   // attribInfo.byteStride = 9 * sizeof(float);
