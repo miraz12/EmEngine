@@ -16,6 +16,10 @@ public:
     m_pitch = p;
     m_yaw = y;
   }
+  void setMousePos(float x, float y) {
+    m_mousePosX = x;
+    m_mousePosY = y;
+  }
   void setViewport(uint32_t w, uint32_t h);
   // Dir light
   std::shared_ptr<DirectionalLight> dLight;
@@ -34,6 +38,7 @@ private:
   InputManager &m_InputManager;
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
+  int32_t m_mousePosX, m_mousePosY;
 };
 
 #endif // GAME_H_

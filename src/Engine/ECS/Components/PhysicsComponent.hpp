@@ -9,6 +9,7 @@
 
 class PhysicsComponent : public Component {
 public:
+  void hit();
   PhysicsComponent(ECSManager &ECSManager);
   PhysicsComponent() = delete;
   virtual ~PhysicsComponent(){};

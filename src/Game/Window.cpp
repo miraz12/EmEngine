@@ -344,6 +344,10 @@ void mousePressCallback(GLFWwindow * /* win */, int32_t button, int32_t action,
   if (!io.WantCaptureMouse) {
     inMgr.HandleInput(InputManager::KEY::Mouse1, action);
   }
+
+  double xpos, ypos;
+  glfwGetCursorPos(window, &xpos, &ypos);
+  game->setMousePos(xpos, ypos);
 }
 
 void framebuffer_size_callback(GLFWwindow * /*window*/, int32_t width, int32_t height) {

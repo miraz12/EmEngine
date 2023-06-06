@@ -4,6 +4,8 @@
 #include <ECS/Components/LightingComponent.hpp>
 #include <ECS/Components/PhysicsComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
+#include <ECS/Systems/PhysicsSystem.hpp>
+#include <Objects/Cube.hpp>
 #include <Objects/GltfObject.hpp>
 #include <algorithm>
 
@@ -21,9 +23,10 @@ Game::Game(GLFWwindow &window)
   Entity en = m_ECSManager.createEntity();
 
   std::shared_ptr<GraphicsComponent> graphComp = std::make_shared<GraphicsComponent>(
-      *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
-  // *new
-  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
+      // *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
+      // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
+      *new Cube());
+  // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
   std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(m_ECSManager);
@@ -99,6 +102,7 @@ void Game::handleInput(float dt) {
     direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     glm::vec3 cameraFront = glm::normalize(direction);
     cam.setFront(cameraFront);
+    PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
   }
 }
 

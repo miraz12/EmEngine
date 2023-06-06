@@ -2,13 +2,15 @@
 #include "Managers/FrameBufferManager.hpp"
 #include <Camera.hpp>
 #include <RenderPasses/CubeMapPass.hpp>
+#include <RenderPasses/DebugPass.hpp>
 #include <RenderPasses/GeometryPass.hpp>
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
 
 FrameGraph::FrameGraph() {
+  // glPointSize(5.f);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glLineWidth(3.0f); // Sets line width of things like wireframe and draw lines
+  glLineWidth(20.0f); // Sets line width of things like wireframe and draw lines
   glColorMask(true, true, true, true);
   // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
@@ -18,6 +20,7 @@ FrameGraph::FrameGraph() {
   m_renderPass.push_back(new GeometryPass());
   m_renderPass.push_back(new LightPass());
   m_renderPass.push_back(new CubeMapPass());
+  m_renderPass.push_back(new DebugPass());
 }
 
 FrameGraph::~FrameGraph() {

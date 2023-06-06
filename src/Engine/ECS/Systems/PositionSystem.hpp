@@ -1,7 +1,6 @@
 #ifndef POSITIONSYSTEM_H_
 #define POSITIONSYSTEM_H_
 
-#include <Camera.hpp>
 #include <ECS/Systems/System.hpp>
 #include <Singleton.hpp>
 

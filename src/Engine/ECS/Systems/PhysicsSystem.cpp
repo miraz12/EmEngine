@@ -1,7 +1,11 @@
 #include "PhysicsSystem.hpp"
+#include "GraphicsSystem.hpp"
+#include <ECS/Components/DebugComponent.hpp>
 #include <ECS/Components/PhysicsComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
+#include <Objects/Line.hpp>
+#include <Objects/Point.hpp>
 
 PhysicsSystem::~PhysicsSystem() {
   delete m_dynamicsWorld;
@@ -36,36 +40,38 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
   m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver,
                                                 m_collisionConfiguration);
 
-  m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
+  m_dynamicsWorld->setGravity(btVector3(0, 0, 0));
 
   ///-----initialization_end-----
 
-  {
-    groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+  // {
+  //   groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
 
-    btTransform groundTransform;
-    groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3(0, -52, 0));
+  //   btTransform groundTransform;
+  //   groundTransform.setIdentity();
+  //   groundTransform.setOrigin(btVector3(0, -52, 0));
 
-    btScalar mass(0.);
+  //   btScalar mass(0.);
 
-    // rigidbody is dynamic if and only if mass is non zero, otherwise static
-    bool isDynamic = (mass != 0.f);
+  //   // rigidbody is dynamic if and only if mass is non zero, otherwise static
+  //   bool isDynamic = (mass != 0.f);
 
-    btVector3 localInertia(0, 0, 0);
-    if (isDynamic)
-      groundShape->calculateLocalInertia(mass, localInertia);
+  //   btVector3 localInertia(0, 0, 0);
+  //   if (isDynamic)
+  //     groundShape->calculateLocalInertia(mass, localInertia);
 
-    // using motionstate is optional, it provides interpolation capabilities, and only synchronizes
-    // 'active' objects
-    myMotionState = new btDefaultMotionState(groundTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
+  //   // using motionstate is optional, it provides interpolation capabilities, and only
+  //   synchronizes
+  //   // 'active' objects
+  //   myMotionState = new btDefaultMotionState(groundTransform);
+  //   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape,
+  //   localInertia);
 
-    m_body = new btRigidBody(rbInfo);
+  //   m_body = new btRigidBody(rbInfo);
 
-    // add the body to the dynamics world
-    m_dynamicsWorld->addRigidBody(m_body);
-  }
+  //   // add the body to the dynamics world
+  //   m_dynamicsWorld->addRigidBody(m_body);
+  // }
 }
 
 void PhysicsSystem::update(float dt) {
@@ -83,6 +89,37 @@ void PhysicsSystem::update(float dt) {
         p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
                                 btTrans.getOrigin().getZ());
       }
+    }
+  }
+}
+void PhysicsSystem::performPicking(int32_t mouseX, int32_t mouseY) {
+
+  // Define the ray's start and end positions in world space
+
+  std::tuple<glm::vec3, glm::vec3> camStartDir = m_manager->getCamera().getRayTo(mouseX, mouseY);
+
+  glm::vec3 camPos = std::get<0>(camStartDir);
+  glm::vec3 rayDir = std::get<1>(camStartDir);
+  glm::vec3 endPos = rayDir * 1000.f;
+  btVector3 rayTo(endPos.x, endPos.y, endPos.z);
+  btVector3 rayFrom(camPos.x, camPos.y, camPos.z);
+  btCollisionWorld::ClosestRayResultCallback rayCallback(rayFrom, rayTo);
+  // Perform raycast
+  m_dynamicsWorld->rayTest(rayFrom, rayTo, rayCallback);
+  if (rayCallback.hasHit()) {
+    // An object was hit by the ray
+    std::cout << "Found object!" << std::endl;
+    btRigidBody *body = (btRigidBody *)btRigidBody::upcast(rayCallback.m_collisionObject);
+    std::shared_ptr<DebugComponent> graphComp2 = std::make_shared<DebugComponent>(
+        new Point(rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(),
+                  rayCallback.m_hitPointWorld.z()));
+    Entity en2 = m_manager->createEntity();
+    m_manager->addComponent(en2, graphComp2);
+
+    if (body) {
+      PhysicsComponent *phyComp = (PhysicsComponent *)body->getUserPointer();
+      if (phyComp)
+        phyComp->hit();
     }
   }
 }

@@ -6,8 +6,8 @@
 PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   // create a dynamic rigidbody
 
-  // btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-  btSphereShape *colShape = new btSphereShape(btScalar(1.));
+  btCollisionShape *colShape = new btBoxShape(btVector3(0.5, 0.5, 0.5));
+  // btSphereShape *colShape = new btSphereShape(btScalar(1.));
 
   /// Create Dynamic Objects
   startTransform.setIdentity();
@@ -28,7 +28,10 @@ PhysicsComponent::PhysicsComponent(ECSManager &ECSManager) {
   btDefaultMotionState *myMotionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
   body = new btRigidBody(rbInfo);
+  body->setUserPointer(this);
 
   PhysicsSystem &pSys = static_cast<PhysicsSystem &>(ECSManager.getSystem("PHYSICS"));
   pSys.addRigidBody(body);
 }
+
+void PhysicsComponent::hit() { std::cout << "HIT!" << std::endl; }

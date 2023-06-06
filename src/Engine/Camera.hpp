@@ -1,6 +1,7 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
+#include <LinearMath/btVector3.h>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
@@ -29,6 +30,8 @@ public:
   glm::vec3 getPosition() { return m_position; };
   glm::vec3 getFront() { return m_front; };
   glm::vec3 getUp() { return m_up; };
+  std::tuple<float, float> getSize() { return {m_width, m_height}; };
+  std::tuple<glm::vec3, glm::vec3> getRayTo(int x, int y);
 
   void bindProjViewMatrix(uint32_t proj, uint32_t view);
 

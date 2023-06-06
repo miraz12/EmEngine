@@ -65,12 +65,18 @@ void ShadowPass::Execute(ECSManager &eManager) {
     glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"), 1, GL_FALSE,
                        glm::value_ptr(lightSpaceMatrix));
 
-    std::vector<Entity> view = eManager.view<GraphicsComponent, PositionComponent>();
+    std::vector<Entity> view = eManager.view<GraphicsComponent>();
     for (auto &e : view) {
       std::shared_ptr<PositionComponent> p = eManager.getComponent<PositionComponent>(e);
+      if (p) {
+        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                           glm::value_ptr(p->model));
+      } else {
+        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                           glm::value_ptr(glm::identity<glm::mat4>()));
+      }
+
       std::shared_ptr<GraphicsComponent> g = eManager.getComponent<GraphicsComponent>(e);
-      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                         glm::value_ptr(p->model));
       g->m_grapObj.drawGeom(p_shaderProgram);
     }
 

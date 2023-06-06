@@ -44,11 +44,16 @@ void GeometryPass::Execute(ECSManager &eManager) {
   eManager.getCamera().bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
                                           p_shaderProgram.getUniformLocation("viewMatrix"));
 
-  std::vector<Entity> view = eManager.view<GraphicsComponent, PositionComponent>();
+  std::vector<Entity> view = eManager.view<GraphicsComponent>();
   for (auto e : view) {
     std::shared_ptr<PositionComponent> p = eManager.getComponent<PositionComponent>(e);
-    glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(p->model));
+    if (p) {
+      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                         glm::value_ptr(p->model));
+    } else {
+      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                         glm::value_ptr(glm::identity<glm::mat4>()));
+    }
 
     std::shared_ptr<GraphicsComponent> g = eManager.getComponent<GraphicsComponent>(e);
     g->m_grapObj.draw(p_shaderProgram);
