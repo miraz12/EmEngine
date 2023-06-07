@@ -25,13 +25,14 @@ DebugPass::DebugPass()
 }
 
 void DebugPass::Execute(ECSManager &eManager) {
+  eManager.getCamera().bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
+                                          p_shaderProgram.getUniformLocation("viewMatrix"));
+
+#ifndef EMSCRIPTEN
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_DEPTH_TEST);
 
   p_shaderProgram.use();
-
-  eManager.getCamera().bindProjViewMatrix(p_shaderProgram.getUniformLocation("projMatrix"),
-                                          p_shaderProgram.getUniformLocation("viewMatrix"));
 
   std::vector<Entity> view = eManager.view<DebugComponent>();
   for (auto e : view) {
@@ -45,7 +46,11 @@ void DebugPass::Execute(ECSManager &eManager) {
     }
 
     std::shared_ptr<DebugComponent> d = eManager.getComponent<DebugComponent>(e);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     d->m_grapObj->draw(p_shaderProgram);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
 }

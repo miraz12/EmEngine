@@ -47,6 +47,9 @@ public:
   // creates and returns a new entity
   Entity createEntity();
 
+  // TODO: Figure out something better than this
+  Entity getLastEntity() { return m_entityCount - 1; }
+
   template <typename T> void addComponent(Entity entity, std::shared_ptr<T> component) {
     uint32_t index = getComponentTypeID<T>();
     m_components[entity][index] = component;

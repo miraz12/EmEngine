@@ -27,6 +27,7 @@ public:
   float dirLightAmbient;
   glm::vec3 dirLightDir;
   int32_t debugView{0};
+  bool debugMode{0};
 
 private:
   void init();

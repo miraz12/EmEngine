@@ -40,7 +40,7 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
   m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver,
                                                 m_collisionConfiguration);
 
-  m_dynamicsWorld->setGravity(btVector3(0, 0, 0));
+  m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
 
   ///-----initialization_end-----
 
@@ -82,7 +82,7 @@ void PhysicsSystem::update(float dt) {
       std::shared_ptr<PositionComponent> p = m_manager->getComponent<PositionComponent>(e);
       std::shared_ptr<PhysicsComponent> phy = m_manager->getComponent<PhysicsComponent>(e);
       btTransform btTrans;
-      btRigidBody *body = phy->body;
+      btRigidBody *body = phy->getRigidBody();
       if (body) {
         body->getMotionState()->getWorldTransform(btTrans);
         btTrans = body->getWorldTransform();
@@ -108,18 +108,15 @@ void PhysicsSystem::performPicking(int32_t mouseX, int32_t mouseY) {
   m_dynamicsWorld->rayTest(rayFrom, rayTo, rayCallback);
   if (rayCallback.hasHit()) {
     // An object was hit by the ray
-    std::cout << "Found object!" << std::endl;
-    btRigidBody *body = (btRigidBody *)btRigidBody::upcast(rayCallback.m_collisionObject);
-    std::shared_ptr<DebugComponent> graphComp2 = std::make_shared<DebugComponent>(
-        new Point(rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(),
-                  rayCallback.m_hitPointWorld.z()));
-    Entity en2 = m_manager->createEntity();
-    m_manager->addComponent(en2, graphComp2);
+    // btRigidBody *body = (btRigidBody *)btRigidBody::upcast(rayCallback.m_collisionObject);
+    // std::shared_ptr<DebugComponent> graphComp = std::make_shared<DebugComponent>(
+    //     new Point(rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(),
+    //               rayCallback.m_hitPointWorld.z()));
+    // Entity en = m_manager->createEntity();
+    // m_manager->addComponent(en, graphComp);
 
-    if (body) {
-      PhysicsComponent *phyComp = (PhysicsComponent *)body->getUserPointer();
-      if (phyComp)
-        phyComp->hit();
-    }
+    // if (body) {
+    // PhysicsComponent *phyComp = (PhysicsComponent *)body->getUserPointer();
+    // }
   }
 }

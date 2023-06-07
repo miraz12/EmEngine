@@ -6,7 +6,7 @@
 #include <emscripten.h>
 #else
 #include <glad/glad.h>
-#define _DEBUG_
+// #define _DEBUG_
 #endif
 
 #include <GLFW/glfw3.h>
@@ -378,6 +378,8 @@ void Window::renderImgui() {
   }
 
   ImGui::Combo("Debug views", &game->debugView, &charitems[0], 7, 7);
+
+  ImGui::Checkbox("Physics", &game->debugMode);
 
   ImGui::End();
   // Rendering

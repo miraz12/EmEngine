@@ -23,15 +23,25 @@ Game::Game(GLFWwindow &window)
   Entity en = m_ECSManager.createEntity();
 
   std::shared_ptr<GraphicsComponent> graphComp = std::make_shared<GraphicsComponent>(
-      // *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
-      // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
-      *new Cube());
+      *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
+  // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
+  // *new Cube());
   // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
-  std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(m_ECSManager);
+  posComp->position = glm::vec3(0.0, 2.0, -1.0);
+  std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(posComp, 1.0f);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
       en, graphComp, posComp, physComp);
+
+  Entity en2 = m_ECSManager.createEntity();
+  graphComp = std::make_shared<GraphicsComponent>(*new Cube());
+  posComp = std::make_shared<PositionComponent>();
+  posComp->scale = glm::vec3(20.0, 1.0, 20.0);
+  posComp->position = glm::vec3(0.0, -2.0, 0.0);
+  physComp = std::make_shared<PhysicsComponent>(posComp);
+  m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
+      en2, graphComp, posComp, physComp);
 
   // ----
   dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
@@ -60,6 +70,7 @@ void Game::update(float dt) {
     m_ECSManager.dirDirty = true;
   }
   m_ECSManager.debugView = debugView;
+  m_ECSManager.debugMode = debugMode;
 }
 
 void Game::handleInput(float dt) {

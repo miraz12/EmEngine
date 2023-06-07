@@ -7,6 +7,8 @@
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
 
+// #define _DEBUG_
+
 FrameGraph::FrameGraph() {
   // glPointSize(5.f);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -20,7 +22,9 @@ FrameGraph::FrameGraph() {
   m_renderPass.push_back(new GeometryPass());
   m_renderPass.push_back(new LightPass());
   m_renderPass.push_back(new CubeMapPass());
+#ifdef _DEBUG_
   m_renderPass.push_back(new DebugPass());
+#endif
 }
 
 FrameGraph::~FrameGraph() {
