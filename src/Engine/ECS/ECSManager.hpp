@@ -134,9 +134,11 @@ public:
                                                           glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
-  void setViewport(uint32_t w, uint32_t h);
-
   System &getSystem(std::string s) { return *m_systems[s]; }
+  Entity &getPickedEntity() { return m_pickedEntity; }
+
+  void setViewport(uint32_t w, uint32_t h);
+  void setPickedEntity(Entity en) { m_pickedEntity = en; }
 
   glm::vec3 dDir;
   bool dirDirty{false};
@@ -155,8 +157,9 @@ private:
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
   std::unordered_map<Entity, Signature> m_entityComponentMasks;
 
-  size_t m_entityCount = 0;
-  size_t m_nextComponentTypeID = 0;
+  size_t m_entityCount{0};
+  size_t m_nextComponentTypeID{0};
+  Entity m_pickedEntity{0};
 
   Camera m_camera;
 };

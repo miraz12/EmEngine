@@ -108,15 +108,16 @@ void PhysicsSystem::performPicking(int32_t mouseX, int32_t mouseY) {
   m_dynamicsWorld->rayTest(rayFrom, rayTo, rayCallback);
   if (rayCallback.hasHit()) {
     // An object was hit by the ray
-    // btRigidBody *body = (btRigidBody *)btRigidBody::upcast(rayCallback.m_collisionObject);
     // std::shared_ptr<DebugComponent> graphComp = std::make_shared<DebugComponent>(
     //     new Point(rayCallback.m_hitPointWorld.x(), rayCallback.m_hitPointWorld.y(),
     //               rayCallback.m_hitPointWorld.z()));
     // Entity en = m_manager->createEntity();
     // m_manager->addComponent(en, graphComp);
 
-    // if (body) {
-    // PhysicsComponent *phyComp = (PhysicsComponent *)body->getUserPointer();
-    // }
+    btRigidBody *body = (btRigidBody *)btRigidBody::upcast(rayCallback.m_collisionObject);
+    if (body) {
+      m_manager->setPickedEntity(body->getUserIndex());
+      std::cout << "ID: " << body->getUserIndex() << std::endl;
+    }
   }
 }

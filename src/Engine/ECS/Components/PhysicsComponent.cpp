@@ -45,7 +45,7 @@ void PhysicsComponent::init(std::shared_ptr<GraphicsComponent> /* graphComp */) 
   btDefaultMotionState *myMotionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
   body = new btRigidBody(rbInfo);
-  body->setUserPointer(this);
+  body->setUserIndex(eManager.getLastEntity());
 
   PhysicsSystem &pSys = static_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
   pSys.addRigidBody(body);

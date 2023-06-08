@@ -20,8 +20,8 @@ Game::Game(GLFWwindow &window)
       m_InputManager(InputManager::getInstance()) {
 
   // TODO dynamic shadow projection and view
+  // ----
   Entity en = m_ECSManager.createEntity();
-
   std::shared_ptr<GraphicsComponent> graphComp = std::make_shared<GraphicsComponent>(
       *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
@@ -33,7 +33,7 @@ Game::Game(GLFWwindow &window)
   std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(posComp, 1.0f);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
       en, graphComp, posComp, physComp);
-
+  // ----
   Entity en2 = m_ECSManager.createEntity();
   graphComp = std::make_shared<GraphicsComponent>(*new Cube());
   posComp = std::make_shared<PositionComponent>();
@@ -106,6 +106,8 @@ void Game::handleInput(float dt) {
   if (m_InputManager.keys.at(InputManager::KEY::O)) {
     m_ECSManager.debugMode = m_ECSManager.debugMode ? false : true;
   }
+
+  static bool pressed = true;
   if (m_InputManager.keys.at(InputManager::KEY::Mouse1)) {
     glm::vec3 direction;
     direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
@@ -113,7 +115,12 @@ void Game::handleInput(float dt) {
     direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     glm::vec3 cameraFront = glm::normalize(direction);
     cam.setFront(cameraFront);
-    PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
+    if (pressed) {
+      PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
+      pressed = false;
+    }
+  } else {
+    pressed = true;
   }
 }
 

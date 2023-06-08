@@ -35,7 +35,7 @@ mat4 thresholdMatrix = mat4(
 
 
 vec3 getNormal() {
-	vec3 tangentNormal = texture(textures[4], pTexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(textures[4], pTexCoords).xyz * 2.0 - 1.0;
 
     vec2 UV = pTexCoords;
     vec2 uv_dx = dFdx(UV);
@@ -73,9 +73,6 @@ vec3 getNormal() {
 }
 
 void main() {
-
-
-
     float metal = metallicFactor;
     vec4 baseRough = vec4(baseColorFactor, roughnessFactor);
     if ((material & (1 << 0)) > 0) {
