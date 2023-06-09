@@ -16,21 +16,21 @@ FrameGraph::FrameGraph() {
   glColorMask(true, true, true, true);
   // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-  setViewport(m_width, m_height);
+  // Damn this is ugly..
+  m_renderPass[static_cast<size_t>(PassId::kShadow)] = new ShadowPass();
+  m_renderPass[static_cast<size_t>(PassId::kGeom)] = new GeometryPass();
+  m_renderPass[static_cast<size_t>(PassId::kLight)] = new LightPass();
+  m_renderPass[static_cast<size_t>(PassId::kCube)] = new CubeMapPass();
 
-  m_renderPass.push_back(new ShadowPass());
-  m_renderPass.push_back(new GeometryPass());
-  m_renderPass.push_back(new LightPass());
-  m_renderPass.push_back(new CubeMapPass());
 #ifdef _DEBUG_
   m_renderPass.push_back(new DebugPass());
 #endif
-}
 
-FrameGraph::~FrameGraph() {
   for (auto &p : m_renderPass) {
-    delete p;
+    p->Init(*this);
   }
+
+  setViewport(m_width, m_height);
 }
 
 void FrameGraph::draw(ECSManager &eManager) {

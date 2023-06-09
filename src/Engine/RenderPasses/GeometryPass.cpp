@@ -2,6 +2,7 @@
 
 #include <ECS/ECSManager.hpp>
 #include <Managers/FrameBufferManager.hpp>
+#include <RenderPasses/FrameGraph.hpp>
 #include <RenderPasses/RenderPass.hpp>
 #include <ShaderPrograms/ShaderProgram.hpp>
 
@@ -31,6 +32,13 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setAttribBinding("TEXCOORD_0");
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GeometryPass::Init(FrameGraph &fGraph) {
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("gPositionAo");
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("gNormalMetal");
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("gAlbedoSpecRough");
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("gEmissive");
 }
 
 void GeometryPass::Execute(ECSManager &eManager) {
@@ -68,18 +76,18 @@ void GeometryPass::setViewport(uint32_t w, uint32_t h) {
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
 
   // - position color buffer
-  uint32_t gPosition = p_textureManager.loadTexture("gPosition", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+  uint32_t gPosition = p_textureManager.loadTexture("gPositionAo", GL_RGBA16F, GL_RGBA, GL_FLOAT,
                                                     p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
   // - normal color buffer
-  uint32_t gNormal =
-      p_textureManager.loadTexture("gNormal", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  uint32_t gNormal = p_textureManager.loadTexture("gNormalMetal", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                  p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
   // - color
-  uint32_t gAlbedo =
-      p_textureManager.loadTexture("gAlbedo", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  uint32_t gAlbedo = p_textureManager.loadTexture("gAlbedoSpecRough", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                  p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
   // - emissive color buffer

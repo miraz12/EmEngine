@@ -4,20 +4,32 @@
 #include "Camera.hpp"
 #include <RenderPasses/RenderPass.hpp>
 #include <ShaderPrograms/QuadShaderProgram.hpp>
-#include <vector>
+#include <array>
+
+enum class PassId : size_t {
+  kShadow,
+  kGeom,
+  kLight,
+  kCube,
+#ifdef _DEBUG_
+  kDebug,
+#endif
+  kNumPasses
+};
 
 class FrameGraph {
 public:
   FrameGraph();
-  virtual ~FrameGraph();
+  ~FrameGraph() = default;
 
   void draw(ECSManager &eManager);
   void setViewport(uint32_t w, uint32_t h);
 
+  std::array<RenderPass *, static_cast<size_t>(PassId::kNumPasses)> m_renderPass;
+
 private:
   uint32_t m_width{800}, m_height{800};
   QuadShaderProgram m_quadShader;
-  std::vector<RenderPass *> m_renderPass;
 };
 
 #endif // FRAMEGRAPH_H_

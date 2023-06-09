@@ -18,11 +18,11 @@ struct DirectionalLight {
 };
 
 uniform int debugView;
+uniform sampler2D depthMap; // shadow map
 uniform sampler2D gPositionAo;
 uniform sampler2D gNormalMetal;
 uniform sampler2D gAlbedoSpecRough;
 uniform sampler2D gEmissive;
-uniform sampler2D depthMap; // shadow map
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;

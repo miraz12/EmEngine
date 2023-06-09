@@ -29,15 +29,6 @@ LightPass::LightPass()
 
   setViewport(p_width, p_height);
 
-  glUniform1i(p_shaderProgram.getUniformLocation("gPositionAo"), 0);
-  glUniform1i(p_shaderProgram.getUniformLocation("gNormalMetal"), 1);
-  glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
-  glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
-  glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
-  glUniform1i(p_shaderProgram.getUniformLocation("irradianceMap"), 5);
-  glUniform1i(p_shaderProgram.getUniformLocation("prefilterMap"), 6);
-  glUniform1i(p_shaderProgram.getUniformLocation("brdfLUT"), 7);
-
   for (uint32_t i = 0; i < 10; i++) {
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].position");
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) + "].color");
@@ -74,16 +65,7 @@ void LightPass::Execute(ECSManager &eManager) {
   glClear(GL_COLOR_BUFFER_BIT);
 
   p_shaderProgram.use();
-
   glUniform1i(p_shaderProgram.getUniformLocation("debugView"), eManager.debugView);
-  glUniform1i(p_shaderProgram.getUniformLocation("gPositionAo"), 0);
-  glUniform1i(p_shaderProgram.getUniformLocation("gNormalMetal"), 1);
-  glUniform1i(p_shaderProgram.getUniformLocation("gAlbedoSpecRough"), 2);
-  glUniform1i(p_shaderProgram.getUniformLocation("gEmissive"), 3);
-  glUniform1i(p_shaderProgram.getUniformLocation("depthMap"), 4);
-  glUniform1i(p_shaderProgram.getUniformLocation("irradianceMap"), 5);
-  glUniform1i(p_shaderProgram.getUniformLocation("prefilterMap"), 6);
-  glUniform1i(p_shaderProgram.getUniformLocation("brdfLUT"), 7);
 
   glm::mat4 lightProjection, lightView;
   glm::mat4 lightSpaceMatrix;
@@ -155,43 +137,10 @@ void LightPass::Execute(ECSManager &eManager) {
 
   // Render to quad
   glBindVertexArray(quadVAO);
-  glActiveTexture(GL_TEXTURE0);
-  p_textureManager.bindTexture("gPosition");
-  glActiveTexture(GL_TEXTURE1);
-  p_textureManager.bindTexture("gNormal");
-  glActiveTexture(GL_TEXTURE2);
-  p_textureManager.bindTexture("gAlbedo");
-  glActiveTexture(GL_TEXTURE3);
-  p_textureManager.bindTexture("gEmissive");
-  glActiveTexture(GL_TEXTURE4);
-  p_textureManager.bindTexture("depthMap");
-  glActiveTexture(GL_TEXTURE5);
-  p_textureManager.bindCubeTexture("irradianceMap");
-  glActiveTexture(GL_TEXTURE6);
-  p_textureManager.bindCubeTexture("prefilterMap");
-  glActiveTexture(GL_TEXTURE7);
-  p_textureManager.bindTexture("brdfLUTTexture");
-
+  for (size_t i = 0; i < p_textures.size(); i++) {
+    p_textureManager.bindActivateTexture(p_textures[i], i);
+  }
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE2);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE4);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE4);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE5);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE6);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glActiveTexture(GL_TEXTURE7);
-  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void LightPass::setViewport(uint32_t w, uint32_t h) {

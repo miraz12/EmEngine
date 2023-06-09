@@ -3,6 +3,7 @@
 
 #include "ECS/ECSManager.hpp"
 #include "RenderPasses/RenderPass.hpp"
+#include <RenderPasses/FrameGraph.hpp>
 
 ShadowPass::ShadowPass()
     : RenderPass("resources/Shaders/shadowVertex.glsl", "resources/Shaders/shadowFragment.glsl") {
@@ -42,6 +43,10 @@ ShadowPass::ShadowPass()
   }
 
   setViewport(p_width, p_height);
+}
+
+void ShadowPass::Init(FrameGraph &fGraph) {
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("depthMap");
 }
 
 void ShadowPass::Execute(ECSManager &eManager) {

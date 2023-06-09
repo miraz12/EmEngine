@@ -21,7 +21,7 @@ uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format, GLe
 
   std::string name = std::to_string(texId);
   deleteTexture(name);
-  texIds.insert({name, texId});
+  texIds.insert({name, Texture{texId, GL_TEXTURE_2D}});
   return texId;
 }
 uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat, GLenum format,
@@ -40,29 +40,30 @@ uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat, 
 
   glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
   glGenerateMipmap(GL_TEXTURE_2D);
-  texIds.insert({name, texId});
+  texIds.insert({name, Texture{texId, GL_TEXTURE_2D}});
   return texId;
 }
 
-void TextureManager::setTexture(std::string name, uint32_t texId) {
+void TextureManager::setTexture(std::string name, uint32_t texId, uint32_t type) {
   deleteTexture(name);
-  texIds.insert({name, texId});
+  texIds.insert({name, Texture{texId, type}});
 }
 
 uint32_t TextureManager::bindTexture(std::string name) {
-  uint32_t texId = texIds.at(name);
-  glBindTexture(GL_TEXTURE_2D, texId);
-  return texId;
+  Texture &tex = texIds.at(name);
+  glBindTexture(tex.type, tex.id);
+  return tex.id;
 }
 
-void TextureManager::bindCubeTexture(std::string name) {
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texIds.at(name));
+uint32_t TextureManager::bindActivateTexture(std::string name, uint32_t pos) {
+  glActiveTexture(GL_TEXTURE0 + pos);
+  return bindTexture(name);
 }
 
 void TextureManager::deleteTexture(std::string name) {
   auto iter = texIds.find(name);
   if (iter != texIds.end()) {
-    glDeleteTextures(1, &iter->second);
+    glDeleteTextures(1, &iter->second.id);
     texIds.erase(name);
   }
 }

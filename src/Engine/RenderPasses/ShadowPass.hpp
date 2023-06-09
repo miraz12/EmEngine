@@ -10,6 +10,7 @@ public:
   virtual ~ShadowPass() = default;
   void Execute(ECSManager &eManager) override;
   void setViewport(uint32_t w, uint32_t h) override;
+  void Init(FrameGraph &fGraph) override;
 
 private:
   bool m_dirty{false};

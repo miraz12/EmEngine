@@ -7,6 +7,7 @@
 #include "stb_image.h"
 
 #include <ECS/ECSManager.hpp>
+#include <RenderPasses/FrameGraph.hpp>
 
 CubeMapPass::CubeMapPass()
     : RenderPass("resources/Shaders/backgroundVertex.glsl",
@@ -62,6 +63,12 @@ CubeMapPass::CubeMapPass()
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
+void CubeMapPass::Init(FrameGraph &fGraph) {
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("irradianceMap");
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("prefilterMap");
+  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture("brdfLUT");
+}
+
 void CubeMapPass::Execute(ECSManager &eManager) {
   // render skybox (render as last to prevent overdraw)
 
@@ -84,9 +91,7 @@ void CubeMapPass::Execute(ECSManager &eManager) {
                                           p_shaderProgram.getUniformLocation("view"));
 
   glActiveTexture(GL_TEXTURE0);
-  p_textureManager.bindCubeTexture("envCubemap");
-  // p_textureManager.bindCubeTexture("irradianceMap");
-  // p_textureManager.bindCubeTexture("prefilterMap");
+  p_textureManager.bindTexture("envCubemap");
   renderCube();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -99,7 +104,7 @@ void CubeMapPass::setViewport(uint32_t w, uint32_t h) {
 
 void CubeMapPass::generateCubeMap() {
   glGenTextures(1, &m_envCubemap);
-  p_textureManager.setTexture("envCubemap", m_envCubemap);
+  p_textureManager.setTexture("envCubemap", m_envCubemap, GL_TEXTURE_CUBE_MAP);
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
   for (uint32_t i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 512, 512, 0, GL_RGBA, GL_FLOAT,
@@ -147,7 +152,7 @@ void CubeMapPass::generateCubeMap() {
 void CubeMapPass::generateIrradianceMap() {
   uint32_t irradianceMap;
   glGenTextures(1, &irradianceMap);
-  p_textureManager.setTexture("irradianceMap", irradianceMap);
+  p_textureManager.setTexture("irradianceMap", irradianceMap, GL_TEXTURE_CUBE_MAP);
   glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
   for (uint32_t i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 32, 32, 0, GL_RGBA, GL_FLOAT,
@@ -192,7 +197,7 @@ void CubeMapPass::generateIrradianceMap() {
 void CubeMapPass::generatePrefilterMap() {
   uint32_t prefilterMap;
   glGenTextures(1, &prefilterMap);
-  p_textureManager.setTexture("prefilterMap", prefilterMap);
+  p_textureManager.setTexture("prefilterMap", prefilterMap, GL_TEXTURE_CUBE_MAP);
   glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
   for (uint32_t i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 128, 128, 0, GL_RGBA, GL_FLOAT,
@@ -247,7 +252,7 @@ void CubeMapPass::generatePrefilterMap() {
 void CubeMapPass::generateBRDF() {
   uint32_t brdfLUTTexture;
   glGenTextures(1, &brdfLUTTexture);
-  p_textureManager.setTexture("brdfLUTTexture", brdfLUTTexture);
+  p_textureManager.setTexture("brdfLUT", brdfLUTTexture);
 
   // pre-allocate enough memory for the LUT texture.
   glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
