@@ -363,23 +363,28 @@ void Window::renderImgui() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+  ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
-  ImGui::Begin("Lights", 0, ImGuiWindowFlags_AlwaysAutoResize);
-  ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
-  ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
-  ImGui::ColorPicker3("Color", glm::value_ptr(game->dirLightColor));
-
-  const std::vector<std::string> debugNamesInputs = {
-      "none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"};
-  std::vector<const char *> charitems;
-  charitems.reserve(debugNamesInputs.size());
-  for (size_t i = 0; i < debugNamesInputs.size(); i++) {
-    charitems.push_back(debugNamesInputs[i].c_str());
+  if (ImGui::CollapsingHeader("Lights")) {
+    ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
+    ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
+    ImGui::ColorPicker3("Color", glm::value_ptr(game->dirLightColor));
   }
 
-  ImGui::Combo("Debug views", &game->debugView, &charitems[0], 7, 7);
+  if (ImGui::CollapsingHeader("Physics")) {
+    ImGui::Checkbox("Enabled", &game->debugMode);
+  }
 
-  ImGui::Checkbox("Physics", &game->debugMode);
+  if (ImGui::CollapsingHeader("Debug")) {
+    const std::vector<std::string> debugNamesInputs = {
+        "none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"};
+    std::vector<const char *> charitems;
+    charitems.reserve(debugNamesInputs.size());
+    for (size_t i = 0; i < debugNamesInputs.size(); i++) {
+      charitems.push_back(debugNamesInputs[i].c_str());
+    }
+    ImGui::Combo("views", &game->debugView, &charitems[0], 7, 7);
+  }
 
   ImGui::End();
   // Rendering
