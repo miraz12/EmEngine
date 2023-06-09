@@ -28,13 +28,14 @@ public:
   glm::vec3 dirLightDir;
   int32_t debugView{0};
   bool debugMode{0};
+  Entity selectedEntity{0};
+  ECSManager &m_ECSManager;
 
 private:
   void init();
   void setupEntities();
   void handleInput(float dt);
 
-  ECSManager &m_ECSManager;
   GLFWwindow &m_window;
   InputManager &m_InputManager;
   float m_pitch{0.0f};

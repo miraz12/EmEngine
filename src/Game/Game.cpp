@@ -26,7 +26,8 @@ Game::Game(GLFWwindow &window)
       *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
   // *new Cube());
-  // *new GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
+  // *new
+  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
   posComp->position = glm::vec3(0.0, 2.0, -1.0);

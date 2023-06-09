@@ -373,6 +373,12 @@ void Window::renderImgui() {
 
   if (ImGui::CollapsingHeader("Physics")) {
     ImGui::Checkbox("Enabled", &game->debugMode);
+    Entity en = game->m_ECSManager.getPickedEntity();
+    if (game->m_ECSManager.getEntitySelected()) {
+      ImGui::Text("Selected entity: %lu", en);
+      glm::vec3 pos = game->m_ECSManager.getComponent<PositionComponent>(en)->position;
+      ImGui::Text("Position: X: %f Y: %f Z: %f ", pos.x, pos.y, pos.z);
+    }
   }
 
   if (ImGui::CollapsingHeader("Debug")) {

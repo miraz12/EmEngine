@@ -116,8 +116,10 @@ void PhysicsSystem::performPicking(int32_t mouseX, int32_t mouseY) {
 
     btRigidBody *body = (btRigidBody *)btRigidBody::upcast(rayCallback.m_collisionObject);
     if (body) {
+      m_manager->setEntitySelected(true);
       m_manager->setPickedEntity(body->getUserIndex());
-      std::cout << "ID: " << body->getUserIndex() << std::endl;
     }
+  } else {
+    m_manager->setEntitySelected(false);
   }
 }

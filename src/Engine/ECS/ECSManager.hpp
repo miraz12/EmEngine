@@ -22,6 +22,7 @@
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Systems/System.hpp"
 #include "Objects/Quad.hpp"
+#include <ECS/Components/PhysicsComponent.hpp>
 
 using Entity = std::size_t;
 using ComponentType = std::type_index;
@@ -136,9 +137,11 @@ public:
   Camera &getCamera() { return m_camera; };
   System &getSystem(std::string s) { return *m_systems[s]; }
   Entity &getPickedEntity() { return m_pickedEntity; }
+  bool &getEntitySelected() { return m_entitySelected; }
 
   void setViewport(uint32_t w, uint32_t h);
   void setPickedEntity(Entity en) { m_pickedEntity = en; }
+  void setEntitySelected(bool sel) { m_entitySelected = sel; }
 
   glm::vec3 dDir;
   bool dirDirty{false};
@@ -160,6 +163,7 @@ private:
   size_t m_entityCount{0};
   size_t m_nextComponentTypeID{0};
   Entity m_pickedEntity{0};
+  bool m_entitySelected{false};
 
   Camera m_camera;
 };
