@@ -7,6 +7,12 @@
 
 PhysicsComponent::PhysicsComponent() { init(nullptr); }
 
+PhysicsComponent::~PhysicsComponent() {
+  delete colShape;
+  delete body;
+  delete myMotionState;
+};
+
 PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, float mass,
                                    std::shared_ptr<GraphicsComponent> graphComp)
     : mass(mass) {
@@ -20,7 +26,7 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, f
 void PhysicsComponent::init(std::shared_ptr<GraphicsComponent> /* graphComp */) {
   // create a dynamic rigidbody
 
-  btCollisionShape *colShape = new btBoxShape(btVector3(0.5, 0.5, 0.5) * initialScale);
+  colShape = new btBoxShape(btVector3(0.5, 0.5, 0.5) * initialScale);
   // btSphereShape *colShape = new btSphereShape(btScalar(1.));
 
   ECSManager &eManager = ECSManager::getInstance();
@@ -42,7 +48,7 @@ void PhysicsComponent::init(std::shared_ptr<GraphicsComponent> /* graphComp */) 
 
   // using motionstate is recommended, it provides interpolation capabilities, and only
   // synchronizes 'active' objects
-  btDefaultMotionState *myMotionState = new btDefaultMotionState(startTransform);
+  myMotionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
   body = new btRigidBody(rbInfo);
   body->setUserIndex(eManager.getLastEntity());

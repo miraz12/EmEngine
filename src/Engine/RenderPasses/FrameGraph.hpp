@@ -20,7 +20,7 @@ enum class PassId : size_t {
 class FrameGraph {
 public:
   FrameGraph();
-  ~FrameGraph() = default;
+  ~FrameGraph();
 
   void draw(ECSManager &eManager);
   void setViewport(uint32_t w, uint32_t h);
