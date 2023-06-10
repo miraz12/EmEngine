@@ -21,7 +21,7 @@ Game::Game(GLFWwindow &window)
 
   // TODO dynamic shadow projection and view
   // ----
-  Entity en = m_ECSManager.createEntity();
+  m_player = m_ECSManager.createEntity();
   std::shared_ptr<GraphicsComponent> graphComp = std::make_shared<GraphicsComponent>(
       *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
   // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
@@ -33,13 +33,14 @@ Game::Game(GLFWwindow &window)
   posComp->position = glm::vec3(0.0, 2.0, -1.0);
   std::shared_ptr<PhysicsComponent> physComp = std::make_shared<PhysicsComponent>(posComp, 1.0f);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
-      en, graphComp, posComp, physComp);
+      m_player, graphComp, posComp, physComp);
   // ----
   Entity en2 = m_ECSManager.createEntity();
-  graphComp = std::make_shared<GraphicsComponent>(*new Cube());
+  graphComp = std::make_shared<GraphicsComponent>(*new Quad());
   posComp = std::make_shared<PositionComponent>();
-  posComp->scale = glm::vec3(20.0, 1.0, 20.0);
-  posComp->position = glm::vec3(0.0, -2.0, 0.0);
+  posComp->scale = glm::vec3(10.0, 1.0, 10.0);
+  posComp->position = glm::vec3(0.0, -0.5, -0.1);
+  posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
   physComp = std::make_shared<PhysicsComponent>(posComp);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
       en2, graphComp, posComp, physComp);
@@ -72,6 +73,10 @@ void Game::update(float dt) {
   }
   m_ECSManager.debugView = debugView;
   m_ECSManager.debugMode = debugMode;
+
+  // glm::vec3 playerPos = m_ECSManager.getComponent<PositionComponent>(m_player)->position;
+  // Camera &cam = m_ECSManager.getCamera();
+  // cam.setPosition(playerPos);
 }
 
 void Game::handleInput(float dt) {
@@ -79,29 +84,53 @@ void Game::handleInput(float dt) {
   Camera &cam = m_ECSManager.getCamera();
   // Parse input
   if (m_InputManager.keys.at(InputManager::KEY::A)) {
-    glm::vec3 camPos =
-        cam.getPosition() - glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
+    if (debugMode) {
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
+          1.5 * btVector3(-1.0, 0.0, 0.0));
+    } else {
+      glm::vec3 camPos = cam.getPosition() -
+                         glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
+      if (!glm::all(glm::isnan(camPos))) {
+        cam.setPosition(camPos);
+      }
     }
   }
   if (m_InputManager.keys.at(InputManager::KEY::D)) {
-    glm::vec3 camPos =
-        cam.getPosition() + glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
+    if (debugMode) {
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
+          1.5 * btVector3(1.0, 0.0, 0.0));
+    } else {
+      glm::vec3 camPos = cam.getPosition() +
+                         glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
+      if (!glm::all(glm::isnan(camPos))) {
+        cam.setPosition(camPos);
+      }
     }
   }
   if (m_InputManager.keys.at(InputManager::KEY::W)) {
-    glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
+    if (debugMode) {
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
+          1.5 * btVector3(0.0, 0.0, -1.0));
+    } else {
+      glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
+      if (!glm::all(glm::isnan(camPos))) {
+        cam.setPosition(camPos);
+      }
     }
   }
   if (m_InputManager.keys.at(InputManager::KEY::S)) {
-    glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
+    if (debugMode) {
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
+      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
+          1.5 * btVector3(0.0, 0.0, 1.0));
+    } else {
+      glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
+      if (!glm::all(glm::isnan(camPos))) {
+        cam.setPosition(camPos);
+      }
     }
   }
   if (m_InputManager.keys.at(InputManager::KEY::O)) {

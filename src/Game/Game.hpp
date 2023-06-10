@@ -41,6 +41,7 @@ private:
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
   int32_t m_mousePosX, m_mousePosY;
+  Entity m_player;
 };
 
 #endif // GAME_H_

@@ -5,11 +5,12 @@
 
 #include "Component.hpp"
 #include "glm/fwd.hpp"
+#include<glm/gtc/quaternion.hpp>
 
 class PositionComponent : public Component {
 public:
   glm::vec3 position;
-  float rotation;
+  glm::quat rotation;
   glm::vec3 scale;
   glm::mat4 model;
 

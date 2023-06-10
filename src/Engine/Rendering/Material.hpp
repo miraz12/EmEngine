@@ -19,7 +19,7 @@ public:
   glm::vec3 m_baseColorFactor = glm::vec3(1.0f);
   float m_roughnessFactor = 1.0f;
   float m_metallicFactor = 1.0f;
-  bool m_doubleSided{true};
+  bool m_doubleSided{false};
   float m_alphaCutoff{0.5};
   std::string m_alphaMode{"OPAQUE"};
   std::vector<std::string> m_textures;

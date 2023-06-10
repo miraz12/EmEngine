@@ -50,7 +50,6 @@ void ShadowPass::Init(FrameGraph &fGraph) {
 }
 
 void ShadowPass::Execute(ECSManager &eManager) {
-  if (m_dirty || eManager.dirDirty) {
     p_fboManager.bindFBO("depthMapFbo");
     glEnable(GL_DEPTH_TEST);
     glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
@@ -88,7 +87,6 @@ void ShadowPass::Execute(ECSManager &eManager) {
     glCullFace(GL_BACK);
     m_dirty = false;
     eManager.dirDirty = false;
-  }
 }
 
 void ShadowPass::setViewport(uint32_t w, uint32_t h) {
