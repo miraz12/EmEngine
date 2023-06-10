@@ -81,13 +81,14 @@ void Game::update(float dt) {
 
 void Game::handleInput(float dt) {
   float camSpeed = 1.f;
+  float moveSpeed = 0.25f;
   Camera &cam = m_ECSManager.getCamera();
   // Parse input
   if (m_InputManager.keys.at(InputManager::KEY::A)) {
     if (debugMode) {
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
-          1.5 * btVector3(-1.0, 0.0, 0.0));
+      btRigidBody *body = m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      body->activate();
+      body->setLinearVelocity(moveSpeed * btVector3(-1.0, 0.0, 0.0) + body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() -
                          glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
@@ -98,9 +99,9 @@ void Game::handleInput(float dt) {
   }
   if (m_InputManager.keys.at(InputManager::KEY::D)) {
     if (debugMode) {
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
-          1.5 * btVector3(1.0, 0.0, 0.0));
+      btRigidBody *body = m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      body->activate();
+      body->setLinearVelocity(moveSpeed * btVector3(1.0, 0.0, 0.0) + body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() +
                          glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
@@ -111,9 +112,9 @@ void Game::handleInput(float dt) {
   }
   if (m_InputManager.keys.at(InputManager::KEY::W)) {
     if (debugMode) {
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
-          1.5 * btVector3(0.0, 0.0, -1.0));
+      btRigidBody *body = m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      body->activate();
+      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, -1.0) + body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
@@ -123,11 +124,23 @@ void Game::handleInput(float dt) {
   }
   if (m_InputManager.keys.at(InputManager::KEY::S)) {
     if (debugMode) {
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->activate();
-      m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody()->setLinearVelocity(
-          1.5 * btVector3(0.0, 0.0, 1.0));
+      btRigidBody *body = m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      body->activate();
+      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, 1.0) + body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
+      if (!glm::all(glm::isnan(camPos))) {
+        cam.setPosition(camPos);
+      }
+    }
+  }
+  if (m_InputManager.keys.at(InputManager::KEY::Space)) {
+    if (debugMode) {
+      btRigidBody *body = m_ECSManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      body->activate();
+      body->setLinearVelocity(moveSpeed * btVector3(0.0, 1.0, 0.0) + body->getLinearVelocity());
+    } else {
+      glm::vec3 camPos = cam.getPosition() + glm::vec3(0, 1, 0) * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
         cam.setPosition(camPos);
       }
