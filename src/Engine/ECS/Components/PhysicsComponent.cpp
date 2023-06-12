@@ -1,6 +1,7 @@
 #include "PhysicsComponent.hpp"
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <ECS/Components/DebugComponent.hpp>
+#include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <LinearMath/btDefaultMotionState.h>
 #include <Objects/Cube.hpp>

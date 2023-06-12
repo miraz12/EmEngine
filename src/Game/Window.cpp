@@ -29,10 +29,6 @@ static int32_t counter = 0;
 static float fpsUpdate = 1.0f;
 static float fpsUpdateTimer = 0.0f;
 
-static double minUpdateRate = 1.0f / 60.0f;
-static double updateTimer = 0.0f;
-static int32_t updatesSinceRender = 0;
-
 static uint32_t SCR_WIDTH = 800;
 static uint32_t SCR_HEIGHT = 800;
 static double SCR_PITCH = 0.0;
@@ -216,27 +212,7 @@ void Window::gameLoop() {
     glfwSetWindowTitle(window, ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
   }
 
-  updateTimer += dt;
-  updatesSinceRender = 0;
-
-  // If dt is bigger than minUpdateRate - update multiple times
-  while (updateTimer >= minUpdateRate) {
-    if (updatesSinceRender >= 20) {
-      // Too many updates, throw away the rest of dt (makes the game run in
-      // slow-motion)
-      updateTimer = 0.0f;
-      break;
-    }
-
-    game->update((float)minUpdateRate);
-    updateTimer -= minUpdateRate;
-    updatesSinceRender++;
-  }
-
-  if (updatesSinceRender == 0) { // dt is faster than
-    game->update((float)updateTimer);
-    updateTimer = 0.0f;
-  }
+  game->update((float)dt);
 
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   glfwSwapBuffers(window);

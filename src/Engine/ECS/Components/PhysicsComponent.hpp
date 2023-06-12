@@ -5,7 +5,8 @@
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <ECS/ECSManager.hpp>
+#include <ECS/Components/GraphicsComponent.hpp>
+#include <ECS/Components/PositionComponent.hpp>
 #include <LinearMath/btDefaultMotionState.h>
 
 class PhysicsComponent : public Component {
