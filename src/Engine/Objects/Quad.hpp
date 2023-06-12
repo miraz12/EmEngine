@@ -5,8 +5,6 @@
 
 #include "GraphicsObject.hpp"
 
-struct InstanceData;
-
 class Quad : public GraphicsObject {
 public:
   Quad();
