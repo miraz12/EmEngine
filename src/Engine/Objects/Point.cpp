@@ -36,7 +36,7 @@ Point::Point(float x, float y, float z) {
   attribInfo.type = 3;
   attribInfo.componentType = GL_FLOAT;
   attribInfo.normalized = GL_FALSE;
-  attribInfo.byteStride = 9 * sizeof(float);
+  attribInfo.byteStride = 0;
   attribInfo.byteOffset = 0;
   newPrim->attributes["POSITION"] = attribInfo;
 

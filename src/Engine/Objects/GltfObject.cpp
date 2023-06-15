@@ -186,6 +186,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
       glBindVertexArray(vao);
 
       Primitive *newPrim = &p_meshes[meshCount].m_primitives[p_meshes[meshCount].numPrims++];
+      p_mesh = new btTriangleMesh();
       newPrim->m_vao = vao;
       newPrim->m_mode = primitive.mode;
       newPrim->m_material = primitive.material;
@@ -205,12 +206,51 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
                      &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
         newPrim->m_ebo = ebo;
         newPrim->m_drawType = 1;
+        const void *indicesData = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
+        if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+          const uint16_t *indices = reinterpret_cast<const uint16_t *>(indicesData);
+          for (uint32_t i = 0; i < newPrim->m_count; i += 3) {
+            int32_t index1 = indices[i];
+            int32_t index2 = indices[i + 1];
+            int32_t index3 = indices[i + 2];
+            p_mesh->addTriangleIndices(index1, index2, index3);
+          }
+        } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+          const uint32_t *indices = reinterpret_cast<const uint32_t *>(indicesData);
+          for (uint32_t i = 0; i < newPrim->m_count; i += 3) {
+            int32_t index1 = indices[i];
+            int32_t index2 = indices[i + 1];
+            int32_t index3 = indices[i + 2];
+            p_mesh->addTriangleIndices(index1, index2, index3);
+          }
+        }
       }
       // Load all vertex attributes
       for (auto &attrib : primitive.attributes) {
+        tinygltf::Accessor accessor = model.accessors[attrib.second];
+        const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
+        const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+
         uint32_t loc = 0;
         if (attrib.first == "POSITION") {
           loc = 0;
+          const float *positions = reinterpret_cast<const float *>(
+              &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+          int numVertices = accessor.count;
+          for (int i = 0; i < numVertices; i += 3) {
+            // clang-format off
+              btVector3 vertex0(positions[i * 3],
+                                positions[i * 3 + 1],
+                                positions[i * 3 + 2]);
+              btVector3 vertex1(positions[(i + 1) * 3],
+                                positions[(i + 1) * 3 + 1],
+                                positions[(i + 1) * 3 + 2]);
+              btVector3 vertex2(positions[(i + 2) * 3],
+                                positions[(i + 2) * 3 + 1],
+                                positions[(i + 2) * 3 + 2]);
+            // clang-format on
+            p_mesh->addTriangle(vertex0, vertex1, vertex2);
+          }
         } else if (attrib.first == "NORMAL") {
           loc = 1;
         } else if (attrib.first == "TANGENT") {
@@ -218,9 +258,6 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         } else if (attrib.first == "TEXCOORD_0") {
           loc = 3;
         }
-        tinygltf::Accessor accessor = model.accessors[attrib.second];
-        const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
         uint32_t vbo;
         glGenBuffers(1, &vbo);

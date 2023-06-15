@@ -14,9 +14,9 @@ PhysicsComponent::~PhysicsComponent() {
   delete myMotionState;
 };
 
-PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, float mass,
-                                   std::shared_ptr<GraphicsComponent> graphComp)
-    : mass(mass) {
+PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, uint32_t type,
+                                   float mass, std::shared_ptr<GraphicsComponent> graphComp)
+    : mass(mass), m_type(type) {
   if (posComp) {
     initialPos = btVector3(posComp->position.x, posComp->position.y, posComp->position.z);
     initialScale = btVector3(posComp->scale.x, posComp->scale.y, posComp->scale.z);
@@ -27,8 +27,18 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, f
 void PhysicsComponent::init(std::shared_ptr<GraphicsComponent> /* graphComp */) {
   // create a dynamic rigidbody
 
-  colShape = new btBoxShape(btVector3(0.5, 0.5, 0.5) * initialScale);
-  // btSphereShape *colShape = new btSphereShape(btScalar(1.));
+  switch (m_type) {
+  case 0:
+    colShape = new btBoxShape(btVector3(0.5, 0.5, 0.5) * initialScale);
+    break;
+  case 1:
+    colShape = new btSphereShape(btScalar(0.5 * initialScale.x()));
+    break;
+  case 2:
+    // btBvhTriangleMeshShape *shape = new btBvhTriangleMeshShape(graphComp->m_grapObj.p_mesh,
+    // true); colShape = shape; Triangle mesh
+    break;
+  }
 
   ECSManager &eManager = ECSManager::getInstance();
   std::shared_ptr<DebugComponent> dComp = std::make_shared<DebugComponent>(new Cube());

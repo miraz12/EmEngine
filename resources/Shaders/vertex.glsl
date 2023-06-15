@@ -1,18 +1,13 @@
 #version 300 es
+precision highp float;
 
-layout (location = 0) in vec3 inPosition;
-layout (location = 1) in vec4 inColor;
-layout (location = 2) in vec2 inTexCoords;
+layout (location = 0) in vec3 POSITION;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
-
-out vec4 color;
-out vec2 texCoords;
+uniform mat4 meshMatrix;
 
 void main() {
-    gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(inPosition.xyz, 1.0);
-    color = inColor;
-    texCoords = inTexCoords;
+    gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(POSITION, 1.0);
 }

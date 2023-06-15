@@ -3,6 +3,7 @@
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <RenderPasses/FrameGraph.hpp>
+#include <Rendering/DebugDrawer.hpp>
 #include <array>
 
 #include "Camera.hpp"
@@ -23,6 +24,8 @@ public:
   // Function to perform raycasting and pick an object
   void performPicking(int32_t mouseX, int32_t mouseY);
   void setWindowSize(float x, float y);
+
+  DebugDrawer m_dDraw;
 
 private:
   PhysicsSystem() = default;

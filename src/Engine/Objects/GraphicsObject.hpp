@@ -20,6 +20,7 @@ public:
 
   virtual void draw(const ShaderProgram &sPrg);
   virtual void drawGeom(const ShaderProgram &sPrg);
+  // btTriangleMesh *p_mesh;
 
 protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();

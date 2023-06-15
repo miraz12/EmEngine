@@ -1,18 +1,17 @@
 #include "FrameGraph.hpp"
 #include "Managers/FrameBufferManager.hpp"
 #include <Camera.hpp>
+#include <ECS/Systems/PhysicsSystem.hpp>
 #include <RenderPasses/CubeMapPass.hpp>
 #include <RenderPasses/DebugPass.hpp>
 #include <RenderPasses/GeometryPass.hpp>
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
 
-// #define _DEBUG_
-
 FrameGraph::FrameGraph() {
   // glPointSize(5.f);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glLineWidth(20.0f); // Sets line width of things like wireframe and draw lines
+  glLineWidth(2.0f); // Sets line width of things like wireframe and draw lines
   glColorMask(true, true, true, true);
   // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
@@ -21,10 +20,7 @@ FrameGraph::FrameGraph() {
   m_renderPass[static_cast<size_t>(PassId::kGeom)] = new GeometryPass();
   m_renderPass[static_cast<size_t>(PassId::kLight)] = new LightPass();
   m_renderPass[static_cast<size_t>(PassId::kCube)] = new CubeMapPass();
-
-#ifdef _DEBUG_
-  m_renderPass.push_back(new DebugPass());
-#endif
+  m_renderPass[static_cast<size_t>(PassId::kDebug)] = new DebugPass();
 
   for (auto &p : m_renderPass) {
     p->Init(*this);

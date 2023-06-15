@@ -6,16 +6,7 @@
 #include <ShaderPrograms/QuadShaderProgram.hpp>
 #include <array>
 
-enum class PassId : size_t {
-  kShadow,
-  kGeom,
-  kLight,
-  kCube,
-#ifdef _DEBUG_
-  kDebug,
-#endif
-  kNumPasses
-};
+enum class PassId : size_t { kShadow, kGeom, kLight, kCube, kDebug, kNumPasses };
 
 class FrameGraph {
 public:
