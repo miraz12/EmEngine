@@ -91,6 +91,8 @@ void PhysicsSystem::update(float dt) {
         btTrans = body->getWorldTransform();
         p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
                                 btTrans.getOrigin().getZ());
+        p->rotation = glm::quat(btTrans.getRotation().w(), btTrans.getRotation().x(),
+                                btTrans.getRotation().y(), btTrans.getRotation().z());
       }
     }
   }

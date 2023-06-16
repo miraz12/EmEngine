@@ -26,6 +26,7 @@ private:
   btTransform startTransform;
   btVector3 initialPos{0., 0., 0.};
   btVector3 initialScale{1., 1., 1.};
+  btQuaternion initialRotation{1., 1., 1., 1.};
   btScalar mass;
   btCollisionShape *colShape;
   btDefaultMotionState *myMotionState;

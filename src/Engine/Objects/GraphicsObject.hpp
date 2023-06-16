@@ -1,6 +1,7 @@
 #ifndef GRAPHICSOBJECT_H_
 #define GRAPHICSOBJECT_H_
 
+#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
@@ -20,7 +21,7 @@ public:
 
   virtual void draw(const ShaderProgram &sPrg);
   virtual void drawGeom(const ShaderProgram &sPrg);
-  // btTriangleMesh *p_mesh;
+  btTriangleMesh *p_mesh;
 
 protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();
