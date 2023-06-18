@@ -16,9 +16,9 @@ PhysicsComponent::~PhysicsComponent() {
   delete myMotionState;
 };
 
-PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, uint32_t type,
-                                   float mass, std::shared_ptr<GraphicsComponent> graphComp)
-    : mass(mass), m_type(type) {
+PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, float mass,
+                                   std::shared_ptr<GraphicsComponent> graphComp)
+    : mass(mass) {
   if (posComp) {
     initialPos = btVector3(posComp->position.x, posComp->position.y, posComp->position.z);
     // HACK: Changed rotation axels to work with plane..
@@ -31,26 +31,9 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, u
 
 void PhysicsComponent::init(std::shared_ptr<GraphicsComponent> graphComp) {
   // create a dynamic rigidbody
-  switch (m_type) {
-  case 0:
-    colShape = new btBoxShape(btVector3(0.5, 0.5, 0.5) * initialScale);
-    break;
-  case 1:
-    colShape = new btSphereShape(btScalar(0.5 * initialScale.x()));
-    break;
-  case 2:
-    btConvexShape *cShape = new btConvexTriangleMeshShape(graphComp->m_grapObj.p_mesh);
-    btShapeHull *cHull = new btShapeHull(cShape);
-    cHull->buildHull(cShape->getMargin());
-    btConvexHullShape *chShape = new btConvexHullShape();
-    cHull->numTriangles();
-    for (int i = 0; i < cHull->numTriangles(); ++i) {
-      chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
-    }
-    chShape->optimizeConvexHull();
-    colShape = chShape;
-    break;
-  }
+
+  colShape = graphComp->m_grapObj.p_coll;
+  colShape->setLocalScaling(initialScale);
 
   ECSManager &eManager = ECSManager::getInstance();
   // BUG: Cant remove this without breaking debug draw?

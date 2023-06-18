@@ -16,6 +16,9 @@ private:
   void loadMaterials(tinygltf::Model &model);
   void loadTextures(tinygltf::Model &model);
   void loadMeshes(tinygltf::Model &model);
+  void generateCollisionShape();
+
+  btTriangleMesh *m_mesh;
 };
 
 #endif // GLTFOBJECT_H_

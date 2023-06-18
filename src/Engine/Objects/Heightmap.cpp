@@ -1,4 +1,5 @@
 #include "Heightmap.hpp"
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <iostream>
 #include <ostream>
 #include <stb_image.h>
@@ -19,8 +20,8 @@ Heightmap::Heightmap(std::string filename) {
       heights[i] = static_cast<float>(imageData[i]) / 255.0f;
     }
 
-    float terrainScale = 0.1f; // Scale factor for the terrain
-    float spacing = 0.1f;      // Spacing between vertices
+    float terrainScale = 10.1f; // Scale factor for the terrain
+    float spacing = 0.01f;      // Spacing between vertices
 
     // Generate vertices
     m_vertices.reserve(width * height);

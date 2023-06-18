@@ -32,7 +32,7 @@ Game::Game(GLFWwindow &window)
   std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
   posComp->position = glm::vec3(0.0, 2.0, -1.0);
   std::shared_ptr<PhysicsComponent> physComp =
-      std::make_shared<PhysicsComponent>(posComp, 2, 1.0f, graphComp);
+      std::make_shared<PhysicsComponent>(posComp, 1.0f, graphComp);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
       m_player, graphComp, posComp, physComp);
   // ----
@@ -42,7 +42,7 @@ Game::Game(GLFWwindow &window)
   posComp->scale = glm::vec3(20.0, 1.0, 20.0);
   posComp->position = glm::vec3(0.0, -2.0, 0.0);
   posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
-  physComp = std::make_shared<PhysicsComponent>(posComp, 0);
+  physComp = std::make_shared<PhysicsComponent>(posComp, 0.0f, graphComp);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
       en2, graphComp, posComp, physComp);
 

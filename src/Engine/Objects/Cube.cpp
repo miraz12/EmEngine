@@ -1,4 +1,5 @@
 #include "Cube.hpp"
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 Cube::Cube() {
   float vertices[] = {// clang-format off
@@ -50,7 +51,7 @@ Cube::Cube() {
     -0.5f, -0.5f,  0.5f,
     -0.5f, -0.5f, -0.5f
   };
-  // clang-format on
+                      // clang-format on
 
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   Node *n = new Node;
@@ -92,4 +93,6 @@ Cube::Cube() {
 
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
 }

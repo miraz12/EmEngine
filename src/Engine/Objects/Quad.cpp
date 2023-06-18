@@ -1,6 +1,7 @@
 #include "Quad.hpp"
 
 #include "glm/fwd.hpp"
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
 #include <iostream>
 
 Quad::Quad() {
@@ -49,5 +50,6 @@ Quad::Quad() {
   attribInfo.byteOffset = 0;
   newPrim->attributes["POSITION"] = attribInfo;
 
+  p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
   glBindVertexArray(0);
 }

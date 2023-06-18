@@ -1,4 +1,8 @@
 #include "glm/ext/matrix_transform.hpp"
+#include <BulletCollision/CollisionShapes/btConvexHullShape.h>
+#include <BulletCollision/CollisionShapes/btConvexShape.h>
+#include <BulletCollision/CollisionShapes/btConvexTriangleMeshShape.h>
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <Rendering/Primitive.hpp>
 #include <cstdint>
 #include <memory>
@@ -52,6 +56,7 @@ GltfObject::GltfObject(std::string filename) {
 
   loadModel(model);
   std::cout << "Load done!" << std::endl;
+  generateCollisionShape();
 }
 
 void GltfObject::loadModel(tinygltf::Model &model) {
@@ -186,7 +191,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
       glBindVertexArray(vao);
 
       Primitive *newPrim = &p_meshes[meshCount].m_primitives[p_meshes[meshCount].numPrims++];
-      p_mesh = new btTriangleMesh();
+      m_mesh = new btTriangleMesh();
       newPrim->m_vao = vao;
       newPrim->m_mode = primitive.mode;
       newPrim->m_material = primitive.material;
@@ -213,7 +218,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
             int32_t index1 = indices[i];
             int32_t index2 = indices[i + 1];
             int32_t index3 = indices[i + 2];
-            p_mesh->addTriangleIndices(index1, index2, index3);
+            m_mesh->addTriangleIndices(index1, index2, index3);
           }
         } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
           const uint32_t *indices = reinterpret_cast<const uint32_t *>(indicesData);
@@ -221,7 +226,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
             int32_t index1 = indices[i];
             int32_t index2 = indices[i + 1];
             int32_t index3 = indices[i + 2];
-            p_mesh->addTriangleIndices(index1, index2, index3);
+            m_mesh->addTriangleIndices(index1, index2, index3);
           }
         }
       }
@@ -249,7 +254,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
                                 positions[(i + 2) * 3 + 1],
                                 positions[(i + 2) * 3 + 2]);
             // clang-format on
-            p_mesh->addTriangle(vertex0, vertex1, vertex2);
+            m_mesh->addTriangle(vertex0, vertex1, vertex2);
           }
         } else if (attrib.first == "NORMAL") {
           loc = 1;
@@ -284,4 +289,17 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
     meshCount++;
   }
   glBindVertexArray(0);
+}
+
+void GltfObject::generateCollisionShape() {
+  btConvexShape *cShape = new btConvexTriangleMeshShape(m_mesh);
+  btShapeHull *cHull = new btShapeHull(cShape);
+  cHull->buildHull(cShape->getMargin());
+  btConvexHullShape *chShape = new btConvexHullShape();
+  cHull->numTriangles();
+  for (int i = 0; i < cHull->numTriangles(); ++i) {
+    chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
+  }
+  chShape->optimizeConvexHull();
+  p_coll = chShape;
 }
