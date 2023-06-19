@@ -21,19 +21,22 @@ Heightmap::Heightmap(std::string filename) {
     }
 
     float terrainScale = 10.1f; // Scale factor for the terrain
-    float spacing = 0.01f;      // Spacing between vertices
 
     // Generate vertices
     m_vertices.reserve(width * height);
     for (int32_t z = 0; z < height; ++z) {
       for (int32_t x = 0; x < width; ++x) {
         float heightValue = heights[z * width + x];
-        float xPos = x * spacing * terrainScale;
-        float yPos = heightValue * terrainScale;
-        float zPos = z * spacing * terrainScale;
+        float xPos = (x - std::ceil((width) / 2) + 0.5f);
+        float yPos = (heightValue * terrainScale) - terrainScale * 0.5f;
+        float zPos = (z - std::ceil((height) / 2) + 0.5f);
         m_vertices.push_back(glm::vec3(xPos, yPos, zPos));
+        m_data.push_back(yPos);
       }
     }
+
+    p_coll = new btHeightfieldTerrainShape(width, height, m_data.data(), 1, -terrainScale,
+                                           terrainScale, 1, PHY_FLOAT, false);
 
     int32_t numStrips = height - 1;
     int32_t numDegens = 2 * (numStrips - 1);

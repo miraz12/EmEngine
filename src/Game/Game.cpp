@@ -7,6 +7,7 @@
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <Objects/Cube.hpp>
 #include <Objects/GltfObject.hpp>
+#include <Objects/Heightmap.hpp>
 #include <algorithm>
 
 #include <glm/glm.hpp>
@@ -37,11 +38,13 @@ Game::Game(GLFWwindow &window)
       m_player, graphComp, posComp, physComp);
   // ----
   Entity en2 = m_ECSManager.createEntity();
-  graphComp = std::make_shared<GraphicsComponent>(*new Quad());
+  // graphComp = std::make_shared<GraphicsComponent>(*new Quad());
+  graphComp =
+      std::make_shared<GraphicsComponent>(*new Heightmap("resources/Textures/Heightmap.png"));
   posComp = std::make_shared<PositionComponent>();
-  posComp->scale = glm::vec3(20.0, 1.0, 20.0);
-  posComp->position = glm::vec3(0.0, -2.0, 0.0);
-  posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
+  // posComp->scale = glm::vec3(20.0, 1.0, 20.0);
+  // posComp->position = glm::vec3(0.0, -2.0, 0.0);
+  // posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
   physComp = std::make_shared<PhysicsComponent>(posComp, 0.0f, graphComp);
   m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
       en2, graphComp, posComp, physComp);

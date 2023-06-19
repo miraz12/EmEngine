@@ -11,7 +11,7 @@
 FrameGraph::FrameGraph() {
   // glPointSize(5.f);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glLineWidth(2.0f); // Sets line width of things like wireframe and draw lines
+  glLineWidth(0.5f); // Sets line width of things like wireframe and draw lines
   glColorMask(true, true, true, true);
   // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 

@@ -1,11 +1,18 @@
 #include "DebugDrawer.hpp"
 DebugDrawer::DebugDrawer() { lines.reserve(1000); }
+
+#ifdef EMSCRIPTEN
+void DebugDrawer::drawLine(const btVector3 & /* from */, const btVector3 & /* to */,
+                           const btVector3 & /* color */) {
+#else
 void DebugDrawer::drawLine(const btVector3 &from, const btVector3 &to,
                            const btVector3 & /* color */) {
   DebugDrawer::Line l;
   l.from = from;
   l.to = to;
   lines.push_back(l);
+
+#endif
 }
 
 void DebugDrawer::drawContactPoint(const btVector3 & /* pointOnB */,
@@ -23,6 +30,7 @@ void DebugDrawer::draw3dText(const btVector3 & /* location */, const char * /* t
 }
 
 void DebugDrawer::renderAndFlush() {
+#ifndef EMSCRIPTEN
   if (lines.size() > 0) {
 
     // load the vertex data info
@@ -41,4 +49,5 @@ void DebugDrawer::renderAndFlush() {
 
     lines.clear();
   }
+#endif
 }
