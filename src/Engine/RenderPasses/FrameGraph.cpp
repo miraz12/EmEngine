@@ -7,6 +7,7 @@
 #include <RenderPasses/GeometryPass.hpp>
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
+#include <RenderPasses/BloomPass.hpp>
 
 FrameGraph::FrameGraph() {
   // glPointSize(5.f);
@@ -20,6 +21,7 @@ FrameGraph::FrameGraph() {
   m_renderPass[static_cast<size_t>(PassId::kGeom)] = new GeometryPass();
   m_renderPass[static_cast<size_t>(PassId::kLight)] = new LightPass();
   m_renderPass[static_cast<size_t>(PassId::kCube)] = new CubeMapPass();
+  m_renderPass[static_cast<size_t>(PassId::kBloom)] = new BloomPass();
   m_renderPass[static_cast<size_t>(PassId::kDebug)] = new DebugPass();
 
   for (auto &p : m_renderPass) {

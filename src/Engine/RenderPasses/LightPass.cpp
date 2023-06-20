@@ -27,6 +27,10 @@ LightPass::LightPass()
 
   p_shaderProgram.use();
 
+  glGenFramebuffers(1, &gBuffer);
+  glGenRenderbuffers(1, &rboDepth);
+  p_fboManager.setFBO("lightFBO", gBuffer);
+
   setViewport(p_width, p_height);
 
   for (uint32_t i = 0; i < 10; i++) {
@@ -56,10 +60,11 @@ LightPass::LightPass()
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+
 }
 
 void LightPass::Execute(ECSManager &eManager) {
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  p_fboManager.bindFBO("lightFBO");
   glDisable(GL_DEPTH_TEST);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -146,4 +151,24 @@ void LightPass::Execute(ECSManager &eManager) {
 void LightPass::setViewport(uint32_t w, uint32_t h) {
   p_width = w;
   p_height = h;
+
+  p_fboManager.bindFBO("lightFBO");
+    // create a color attachment texture
+    unsigned int textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, p_width, p_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height); // use a single renderbuffer object for both a depth AND stencil buffer.
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth); // now actually attach it
+                                                                                                  // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }

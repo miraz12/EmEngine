@@ -42,7 +42,7 @@ Game::Game(GLFWwindow &window)
   graphComp =
       std::make_shared<GraphicsComponent>(*new Heightmap("resources/Textures/Heightmap.png"));
   posComp = std::make_shared<PositionComponent>();
-  // posComp->scale = glm::vec3(20.0, 1.0, 20.0);
+  // posComp->scale = glm::vec3(1.0, 1.0, 1.0);
   // posComp->position = glm::vec3(0.0, -2.0, 0.0);
   // posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
   physComp = std::make_shared<PhysicsComponent>(posComp, 0.0f, graphComp);
