@@ -28,6 +28,8 @@ static float tempFps = 0.0f;
 static int32_t counter = 0;
 static float fpsUpdate = 1.0f;
 static float fpsUpdateTimer = 0.0f;
+static float fpsArray[50];
+static size_t fpsIdx;
 
 static uint32_t SCR_WIDTH = 800;
 static uint32_t SCR_HEIGHT = 800;
@@ -212,6 +214,11 @@ void Window::gameLoop() {
     glfwSetWindowTitle(window, ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
   }
 
+  if (fpsIdx == 50) {
+    fpsIdx = 0;
+  }
+  fpsArray[fpsIdx++] = fps;
+
   game->update((float)dt);
 
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -347,7 +354,7 @@ void Window::renderImgui() {
   if (ImGui::CollapsingHeader("Lights")) {
     ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
     ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
-    ImGui::ColorPicker3("Color", glm::value_ptr(game->dirLightColor));
+    ImGui::ColorEdit3("Color", glm::value_ptr(game->dirLightColor));
   }
 
   if (ImGui::CollapsingHeader("Physics")) {
@@ -360,7 +367,11 @@ void Window::renderImgui() {
     }
   }
 
+  static int offset = 0;
+  offset = (offset + 1) % 50;
   if (ImGui::CollapsingHeader("Debug")) {
+    ImGui::PlotLines("FPS", fpsArray, 50, offset, nullptr, 0, 60, ImVec2(0, 80.f));
+
     const std::vector<std::string> debugNamesInputs = {
         "none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"};
     std::vector<const char *> charitems;

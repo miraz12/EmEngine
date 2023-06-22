@@ -60,12 +60,6 @@ CubeMapPass::CubeMapPass()
   p_shaderProgram.setUniformBinding("FragColor");
   p_shaderProgram.setUniformBinding("FragColorBright");
 
-  glObjectLabel(GL_PROGRAM, p_shaderProgram.getId(), -1, "Background");
-  glObjectLabel(GL_PROGRAM, m_equirectangularToCubemapShader.getId(), -1, "Equirectangular");
-  glObjectLabel(GL_PROGRAM, m_irradianceShader.getId(), -1, "Irradiance");
-  glObjectLabel(GL_PROGRAM, m_prefilterShader.getId(), -1, "Prefilter");
-  glObjectLabel(GL_PROGRAM, m_brdfShader.getId(), -1, "BRDF");
-
   glGenFramebuffers(1, &m_cubeBuffer);
   glGenRenderbuffers(1, &m_rbo);
   p_fboManager.setFBO("cubeFBO", m_cubeBuffer);
