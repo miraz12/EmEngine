@@ -1,4 +1,5 @@
 #include "LightPass.hpp"
+#include "FrameGraph.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 #include <ECS/Components/LightingComponent.hpp>
@@ -27,10 +28,9 @@ LightPass::LightPass()
 
   p_shaderProgram.use();
 
-  glGenFramebuffers(1, &gBuffer);
-  glGenRenderbuffers(1, &rboDepth);
-  p_fboManager.setFBO("lightFBO", gBuffer);
-
+  glGenFramebuffers(1, &m_lightBuffer);
+  glGenRenderbuffers(1, &m_rbo);
+  p_fboManager.setFBO("lightFBO", m_lightBuffer);
   setViewport(p_width, p_height);
 
   for (uint32_t i = 0; i < 10; i++) {
@@ -60,7 +60,6 @@ LightPass::LightPass()
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-
 }
 
 void LightPass::Execute(ECSManager &eManager) {
@@ -140,7 +139,6 @@ void LightPass::Execute(ECSManager &eManager) {
   glUniform3fv(p_shaderProgram.getUniformLocation("camPos"), 1,
                glm::value_ptr(eManager.getCamera().getPosition()));
 
-  // Render to quad
   glBindVertexArray(quadVAO);
   for (size_t i = 0; i < p_textures.size(); i++) {
     p_textureManager.bindActivateTexture(p_textures[i], i);
@@ -153,22 +151,21 @@ void LightPass::setViewport(uint32_t w, uint32_t h) {
   p_height = h;
 
   p_fboManager.bindFBO("lightFBO");
-    // create a color attachment texture
-    unsigned int textureColorbuffer;
-    glGenTextures(1, &textureColorbuffer);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, p_width, p_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-    glGenRenderbuffers(1, &rboDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height); // use a single renderbuffer object for both a depth AND stencil buffer.
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth); // now actually attach it
-                                                                                                  // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete!" << std::endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  // - position color buffer
+  uint32_t lightFrame = p_textureManager.loadTexture("lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                     p_width, p_height, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightFrame, 0);
+
+  uint32_t attachments[1] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, attachments);
+  glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+  // finally check if framebuffer is complete
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    std::cout << "Framebuffer not complete!" << std::endl;
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

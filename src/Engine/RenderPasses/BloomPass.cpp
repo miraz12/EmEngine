@@ -1,4 +1,5 @@
 #include "BloomPass.hpp"
+#include "FrameGraph.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <iostream>
@@ -9,21 +10,20 @@ BloomPass::BloomPass()
 
   uint32_t fbo;
   glGenFramebuffers(1, &fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
   p_fboManager.setFBO("bloomFBO", fbo);
+  p_fboManager.bindFBO("bloomFBO");
 
   p_shaderProgram.setAttribBinding("POSITION");
   p_shaderProgram.setAttribBinding("TEXCOORD_0");
   p_shaderProgram.setUniformBinding("srcResolution");
   p_shaderProgram.setUniformBinding("filterRadius");
 
-
   m_downShader.setAttribBinding("POSITION");
   m_downShader.setAttribBinding("TEXCOORD_0");
   m_downShader.setUniformBinding("srcResolution");
   m_downShader.setUniformBinding("mipLevel");
 
-  // setViewport(p_width, p_height);
+  setViewport(p_width, p_height);
   glm::vec2 currentMipSize(p_width, p_height);
   glm::ivec2 currentMipSizeInt(p_width, p_height);
   for (unsigned int i = 0; i < 5; i++) {
@@ -44,7 +44,7 @@ BloomPass::BloomPass()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     std::cout << "Created bloom mip " << currentMipSizeInt.x << 'x' << currentMipSizeInt.y
-              << std::endl;
+              << "TexId: " << mip.texture << std::endl;
     m_mipChain.emplace_back(mip);
   }
 
@@ -54,35 +54,15 @@ BloomPass::BloomPass()
   unsigned int attachments[1] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1, attachments);
   // check completion status
-  int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if (status != GL_FRAMEBUFFER_COMPLETE) {
-    printf("bloom FBO error, status: 0x%x\n", status);
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    std::cout << "Framebuffer not complete!" << std::endl;
   }
-
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  uint32_t quadVBO;
-  float quadVertices[] = {
-      // positions        // texture Coords
-      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-      1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-  };
-
-  glGenVertexArrays(1, &m_quadVAO);
-  glGenBuffers(1, &quadVBO);
-  glBindVertexArray(m_quadVAO);
-
-  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 }
 
 void BloomPass::Execute(ECSManager &eManager) {
-
   m_downShader.use();
+  p_fboManager.bindFBO("bloomFBO");
   glUniform2f(m_downShader.getUniformLocation("srcResolution"), p_width, p_height);
 
   if (true) {
@@ -90,8 +70,7 @@ void BloomPass::Execute(ECSManager &eManager) {
   }
 
   // Bind srcTexture (HDR color buffer) as initial texture input
-  glActiveTexture(GL_TEXTURE0);
-  //glBindTexture(GL_TEXTURE_2D, srcTexture);
+  p_textureManager.bindActivateTexture("cubeFrameBright", 0);
 
   // Progressively downsample through the mip chain
   for (int i = 0; i < (int)m_mipChain.size(); i++) {
@@ -100,8 +79,7 @@ void BloomPass::Execute(ECSManager &eManager) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mip.texture, 0);
 
     // Render screen-filled quad of resolution of current mip
-    glBindVertexArray(m_quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    renderQuad();
 
     // Set current mip resolution as srcResolution for next iteration
     glUniform2f(m_downShader.getUniformLocation("srcResolution"), mip.size.x, mip.size.y);
@@ -134,17 +112,42 @@ void BloomPass::Execute(ECSManager &eManager) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, nextMip.texture, 0);
 
     // Render screen-filled quad of resolution of current mip
-    glBindVertexArray(m_quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    renderQuad();
   }
 
   // Disable additive blending
   // glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_BLEND);
 
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, p_width, p_height);
-  glUseProgram(0);
-
 }
 
-void BloomPass::setViewport(uint32_t w, uint32_t h) {}
+void BloomPass::setViewport(uint32_t w, uint32_t h) {
+  p_width = w;
+  p_height = h;
+}
+
+void BloomPass::renderQuad() {
+  if (m_quadVAO == 0) {
+    float quadVertices[] = {
+        // positions        // texture Coords
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+
+    // setup plane VAO
+    glGenVertexArrays(1, &m_quadVAO);
+    glGenBuffers(1, &m_quadVBO);
+    glBindVertexArray(m_quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+  }
+  glBindVertexArray(m_quadVAO);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
+}

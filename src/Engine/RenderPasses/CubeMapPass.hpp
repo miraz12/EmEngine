@@ -22,6 +22,7 @@ private:
   void renderCube();
   void renderQuad();
 
+  uint32_t m_cubeBuffer, m_rbo;
   uint32_t m_captureFBO{0}, m_captureRBO{0}, m_cubeVAO{0}, m_cubeVBO{0}, m_quadVAO{0}, m_quadVBO{0},
       m_envCubemap{0};
   ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader, m_prefilterShader,

@@ -56,6 +56,9 @@ CubeMapPass::CubeMapPass()
   p_shaderProgram.setUniformBinding("projection");
   p_shaderProgram.setUniformBinding("view");
 
+  glGenFramebuffers(1, &m_cubeBuffer);
+  glGenRenderbuffers(1, &m_rbo);
+  p_fboManager.setFBO("cubeFBO", m_cubeBuffer);
   glViewport(0, 0, p_width, p_height);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glActiveTexture(GL_TEXTURE0);
@@ -73,10 +76,14 @@ void CubeMapPass::Execute(ECSManager &eManager) {
   // render skybox (render as last to prevent overdraw)
 
   glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
   glBlitFramebuffer(0, 0, p_width, p_height, 0, 0, p_width, p_height, GL_DEPTH_BUFFER_BIT,
                     GL_NEAREST);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fboManager.getFBO("lightFBO"));
+  glBlitFramebuffer(0, 0, p_width, p_height, 0, 0, p_width, p_height, GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+  glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
 
   glEnable(GL_BLEND);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -93,13 +100,34 @@ void CubeMapPass::Execute(ECSManager &eManager) {
   glActiveTexture(GL_TEXTURE0);
   p_textureManager.bindTexture("envCubemap");
   renderCube();
-  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void CubeMapPass::setViewport(uint32_t w, uint32_t h) {
   p_width = w;
   p_height = h;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
+
+  uint32_t cubeFrame = p_textureManager.loadTexture("cubeFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT,
+                                                    p_width, p_height, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cubeFrame, 0);
+  uint32_t cubeFrameBright = p_textureManager.loadTexture("cubeFrameBright", GL_RGBA16F, GL_RGBA,
+                                                          GL_FLOAT, p_width, p_height, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, cubeFrameBright, 0);
+
+  uint32_t attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+  glDrawBuffers(2, attachments);
+  glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+  // finally check if framebuffer is complete
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    std::cout << "Framebuffer not complete!" << std::endl;
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void CubeMapPass::generateCubeMap() {

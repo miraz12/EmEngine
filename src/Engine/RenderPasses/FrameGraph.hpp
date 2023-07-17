@@ -6,9 +6,12 @@
 #include <ShaderPrograms/QuadShaderProgram.hpp>
 #include <array>
 
-enum class PassId : size_t { kShadow, kGeom, kLight, kCube, kBloom, kDebug, kNumPasses };
+// Moving a pass enum to the right of kNumPasses will dactivate it.
+enum class PassId : size_t { kShadow, kGeom, kLight, kCube, kBloom, kNumPasses, kDebug };
 
-class FrameGraph {
+class FrameGraph : public Singleton<FrameGraph> {
+  friend class Singleton<FrameGraph>;
+
 public:
   FrameGraph();
   ~FrameGraph();
@@ -20,7 +23,8 @@ public:
 
 private:
   uint32_t m_width{800}, m_height{800};
-  QuadShaderProgram m_quadShader;
+  uint32_t m_quadVAO = 0;
+  uint32_t m_quadVBO = 0;
 };
 
 #endif // FRAMEGRAPH_H_

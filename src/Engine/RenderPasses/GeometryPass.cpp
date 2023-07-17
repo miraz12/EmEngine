@@ -99,7 +99,6 @@ void GeometryPass::setViewport(uint32_t w, uint32_t h) {
   // rendering
   uint32_t attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
                              GL_COLOR_ATTACHMENT3};
-
   glDrawBuffers(4, attachments);
   // create and attach depth buffer (renderbuffer)
   glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
