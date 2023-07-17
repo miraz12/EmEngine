@@ -6,7 +6,8 @@
 
 BloomPass::BloomPass()
     : RenderPass("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomUpFragment.glsl"),
-      m_downShader("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomDownFragment.glsl") {
+      m_downShader("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomDownFragment.glsl"),
+      m_bloomCombine("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomCombineFragment.glsl") {
 
   uint32_t fbo;
   glGenFramebuffers(1, &fbo);
@@ -23,6 +24,13 @@ BloomPass::BloomPass()
   m_downShader.setUniformBinding("srcResolution");
   m_downShader.setUniformBinding("mipLevel");
 
+  m_bloomCombine.setAttribBinding("POSITION");
+  m_bloomCombine.setAttribBinding("TEXCOORD_0");
+  m_bloomCombine.setUniformBinding("scene");
+  m_bloomCombine.setUniformBinding("bloomBlur");
+  m_bloomCombine.setUniformBinding("exposure");
+
+
   setViewport(p_width, p_height);
   glm::vec2 currentMipSize(p_width, p_height);
   glm::ivec2 currentMipSizeInt(p_width, p_height);
@@ -35,7 +43,7 @@ BloomPass::BloomPass()
 
     glGenTextures(1, &mip.texture);
     glBindTexture(GL_TEXTURE_2D, mip.texture);
-    // we are downscaling an HDR color buffer, so we need a float texture format
+    // we are downscaling a HDR color buffer, so we need a float texture format
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (int)currentMipSize.x, (int)currentMipSize.y,
                  0, GL_RGB, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -61,8 +69,12 @@ BloomPass::BloomPass()
 }
 
 void BloomPass::Execute(ECSManager &eManager) {
-  m_downShader.use();
   p_fboManager.bindFBO("bloomFBO");
+  m_downShader.use();
+  // Disable blending
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LEQUAL);
+
   glUniform2f(m_downShader.getUniformLocation("srcResolution"), p_width, p_height);
 
   if (true) {
@@ -116,11 +128,18 @@ void BloomPass::Execute(ECSManager &eManager) {
   }
 
   // Disable additive blending
-  // glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_BLEND);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, p_width, p_height);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  m_bloomCombine.use();
+  glUniform1f(m_bloomCombine.getUniformLocation("exposure"), 1.0f);
+  p_textureManager.bindActivateTexture("cubeFrame", 0);
+  p_textureManager.bindActivateTexture("cubeFrameBright", 1);
+  renderQuad();
+
 }
 
 void BloomPass::setViewport(uint32_t w, uint32_t h) {

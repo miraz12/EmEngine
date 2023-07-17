@@ -102,6 +102,7 @@ void CubeMapPass::Execute(ECSManager &eManager) {
   renderCube();
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDisable(GL_BLEND); 
 }
 
 void CubeMapPass::setViewport(uint32_t w, uint32_t h) {
@@ -113,9 +114,16 @@ void CubeMapPass::setViewport(uint32_t w, uint32_t h) {
   uint32_t cubeFrame = p_textureManager.loadTexture("cubeFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT,
                                                     p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cubeFrame, 0);
-  uint32_t cubeFrameBright = p_textureManager.loadTexture("cubeFrameBright", GL_RGBA16F, GL_RGBA,
-                                                          GL_FLOAT, p_width, p_height, 0);
+  uint32_t cubeFrameBright;
+  glGenTextures(1, &cubeFrameBright);
+  glBindTexture(GL_TEXTURE_2D, cubeFrameBright);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p_width, p_width, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, cubeFrameBright, 0);
+  p_textureManager.setTexture("cubeFrameBright", cubeFrameBright, GL_TEXTURE_2D);
 
   uint32_t attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
   glDrawBuffers(2, attachments);
