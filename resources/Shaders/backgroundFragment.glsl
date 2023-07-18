@@ -6,18 +6,7 @@ in vec3 WorldPos;
 
 uniform samplerCube environmentMap;
 
-void main()
-{
+void main() {
     vec3 envColor = texture(environmentMap, WorldPos).rgb;
-
-    // HDR tonemap and gamma correct
-    envColor = envColor / (envColor + vec3(1.0));
-    envColor = pow(envColor, vec3(1.0/2.2));
-
     FragColor = vec4(envColor, 1.0);
-    // check whether result is higher than some threshold, if so, output as bloom threshold color
-    float brightness = dot(envColor, vec3(0.2126, 0.7152, 0.0722));
-    if(brightness > 1.0) {
-       FragColorBright = vec4(envColor, 1.0);
-    }
 }

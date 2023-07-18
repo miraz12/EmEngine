@@ -22,8 +22,10 @@ CubeMapPass::CubeMapPass()
 
   stbi_set_flip_vertically_on_load(true);
   int32_t width, height, nrComponents;
+
   float *data =
       stbi_loadf("resources/Textures/clarens_midday_1k.hdr", &width, &height, &nrComponents, 0);
+
   uint32_t hdrTexture;
   if (data) {
     glGenTextures(1, &hdrTexture);
@@ -55,6 +57,8 @@ CubeMapPass::CubeMapPass()
 
   p_shaderProgram.setUniformBinding("projection");
   p_shaderProgram.setUniformBinding("view");
+  p_shaderProgram.setUniformBinding("FragColor");
+  p_shaderProgram.setUniformBinding("FragColorBright");
 
   glGenFramebuffers(1, &m_cubeBuffer);
   glGenRenderbuffers(1, &m_rbo);
@@ -114,21 +118,9 @@ void CubeMapPass::setViewport(uint32_t w, uint32_t h) {
   uint32_t cubeFrame = p_textureManager.loadTexture("cubeFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT,
                                                     p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cubeFrame, 0);
-  uint32_t cubeFrameBright;
-  glGenTextures(1, &cubeFrameBright);
-  glBindTexture(GL_TEXTURE_2D, cubeFrameBright);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p_width, p_height, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                  GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise
-                                     // sample repeated texture values!
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, cubeFrameBright, 0);
-  p_textureManager.setTexture("cubeFrameBright", cubeFrameBright, GL_TEXTURE_2D);
 
-  uint32_t attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-  glDrawBuffers(2, attachments);
+  uint32_t attachments[1] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, attachments);
   glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);

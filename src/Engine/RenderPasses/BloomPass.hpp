@@ -21,7 +21,7 @@ private:
   };
 
   std::vector<mipLevel> m_mipChain;
-  ShaderProgram m_downShader, m_bloomCombine;
+  ShaderProgram m_extractBright, m_downShader, m_bloomCombine;
   uint32_t m_quadVAO{0};
   uint32_t m_quadVBO{0};
 };

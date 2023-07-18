@@ -199,7 +199,7 @@ void main() {
     vec3 F = fresnelSchlickRoughness(max(dot(normal, viewDir), 0.0), specularColor, roughness); 
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;	  
+    kD *= 1.0 - metallic;
 
     vec3 irradiance = texture(irradianceMap, normal).rgb;
     vec3 diffuse      = irradiance * albedo;
@@ -215,9 +215,6 @@ void main() {
     vec3 ambient = (kD * diffuse + specular) * (1.0 - shadows)  * ao;
 
     vec3 color = ambient + Lo;
-
-    color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0/2.2));
 
     if (debugView == 0) {
         FragColor = vec4(vec3(color) + emissive, 1.0) ;
