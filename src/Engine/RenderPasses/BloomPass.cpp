@@ -7,7 +7,8 @@
 BloomPass::BloomPass()
     : RenderPass("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomUpFragment.glsl"),
       m_downShader("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomDownFragment.glsl"),
-      m_bloomCombine("resources/Shaders/vertex2D.glsl", "resources/Shaders/bloomCombineFragment.glsl") {
+      m_bloomCombine("resources/Shaders/vertex2D.glsl",
+                     "resources/Shaders/bloomCombineFragment.glsl") {
 
   uint32_t fbo;
   glGenFramebuffers(1, &fbo);
@@ -29,7 +30,6 @@ BloomPass::BloomPass()
   m_bloomCombine.setUniformBinding("scene");
   m_bloomCombine.setUniformBinding("bloomBlur");
   m_bloomCombine.setUniformBinding("exposure");
-
 
   setViewport(p_width, p_height);
   glm::vec2 currentMipSize(p_width, p_height);
@@ -135,11 +135,10 @@ void BloomPass::Execute(ECSManager &eManager) {
   glViewport(0, 0, p_width, p_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_bloomCombine.use();
-  glUniform1f(m_bloomCombine.getUniformLocation("exposure"), 1.0f);
+  glUniform1f(m_bloomCombine.getUniformLocation("exposure"), 0.01f);
   p_textureManager.bindActivateTexture("cubeFrame", 0);
   p_textureManager.bindActivateTexture("cubeFrameBright", 1);
   renderQuad();
-
 }
 
 void BloomPass::setViewport(uint32_t w, uint32_t h) {
