@@ -288,7 +288,6 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
     }
     meshCount++;
   }
-  glBindVertexArray(0);
 }
 
 void GltfObject::generateCollisionShape() {

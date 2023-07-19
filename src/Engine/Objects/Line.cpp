@@ -40,6 +40,5 @@ Line::Line(float x1, float y1, float z1, float x2, float y2, float z2) {
   attribInfo.byteOffset = 0;
   newPrim->attributes["POSITION"] = attribInfo;
 
-  glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

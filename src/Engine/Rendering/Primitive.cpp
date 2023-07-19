@@ -8,5 +8,4 @@ void Primitive::draw() {
   } else {
     glDrawElements(m_mode, m_count, m_type, (void *)(sizeof(char) * (m_offset)));
   }
-  glBindVertexArray(0);
 }

@@ -40,6 +40,5 @@ Point::Point(float x, float y, float z) {
   attribInfo.byteOffset = 0;
   newPrim->attributes["POSITION"] = attribInfo;
 
-  glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

@@ -371,12 +371,10 @@ void CubeMapPass::renderCube() {
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
   // render Cube
   glBindVertexArray(m_cubeVAO);
   glDrawArrays(GL_TRIANGLES, 0, 36);
-  glBindVertexArray(0);
 }
 
 void CubeMapPass::renderQuad() {
@@ -399,5 +397,4 @@ void CubeMapPass::renderQuad() {
   }
   glBindVertexArray(m_quadVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glBindVertexArray(0);
 }

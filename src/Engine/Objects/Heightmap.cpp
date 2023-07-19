@@ -105,7 +105,6 @@ Heightmap::Heightmap(std::string filename) {
     attribInfo.byteStride = 3 * sizeof(float);
     attribInfo.byteOffset = 0;
     newPrim->attributes["POSITION"] = attribInfo;
-    glBindVertexArray(0);
   }
 
   stbi_image_free(imageData);

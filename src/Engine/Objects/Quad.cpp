@@ -51,5 +51,4 @@ Quad::Quad() {
   newPrim->attributes["POSITION"] = attribInfo;
 
   p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
-  glBindVertexArray(0);
 }
