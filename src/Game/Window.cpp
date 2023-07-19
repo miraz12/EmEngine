@@ -6,7 +6,7 @@
 #include <emscripten.h>
 #else
 #include <glad/glad.h>
-#define _DEBUG_
+// #define _DEBUG_
 #endif
 
 #include <GLFW/glfw3.h>

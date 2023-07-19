@@ -15,7 +15,7 @@ FrameGraph::FrameGraph() {
   glLineWidth(0.5f); // Sets line width of things like wireframe and draw lines
   glColorMask(true, true, true, true);
   // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+  // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
   // Damn this is ugly..
   m_renderPass[static_cast<size_t>(PassId::kShadow)] = new ShadowPass();

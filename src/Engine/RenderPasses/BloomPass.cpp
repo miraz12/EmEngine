@@ -48,7 +48,7 @@ BloomPass::BloomPass()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void BloomPass::Execute(ECSManager &eManager) {
+void BloomPass::Execute(ECSManager & /* eManager */) {
 
   p_fboManager.bindFBO("brightFBO");
   m_extractBright.use();
@@ -121,7 +121,7 @@ void BloomPass::Execute(ECSManager &eManager) {
   glViewport(0, 0, p_width, p_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_bloomCombine.use();
-  glUniform1f(m_bloomCombine.getUniformLocation("exposure"), 3.0f);
+  glUniform1f(m_bloomCombine.getUniformLocation("exposure"), 1.0f);
   glUniform1i(m_bloomCombine.getUniformLocation("scene"), 0);
   glUniform1i(m_bloomCombine.getUniformLocation("bloomBlur"), 1);
   p_textureManager.bindActivateTexture("cubeFrame", 0);

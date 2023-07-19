@@ -14,7 +14,7 @@ public:
 
 private:
   uint32_t quadVAO;
-  uint32_t m_lightBuffer, m_rbo, m_rboDepth;
+  uint32_t m_lightBuffer, m_rbo;
 };
 
 #endif // LIGHTPASS_H_
