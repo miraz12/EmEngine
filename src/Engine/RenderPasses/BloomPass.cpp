@@ -22,6 +22,19 @@ BloomPass::BloomPass()
   glGenTextures(1, &frameBright);
   p_textureManager.setTexture("frameBright", frameBright, GL_TEXTURE_2D);
 
+  glm::vec2 currentMipSize(p_width, p_height);
+  glm::ivec2 currentMipSizeInt(p_width, p_height);
+  for (unsigned int i = 0; i < 5; i++) {
+    mipLevel mip;
+    currentMipSize *= 0.5f;
+    currentMipSizeInt /= 2;
+    mip.size = currentMipSize;
+    mip.intSize = currentMipSizeInt;
+
+    glGenTextures(1, &mip.texture); 
+    m_mipChain.emplace_back(mip);
+  }
+
   setViewport(p_width, p_height);
 
   p_shaderProgram.setAttribBinding("POSITION");
@@ -154,29 +167,17 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
   }
 
   p_fboManager.bindFBO("bloomFBO");
-  glm::vec2 currentMipSize(p_width, p_height);
-  glm::ivec2 currentMipSizeInt(p_width, p_height);
-  m_mipChain.clear();
   for (unsigned int i = 0; i < 5; i++) {
-    mipLevel mip;
-    currentMipSize *= 0.5f;
-    currentMipSizeInt /= 2;
-    mip.size = currentMipSize;
-    mip.intSize = currentMipSizeInt;
+    mipLevel mip = m_mipChain[i];
 
-    glGenTextures(1, &mip.texture); // TODO dont regen this
     glBindTexture(GL_TEXTURE_2D, mip.texture);
     // we are downscaling a HDR color buffer, so we need a float texture format
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (int)currentMipSize.x, (int)currentMipSize.y,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (int)mip.size.x, (int)mip.size.y,
                  0, GL_RGB, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    std::cout << "Created bloom mip " << currentMipSizeInt.x << 'x' << currentMipSizeInt.y
-              << "TexId: " << mip.texture << std::endl;
-    m_mipChain.emplace_back(mip);
   }
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mipChain[0].texture,
