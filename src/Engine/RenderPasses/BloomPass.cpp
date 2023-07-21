@@ -12,15 +12,19 @@ BloomPass::BloomPass()
       m_bloomCombine("resources/Shaders/vertex2D.glsl",
                      "resources/Shaders/bloomCombineFragment.glsl") {
 
-  uint32_t fbos[2];
-  glGenFramebuffers(2, fbos);
+  uint32_t fbos[3];
+  glGenFramebuffers(3, fbos);
   p_fboManager.setFBO("brightFBO", fbos[0]);
   p_fboManager.setFBO("bloomFBO", fbos[1]);
+  p_fboManager.setFBO("bloomFinalFBO", fbos[2]);
 
-  p_fboManager.bindFBO("brightFBO");
   uint32_t frameBright;
   glGenTextures(1, &frameBright);
   p_textureManager.setTexture("frameBright", frameBright, GL_TEXTURE_2D);
+
+  uint32_t frameBloomFinal;
+  glGenTextures(1, &frameBloomFinal);
+  p_textureManager.setTexture("frameBloomFinal", frameBloomFinal, GL_TEXTURE_2D);
 
   glm::vec2 currentMipSize(p_width, p_height);
   glm::ivec2 currentMipSizeInt(p_width, p_height);
@@ -31,7 +35,7 @@ BloomPass::BloomPass()
     mip.size = currentMipSize;
     mip.intSize = currentMipSizeInt;
 
-    glGenTextures(1, &mip.texture); 
+    glGenTextures(1, &mip.texture);
     m_mipChain.emplace_back(mip);
   }
 
@@ -75,10 +79,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   glDepthFunc(GL_LEQUAL);
 
   glUniform2f(m_downShader.getUniformLocation("srcResolution"), p_width, p_height);
-
-  if (true) {
-    glUniform1i(m_downShader.getUniformLocation("mipLevel"), 0);
-  }
+  glUniform1i(m_downShader.getUniformLocation("mipLevel"), 0);
 
   // Bind srcTexture (HDR color buffer) as initial texture input
   p_textureManager.bindActivateTexture("frameBright", 0);
@@ -89,7 +90,6 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
     glViewport(0, 0, mip.size.x, mip.size.y);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mip.texture, 0);
 
-    // Render screen-filled quad of resolution of current mip
     renderQuad();
 
     // Set current mip resolution as srcResolution for next iteration
@@ -114,15 +114,12 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
     const mipLevel &mip = m_mipChain[i];
     const mipLevel &nextMip = m_mipChain[i - 1];
 
-    // Bind viewport and texture from where to read
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mip.texture);
 
-    // Set framebuffer render target (we write to this texture)
     glViewport(0, 0, nextMip.size.x, nextMip.size.y);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, nextMip.texture, 0);
 
-    // Render screen-filled quad of resolution of current mip
     renderQuad();
   }
 
@@ -130,7 +127,8 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_BLEND);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  p_fboManager.bindFBO("bloomFinalFBO");
+  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, p_width, p_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_bloomCombine.use();
@@ -172,8 +170,8 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
 
     glBindTexture(GL_TEXTURE_2D, mip.texture);
     // we are downscaling a HDR color buffer, so we need a float texture format
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (int)mip.size.x, (int)mip.size.y,
-                 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (int)mip.size.x, (int)mip.size.y, 0, GL_RGB,
+                 GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -188,6 +186,24 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
     assert(false);
+  }
+
+  p_fboManager.bindFBO("bloomFinalFBO");
+  uint32_t frameBloomFinal = p_textureManager.bindTexture("frameBloomFinal");
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p_width, p_height, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                  GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise
+                                     // sample repeated texture values!
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBloomFinal, 0);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  glDrawBuffers(1, attachments);
+  // check completion status
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    std::cout << "Framebuffer not complete!" << std::endl;
   }
 }
 

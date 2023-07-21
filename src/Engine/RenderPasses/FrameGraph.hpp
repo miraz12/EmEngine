@@ -7,7 +7,7 @@
 #include <array>
 
 // Moving a pass enum to the right of kNumPasses will dactivate it.
-enum class PassId : size_t { kShadow, kGeom, kLight, kCube, kBloom, kNumPasses, kDebug };
+enum class PassId : size_t { kShadow, kGeom, kLight, kCube, kBloom, kFxaa, kNumPasses, kDebug };
 
 class FrameGraph : public Singleton<FrameGraph> {
   friend class Singleton<FrameGraph>;
