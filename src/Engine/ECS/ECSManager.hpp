@@ -133,6 +133,7 @@ public:
   // // Create directional light
   std::shared_ptr<DirectionalLight> SetupDirectionalLight(glm::vec3 color, float ambient,
                                                           glm::vec3 dir);
+  void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
   System &getSystem(std::string s) { return *m_systems[s]; }
@@ -164,6 +165,7 @@ private:
   size_t m_nextComponentTypeID{0};
   Entity m_pickedEntity{0};
   bool m_entitySelected{false};
+  Entity m_dirLightEntity;
 
   Camera m_camera;
 };

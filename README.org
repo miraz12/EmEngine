@@ -1,0 +1,5 @@
+#+title: Readme
+
+* EmEngine
+** TODO:
+- Create map of names from scene file to easily identify specific enitites, like player.

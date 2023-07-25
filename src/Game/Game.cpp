@@ -20,41 +20,11 @@
 Game::Game(GLFWwindow &window)
     : m_ECSManager(ECSManager::getInstance()), m_window(window),
       m_InputManager(InputManager::getInstance()) {
-
   SceneLoader::getInstance().init("resources/scene.yaml");
-
-  // Entity en2 = m_ECSManager.createEntity();
-  // // graphComp = std::make_shared<GraphicsComponent>(*new Quad());
-  // graphComp =
-  //     std::make_shared<GraphicsComponent>(*new Heightmap("resources/Textures/Heightmap.png"));
-  // posComp = std::make_shared<PositionComponent>();
-  // // posComp->scale = glm::vec3(1.0, 1.0, 1.0);
-  // // posComp->position = glm::vec3(0.0, -2.0, 0.0);
-  // // posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
-  // physComp = std::make_shared<PhysicsComponent>(en2, 0.0f);
-  // m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
-  //     en2, graphComp, posComp, physComp);
-
-  // ----
-  dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);
-  dirLightAmbient = 0.1f;
-  dirLightDir = glm::vec3(0.01f, -1.0f, 0.0f);
-  dLight = m_ECSManager.SetupDirectionalLight(dirLightColor, dirLightAmbient, dirLightDir);
-
-  m_ECSManager.SetupPointLight(glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 0.7f, 1.8f,
-                               glm::vec3(0.0f, 1.0f, 0.0f));
-
-  m_ECSManager.SetupPointLight(glm::vec3(0.0f, 1.0f, 0.0f), 1.0f, 0.7f, 1.8f,
-                               glm::vec3(1.5f, 1.0f, 0.0f));
-
-  m_ECSManager.SetupPointLight(glm::vec3(0.0f, 0.0f, 1.0f), 1.0f, 0.7f, 1.8f,
-                               glm::vec3(-1.5f, 1.0f, 0.0f));
 }
 
 void Game::update(float dt) {
-  dLight->color = dirLightColor;
-  dLight->ambientIntensity = dirLightAmbient;
-  dLight->direction = dirLightDir;
+  m_ECSManager.updateDirLight(dirLightColor, dirLightAmbient, dirLightDir);
   handleInput(dt);
   m_ECSManager.update(dt);
   if (m_ECSManager.dDir != dirLightDir) {
@@ -63,10 +33,6 @@ void Game::update(float dt) {
   }
   m_ECSManager.debugView = debugView;
   m_ECSManager.debugMode = debugMode;
-
-  // glm::vec3 playerPos = m_ECSManager.getComponent<PositionComponent>(m_player)->position;
-  // Camera &cam = m_ECSManager.getCamera();
-  // cam.setPosition(playerPos);
 }
 
 void Game::handleInput(float dt) {

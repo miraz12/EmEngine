@@ -33,7 +33,7 @@ void PhysicsComponent::init() {
                                    posComp->rotation.w);
   }
 
-  if (posComp) {
+  if (graphComp) {
     colShape = graphComp->m_grapObj.p_coll;
     colShape->setLocalScaling(initialScale);
 

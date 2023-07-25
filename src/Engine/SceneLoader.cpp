@@ -9,9 +9,34 @@
 void SceneLoader::init(std::string sceneFile) {
   YAML::Node config = YAML::LoadFile(sceneFile);
   for (auto dict : config) {
+
+    if (dict["light"]) {
+      if (dict["type"].as<std::string>() == "point") {
+        float r = dict["color"][0].as<float>();
+        float g = dict["color"][1].as<float>();
+        float b = dict["color"][2].as<float>();
+        float constant = dict["constant"].as<float>();
+        float linear = dict["linear"].as<float>();
+        float quadratic = dict["quadratic"].as<float>();
+        float x = dict["position"][0].as<float>();
+        float y = dict["position"][1].as<float>();
+        float z = dict["position"][2].as<float>();
+        ECSManager::getInstance().SetupPointLight(glm::vec3(r, g, b), constant, linear, quadratic,
+                                                  glm::vec3(x, y, z));
+      } else if (dict["type"].as<std::string>() == "dir") {
+        float r = dict["color"][0].as<float>();
+        float g = dict["color"][1].as<float>();
+        float b = dict["color"][2].as<float>();
+        float ambient = dict["ambient"].as<float>();
+        float x = dict["direction"][0].as<float>();
+        float y = dict["direction"][1].as<float>();
+        float z = dict["direction"][2].as<float>();
+        ECSManager::getInstance().SetupDirectionalLight(glm::vec3(r, g, b), ambient,
+                                                        glm::vec3(x, y, z));
+      }
+    }
     if (dict["entity"]) {
       YAML::Node n = dict["entity"];
-      std::cout << n << std::endl;
       Entity en = ECSManager::getInstance().createEntity();
       if (dict["components"]) {
         YAML::Node components = dict["components"];
