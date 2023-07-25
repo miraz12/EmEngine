@@ -8,6 +8,7 @@
 #include <Objects/Cube.hpp>
 #include <Objects/GltfObject.hpp>
 #include <Objects/Heightmap.hpp>
+#include <SceneLoader.hpp>
 #include <algorithm>
 
 #include <glm/glm.hpp>
@@ -20,34 +21,19 @@ Game::Game(GLFWwindow &window)
     : m_ECSManager(ECSManager::getInstance()), m_window(window),
       m_InputManager(InputManager::getInstance()) {
 
-  // TODO dynamic shadow projection and view
-  // ----
-  m_player = m_ECSManager.createEntity();
-  std::shared_ptr<GraphicsComponent> graphComp = std::make_shared<GraphicsComponent>(
-      *new GltfObject("resources/Models/gltf/helmet/DamagedHelmet.gltf"));
-  // *new GltfObject("../glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"));
-  // *new Cube());
-  // *new
-  // GltfObject("../glTF-Sample-Models/2.0/MetalRoughSpheres/glTF/MetalRoughSpheres.gltf"));
-  // *new GltfObject("../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"));
-  std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
-  posComp->position = glm::vec3(0.0, 2.0, -1.0);
-  std::shared_ptr<PhysicsComponent> physComp =
-      std::make_shared<PhysicsComponent>(posComp, 1.0f, graphComp);
-  m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
-      m_player, graphComp, posComp, physComp);
-  // ----
-  Entity en2 = m_ECSManager.createEntity();
-  // graphComp = std::make_shared<GraphicsComponent>(*new Quad());
-  graphComp =
-      std::make_shared<GraphicsComponent>(*new Heightmap("resources/Textures/Heightmap.png"));
-  posComp = std::make_shared<PositionComponent>();
-  // posComp->scale = glm::vec3(1.0, 1.0, 1.0);
-  // posComp->position = glm::vec3(0.0, -2.0, 0.0);
-  // posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
-  physComp = std::make_shared<PhysicsComponent>(posComp, 0.0f, graphComp);
-  m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
-      en2, graphComp, posComp, physComp);
+  SceneLoader::getInstance().init("resources/scene.yaml");
+
+  // Entity en2 = m_ECSManager.createEntity();
+  // // graphComp = std::make_shared<GraphicsComponent>(*new Quad());
+  // graphComp =
+  //     std::make_shared<GraphicsComponent>(*new Heightmap("resources/Textures/Heightmap.png"));
+  // posComp = std::make_shared<PositionComponent>();
+  // // posComp->scale = glm::vec3(1.0, 1.0, 1.0);
+  // // posComp->position = glm::vec3(0.0, -2.0, 0.0);
+  // // posComp->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
+  // physComp = std::make_shared<PhysicsComponent>(en2, 0.0f);
+  // m_ECSManager.addComponents<GraphicsComponent, PositionComponent, PhysicsComponent>(
+  //     en2, graphComp, posComp, physComp);
 
   // ----
   dirLightColor = glm::vec3(0.988f, 0.898f, 0.439f);

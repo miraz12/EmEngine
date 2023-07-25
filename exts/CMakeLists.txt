@@ -14,7 +14,6 @@ endif()
 add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
 TARGET_INCLUDE_DIRECTORIES(glad PUBLIC glad/include)
 
-
 # GLFW
 TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE glfw/include)
 
@@ -33,6 +32,10 @@ target_include_directories(exts SYSTEM INTERFACE bullet3/src)
 # GLM
 ADD_SUBDIRECTORY(glm)
 TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE glm/include)
+
+# YAML-CPP
+ADD_SUBDIRECTORY(yaml-cpp)
+TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE yaml-cpp/include)
 
 # IMGUI
 ADD_LIBRARY(imgui STATIC  imgui/imgui.cpp 
@@ -54,7 +57,7 @@ TARGET_INCLUDE_DIRECTORIES(imgui PUBLIC imgui glfw/include)
 TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE header_only)
 
 
-TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui BulletDynamics BulletCollision LinearMath)
+TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui BulletDynamics BulletCollision LinearMath yaml-cpp)
 
 if (NOT DEFINED EMSCRIPTEN)
 TARGET_LINK_LIBRARIES(exts INTERFACE glad)

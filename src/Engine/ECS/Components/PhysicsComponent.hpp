@@ -14,14 +14,14 @@ class PhysicsComponent : public Component {
 public:
   PhysicsComponent();
   // Create colision mesh from grapComp and give position
-  PhysicsComponent(std::shared_ptr<PositionComponent> posComp, float mass,
-                   std::shared_ptr<GraphicsComponent> graphComp);
+  PhysicsComponent(std::size_t en, float mass);
   ~PhysicsComponent();
   btRigidBody *getRigidBody() { return body; }
+  bool initialized{false};
+  // Used for delayed init as this component needs graphics component
+  void init();
 
 private:
-  void init(std::shared_ptr<GraphicsComponent> graphComp);
-
   btRigidBody *body;
   btTransform startTransform;
   btVector3 initialPos{0., 0., 0.};
@@ -30,6 +30,7 @@ private:
   btScalar mass;
   btCollisionShape *colShape;
   btDefaultMotionState *myMotionState;
+  std::size_t m_en;
 };
 
 #endif // PHYSICSCOMPONENT_H_

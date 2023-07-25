@@ -10,3 +10,6 @@
 [submodule "exts/bullet3"]
 	path = exts/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
+[submodule "exts/yaml-cpp"]
+	path = exts/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

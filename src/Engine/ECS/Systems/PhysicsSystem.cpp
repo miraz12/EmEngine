@@ -84,15 +84,19 @@ void PhysicsSystem::update(float dt) {
     for (auto e : view) {
       std::shared_ptr<PositionComponent> p = m_manager->getComponent<PositionComponent>(e);
       std::shared_ptr<PhysicsComponent> phy = m_manager->getComponent<PhysicsComponent>(e);
-      btTransform btTrans;
-      btRigidBody *body = phy->getRigidBody();
-      if (body) {
-        body->getMotionState()->getWorldTransform(btTrans);
-        btTrans = body->getWorldTransform();
-        p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
-                                btTrans.getOrigin().getZ());
-        p->rotation = glm::quat(btTrans.getRotation().w(), btTrans.getRotation().x(),
-                                btTrans.getRotation().y(), btTrans.getRotation().z());
+      if (phy->initialized) {
+        btTransform btTrans;
+        btRigidBody *body = phy->getRigidBody();
+        if (body) {
+          body->getMotionState()->getWorldTransform(btTrans);
+          btTrans = body->getWorldTransform();
+          p->position = glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
+                                  btTrans.getOrigin().getZ());
+          p->rotation = glm::quat(btTrans.getRotation().w(), btTrans.getRotation().x(),
+                                  btTrans.getRotation().y(), btTrans.getRotation().z());
+        }
+      } else {
+        phy->init();
       }
     }
   }

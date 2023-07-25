@@ -1,0 +1,18 @@
+- entity: helmet
+  components:
+    - type: Gra
+      primitive: "Mesh"
+      file: "gltf/helmet/DamagedHelmet.gltf"
+    - type: Pos
+      position: [0.0, 2.0, -1.0]
+    - type: Phy
+      mass: 1.0
+
+- entity: map
+  components:
+    - type: Gra
+      primitive: "Heightmap"
+      file: "Heightmap.png"
+    - type: Pos
+    - type: Phy
+      mass: 0.0

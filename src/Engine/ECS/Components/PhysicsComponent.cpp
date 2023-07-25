@@ -8,7 +8,7 @@
 #include <LinearMath/btDefaultMotionState.h>
 #include <Objects/Cube.hpp>
 
-PhysicsComponent::PhysicsComponent() { init(nullptr); }
+PhysicsComponent::PhysicsComponent() { init(); }
 
 PhysicsComponent::~PhysicsComponent() {
   delete colShape;
@@ -16,9 +16,15 @@ PhysicsComponent::~PhysicsComponent() {
   delete myMotionState;
 };
 
-PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, float mass,
-                                   std::shared_ptr<GraphicsComponent> graphComp)
-    : mass(mass) {
+PhysicsComponent::PhysicsComponent(Entity en, float mass) : mass(mass), m_en(en) { init(); }
+
+void PhysicsComponent::init() {
+  // create a dynamic rigidbody
+  std::shared_ptr<GraphicsComponent> graphComp =
+      ECSManager::getInstance().getComponent<GraphicsComponent>(m_en);
+  std::shared_ptr<PositionComponent> posComp =
+      ECSManager::getInstance().getComponent<PositionComponent>(m_en);
+
   if (posComp) {
     initialPos = btVector3(posComp->position.x, posComp->position.y, posComp->position.z);
     // HACK: Changed rotation axels to work with plane..
@@ -26,40 +32,37 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PositionComponent> posComp, f
     initialRotation = btQuaternion(posComp->rotation.x, posComp->rotation.y, posComp->rotation.z,
                                    posComp->rotation.w);
   }
-  init(graphComp);
-}
 
-void PhysicsComponent::init(std::shared_ptr<GraphicsComponent> graphComp) {
-  // create a dynamic rigidbody
+  if (posComp) {
+    colShape = graphComp->m_grapObj.p_coll;
+    colShape->setLocalScaling(initialScale);
 
-  colShape = graphComp->m_grapObj.p_coll;
-  colShape->setLocalScaling(initialScale);
+    ECSManager &eManager = ECSManager::getInstance();
+    // BUG: Cant remove this without breaking debug draw?
+    std::shared_ptr<DebugComponent> dComp = std::make_shared<DebugComponent>(new Cube());
 
-  ECSManager &eManager = ECSManager::getInstance();
-  // BUG: Cant remove this without breaking debug draw?
-  std::shared_ptr<DebugComponent> dComp = std::make_shared<DebugComponent>(new Cube());
+    /// Create Dynamic Objects
+    startTransform.setIdentity();
 
-  /// Create Dynamic Objects
-  startTransform.setIdentity();
+    // rigidbody is dynamic if and only if mass is non zero, otherwise static
+    bool isDynamic = (mass != 0.f);
 
-  // rigidbody is dynamic if and only if mass is non zero, otherwise static
-  bool isDynamic = (mass != 0.f);
+    btVector3 localInertia(0, 0, 0);
+    if (isDynamic)
+      colShape->calculateLocalInertia(mass, localInertia);
 
-  btVector3 localInertia(0, 0, 0);
-  if (isDynamic)
-    colShape->calculateLocalInertia(mass, localInertia);
+    startTransform.setOrigin(initialPos);
+    startTransform.setRotation(initialRotation);
 
-  startTransform.setOrigin(initialPos);
-  startTransform.setRotation(initialRotation);
+    // using motionstate is recommended, it provides interpolation capabilities, and only
+    // synchronizes 'active' objects
+    myMotionState = new btDefaultMotionState(startTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
+    body = new btRigidBody(rbInfo);
+    body->setUserIndex(m_en);
 
-  // using motionstate is recommended, it provides interpolation capabilities, and only
-  // synchronizes 'active' objects
-  myMotionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-  body = new btRigidBody(rbInfo);
-  // HACK gets the current id that this component will be added to.. fix this
-  body->setUserIndex(eManager.getLastEntity());
-
-  PhysicsSystem &pSys = static_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
-  pSys.addRigidBody(body);
+    PhysicsSystem &pSys = static_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
+    pSys.addRigidBody(body);
+    initialized = true;
+  }
 }
