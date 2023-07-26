@@ -286,37 +286,37 @@ void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */, int3
     glfwSetWindowShouldClose(win, true);
     break;
   case GLFW_KEY_W:
-    inMgr.HandleInput(InputManager::KEY::W, action);
+    inMgr.handleInput(InputManager::KEY::W, action);
     break;
   case GLFW_KEY_A:
-    inMgr.HandleInput(InputManager::KEY::A, action);
+    inMgr.handleInput(InputManager::KEY::A, action);
     break;
   case GLFW_KEY_S:
-    inMgr.HandleInput(InputManager::KEY::S, action);
+    inMgr.handleInput(InputManager::KEY::S, action);
     break;
   case GLFW_KEY_D:
-    inMgr.HandleInput(InputManager::KEY::D, action);
+    inMgr.handleInput(InputManager::KEY::D, action);
     break;
   case GLFW_KEY_F:
-    inMgr.HandleInput(InputManager::KEY::F, action);
+    inMgr.handleInput(InputManager::KEY::F, action);
     break;
   case GLFW_KEY_O:
-    inMgr.HandleInput(InputManager::KEY::O, action);
+    inMgr.handleInput(InputManager::KEY::O, action);
     break;
   case GLFW_KEY_SPACE:
-    inMgr.HandleInput(InputManager::KEY::Space, action);
+    inMgr.handleInput(InputManager::KEY::Space, action);
     break;
   case GLFW_KEY_UP:
-    inMgr.HandleInput(InputManager::KEY::ArrowUp, action);
+    inMgr.handleInput(InputManager::KEY::ArrowUp, action);
     break;
   case GLFW_KEY_DOWN:
-    inMgr.HandleInput(InputManager::KEY::ArrowDown, action);
+    inMgr.handleInput(InputManager::KEY::ArrowDown, action);
     break;
   case GLFW_KEY_RIGHT:
-    inMgr.HandleInput(InputManager::KEY::ArrowRight, action);
+    inMgr.handleInput(InputManager::KEY::ArrowRight, action);
     break;
   case GLFW_KEY_LEFT:
-    inMgr.HandleInput(InputManager::KEY::ArrowLeft, action);
+    inMgr.handleInput(InputManager::KEY::ArrowLeft, action);
     break;
   default:
     break;
@@ -328,7 +328,7 @@ void mousePressCallback(GLFWwindow * /* win */, int32_t button, int32_t action,
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {
-    inMgr.HandleInput(InputManager::KEY::Mouse1, action);
+    inMgr.handleInput(InputManager::KEY::Mouse1, action);
   }
 
   double xpos, ypos;
@@ -358,7 +358,7 @@ void Window::renderImgui() {
   }
 
   if (ImGui::CollapsingHeader("Physics")) {
-    ImGui::Checkbox("Enabled", &game->debugMode);
+    ImGui::Checkbox("Enabled", &ECSManager::getInstance().simulatePhysics);
     Entity en = game->m_ECSManager.getPickedEntity();
     if (game->m_ECSManager.getEntitySelected()) {
       ImGui::Text("Selected entity: %lu", en);
@@ -379,7 +379,7 @@ void Window::renderImgui() {
     for (size_t i = 0; i < debugNamesInputs.size(); i++) {
       charitems.push_back(debugNamesInputs[i].c_str());
     }
-    ImGui::Combo("views", &game->debugView, &charitems[0], 7, 7);
+    ImGui::Combo("views", &ECSManager::getInstance().debugView, &charitems[0], 7, 7);
   }
 
   ImGui::End();

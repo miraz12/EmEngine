@@ -77,7 +77,7 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
 
 void PhysicsSystem::update(float dt) {
 
-  if (m_manager->debugMode) {
+  if (m_manager->simulatePhysics) {
     m_dynamicsWorld->stepSimulation(dt, 10);
     m_dynamicsWorld->debugDrawWorld();
     std::vector<Entity> view = m_manager->view<PositionComponent, PhysicsComponent>();
