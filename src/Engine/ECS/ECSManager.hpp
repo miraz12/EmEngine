@@ -145,7 +145,6 @@ public:
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
 
   glm::vec3 dDir;
-  bool dirDirty{false};
   int32_t debugView;
   bool simulatePhysics{false};
 

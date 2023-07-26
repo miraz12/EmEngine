@@ -50,43 +50,42 @@ void ShadowPass::Init(FrameGraph &fGraph) {
 }
 
 void ShadowPass::Execute(ECSManager &eManager) {
-    p_fboManager.bindFBO("depthMapFbo");
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glCullFace(GL_FRONT);
+  p_fboManager.bindFBO("depthMapFbo");
+  glEnable(GL_DEPTH_TEST);
+  glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  glCullFace(GL_FRONT);
 
-    p_shaderProgram.use();
+  p_shaderProgram.use();
 
-    // TODO Don't do this every frame
-    glm::mat4 lightProjection, lightView;
-    glm::mat4 lightSpaceMatrix;
-    float shadowBox = 9.0f;
-    lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
-    glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
-    lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-    lightSpaceMatrix = lightProjection * lightView;
-    glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"), 1, GL_FALSE,
-                       glm::value_ptr(lightSpaceMatrix));
+  // TODO Don't do this every frame
+  glm::mat4 lightProjection, lightView;
+  glm::mat4 lightSpaceMatrix;
+  float shadowBox = 9.0f;
+  lightProjection = glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
+  glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
+  lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+  lightSpaceMatrix = lightProjection * lightView;
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(lightSpaceMatrix));
 
-    std::vector<Entity> view = eManager.view<GraphicsComponent>();
-    for (auto &e : view) {
-      std::shared_ptr<PositionComponent> p = eManager.getComponent<PositionComponent>(e);
-      if (p) {
-        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                           glm::value_ptr(p->model));
-      } else {
-        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
-                           glm::value_ptr(glm::identity<glm::mat4>()));
-      }
-
-      std::shared_ptr<GraphicsComponent> g = eManager.getComponent<GraphicsComponent>(e);
-      g->m_grapObj.drawGeom(p_shaderProgram);
+  std::vector<Entity> view = eManager.view<GraphicsComponent>();
+  for (auto &e : view) {
+    std::shared_ptr<PositionComponent> p = eManager.getComponent<PositionComponent>(e);
+    if (p) {
+      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                         glm::value_ptr(p->model));
+    } else {
+      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1, GL_FALSE,
+                         glm::value_ptr(glm::identity<glm::mat4>()));
     }
 
-    glCullFace(GL_BACK);
-    m_dirty = false;
-    eManager.dirDirty = false;
+    std::shared_ptr<GraphicsComponent> g = eManager.getComponent<GraphicsComponent>(e);
+    g->m_grapObj.drawGeom(p_shaderProgram);
+  }
+
+  glCullFace(GL_BACK);
+  m_dirty = false;
 }
 
 void ShadowPass::setViewport(uint32_t w, uint32_t h) {

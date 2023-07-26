@@ -26,11 +26,8 @@ Game::Game(GLFWwindow &window)
 void Game::update(float dt) {
   m_InputManager.update(dt);
   m_ECSManager.updateDirLight(dirLightColor, dirLightAmbient, dirLightDir);
+  m_ECSManager.dDir = dirLightDir;
   m_ECSManager.update(dt);
-  if (m_ECSManager.dDir != dirLightDir) {
-    m_ECSManager.dDir = dirLightDir;
-    m_ECSManager.dirDirty = true;
-  }
 }
 
 void Game::setViewport(uint32_t w, uint32_t h) { m_ECSManager.setViewport(w, h); }

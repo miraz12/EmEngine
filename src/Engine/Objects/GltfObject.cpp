@@ -107,24 +107,24 @@ void GltfObject::loadMaterials(tinygltf::Model &model) {
     if (mat.pbrMetallicRoughness.baseColorTexture.index >= 0) {
       materialMast = materialMast | (1 << 0);
       p_materials[numNodes].m_baseColorTexture =
-          std::to_string(mat.pbrMetallicRoughness.baseColorTexture.index);
+          m_texIds.at(mat.pbrMetallicRoughness.baseColorTexture.index);
     }
     if (mat.pbrMetallicRoughness.metallicRoughnessTexture.index >= 0) {
       materialMast = materialMast | (1 << 1);
       p_materials[numNodes].m_metallicRoughnessTexture =
-          std::to_string(mat.pbrMetallicRoughness.metallicRoughnessTexture.index);
+          m_texIds.at(mat.pbrMetallicRoughness.metallicRoughnessTexture.index);
     }
     if (mat.emissiveTexture.index >= 0) {
       materialMast = materialMast | (1 << 2);
-      p_materials[numNodes].m_emissiveTexture = std::to_string(mat.emissiveTexture.index);
+      p_materials[numNodes].m_emissiveTexture = m_texIds.at(mat.emissiveTexture.index);
     }
     if (mat.occlusionTexture.index >= 0) {
       materialMast = materialMast | (1 << 3);
-      p_materials[numNodes].m_occlusionTexture = std::to_string(mat.occlusionTexture.index);
+      p_materials[numNodes].m_occlusionTexture = m_texIds.at(mat.occlusionTexture.index);
     }
     if (mat.normalTexture.index >= 0) {
       materialMast = materialMast | (1 << 4);
-      p_materials[numNodes].m_normalTexture = std::to_string(mat.normalTexture.index);
+      p_materials[numNodes].m_normalTexture = m_texIds.at(mat.normalTexture.index);
     }
 
     p_materials[numNodes].m_material = materialMast;
@@ -144,12 +144,10 @@ void GltfObject::loadMaterials(tinygltf::Model &model) {
 
 void GltfObject::loadTextures(tinygltf::Model &model) {
 
-  int32_t i = 0;
   for (auto &tex : model.textures) {
     TextureManager &texMan = TextureManager::getInstance();
 
     tinygltf::Image &image = model.images[tex.source];
-
     if (tex.source > -1) {
       GLenum format = GL_RGBA;
       if (image.component == 1) {
@@ -172,9 +170,9 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
       } else {
         std::cout << "WARNING: no matching type." << std::endl;
       }
-
-      texMan.loadTexture(std::to_string(i++), GL_RGBA, format, type, image.width, image.height,
-                         &image.image.at(0));
+      uint32_t id =
+          texMan.loadTexture(GL_RGBA, format, type, image.width, image.height, &image.image.at(0));
+      m_texIds.push_back(std::to_string(id));
     }
   }
 }

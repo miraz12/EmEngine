@@ -2,6 +2,7 @@
 #define GLTFOBJECT_H_
 
 #include <Objects/GraphicsObject.hpp>
+#include <queue>
 #include <string>
 #include <tiny_gltf.h>
 
@@ -19,6 +20,7 @@ private:
   void generateCollisionShape();
 
   btTriangleMesh *m_mesh;
+  std::vector<std::string> m_texIds;
 };
 
 #endif // GLTFOBJECT_H_
