@@ -49,7 +49,8 @@ void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp) {
     // float rColor = 0.5f + ((rand() % 100) / 100.0f);
     glm::vec3 offset(0.0, 0.0, 0.0);
     p->position = pComp->getPosition() + offset;
-    p->color = glm::vec4(r, g, b, 1.0f);
+    // Make particles glow with * 100
+    p->color = glm::vec4(r * 100, g * 100, b * 100, 1.0f);
     p->life = 1.0f;
     p->velocity = pComp->getVelocity() + glm::vec3(distribution(generator), distribution(generator),
                                                    distribution(generator));
