@@ -17,13 +17,26 @@ void Camera::setZoom(float zoomAmount) {
   m_matrixNeedsUpdate = true;
 }
 
-void Camera::bindProjViewMatrix(uint32_t proj, uint32_t view) {
+void Camera::checkDirty() {
   if (m_matrixNeedsUpdate) {
     m_viewMatrix = glm::lookAt(m_position, m_position + m_front, m_up);
     m_ProjectionMatrix = glm::perspective(glm::radians(m_fov), m_width / m_height, 0.1f, 1000.0f);
     m_matrixNeedsUpdate = false;
   }
+}
+
+void Camera::bindProjViewMatrix(uint32_t proj, uint32_t view) {
+  checkDirty();
   glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(m_ProjectionMatrix));
+  glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(m_viewMatrix));
+}
+
+void Camera::bindProjMatrix(uint32_t proj) {
+  checkDirty();
+  glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(m_ProjectionMatrix));
+}
+void Camera::bindViewMatrix(uint32_t view) {
+  checkDirty();
   glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(m_viewMatrix));
 }
 

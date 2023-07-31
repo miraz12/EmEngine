@@ -34,8 +34,12 @@ public:
   std::tuple<glm::vec3, glm::vec3> getRayTo(int x, int y);
 
   void bindProjViewMatrix(uint32_t proj, uint32_t view);
+  void bindProjMatrix(uint32_t proj);
+  void bindViewMatrix(uint32_t view);
 
 private:
+  void checkDirty();
+
   glm::mat4 m_viewMatrix;
   glm::mat4 m_ProjectionMatrix;
   bool m_matrixNeedsUpdate;

@@ -8,6 +8,7 @@
 #include <RenderPasses/FxaaPass.hpp>
 #include <RenderPasses/GeometryPass.hpp>
 #include <RenderPasses/LightPass.hpp>
+#include <RenderPasses/ParticlePass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
 
 FrameGraph::FrameGraph() {
@@ -18,10 +19,11 @@ FrameGraph::FrameGraph() {
   // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
   // glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-  // Damn this is ugly..
+  // This is not what controls render order, check PassId in header instead.
   m_renderPass[static_cast<size_t>(PassId::kShadow)] = new ShadowPass();
   m_renderPass[static_cast<size_t>(PassId::kGeom)] = new GeometryPass();
   m_renderPass[static_cast<size_t>(PassId::kLight)] = new LightPass();
+  m_renderPass[static_cast<size_t>(PassId::kParticle)] = new ParticlePass();
   m_renderPass[static_cast<size_t>(PassId::kCube)] = new CubeMapPass();
   m_renderPass[static_cast<size_t>(PassId::kBloom)] = new BloomPass();
   m_renderPass[static_cast<size_t>(PassId::kFxaa)] = new FxaaPass();
@@ -49,10 +51,11 @@ void FrameGraph::draw(ECSManager &eManager) {
     pass->Execute(eManager);
   }
 
-  // glBindFramebuffer(GL_READ_FRAMEBUFFER, FrameBufferManager::getInstance().getFBO("cubeFBO"));
+  // glBindFramebuffer(GL_READ_FRAMEBUFFER,
+  // FrameBufferManager::getInstance().getFBO("particleFBO"));
   // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   // glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
-  //                   GL_NEAREST);
+  // GL_NEAREST);
   // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

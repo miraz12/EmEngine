@@ -8,6 +8,15 @@
     - type: Phy
       mass: 1.0
 
+# - entity: sponza
+#   components:
+#     - type: Gra
+#       primitive: "Mesh"
+#       file: "../../../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"
+#     - type: Pos
+#     - type: Phy
+#       mass: 0.0
+
 - entity: map
   components:
     - type: Gra

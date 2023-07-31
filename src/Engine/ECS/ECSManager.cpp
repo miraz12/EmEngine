@@ -1,6 +1,7 @@
 #include "ECSManager.hpp"
 #include "ECS/Systems/System.hpp"
 #include "Systems/GraphicsSystem.hpp"
+#include "Systems/ParticleSystem.hpp"
 #include "Systems/PhysicsSystem.hpp"
 #include <ECS/Systems/PositionSystem.hpp>
 #include <Types/LightTypes.hpp>
@@ -13,6 +14,7 @@ ECSManager::~ECSManager() {}
 void ECSManager::initializeSystems() {
   m_systems["PHYSICS"] = &PhysicsSystem::getInstance();
   m_systems["POSITION"] = &PositionSystem::getInstance();
+  m_systems["PARTICLES"] = &ParticleSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
   for (auto &s : m_systems) {
     s.second->initialize(*this);

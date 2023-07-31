@@ -209,11 +209,15 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
 
 void BloomPass::renderQuad() {
   if (m_quadVAO == 0) {
+    // clang-format off
     float quadVertices[] = {
-        // positions        // texture Coords
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+        // positions         // texture Coords
+        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+         1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
     };
+    // clang-format on
 
     // setup plane VAO
     glGenVertexArrays(1, &m_quadVAO);
