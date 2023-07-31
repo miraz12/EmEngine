@@ -5,7 +5,7 @@
 
 #include "Component.hpp"
 #include "glm/fwd.hpp"
-#include<glm/gtc/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class PositionComponent : public Component {
 public:
@@ -14,8 +14,10 @@ public:
   glm::vec3 scale;
   glm::mat4 model;
 
-  PositionComponent();
-  PositionComponent(float startX, float startY);
+  PositionComponent()
+      : position(0.0f, 0.0f, 0.0f), rotation(glm::identity<glm::quat>()), scale(1.0f) {}
+  PositionComponent(float startX, float startY)
+      : position(startX, startY, -0.1f), rotation(glm::identity<glm::quat>()), scale(1.0f) {}
 };
 
 #endif // POSITIONCOMPONENT_H_

@@ -7,6 +7,9 @@
       position: [0.0, 2.0, -1.0]
     - type: Phy
       mass: 1.0
+    - type: Par
+      position: [0.0, 0.0, -1.0]
+      velocity: [0.0, 5.0, 0.0]
 
 # - entity: sponza
 #   components:

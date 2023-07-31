@@ -13,7 +13,7 @@ public:
     DIRECTIONAL,
   };
 
-  LightingComponent(std::shared_ptr<BaseLight> light, TYPE type);
+  LightingComponent(std::shared_ptr<BaseLight> light, TYPE type) : m_t(type), light(light) {}
   virtual ~LightingComponent() = default;
 
   TYPE getType() { return m_t; };

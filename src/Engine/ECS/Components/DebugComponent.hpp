@@ -6,7 +6,7 @@
 
 class DebugComponent : public Component {
 public:
-  DebugComponent(GraphicsObject *grapComp);
+  DebugComponent(GraphicsObject *grapComp) : m_grapObj(grapComp){};
   DebugComponent() = delete;
   ~DebugComponent() = default;
 

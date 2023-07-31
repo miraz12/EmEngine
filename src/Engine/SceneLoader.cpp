@@ -1,4 +1,5 @@
 #include "SceneLoader.hpp"
+#include <ECS/Components/ParticlesComponent.hpp>
 #include <ECS/ECSManager.hpp>
 #include <Objects/Cube.hpp>
 #include <Objects/GltfObject.hpp>
@@ -93,6 +94,17 @@ void SceneLoader::init(std::string sceneFile) {
               physComp = std::make_shared<PhysicsComponent>(en, 0.0f);
             }
             ECSManager::getInstance().addComponents(en, physComp);
+          } else if (components[i]["type"].as<std::string>() == "Par") {
+            float x = components[i]["position"][0].as<float>();
+            float y = components[i]["position"][1].as<float>();
+            float z = components[i]["position"][2].as<float>();
+
+            float xv = components[i]["velocity"][0].as<float>();
+            float yv = components[i]["velocity"][1].as<float>();
+            float zv = components[i]["velocity"][2].as<float>();
+            std::shared_ptr<ParticlesComponent> parComp =
+                std::make_shared<ParticlesComponent>(glm::vec3(x, y, z), glm::vec3(xv, yv, zv));
+            ECSManager::getInstance().addComponents(en, parComp);
           }
         }
       }

@@ -41,16 +41,14 @@ void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp) {
   if (!deadParticles.empty()) {
     std::vector<std::unique_ptr<Particle>> &aliveParticles = pComp->getAliveParticles();
     std::unique_ptr<Particle> &p = deadParticles.back();
-    // float random = ((rand() % 100) - 50) / 100.0f;
-    float r = (distribution(generator) + 1.0) * 0.5;
-    float g = (distribution(generator) + 1.0) * 0.5;
-    float b = (distribution(generator) + 1.0) * 0.5;
-    // std::cout << "Random: " << random << std::endl;
-    // float rColor = 0.5f + ((rand() % 100) / 100.0f);
-    glm::vec3 offset(0.0, 0.0, 0.0);
+    float r = (distribution(generator) + 1.0f) * 0.5f;
+    float g = (distribution(generator) + 1.0f) * 0.5f;
+    float b = (distribution(generator) + 1.0f) * 0.5f;
+    glm::vec3 offset(0.0f, 0.0f, 0.0f);
     p->position = pComp->getPosition() + offset;
-    // Make particles glow with * 100
-    p->color = glm::vec4(r * 100, g * 100, b * 100, 1.0f);
+    // Make particles glow
+    float mul = 50.0f;
+    p->color = glm::vec4(r * mul, g * mul, b * mul, 1.0f);
     p->life = 1.0f;
     p->velocity = pComp->getVelocity() + glm::vec3(distribution(generator), distribution(generator),
                                                    distribution(generator));
