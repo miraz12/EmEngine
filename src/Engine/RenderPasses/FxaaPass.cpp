@@ -1,4 +1,5 @@
 #include "FxaaPass.hpp"
+#include <RenderPasses/RenderUtil.hpp>
 
 FxaaPass::FxaaPass()
     : RenderPass("resources/Shaders/vertex2D.glsl", "resources/Shaders/FxaaFragment.glsl") {
@@ -27,7 +28,7 @@ void FxaaPass::Execute(ECSManager & /* eManager */) {
 
   glUniform2f(p_shaderProgram.getUniformLocation("resolution"), p_width, p_height);
   p_textureManager.bindActivateTexture("frameBloomFinal", 0);
-  renderQuad();
+  Util::renderQuad();
 }
 
 void FxaaPass::setViewport(uint32_t w, uint32_t h) {
@@ -48,29 +49,4 @@ void FxaaPass::setViewport(uint32_t w, uint32_t h) {
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
   }
-}
-
-void FxaaPass::renderQuad() {
-  static uint32_t quadVAO = 0;
-  static uint32_t quadVBO = 0;
-  if (quadVAO == 0) {
-    float quadVertices[] = {
-        // positions        // texture Coords
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-    };
-
-    // setup plane VAO
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-  }
-  glBindVertexArray(quadVAO);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }

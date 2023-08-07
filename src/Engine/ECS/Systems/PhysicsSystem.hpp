@@ -2,7 +2,6 @@
 #define PHYSICSSYSTEM_H_
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <RenderPasses/FrameGraph.hpp>
 #include <Rendering/DebugDrawer.hpp>
 #include <array>
 

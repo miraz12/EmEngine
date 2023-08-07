@@ -12,8 +12,6 @@ public:
   void setViewport(uint32_t w, uint32_t h) override;
 
 private:
-  void renderQuad();
-
   struct mipLevel {
     glm::vec2 size;
     glm::ivec2 intSize;
@@ -22,8 +20,6 @@ private:
 
   std::vector<mipLevel> m_mipChain;
   ShaderProgram m_extractBright, m_downShader, m_bloomCombine;
-  uint32_t m_quadVAO{0};
-  uint32_t m_quadVBO{0};
 };
 
 #endif // BLOOMPASS_H_

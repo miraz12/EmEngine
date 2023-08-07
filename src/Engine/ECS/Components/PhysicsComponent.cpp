@@ -61,7 +61,7 @@ void PhysicsComponent::init() {
     body = new btRigidBody(rbInfo);
     body->setUserIndex(m_en);
 
-    PhysicsSystem &pSys = static_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
+    PhysicsSystem &pSys = dynamic_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
     pSys.addRigidBody(body);
     initialized = true;
   }

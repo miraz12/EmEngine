@@ -1,4 +1,5 @@
 #include "ParticlePass.hpp"
+#include "RenderUtil.hpp"
 #include <ECS/Components/ParticlesComponent.hpp>
 
 ParticlePass::ParticlePass()
@@ -35,7 +36,7 @@ void ParticlePass::Execute(ECSManager &eManager) {
         glUniform3fv(p_shaderProgram.getUniformLocation("particlePos"), 1,
                      glm::value_ptr(p->position));
         glUniform4fv(p_shaderProgram.getUniformLocation("color"), 1, glm::value_ptr(p->color));
-        renderQuad();
+        Util::renderQuad();
       }
     }
   }
@@ -59,29 +60,4 @@ void ParticlePass::setViewport(uint32_t w, uint32_t h) {
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
   }
-}
-
-void ParticlePass::renderQuad() {
-  static uint32_t quadVAO = 0;
-  static uint32_t quadVBO = 0;
-  if (quadVAO == 0) {
-    float quadVertices[] = {
-        // positions        // texture Coords
-        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-    };
-
-    // setup plane VAO
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-  }
-  glBindVertexArray(quadVAO);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }

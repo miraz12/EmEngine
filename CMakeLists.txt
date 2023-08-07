@@ -29,7 +29,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 target_compile_options(${PROJECT_NAME} PRIVATE
                         $<$<CONFIG:Release>:
                             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                                    -pedantic -Wall -Wextra -O3 -Werror>
+                                    -pedantic -Wall -Wextra -O3 -Werror -fno-exceptions -flto -ffast-math>
                                     $<$<CXX_COMPILER_ID:MSVC>:
                                     /W4;>>)
 
@@ -38,12 +38,11 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CM
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if (DEFINED EMSCRIPTEN)
-target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra -g)
+target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra -O3 -Werror -fno-exceptions -flto -ffast-math)
 
 set_target_properties(${PROJECT_NAME}
         PROPERTIES SUFFIX ".html"
         LINK_FLAGS " --bind -sFULL_ES3 -sUSE_GLFW=3  
                      -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH 
-                     -gsource-map --source-map-base http://localhost:8000/build/ 
                      --preload-file ../resources")
 endif (DEFINED EMSCRIPTEN)

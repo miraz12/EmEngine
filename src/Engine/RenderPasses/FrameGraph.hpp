@@ -33,8 +33,6 @@ public:
 
 private:
   uint32_t m_width{800}, m_height{800};
-  uint32_t m_quadVAO = 0;
-  uint32_t m_quadVBO = 0;
 };
 
 #endif // FRAMEGRAPH_H_

@@ -1,11 +1,11 @@
 #include "DebugDrawer.hpp"
 DebugDrawer::DebugDrawer() { lines.reserve(1000); }
 
-#ifdef EMSCRIPTEN 
+#ifdef EMSCRIPTEN
 void DebugDrawer::drawLine(const btVector3 & /* from */, const btVector3 & /* to */,
                            const btVector3 & /* color */) {
 #else
-void DebugDrawer::drawLine(const btVector3 &from, const btVector3 &to,
+void DebugDrawer::drawLine(const btVector3 & /* from */, const btVector3 & /* to */,
                            const btVector3 & /* color */) {
   // DebugDrawer::Line l;
   // l.from = from;
@@ -30,7 +30,7 @@ void DebugDrawer::draw3dText(const btVector3 & /* location */, const char * /* t
 }
 
 void DebugDrawer::renderAndFlush() {
-#ifndef EMSCRIPTEN 
+#ifndef EMSCRIPTEN
   // if (lines.size() > 0) {
 
   //   // load the vertex data info

@@ -124,7 +124,7 @@ public:
   template <typename T> std::shared_ptr<T> getComponent(Entity entity) {
     // Return the component at the specified entity's index in the array
     assert(!hasComponent<T>(entity));
-    return std::static_pointer_cast<T>(m_components.at(entity).at(getComponentTypeID<T>()));
+    return std::dynamic_pointer_cast<T>(m_components.at(entity).at(getComponentTypeID<T>()));
   }
 
   // // Create point light

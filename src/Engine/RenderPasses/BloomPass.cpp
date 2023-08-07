@@ -1,5 +1,5 @@
 #include "BloomPass.hpp"
-#include "FrameGraph.hpp"
+#include "RenderUtil.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <iostream>
@@ -70,7 +70,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   p_fboManager.bindFBO("brightFBO");
   m_extractBright.use();
   p_textureManager.bindActivateTexture("cubeFrame", 0);
-  renderQuad();
+  Util::renderQuad();
 
   p_fboManager.bindFBO("bloomFBO");
   m_downShader.use();
@@ -90,7 +90,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
     glViewport(0, 0, mip.size.x, mip.size.y);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mip.texture, 0);
 
-    renderQuad();
+    Util::renderQuad();
 
     // Set current mip resolution as srcResolution for next iteration
     glUniform2f(m_downShader.getUniformLocation("srcResolution"), mip.size.x, mip.size.y);
@@ -120,7 +120,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
     glViewport(0, 0, nextMip.size.x, nextMip.size.y);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, nextMip.texture, 0);
 
-    renderQuad();
+    Util::renderQuad();
   }
 
   // Disable additive blending
@@ -139,7 +139,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   glActiveTexture(GL_TEXTURE0 + 1);
   glBindTexture(GL_TEXTURE_2D, m_mipChain.front().texture);
 
-  renderQuad();
+  Util::renderQuad();
 }
 
 void BloomPass::setViewport(uint32_t w, uint32_t h) {
@@ -205,31 +205,4 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;
   }
-}
-
-void BloomPass::renderQuad() {
-  if (m_quadVAO == 0) {
-    // clang-format off
-    float quadVertices[] = {
-        // positions         // texture Coords
-        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-         1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
-         1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-    };
-    // clang-format on
-
-    // setup plane VAO
-    glGenVertexArrays(1, &m_quadVAO);
-    glGenBuffers(1, &m_quadVBO);
-    glBindVertexArray(m_quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-  }
-  glBindVertexArray(m_quadVAO);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
