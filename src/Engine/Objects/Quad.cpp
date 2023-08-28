@@ -30,7 +30,8 @@ Quad::Quad() {
   GLuint ebo;
   glGenBuffers(1, &ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices,
+               GL_STATIC_DRAW);
   newPrim->m_ebo = ebo;
   newPrim->m_drawType = 1;
 

@@ -31,6 +31,8 @@ void Game::update(float dt) {
   m_ECSManager.update(dt);
 }
 
-void Game::setViewport(uint32_t w, uint32_t h) { m_ECSManager.setViewport(w, h); }
+void Game::setViewport(uint32_t w, uint32_t h) {
+  m_ECSManager.setViewport(w, h);
+}
 
 Game::~Game() {}

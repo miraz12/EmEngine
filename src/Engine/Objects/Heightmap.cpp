@@ -8,7 +8,8 @@ Heightmap::Heightmap(std::string filename) {
   int32_t numChannels;
   int32_t width, height;
   stbi_set_flip_vertically_on_load(true); // Flip the image vertically
-  unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, &numChannels, 1);
+  unsigned char *imageData =
+      stbi_load(filename.c_str(), &width, &height, &numChannels, 1);
 
   if (!imageData) {
     std::cout << "Failed to load HDR image." << std::endl;
@@ -16,7 +17,8 @@ Heightmap::Heightmap(std::string filename) {
 
     std::vector<float> heights(width * height);
     for (int32_t i = 0; i < width * height; ++i) {
-      // Convert the pixel value to a normalized height value in the range [0, 1]
+      // Convert the pixel value to a normalized height value in the range [0,
+      // 1]
       heights[i] = static_cast<float>(imageData[i]) / 255.0f;
     }
 
@@ -35,8 +37,9 @@ Heightmap::Heightmap(std::string filename) {
       }
     }
 
-    p_coll = new btHeightfieldTerrainShape(width, height, m_data.data(), 1, -terrainScale,
-                                           terrainScale, 1, PHY_FLOAT, false);
+    p_coll = new btHeightfieldTerrainShape(width, height, m_data.data(), 1,
+                                           -terrainScale, terrainScale, 1,
+                                           PHY_FLOAT, false);
 
     int32_t numStrips = height - 1;
     int32_t numDegens = 2 * (numStrips - 1);
@@ -84,18 +87,19 @@ Heightmap::Heightmap(std::string filename) {
     GLuint ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * m_indices.size(), m_indices.data(),
-                 GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * m_indices.size(),
+                 m_indices.data(), GL_STATIC_DRAW);
     newPrim->m_ebo = ebo;
     newPrim->m_drawType = 1;
 
     uint32_t vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size() * 3, m_vertices.data(),
-                 GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size() * 3,
+                 m_vertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3,
+                          (void *)0);
     glEnableVertexAttribArray(0);
     Primitive::AttribInfo attribInfo;
     attribInfo.vbo = 0;

@@ -5,7 +5,8 @@
 #include <iostream>
 #include <string>
 
-ShaderProgram::ShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath) {
+ShaderProgram::ShaderProgram(std::string vertexShaderPath,
+                             std::string fragmentShaderPath) {
   loadShaders(vertexShaderPath, fragmentShaderPath);
 }
 
@@ -19,7 +20,8 @@ void ShaderProgram::setAttribBinding(std::string a) {
   m_attribBindings[a] = glGetAttribLocation(p_shaderProgram, a.c_str());
 }
 
-void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
+void ShaderProgram::loadShaders(std::string vertexShaderPath,
+                                std::string fragmentShaderPath) {
   // vertex shader
   std::string vertexShaderString = "";
   readFile(vertexShaderPath, &vertexShaderString);
@@ -65,7 +67,8 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath, std::string fragme
   glGetProgramiv(p_shaderProgram, GL_LINK_STATUS, &success);
   if (!success) {
     glGetProgramInfoLog(p_shaderProgram, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+              << infoLog << std::endl;
   }
 
   glDeleteShader(vertexShader);

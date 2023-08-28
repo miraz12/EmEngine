@@ -2,7 +2,8 @@
 
 // #include <iostream>
 
-// Entity::Entity(int32_t  ID) : m_ID(ID), m_playable(false), m_name("none"), m_components() {}
+// Entity::Entity(int32_t  ID) : m_ID(ID), m_playable(false), m_name("none"),
+// m_components() {}
 
 // // Dont know if this is the correct way to free components
 // Entity::~Entity() {

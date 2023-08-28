@@ -5,8 +5,9 @@
 #include <stb_image.h>
 #include <string>
 
-uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format, GLenum type,
-                                     uint32_t width, uint32_t height, unsigned char *data) {
+uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format,
+                                     GLenum type, uint32_t width,
+                                     uint32_t height, unsigned char *data) {
   GLuint texId;
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
@@ -16,7 +17,8 @@ uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format, GLe
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type,
+               data);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   std::string name = std::to_string(texId);
@@ -24,9 +26,9 @@ uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format, GLe
   texIds.insert({name, Texture{texId, GL_TEXTURE_2D}});
   return texId;
 }
-uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat, GLenum format,
-                                     GLenum type, uint32_t width, uint32_t height,
-                                     unsigned char *data) {
+uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat,
+                                     GLenum format, GLenum type, uint32_t width,
+                                     uint32_t height, unsigned char *data) {
   // std::cout << "Warning texture reload" << std::endl;
   deleteTexture(name);
   GLuint texId;
@@ -38,13 +40,15 @@ uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat, 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type,
+               data);
   glGenerateMipmap(GL_TEXTURE_2D);
   texIds.insert({name, Texture{texId, GL_TEXTURE_2D}});
   return texId;
 }
 
-void TextureManager::setTexture(std::string name, uint32_t texId, uint32_t type) {
+void TextureManager::setTexture(std::string name, uint32_t texId,
+                                uint32_t type) {
   deleteTexture(name);
   texIds.insert({name, Texture{texId, type}});
 }

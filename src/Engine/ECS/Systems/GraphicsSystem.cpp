@@ -11,10 +11,13 @@
 #include "ECS/ECSManager.hpp"
 
 GraphicsSystem::GraphicsSystem()
-    : m_fboManager(FrameBufferManager::getInstance()), m_fGraph(*new FrameGraph()) {}
+    : m_fboManager(FrameBufferManager::getInstance()),
+      m_fGraph(*new FrameGraph()) {}
 
 GraphicsSystem::~GraphicsSystem() { delete &m_fGraph; }
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
 
-void GraphicsSystem::setViewport(uint32_t w, uint32_t h) { m_fGraph.setViewport(w, h); }
+void GraphicsSystem::setViewport(uint32_t w, uint32_t h) {
+  m_fGraph.setViewport(w, h);
+}

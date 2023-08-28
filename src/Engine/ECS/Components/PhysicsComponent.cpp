@@ -16,7 +16,10 @@ PhysicsComponent::~PhysicsComponent() {
   delete myMotionState;
 };
 
-PhysicsComponent::PhysicsComponent(Entity en, float mass) : mass(mass), m_en(en) { init(); }
+PhysicsComponent::PhysicsComponent(Entity en, float mass)
+    : mass(mass), m_en(en) {
+  init();
+}
 
 void PhysicsComponent::init() {
   // create a dynamic rigidbody
@@ -26,11 +29,13 @@ void PhysicsComponent::init() {
       ECSManager::getInstance().getComponent<PositionComponent>(m_en);
 
   if (posComp) {
-    initialPos = btVector3(posComp->position.x, posComp->position.y, posComp->position.z);
+    initialPos = btVector3(posComp->position.x, posComp->position.y,
+                           posComp->position.z);
     // HACK: Changed rotation axels to work with plane..
-    initialScale = btVector3(posComp->scale.x, posComp->scale.z, posComp->scale.y);
-    initialRotation = btQuaternion(posComp->rotation.x, posComp->rotation.y, posComp->rotation.z,
-                                   posComp->rotation.w);
+    initialScale =
+        btVector3(posComp->scale.x, posComp->scale.z, posComp->scale.y);
+    initialRotation = btQuaternion(posComp->rotation.x, posComp->rotation.y,
+                                   posComp->rotation.z, posComp->rotation.w);
   }
 
   if (graphComp) {
@@ -39,7 +44,8 @@ void PhysicsComponent::init() {
 
     ECSManager &eManager = ECSManager::getInstance();
     // BUG: Cant remove this without breaking debug draw?
-    std::shared_ptr<DebugComponent> dComp = std::make_shared<DebugComponent>(new Cube());
+    std::shared_ptr<DebugComponent> dComp =
+        std::make_shared<DebugComponent>(new Cube());
 
     /// Create Dynamic Objects
     startTransform.setIdentity();
@@ -54,14 +60,16 @@ void PhysicsComponent::init() {
     startTransform.setOrigin(initialPos);
     startTransform.setRotation(initialRotation);
 
-    // using motionstate is recommended, it provides interpolation capabilities, and only
-    // synchronizes 'active' objects
+    // using motionstate is recommended, it provides interpolation capabilities,
+    // and only synchronizes 'active' objects
     myMotionState = new btDefaultMotionState(startTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState,
+                                                    colShape, localInertia);
     body = new btRigidBody(rbInfo);
     body->setUserIndex(m_en);
 
-    PhysicsSystem &pSys = dynamic_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
+    PhysicsSystem &pSys =
+        dynamic_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
     pSys.addRigidBody(body);
     initialized = true;
   }

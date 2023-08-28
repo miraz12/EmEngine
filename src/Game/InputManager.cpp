@@ -29,12 +29,16 @@ void InputManager::update(float dt) {
   // Parse input
   if (keys.at(InputManager::KEY::A)) {
     if (ecsManager.simulatePhysics) {
-      btRigidBody *body = ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      btRigidBody *body =
+          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(-1.0, 0.0, 0.0) + body->getLinearVelocity());
+      body->setLinearVelocity(moveSpeed * btVector3(-1.0, 0.0, 0.0) +
+                              body->getLinearVelocity());
     } else {
-      glm::vec3 camPos = cam.getPosition() -
-                         glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
+      glm::vec3 camPos =
+          cam.getPosition() -
+          glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed *
+              dt;
       if (!glm::all(glm::isnan(camPos))) {
         cam.setPosition(camPos);
       }
@@ -42,12 +46,16 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::D)) {
     if (ecsManager.simulatePhysics) {
-      btRigidBody *body = ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      btRigidBody *body =
+          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(1.0, 0.0, 0.0) + body->getLinearVelocity());
+      body->setLinearVelocity(moveSpeed * btVector3(1.0, 0.0, 0.0) +
+                              body->getLinearVelocity());
     } else {
-      glm::vec3 camPos = cam.getPosition() +
-                         glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
+      glm::vec3 camPos =
+          cam.getPosition() +
+          glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed *
+              dt;
       if (!glm::all(glm::isnan(camPos))) {
         cam.setPosition(camPos);
       }
@@ -55,9 +63,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::W)) {
     if (ecsManager.simulatePhysics) {
-      btRigidBody *body = ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      btRigidBody *body =
+          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, -1.0) + body->getLinearVelocity());
+      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, -1.0) +
+                              body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
@@ -67,9 +77,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::S)) {
     if (ecsManager.simulatePhysics) {
-      btRigidBody *body = ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      btRigidBody *body =
+          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, 1.0) + body->getLinearVelocity());
+      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, 1.0) +
+                              body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
@@ -79,9 +91,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::Space)) {
     if (ecsManager.simulatePhysics) {
-      btRigidBody *body = ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      btRigidBody *body =
+          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(0.0, 1.0, 0.0) + body->getLinearVelocity());
+      body->setLinearVelocity(moveSpeed * btVector3(0.0, 1.0, 0.0) +
+                              body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() + glm::vec3(0, 1, 0) * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {

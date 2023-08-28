@@ -54,9 +54,8 @@ void FrameGraph::draw(ECSManager &eManager) {
   // glBindFramebuffer(GL_READ_FRAMEBUFFER,
   // FrameBufferManager::getInstance().getFBO("particleFBO"));
   // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  // glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
-  // GL_NEAREST);
-  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
+  // GL_COLOR_BUFFER_BIT, GL_NEAREST); glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void FrameGraph::setViewport(uint32_t w, uint32_t h) {

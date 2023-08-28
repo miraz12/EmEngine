@@ -8,8 +8,9 @@ void GraphicsObject::draw(const ShaderProgram &sPrg) {
                        glm::value_ptr(n->nodeMat));
     Mesh &m = p_meshes[n->mesh];
     for (uint32_t i = 0; i < m.numPrims; i++) {
-      Material *mat = m.m_primitives[i].m_material > -1 ? &p_materials[m.m_primitives[i].m_material]
-                                                        : &defaultMat;
+      Material *mat = m.m_primitives[i].m_material > -1
+                          ? &p_materials[m.m_primitives[i].m_material]
+                          : &defaultMat;
       mat->bind(sPrg);
       m.m_primitives[i].draw();
     }

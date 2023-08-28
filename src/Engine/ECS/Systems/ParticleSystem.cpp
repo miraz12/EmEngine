@@ -5,11 +5,13 @@
 void ParticleSystem::update(float dt) {
   std::vector<Entity> view = m_manager->view<ParticlesComponent>();
   for (auto &e : view) {
-    std::shared_ptr<ParticlesComponent> partComp = m_manager->getComponent<ParticlesComponent>(e);
+    std::shared_ptr<ParticlesComponent> partComp =
+        m_manager->getComponent<ParticlesComponent>(e);
     for (uint32_t i = 0; i < partComp->getNumNewParticles(); i++) {
       reviveParticle(partComp);
     }
-    std::vector<std::unique_ptr<Particle>> &aliveParticles = partComp->getAliveParticles();
+    std::vector<std::unique_ptr<Particle>> &aliveParticles =
+        partComp->getAliveParticles();
     // Loop through all alive particles, removing all dying ones
     for (uint32_t i = 0; i < aliveParticles.size();)
       if (aliveParticles[i]->life <= 0) {
@@ -19,15 +21,18 @@ void ParticleSystem::update(float dt) {
         aliveParticles[i]->life -= dt;
         aliveParticles[i]->position += aliveParticles[i]->velocity * dt;
         aliveParticles[i]->color.a -= dt * 2.5f;
-        i++; // Only progress if not deleting element as deleting shiftes the vector
+        i++; // Only progress if not deleting element as deleting shiftes the
+             // vector
       }
   }
 }
 
 void ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
                                   std::unique_ptr<Particle> &p) {
-  std::vector<std::unique_ptr<Particle>> &aliveParticles = pComp->getAliveParticles();
-  std::vector<std::unique_ptr<Particle>> &deadParticles = pComp->getDeadParticles();
+  std::vector<std::unique_ptr<Particle>> &aliveParticles =
+      pComp->getAliveParticles();
+  std::vector<std::unique_ptr<Particle>> &deadParticles =
+      pComp->getDeadParticles();
   std::vector<std::unique_ptr<Particle>>::iterator it =
       std::find(aliveParticles.begin(), aliveParticles.end(), p);
   if (it != aliveParticles.end()) {
@@ -37,9 +42,11 @@ void ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
 }
 
 void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp) {
-  std::vector<std::unique_ptr<Particle>> &deadParticles = pComp->getDeadParticles();
+  std::vector<std::unique_ptr<Particle>> &deadParticles =
+      pComp->getDeadParticles();
   if (!deadParticles.empty()) {
-    std::vector<std::unique_ptr<Particle>> &aliveParticles = pComp->getAliveParticles();
+    std::vector<std::unique_ptr<Particle>> &aliveParticles =
+        pComp->getAliveParticles();
     std::unique_ptr<Particle> &p = deadParticles.back();
     float r = (distribution(generator) + 1.0f) * 0.5f;
     float g = (distribution(generator) + 1.0f) * 0.5f;
@@ -50,7 +57,8 @@ void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp) {
     float mul = 50.0f;
     p->color = glm::vec4(r * mul, g * mul, b * mul, 1.0f);
     p->life = 1.0f;
-    p->velocity = pComp->getVelocity() + glm::vec3(distribution(generator), distribution(generator),
+    p->velocity = pComp->getVelocity() + glm::vec3(distribution(generator),
+                                                   distribution(generator),
                                                    distribution(generator));
     aliveParticles.push_back(std::move(deadParticles.back()));
     deadParticles.pop_back();

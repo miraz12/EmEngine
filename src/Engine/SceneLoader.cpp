@@ -22,7 +22,8 @@ void SceneLoader::init(std::string sceneFile) {
         float x = dict["position"][0].as<float>();
         float y = dict["position"][1].as<float>();
         float z = dict["position"][2].as<float>();
-        ECSManager::getInstance().SetupPointLight(glm::vec3(r, g, b), constant, linear, quadratic,
+        ECSManager::getInstance().SetupPointLight(glm::vec3(r, g, b), constant,
+                                                  linear, quadratic,
                                                   glm::vec3(x, y, z));
       } else if (dict["type"].as<std::string>() == "dir") {
         float r = dict["color"][0].as<float>();
@@ -32,8 +33,8 @@ void SceneLoader::init(std::string sceneFile) {
         float x = dict["direction"][0].as<float>();
         float y = dict["direction"][1].as<float>();
         float z = dict["direction"][2].as<float>();
-        ECSManager::getInstance().SetupDirectionalLight(glm::vec3(r, g, b), ambient,
-                                                        glm::vec3(x, y, z));
+        ECSManager::getInstance().SetupDirectionalLight(
+            glm::vec3(r, g, b), ambient, glm::vec3(x, y, z));
       }
     }
     if (dict["entity"]) {
@@ -52,20 +53,25 @@ void SceneLoader::init(std::string sceneFile) {
             } else if (components[i]["primitive"].as<std::string>() == "Line") {
               // TODO: Fix this when needed
               // graphComp = std::make_shared<GraphicsComponent>(*new Line());
-            } else if (components[i]["primitive"].as<std::string>() == "Point") {
+            } else if (components[i]["primitive"].as<std::string>() ==
+                       "Point") {
               // TODO: Fix this when needed
               // graphComp = std::make_shared<GraphicsComponent>(*new Point());
             } else if (components[i]["primitive"].as<std::string>() == "Mesh") {
               graphComp = std::make_shared<GraphicsComponent>(
-                  *new GltfObject("resources/Models/" + components[i]["file"].as<std::string>()));
-            } else if (components[i]["primitive"].as<std::string>() == "Heightmap") {
+                  *new GltfObject("resources/Models/" +
+                                  components[i]["file"].as<std::string>()));
+            } else if (components[i]["primitive"].as<std::string>() ==
+                       "Heightmap") {
               graphComp = std::make_shared<GraphicsComponent>(
-                  *new Heightmap("resources/Textures/" + components[i]["file"].as<std::string>()));
+                  *new Heightmap("resources/Textures/" +
+                                 components[i]["file"].as<std::string>()));
             }
             ECSManager::getInstance().addComponents(en, graphComp);
 
           } else if (components[i]["type"].as<std::string>() == "Pos") {
-            std::shared_ptr<PositionComponent> posComp = std::make_shared<PositionComponent>();
+            std::shared_ptr<PositionComponent> posComp =
+                std::make_shared<PositionComponent>();
             if (components[i]["position"]) {
               float x = components[i]["position"][0].as<float>();
               float y = components[i]["position"][1].as<float>();
@@ -89,7 +95,8 @@ void SceneLoader::init(std::string sceneFile) {
           } else if (components[i]["type"].as<std::string>() == "Phy") {
             std::shared_ptr<PhysicsComponent> physComp;
             if (components[i]["mass"]) {
-              physComp = std::make_shared<PhysicsComponent>(en, components[i]["mass"].as<float>());
+              physComp = std::make_shared<PhysicsComponent>(
+                  en, components[i]["mass"].as<float>());
             } else {
               physComp = std::make_shared<PhysicsComponent>(en, 0.0f);
             }
@@ -103,7 +110,8 @@ void SceneLoader::init(std::string sceneFile) {
             float yv = components[i]["velocity"][1].as<float>();
             float zv = components[i]["velocity"][2].as<float>();
             std::shared_ptr<ParticlesComponent> parComp =
-                std::make_shared<ParticlesComponent>(glm::vec3(x, y, z), glm::vec3(xv, yv, zv));
+                std::make_shared<ParticlesComponent>(glm::vec3(x, y, z),
+                                                     glm::vec3(xv, yv, zv));
             ECSManager::getInstance().addComponents(en, parComp);
           }
         }

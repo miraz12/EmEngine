@@ -2,7 +2,8 @@
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 Cube::Cube() {
-  float vertices[] = {// clang-format off
+  float vertices[] = {
+      // clang-format off
     // Front face
     -0.5f, -0.5f,  0.5f,
      0.5f, -0.5f,  0.5f,
@@ -51,7 +52,7 @@ Cube::Cube() {
     -0.5f, -0.5f,  0.5f,
     -0.5f, -0.5f, -0.5f
   };
-                      // clang-format on
+  // clang-format on
 
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   Node *n = new Node;
