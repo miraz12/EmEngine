@@ -2,6 +2,7 @@
 #define GRAPHICSOBJECT_H_
 
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
+#include <Rendering/Animation.hpp>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
@@ -30,6 +31,8 @@ protected:
   std::unique_ptr<Material[]> p_materials;
   uint32_t p_numMeshes{0};
   std::unique_ptr<Mesh[]> p_meshes;
+  uint32_t p_numAnimations{0};
+  std::unique_ptr<Animation[]> p_animations;
   Material defaultMat;
 };
 

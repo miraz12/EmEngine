@@ -41,12 +41,16 @@ double lastX, lastY;
 static InputManager &inMgr = InputManager::getInstance();
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
-void framebuffer_size_callback(GLFWwindow *window, int32_t width, int32_t height);
-void keyPressCallback(GLFWwindow *win, int32_t key, int32_t scancode, int32_t action, int32_t mods);
-void mousePressCallback(GLFWwindow *win, int32_t button, int32_t action, int32_t mods);
+void framebuffer_size_callback(GLFWwindow *window, int32_t width,
+                               int32_t height);
+void keyPressCallback(GLFWwindow *win, int32_t key, int32_t scancode,
+                      int32_t action, int32_t mods);
+void mousePressCallback(GLFWwindow *win, int32_t button, int32_t action,
+                        int32_t mods);
 
 #ifndef EMSCRIPTEN
-void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type, GLuint /* id */, GLenum severity,
+void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
+                                GLuint /* id */, GLenum severity,
                                 GLsizei /* length */, const GLchar *message,
                                 const void * /* userParam */) {
   std::string msg("[OPENGL DEBUG MESSAGE] ");
@@ -102,7 +106,8 @@ int convertToInt(char *buffer, int32_t len) {
   return a;
 }
 
-char *loadWAV(const char *fn, int32_t &chan, int32_t &samplerate, int32_t &bps, int32_t &size) {
+char *loadWAV(const char *fn, int32_t &chan, int32_t &samplerate, int32_t &bps,
+              int32_t &size) {
   char buffer[4];
   std::ifstream in(fn, std::ios::binary);
   in.read(buffer, 4);
@@ -211,7 +216,8 @@ void Window::gameLoop() {
     tempFps = 0.0f;
     counter = 0;
     fpsUpdateTimer = 0.0f;
-    glfwSetWindowTitle(window, ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
+    glfwSetWindowTitle(window,
+                       ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
   }
 
   if (fpsIdx == 50) {
@@ -248,7 +254,7 @@ bool Window::start() {
 
   glfwDestroyWindow(window);
   glfwTerminate();
-  return true;
+  return 0;
 }
 
 void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
@@ -279,8 +285,8 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
-void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */, int32_t action,
-                      int32_t /* mods */) {
+void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */,
+                      int32_t action, int32_t /* mods */) {
   switch (key) {
   case GLFW_KEY_ESCAPE:
     glfwSetWindowShouldClose(win, true);
@@ -336,7 +342,8 @@ void mousePressCallback(GLFWwindow * /* win */, int32_t button, int32_t action,
   game->setMousePos(xpos, ypos);
 }
 
-void framebuffer_size_callback(GLFWwindow * /*window*/, int32_t width, int32_t height) {
+void framebuffer_size_callback(GLFWwindow * /*window*/, int32_t width,
+                               int32_t height) {
   SCR_WIDTH = width;
   SCR_HEIGHT = height;
   game->setViewport(width, height);
@@ -352,7 +359,8 @@ void Window::renderImgui() {
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
   if (ImGui::CollapsingHeader("Lights")) {
-    ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f, 1.0f);
+    ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f,
+                        1.0f);
     ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
     ImGui::ColorEdit3("Color", glm::value_ptr(game->dirLightColor));
   }
@@ -362,7 +370,8 @@ void Window::renderImgui() {
     Entity en = game->m_ECSManager.getPickedEntity();
     if (game->m_ECSManager.getEntitySelected()) {
       ImGui::Text("Selected entity: %lu", en);
-      glm::vec3 pos = game->m_ECSManager.getComponent<PositionComponent>(en)->position;
+      glm::vec3 pos =
+          game->m_ECSManager.getComponent<PositionComponent>(en)->position;
       ImGui::Text("Position: X: %f Y: %f Z: %f ", pos.x, pos.y, pos.z);
     }
   }
@@ -370,16 +379,19 @@ void Window::renderImgui() {
   static int offset = 0;
   offset = (offset + 1) % 50;
   if (ImGui::CollapsingHeader("Debug")) {
-    ImGui::PlotLines("FPS", fpsArray, 50, offset, nullptr, 0, 60, ImVec2(0, 80.f));
+    ImGui::PlotLines("FPS", fpsArray, 50, offset, nullptr, 0, 60,
+                     ImVec2(0, 80.f));
 
     const std::vector<std::string> debugNamesInputs = {
-        "none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"};
+        "none",     "Base color", "Normal",   "Occlusion",
+        "Emissive", "Metallic",   "Roughness"};
     std::vector<const char *> charitems;
     charitems.reserve(debugNamesInputs.size());
     for (size_t i = 0; i < debugNamesInputs.size(); i++) {
       charitems.push_back(debugNamesInputs[i].c_str());
     }
-    ImGui::Combo("views", &ECSManager::getInstance().debugView, &charitems[0], 7, 7);
+    ImGui::Combo("views", &ECSManager::getInstance().debugView, &charitems[0],
+                 7, 7);
   }
 
   ImGui::End();
