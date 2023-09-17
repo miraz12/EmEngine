@@ -18,6 +18,8 @@ private:
   void loadTextures(tinygltf::Model &model);
   void loadMeshes(tinygltf::Model &model);
   void loadAnimation(tinygltf::Model &model);
+  void loadSkins(tinygltf::Model &model);
+  void loadJoints(tinygltf::Model &model);
   void generateCollisionShape();
 
   btTriangleMesh *m_mesh;

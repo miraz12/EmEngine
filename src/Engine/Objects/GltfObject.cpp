@@ -64,6 +64,7 @@ void GltfObject::loadModel(tinygltf::Model &model) {
   loadTextures(model);
   loadMaterials(model);
   loadMeshes(model);
+  loadAnimation(model);
 
   const tinygltf::Scene &scene = model.scenes[model.defaultScene];
   for (auto &n : scene.nodes) {
@@ -315,8 +316,8 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
 }
 
 void GltfObject::loadAnimation(tinygltf::Model &model) {
-
   p_numAnimations = model.animations.size();
+  std::cout << "Num animations: " << p_numAnimations << std::endl;
   p_animations = std::make_unique<Animation[]>(p_numAnimations);
 
   uint32_t numNodes = 0;
@@ -436,6 +437,42 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
     numNodes++;
   }
 }
+
+// void GltfObject::loadSkins(tinygltf::Model &model) {
+//   for (tinygltf::Skin &source : model.skins) {
+//     Skin *newSkin = new Skin{};
+//     newSkin->name = source.name;
+
+//     // Find skeleton root node
+//     if (source.skeleton > -1) {
+//       newSkin->skeletonRoot = nodeFromIndex(source.skeleton);
+//     }
+
+//     // Find joint nodes
+//     for (int jointIndex : source.joints) {
+//       Node *node = nodeFromIndex(jointIndex);
+//       if (node) {
+//         newSkin->joints.push_back(nodeFromIndex(jointIndex));
+//       }
+//     }
+
+//     // Get inverse bind matrices from buffer
+//     if (source.inverseBindMatrices > -1) {
+//       const tinygltf::Accessor &accessor =
+//           model.accessors[source.inverseBindMatrices];
+//       const tinygltf::BufferView &bufferView =
+//           model.bufferViews[accessor.bufferView];
+//       const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+//       newSkin->inverseBindMatrices.resize(accessor.count);
+//       memcpy(newSkin->inverseBindMatrices.data(),
+//              &buffer.data[accessor.byteOffset + bufferView.byteOffset],
+//              accessor.count * sizeof(glm::mat4));
+//     }
+
+//     skins.push_back(newSkin);
+//   }
+// }
+void GltfObject::loadJoints(tinygltf::Model & /* model */) {}
 
 void GltfObject::generateCollisionShape() {
   btConvexShape *cShape = new btConvexTriangleMeshShape(m_mesh);
