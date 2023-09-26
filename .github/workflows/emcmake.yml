@@ -31,7 +31,10 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/embuild --config ${{env.BUILD_TYPE}}
     
-    - name: Deploy
-      run: |
-        rm /srv/http/* -rf
-        cp embuild/* /srv/http/ -r
+#    - name: Deploy
+#      run: |
+#        rm /srv/http/* -rf
+#        cp embuild/* /srv/http/ -r
+      # Runs a single command using the runners shell
+    - name: Copy build
+      run: cp -r embuild/ build-ok
