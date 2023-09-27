@@ -3,7 +3,7 @@ project(emEngine)
 # Generate compile_commands.json for LSP
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(EMCC_DEBUG 1)
-set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+# set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
 
 # Add source files
