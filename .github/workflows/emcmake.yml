@@ -29,7 +29,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: /run/current-system/sw/bin/cmake --build ${{github.workspace}}/embuild --config ${{env.BUILD_TYPE}}
+      run: EM_CACHE=~/.emscripten_cache /run/current-system/sw/bin/cmake --build ${{github.workspace}}/embuild --config ${{env.BUILD_TYPE}}
     
 #    - name: Deploy
 #      run: |
