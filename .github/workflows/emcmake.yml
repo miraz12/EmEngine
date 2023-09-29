@@ -27,4 +27,5 @@ jobs:
 
       - name: Copy build
         run: |
-          rsync -r --checksum -og --chown=nginx:nginx build/* /var/www/engine.rlyeh.nu/
+          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+          rsync -r --checksum  build/* /tmp/emengine
