@@ -10,11 +10,11 @@ public:
   LightPass();
   virtual ~LightPass(){};
   void Execute(ECSManager &eManager) override;
-  void setViewport(uint32_t w, uint32_t h) override;
+  void setViewport(u32 w, u32 h) override;
 
 private:
-  uint32_t quadVAO;
-  uint32_t m_lightBuffer, m_rbo;
+  u32 quadVAO;
+  u32 m_lightBuffer, m_rbo;
 };
 
 #endif // LIGHTPASS_H_

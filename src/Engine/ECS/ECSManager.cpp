@@ -77,7 +77,7 @@ void ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir) {
   dLight->ambientIntensity = ambient;
 }
 
-void ECSManager::setViewport(uint32_t w, uint32_t h) {
+void ECSManager::setViewport(u32 w, u32 h) {
   m_camera.setSize(w, h);
   static_cast<GraphicsSystem *>(m_systems["GRAPHICS"])->setViewport(w, h);
 };

@@ -12,7 +12,6 @@
 #include <SceneLoader.hpp>
 #include <algorithm>
 
-#include <glm/glm.hpp>
 #include <memory>
 
 #include "Window.hpp"
@@ -31,7 +30,7 @@ void Game::update(float dt) {
   m_ECSManager.update(dt);
 }
 
-void Game::setViewport(uint32_t w, uint32_t h) {
+void Game::setViewport(u32 w, u32 h) {
   m_ECSManager.setViewport(w, h);
 }
 

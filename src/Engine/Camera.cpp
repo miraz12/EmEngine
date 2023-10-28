@@ -27,22 +27,22 @@ void Camera::checkDirty() {
   }
 }
 
-void Camera::bindProjViewMatrix(uint32_t proj, uint32_t view) {
+void Camera::bindProjViewMatrix(u32 proj, u32 view) {
   checkDirty();
   glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(m_ProjectionMatrix));
   glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(m_viewMatrix));
 }
 
-void Camera::bindProjMatrix(uint32_t proj) {
+void Camera::bindProjMatrix(u32 proj) {
   checkDirty();
   glUniformMatrix4fv(proj, 1, GL_FALSE, glm::value_ptr(m_ProjectionMatrix));
 }
-void Camera::bindViewMatrix(uint32_t view) {
+void Camera::bindViewMatrix(u32 view) {
   checkDirty();
   glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(m_viewMatrix));
 }
 
-std::tuple<glm::vec3, glm::vec3> Camera::getRayTo(int x, int y) {
+std::tuple<glm::vec3, glm::vec3> Camera::getRayTo(i32 x, i32 y) {
   glm::mat4 inverseProjectionMatrix = glm::inverse(m_ProjectionMatrix);
   glm::mat4 inverseViewMatrix = glm::inverse(m_viewMatrix);
 

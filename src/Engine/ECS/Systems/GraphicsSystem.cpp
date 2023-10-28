@@ -18,6 +18,6 @@ GraphicsSystem::~GraphicsSystem() { delete &m_fGraph; }
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
 
-void GraphicsSystem::setViewport(uint32_t w, uint32_t h) {
+void GraphicsSystem::setViewport(u32 w, u32 h) {
   m_fGraph.setViewport(w, h);
 }

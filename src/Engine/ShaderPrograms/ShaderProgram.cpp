@@ -27,11 +27,11 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath,
   readFile(vertexShaderPath, &vertexShaderString);
   const char *vertexShaderSrc = vertexShaderString.c_str();
 
-  uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  u32 vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
   glCompileShader(vertexShader);
   // check for shader compile errors
-  int32_t success;
+  i32 success;
   char infoLog[512];
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
@@ -46,7 +46,7 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath,
   readFile(fragmentShaderPath, &fragmentShaderString);
   const char *fragmentShaderSrc = fragmentShaderString.c_str();
 
-  uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  u32 fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSrc, NULL);
   glCompileShader(fragmentShader);
   // check for shader compile errors
@@ -77,7 +77,7 @@ void ShaderProgram::loadShaders(std::string vertexShaderPath,
 
 void ShaderProgram::use() const { glUseProgram(p_shaderProgram); }
 
-uint32_t ShaderProgram::getUniformLocation(std::string uniformName) const {
+u32 ShaderProgram::getUniformLocation(std::string uniformName) const {
   if (m_uniformBindings.find(uniformName) == m_uniformBindings.end()) {
     std::cout << "No uniform with name " << uniformName << "\n";
     assert(false);
@@ -87,7 +87,7 @@ uint32_t ShaderProgram::getUniformLocation(std::string uniformName) const {
   return 0;
 }
 
-uint32_t ShaderProgram::getAttribLocation(std::string attribName) const {
+u32 ShaderProgram::getAttribLocation(std::string attribName) const {
   if (m_attribBindings.find(attribName) == m_attribBindings.end()) {
     std::cout << "No attribute with name " << attribName << "\n";
   } else {

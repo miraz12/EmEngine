@@ -1,8 +1,6 @@
 #ifndef SHAPE_H_
 #define SHAPE_H_
 
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
 #include <vector>
 
 class Shape {

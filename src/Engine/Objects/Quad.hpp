@@ -1,7 +1,6 @@
 #ifndef QUAD_H_
 #define QUAD_H_
 
-#include <glm/glm.hpp>
 
 #include "GraphicsObject.hpp"
 
@@ -17,7 +16,7 @@ private:
       0.5f,  0.0f,  0.0f, 0.5f, 0.5f, 0.0f, 1.0f,  1.0f, 0.0f, 0.5f, 1.0f,  0.0f,
   };
 
-  uint32_t m_indices[6] = {
+  u32 m_indices[6] = {
       0, 1, 2, 2, 1, 3,
   };
 };

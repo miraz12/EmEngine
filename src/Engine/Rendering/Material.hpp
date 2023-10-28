@@ -3,7 +3,6 @@
 
 #include <Managers/TextureManager.hpp>
 #include <ShaderPrograms/ShaderProgram.hpp>
-#include <glm/glm.hpp>
 #include <string>
 #include <vector>
 
@@ -14,7 +13,7 @@ public:
   void bind(const ShaderProgram &sPrg);
 
   TextureManager &m_textureMan;
-  int32_t m_material{0};
+  i32 m_material{0};
   glm::vec3 m_emissiveFactor = glm::vec3(0.0f);
   glm::vec3 m_baseColorFactor = glm::vec3(1.0f);
   float m_roughnessFactor = 1.0f;

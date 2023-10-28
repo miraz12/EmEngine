@@ -1,11 +1,8 @@
 #include "PhysicsComponent.hpp"
-#include <BulletCollision/CollisionShapes/btShapeHull.h>
-#include <BulletCollision/Gimpact/btGImpactShape.h>
-#include <BulletDynamics/Dynamics/btRigidBody.h>
+
 #include <ECS/Components/DebugComponent.hpp>
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
-#include <LinearMath/btDefaultMotionState.h>
 #include <Objects/Cube.hpp>
 
 PhysicsComponent::PhysicsComponent() { init(); }

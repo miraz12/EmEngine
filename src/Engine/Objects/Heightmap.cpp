@@ -2,11 +2,10 @@
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <iostream>
 #include <ostream>
-#include <stb_image.h>
 
 Heightmap::Heightmap(std::string filename) {
-  int32_t numChannels;
-  int32_t width, height;
+  i32 numChannels;
+  i32 width, height;
   stbi_set_flip_vertically_on_load(true); // Flip the image vertically
   unsigned char *imageData =
       stbi_load(filename.c_str(), &width, &height, &numChannels, 1);
@@ -16,7 +15,7 @@ Heightmap::Heightmap(std::string filename) {
   } else {
 
     std::vector<float> heights(width * height);
-    for (int32_t i = 0; i < width * height; ++i) {
+    for (i32 i = 0; i < width * height; ++i) {
       // Convert the pixel value to a normalized height value in the range [0,
       // 1]
       heights[i] = static_cast<float>(imageData[i]) / 255.0f;
@@ -26,8 +25,8 @@ Heightmap::Heightmap(std::string filename) {
 
     // Generate vertices
     m_vertices.reserve(width * height);
-    for (int32_t z = 0; z < height; ++z) {
-      for (int32_t x = 0; x < width; ++x) {
+    for (i32 z = 0; z < height; ++z) {
+      for (i32 x = 0; x < width; ++x) {
         float heightValue = heights[z * width + x];
         float xPos = (x - std::ceil((width) / 2) + 0.5f);
         float yPos = (heightValue * terrainScale) - terrainScale * 0.5f;
@@ -41,18 +40,18 @@ Heightmap::Heightmap(std::string filename) {
                                            -terrainScale, terrainScale, 1,
                                            PHY_FLOAT, false);
 
-    int32_t numStrips = height - 1;
-    int32_t numDegens = 2 * (numStrips - 1);
-    int32_t verticesPerStrip = 2 * width;
+    i32 numStrips = height - 1;
+    i32 numDegens = 2 * (numStrips - 1);
+    i32 verticesPerStrip = 2 * width;
 
     // Generate iindicesndices
     m_indices.reserve((verticesPerStrip * numStrips) + numDegens);
-    for (int32_t z = 0; z < height - 1; ++z) {
+    for (i32 z = 0; z < height - 1; ++z) {
       if (z > 0) {
         m_indices.push_back(z * width);
       }
 
-      for (int32_t x = 0; x < width; ++x) {
+      for (i32 x = 0; x < width; ++x) {
         m_indices.push_back(z * width + x);
         m_indices.push_back((z + 1) * width + x);
       }
@@ -73,7 +72,7 @@ Heightmap::Heightmap(std::string filename) {
     p_meshes[0].numPrims = 1;
     p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
     Primitive *newPrim = &p_meshes[0].m_primitives[0];
-    uint32_t vao;
+    u32 vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
@@ -87,12 +86,12 @@ Heightmap::Heightmap(std::string filename) {
     GLuint ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * m_indices.size(),
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u32) * m_indices.size(),
                  m_indices.data(), GL_STATIC_DRAW);
     newPrim->m_ebo = ebo;
     newPrim->m_drawType = 1;
 
-    uint32_t vbo;
+    u32 vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size() * 3,

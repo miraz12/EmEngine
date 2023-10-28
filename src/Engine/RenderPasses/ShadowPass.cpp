@@ -16,11 +16,11 @@ ShadowPass::ShadowPass()
 
   p_shaderProgram.setAttribBinding("POSITION");
 
-  uint32_t depthMapFbo;
+  u32 depthMapFbo;
   glGenFramebuffers(1, &depthMapFbo);
   p_fboManager.setFBO("depthMapFbo", depthMapFbo);
 
-  uint32_t depthMap;
+  u32 depthMap;
   glGenTextures(1, &depthMap);
   p_textureManager.setTexture("depthMap", depthMap);
 
@@ -94,7 +94,7 @@ void ShadowPass::Execute(ECSManager &eManager) {
   m_dirty = false;
 }
 
-void ShadowPass::setViewport(uint32_t w, uint32_t h) {
+void ShadowPass::setViewport(u32 w, u32 h) {
   p_width = w;
   p_height = h;
 

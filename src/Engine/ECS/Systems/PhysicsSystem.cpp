@@ -108,7 +108,7 @@ void PhysicsSystem::update(float dt) {
     }
   }
 }
-void PhysicsSystem::performPicking(int32_t mouseX, int32_t mouseY) {
+void PhysicsSystem::performPicking(i32 mouseX, i32 mouseY) {
 
   // Define the ray's start and end positions in world space
 

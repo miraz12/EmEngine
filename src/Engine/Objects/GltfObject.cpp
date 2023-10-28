@@ -12,9 +12,6 @@
 #include <Rendering/Node.hpp>
 #include <Rendering/Primitive.hpp>
 #include <cstddef>
-#include <cstdint>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -101,7 +98,7 @@ void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node,
     n->nodeMat = modelMat;
     p_nodes.push_back(n);
   }
-  for (int32_t c : node.children) {
+  for (i32 c : node.children) {
     loadNode(model, model.nodes[c], modelMat);
   }
 }
@@ -109,9 +106,9 @@ void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node,
 void GltfObject::loadMaterials(tinygltf::Model &model) {
   p_numMats = model.materials.size();
   p_materials = std::make_unique<Material[]>(p_numMats);
-  uint32_t numNodes = 0;
+  u32 numNodes = 0;
   for (auto &mat : model.materials) {
-    uint32_t materialMast = 0;
+    u32 materialMast = 0;
     if (mat.pbrMetallicRoughness.baseColorTexture.index >= 0) {
       materialMast = materialMast | (1 << 0);
       p_materials[numNodes].m_baseColorTexture =
@@ -184,7 +181,7 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
       } else {
         std::cout << "WARNING: no matching type." << std::endl;
       }
-      uint32_t id = texMan.loadTexture(GL_RGBA, format, type, image.width,
+      u32 id = texMan.loadTexture(GL_RGBA, format, type, image.width,
                                        image.height, &image.image.at(0));
       m_texIds.push_back(std::to_string(id));
     }
@@ -194,12 +191,12 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
 void GltfObject::loadMeshes(tinygltf::Model &model) {
   p_numMeshes = model.meshes.size();
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
-  uint32_t meshCount = 0;
+  u32 meshCount = 0;
   for (auto &mesh : model.meshes) {
     p_meshes[meshCount].m_primitives =
         std::make_unique<Primitive[]>(mesh.primitives.size());
     for (auto &primitive : mesh.primitives) {
-      uint32_t vao;
+      u32 vao;
       glGenVertexArrays(1, &vao);
       glBindVertexArray(vao);
 
@@ -230,22 +227,22 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         const void *indicesData =
             &buffer.data[bufferView.byteOffset + accessor.byteOffset];
         if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-          const uint16_t *indices =
-              reinterpret_cast<const uint16_t *>(indicesData);
-          for (uint32_t i = 0; i < newPrim->m_count; i += 3) {
-            int32_t index1 = indices[i];
-            int32_t index2 = indices[i + 1];
-            int32_t index3 = indices[i + 2];
+          const u16 *indices =
+              reinterpret_cast<const u16 *>(indicesData);
+          for (u32 i = 0; i < newPrim->m_count; i += 3) {
+            i32 index1 = indices[i];
+            i32 index2 = indices[i + 1];
+            i32 index3 = indices[i + 2];
             m_mesh->addTriangleIndices(index1, index2, index3);
           }
         } else if (accessor.componentType ==
                    TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-          const uint32_t *indices =
-              reinterpret_cast<const uint32_t *>(indicesData);
-          for (uint32_t i = 0; i < newPrim->m_count; i += 3) {
-            int32_t index1 = indices[i];
-            int32_t index2 = indices[i + 1];
-            int32_t index3 = indices[i + 2];
+          const u32 *indices =
+              reinterpret_cast<const u32 *>(indicesData);
+          for (u32 i = 0; i < newPrim->m_count; i += 3) {
+            i32 index1 = indices[i];
+            i32 index2 = indices[i + 1];
+            i32 index3 = indices[i + 2];
             m_mesh->addTriangleIndices(index1, index2, index3);
           }
         }
@@ -257,13 +254,13 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
             model.bufferViews[accessor.bufferView];
         const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
-        uint32_t loc = 0;
+        u32 loc = 0;
         if (attrib.first == "POSITION") {
           loc = 0;
           const float *positions = reinterpret_cast<const float *>(
               &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
-          int numVertices = accessor.count;
-          for (int i = 0; i < numVertices; i += 3) {
+          u32 numVertices = accessor.count;
+          for (u32 i = 0; i < numVertices; i += 3) {
             // clang-format off
               btVector3 vertex0(positions[i * 3],
                                 positions[i * 3 + 1],
@@ -285,14 +282,14 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
           loc = 3;
         }
 
-        uint32_t vbo;
+        u32 vbo;
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(bufferView.target, bufferView.byteLength,
                      &buffer.data.at(0) + bufferView.byteOffset,
                      GL_STATIC_DRAW);
 
-        int32_t byteStride =
+        i32 byteStride =
             accessor.ByteStride(model.bufferViews[accessor.bufferView]);
         glVertexAttribPointer(loc, accessor.type, accessor.componentType,
                               accessor.normalized, byteStride,
@@ -320,7 +317,7 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
   std::cout << "Num animations: " << p_numAnimations << std::endl;
   p_animations = std::make_unique<Animation[]>(p_numAnimations);
 
-  uint32_t numNodes = 0;
+  u32 numNodes = 0;
   for (tinygltf::Animation &anim : model.animations) {
     Animation animation{};
     p_animations[numNodes].name = anim.name;
@@ -449,7 +446,7 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
 //     }
 
 //     // Find joint nodes
-//     for (int jointIndex : source.joints) {
+//     for (u32 jointIndex : source.joints) {
 //       Node *node = nodeFromIndex(jointIndex);
 //       if (node) {
 //         newSkin->joints.push_back(nodeFromIndex(jointIndex));
@@ -480,7 +477,7 @@ void GltfObject::generateCollisionShape() {
   cHull->buildHull(cShape->getMargin());
   btConvexHullShape *chShape = new btConvexHullShape();
   cHull->numTriangles();
-  for (int i = 0; i < cHull->numTriangles(); ++i) {
+  for (u32 i = 0; i < cHull->numTriangles(); ++i) {
     chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
   }
   chShape->optimizeConvexHull();

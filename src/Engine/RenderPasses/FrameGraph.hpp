@@ -27,12 +27,12 @@ public:
   ~FrameGraph();
 
   void draw(ECSManager &eManager);
-  void setViewport(uint32_t w, uint32_t h);
+  void setViewport(u32 w, u32 h);
 
   std::array<RenderPass *, static_cast<size_t>(PassId::kNumPasses)> m_renderPass;
 
 private:
-  uint32_t m_width{800}, m_height{800};
+  u32 m_width{800}, m_height{800};
 };
 
 #endif // FRAMEGRAPH_H_

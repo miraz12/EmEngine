@@ -16,7 +16,7 @@ Quad::Quad() {
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
   Primitive *newPrim = &p_meshes[0].m_primitives[0];
-  uint32_t vao;
+  u32 vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
@@ -35,7 +35,7 @@ Quad::Quad() {
   newPrim->m_ebo = ebo;
   newPrim->m_drawType = 1;
 
-  uint32_t vbo;
+  u32 vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);

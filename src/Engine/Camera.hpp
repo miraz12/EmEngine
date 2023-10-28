@@ -1,9 +1,6 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include <LinearMath/btVector3.h>
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
 
 class Camera {
 public:
@@ -21,7 +18,7 @@ public:
     m_front = f;
     m_matrixNeedsUpdate = true;
   };
-  void setSize(uint32_t w, uint32_t h) {
+  void setSize(u32 w, u32 h) {
     m_width = w;
     m_height = h;
     m_matrixNeedsUpdate = true;
@@ -31,11 +28,11 @@ public:
   glm::vec3 getFront() { return m_front; };
   glm::vec3 getUp() { return m_up; };
   std::tuple<float, float> getSize() { return {m_width, m_height}; };
-  std::tuple<glm::vec3, glm::vec3> getRayTo(int x, int y);
+  std::tuple<glm::vec3, glm::vec3> getRayTo(i32 x, i32 y);
 
-  void bindProjViewMatrix(uint32_t proj, uint32_t view);
-  void bindProjMatrix(uint32_t proj);
-  void bindViewMatrix(uint32_t view);
+  void bindProjViewMatrix(u32 proj, u32 view);
+  void bindProjMatrix(u32 proj);
+  void bindViewMatrix(u32 view);
 
 private:
   void checkDirty();

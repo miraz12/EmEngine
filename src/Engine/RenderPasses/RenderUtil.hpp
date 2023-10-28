@@ -4,8 +4,8 @@
 namespace Util {
 
 inline void renderQuad() {
-  static uint32_t quadVAO = 0;
-  static uint32_t quadVBO = 0;
+  static u32 quadVAO = 0;
+  static u32 quadVBO = 0;
   if (quadVAO == 0) {
     // clang-format off
     float quadVertices[] = {
@@ -32,8 +32,8 @@ inline void renderQuad() {
 }
 
 inline void renderCube() {
-  static uint32_t cubeVAO{0};
-  static uint32_t cubeVBO{0};
+  static u32 cubeVAO{0};
+  static u32 cubeVBO{0};
   if (cubeVAO == 0) {
     // clang-format off
       float vertices[] = {

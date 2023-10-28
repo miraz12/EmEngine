@@ -2,12 +2,8 @@
 #define PHYSICSCOMPONENT_H_
 
 #include "Component.hpp"
-#include <BulletCollision/CollisionShapes/btCollisionShape.h>
-#include <BulletCollision/CollisionShapes/btSphereShape.h>
-#include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <ECS/Components/GraphicsComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
-#include <LinearMath/btDefaultMotionState.h>
 #include <memory>
 
 class PhysicsComponent : public Component {

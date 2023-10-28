@@ -65,7 +65,7 @@ Cube::Cube() {
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
   Primitive *newPrim = &p_meshes[0].m_primitives[0];
-  uint32_t vao;
+  u32 vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
@@ -76,7 +76,7 @@ Cube::Cube() {
   newPrim->m_type = GL_UNSIGNED_INT;
   newPrim->m_offset = 0;
 
-  uint32_t vbo;
+  u32 vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);

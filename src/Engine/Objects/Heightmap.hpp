@@ -12,6 +12,6 @@ public:
 private:
   std::vector<glm::vec3> m_vertices;
   std::vector<float> m_data;
-  std::vector<uint32_t> m_indices;
+  std::vector<u32> m_indices;
 };
 #endif // HEIGHTMAP_H_

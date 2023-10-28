@@ -1,15 +1,11 @@
 #ifndef PHYSICSSYSTEM_H_
 #define PHYSICSSYSTEM_H_
 
-#include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <Rendering/DebugDrawer.hpp>
-#include <array>
-
 #include "Camera.hpp"
 #include "Managers/FrameBufferManager.hpp"
 #include "ShaderPrograms/QuadShaderProgram.hpp"
 #include "System.hpp"
-#include <btBulletDynamicsCommon.h>
+#include <Rendering/DebugDrawer.hpp>
 
 class PhysicsSystem : public System, public Singleton<PhysicsSystem> {
   friend class Singleton<PhysicsSystem>;
@@ -17,11 +13,11 @@ class PhysicsSystem : public System, public Singleton<PhysicsSystem> {
 public:
   void initialize(ECSManager &ecsManager) override;
   void update(float dt) override;
-  void setViewport(uint32_t /* w */, uint32_t /* h */){};
+  void setViewport(u32 /* w */, u32 /* h */){};
   // Add rigid body to physics sim
   void addRigidBody(btRigidBody *body) { m_dynamicsWorld->addRigidBody(body); };
   // Function to perform raycasting and pick an object
-  void performPicking(int32_t mouseX, int32_t mouseY);
+  void performPicking(i32 mouseX, i32 mouseY);
   void setWindowSize(float x, float y);
 
   DebugDrawer m_dDraw;

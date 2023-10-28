@@ -10,10 +10,10 @@ FxaaPass::FxaaPass()
   p_shaderProgram.setUniformBinding("scene");
   p_shaderProgram.setUniformBinding("resolution");
 
-  uint32_t fbo;
+  u32 fbo;
   glGenFramebuffers(1, &fbo);
   p_fboManager.setFBO("FxaaFBO", fbo);
-  uint32_t frameFxaa;
+  u32 frameFxaa;
   glGenTextures(1, &frameFxaa);
   p_textureManager.setTexture("frameFxaa", frameFxaa, GL_TEXTURE_2D);
   setViewport(p_width, p_height);
@@ -33,12 +33,12 @@ void FxaaPass::Execute(ECSManager & /* eManager */) {
   Util::renderQuad();
 }
 
-void FxaaPass::setViewport(uint32_t w, uint32_t h) {
+void FxaaPass::setViewport(u32 w, u32 h) {
   p_width = w;
   p_height = h;
 
   p_fboManager.bindFBO("FxaaFBO");
-  uint32_t frameFxaa = p_textureManager.bindTexture("frameFxaa");
+  u32 frameFxaa = p_textureManager.bindTexture("frameFxaa");
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -47,7 +47,7 @@ void FxaaPass::setViewport(uint32_t w, uint32_t h) {
                GL_FLOAT, nullptr);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          frameFxaa, 0);
-  uint32_t attachments[1] = {GL_COLOR_ATTACHMENT0};
+  u32 attachments[1] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1, attachments);
   // check completion status
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

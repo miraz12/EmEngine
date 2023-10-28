@@ -9,7 +9,7 @@ class PositionSystem : public System, public Singleton<PositionSystem> {
 
 public:
   void update(float dt) override;
-  void setViewport(uint32_t /* w */, uint32_t /* h */){};
+  void setViewport(u32 /* w */, u32 /* h */){};
 
 private:
   PositionSystem() = default;

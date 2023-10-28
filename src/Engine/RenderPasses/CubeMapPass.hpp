@@ -11,7 +11,7 @@ public:
   CubeMapPass();
   virtual ~CubeMapPass(){};
   void Execute(ECSManager &eManager) override;
-  void setViewport(uint32_t w, uint32_t h) override;
+  void setViewport(u32 w, u32 h) override;
   void Init(FrameGraph &fGraph) override;
 
 private:
@@ -20,8 +20,8 @@ private:
   void generatePrefilterMap();
   void generateBRDF();
 
-  uint32_t m_cubeBuffer, m_rbo;
-  uint32_t m_captureFBO{0}, m_captureRBO{0}, m_envCubemap{0};
+  u32 m_cubeBuffer, m_rbo;
+  u32 m_captureFBO{0}, m_captureRBO{0}, m_envCubemap{0};
   ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader, m_prefilterShader,
       m_brdfShader;
 

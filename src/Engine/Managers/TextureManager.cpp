@@ -2,12 +2,11 @@
 
 #include <cassert>
 #include <iostream>
-#include <stb_image.h>
 #include <string>
 
-uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format,
-                                     GLenum type, uint32_t width,
-                                     uint32_t height, unsigned char *data) {
+u32 TextureManager::loadTexture(u32 internalFormat, GLenum format,
+                                     GLenum type, u32 width,
+                                     u32 height, unsigned char *data) {
   GLuint texId;
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
@@ -26,9 +25,9 @@ uint32_t TextureManager::loadTexture(uint32_t internalFormat, GLenum format,
   texIds.insert({name, Texture{texId, GL_TEXTURE_2D}});
   return texId;
 }
-uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat,
-                                     GLenum format, GLenum type, uint32_t width,
-                                     uint32_t height, unsigned char *data) {
+u32 TextureManager::loadTexture(std::string name, u32 internalFormat,
+                                     GLenum format, GLenum type, u32 width,
+                                     u32 height, unsigned char *data) {
   // std::cout << "Warning texture reload" << std::endl;
   deleteTexture(name);
   GLuint texId;
@@ -47,19 +46,19 @@ uint32_t TextureManager::loadTexture(std::string name, uint32_t internalFormat,
   return texId;
 }
 
-void TextureManager::setTexture(std::string name, uint32_t texId,
-                                uint32_t type) {
+void TextureManager::setTexture(std::string name, u32 texId,
+                                u32 type) {
   deleteTexture(name);
   texIds.insert({name, Texture{texId, type}});
 }
 
-uint32_t TextureManager::bindTexture(std::string name) {
+u32 TextureManager::bindTexture(std::string name) {
   Texture &tex = texIds.at(name);
   glBindTexture(tex.type, tex.id);
   return tex.id;
 }
 
-uint32_t TextureManager::bindActivateTexture(std::string name, uint32_t pos) {
+u32 TextureManager::bindActivateTexture(std::string name, u32 pos) {
   glActiveTexture(GL_TEXTURE0 + pos);
   return bindTexture(name);
 }

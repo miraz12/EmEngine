@@ -25,14 +25,14 @@ static double dt = 0.0;
 
 static float fps = 0.0f;
 static float tempFps = 0.0f;
-static int32_t counter = 0;
+static i32 counter = 0;
 static float fpsUpdate = 1.0f;
 static float fpsUpdateTimer = 0.0f;
 static float fpsArray[50];
 static size_t fpsIdx;
 
-static uint32_t SCR_WIDTH = 800;
-static uint32_t SCR_HEIGHT = 800;
+static u32 SCR_WIDTH = 800;
+static u32 SCR_HEIGHT = 800;
 static double SCR_PITCH = 0.0;
 static double SCR_YAW = -90.0;
 
@@ -41,12 +41,10 @@ double lastX, lastY;
 static InputManager &inMgr = InputManager::getInstance();
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
-void framebuffer_size_callback(GLFWwindow *window, int32_t width,
-                               int32_t height);
-void keyPressCallback(GLFWwindow *win, int32_t key, int32_t scancode,
-                      int32_t action, int32_t mods);
-void mousePressCallback(GLFWwindow *win, int32_t button, int32_t action,
-                        int32_t mods);
+void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height);
+void keyPressCallback(GLFWwindow *win, i32 key, i32 scancode, i32 action,
+                      i32 mods);
+void mousePressCallback(GLFWwindow *win, i32 button, i32 action, i32 mods);
 
 #ifndef EMSCRIPTEN
 void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
@@ -91,23 +89,22 @@ static GLFWwindow *window;
 static Game *game;
 
 bool isBigEndian() {
-  int32_t a = 1;
+  i32 a = 1;
   return !((char *)&a)[0];
 }
 
-int convertToInt(char *buffer, int32_t len) {
-  int32_t a = 0;
+i32 convertToInt(char *buffer, i32 len) {
+  i32 a = 0;
   if (!isBigEndian())
-    for (int i = 0; i < len; i++)
+    for (u32 i = 0; i < len; i++)
       ((char *)&a)[i] = buffer[i];
   else
-    for (int i = 0; i < len; i++)
+    for (u32 i = 0; i < len; i++)
       ((char *)&a)[3 - i] = buffer[i];
   return a;
 }
 
-char *loadWAV(const char *fn, int32_t &chan, int32_t &samplerate, int32_t &bps,
-              int32_t &size) {
+char *loadWAV(const char *fn, i32 &chan, i32 &samplerate, i32 &bps, i32 &size) {
   char buffer[4];
   std::ifstream in(fn, std::ios::binary);
   in.read(buffer, 4);
@@ -217,7 +214,7 @@ void Window::gameLoop() {
     counter = 0;
     fpsUpdateTimer = 0.0f;
     glfwSetWindowTitle(window,
-                       ("OpenGL FPS: " + std::to_string((int)fps)).c_str());
+                       ("OpenGL FPS: " + std::to_string((u32)fps)).c_str());
   }
 
   if (fpsIdx == 50) {
@@ -285,8 +282,8 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   game->setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
-void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */,
-                      int32_t action, int32_t /* mods */) {
+void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
+                      i32 /* mods */) {
   switch (key) {
   case GLFW_KEY_ESCAPE:
     glfwSetWindowShouldClose(win, true);
@@ -329,8 +326,8 @@ void keyPressCallback(GLFWwindow *win, int32_t key, int32_t /* scancode */,
   }
 }
 
-void mousePressCallback(GLFWwindow * /* win */, int32_t button, int32_t action,
-                        int32_t /* mods */) {
+void mousePressCallback(GLFWwindow * /* win */, i32 button, i32 action,
+                        i32 /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {
@@ -342,8 +339,7 @@ void mousePressCallback(GLFWwindow * /* win */, int32_t button, int32_t action,
   game->setMousePos(xpos, ypos);
 }
 
-void framebuffer_size_callback(GLFWwindow * /*window*/, int32_t width,
-                               int32_t height) {
+void framebuffer_size_callback(GLFWwindow * /*window*/, i32 width, i32 height) {
   SCR_WIDTH = width;
   SCR_HEIGHT = height;
   game->setViewport(width, height);
@@ -376,7 +372,7 @@ void Window::renderImgui() {
     }
   }
 
-  static int offset = 0;
+  static i32 offset = 0;
   offset = (offset + 1) % 50;
   if (ImGui::CollapsingHeader("Debug")) {
     ImGui::PlotLines("FPS", fpsArray, 50, offset, nullptr, 0, 60,

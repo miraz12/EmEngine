@@ -34,7 +34,7 @@ LightPass::LightPass()
   p_fboManager.setFBO("lightFBO", m_lightBuffer);
   setViewport(p_width, p_height);
 
-  for (uint32_t i = 0; i < 10; i++) {
+  for (u32 i = 0; i < 10; i++) {
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].position");
     p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
@@ -51,7 +51,7 @@ LightPass::LightPass()
                                       "].radius");
   }
 
-  uint32_t quadVBO;
+  u32 quadVBO;
   float quadVertices[] = {
       // positions        // texture Coords
       -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
@@ -94,7 +94,7 @@ void LightPass::Execute(ECSManager &eManager) {
                      GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
   std::vector<Entity> view = eManager.view<LightingComponent>();
-  int32_t numPLights = 0;
+  i32 numPLights = 0;
   for (auto e : view) {
     std::shared_ptr<LightingComponent> g =
         eManager.getComponent<LightingComponent>(e);
@@ -170,19 +170,19 @@ void LightPass::Execute(ECSManager &eManager) {
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void LightPass::setViewport(uint32_t w, uint32_t h) {
+void LightPass::setViewport(u32 w, u32 h) {
   p_width = w;
   p_height = h;
 
   p_fboManager.bindFBO("lightFBO");
 
   // - position color buffer
-  uint32_t lightFrame = p_textureManager.loadTexture(
+  u32 lightFrame = p_textureManager.loadTexture(
       "lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          lightFrame, 0);
 
-  uint32_t attachments[1] = {GL_COLOR_ATTACHMENT0};
+  u32 attachments[1] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1, attachments);
   glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width,

@@ -1,6 +1,5 @@
 #ifndef LIGHTINGCOMPONENT_H_
 #define LIGHTINGCOMPONENT_H_
-#include <glm/glm.hpp>
 
 #include "Component.hpp"
 #include "Types/LightTypes.hpp"

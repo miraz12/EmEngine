@@ -4,7 +4,6 @@
 #include "Component.hpp"
 #include <algorithm>
 #include <array>
-#include <glm/glm.hpp>
 #include <vector>
 
 struct Particle {
@@ -19,7 +18,7 @@ public:
   ParticlesComponent() = delete;
   ParticlesComponent(glm::vec3 position, glm::vec3 velocity)
       : m_position(position), m_velocity(velocity) {
-    for (uint32_t i = 0; i < 50000; i++) {
+    for (u32 i = 0; i < 50000; i++) {
       m_deadParticles.push_back(std::make_unique<Particle>(Particle(m_position, m_position)));
     }
   };
@@ -28,13 +27,13 @@ public:
   std::vector<std::unique_ptr<Particle>> &getDeadParticles() { return m_deadParticles; }
   glm::vec3 &getPosition() { return m_position; }
   glm::vec3 &getVelocity() { return m_velocity; }
-  uint32_t getNumNewParticles() { return m_numNewParticles; }
+  u32 getNumNewParticles() { return m_numNewParticles; }
 
 private:
   std::vector<std::unique_ptr<Particle>> m_aliveParticles;
   std::vector<std::unique_ptr<Particle>> m_deadParticles;
   glm::vec3 m_position, m_velocity;
-  uint32_t m_numNewParticles{20};
+  u32 m_numNewParticles{20};
 };
 
 #endif // PARTICLESCOMPONENT_H_

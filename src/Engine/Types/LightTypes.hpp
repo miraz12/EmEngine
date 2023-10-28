@@ -1,6 +1,5 @@
 #ifndef LIGHTTYPES_H_
 #define LIGHTTYPES_H_
-#include <glm/glm.hpp>
 
 struct BaseLight {
   glm::vec3 color = glm::vec3(0.0f);

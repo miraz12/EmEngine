@@ -2,7 +2,6 @@
 #define DEBUGDRAWER_H_
 
 #include <LinearMath/btIDebugDraw.h>
-#include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
 

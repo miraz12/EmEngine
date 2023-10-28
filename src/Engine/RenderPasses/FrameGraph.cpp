@@ -58,7 +58,7 @@ void FrameGraph::draw(ECSManager &eManager) {
   // GL_COLOR_BUFFER_BIT, GL_NEAREST); glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameGraph::setViewport(uint32_t w, uint32_t h) {
+void FrameGraph::setViewport(u32 w, u32 h) {
   m_width = w;
   m_height = h;
   for (auto pass : m_renderPass) {

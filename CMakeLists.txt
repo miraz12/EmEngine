@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.12)
 project(emEngine)
 # Generate compile_commands.json for LSP
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
+      ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+endif()
 set(EMCC_DEBUG 1)
 set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
@@ -33,7 +37,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
                                     $<$<CXX_COMPILER_ID:MSVC>:
                                     /W4;>>)
 
-target_link_options(${PROJECT_NAME} PRIVATE -static-libasan )
+target_link_options(${PROJECT_NAME} PRIVATE -static-libsan )
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 

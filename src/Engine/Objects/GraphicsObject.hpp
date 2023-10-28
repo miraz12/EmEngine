@@ -7,8 +7,6 @@
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
 #include <Rendering/Primitive.hpp>
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
 #include <map>
 #include <vector>
 
@@ -27,11 +25,11 @@ public:
 protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();
   std::vector<Node *> p_nodes;
-  uint32_t p_numMats{0};
+  u32 p_numMats{0};
   std::unique_ptr<Material[]> p_materials;
-  uint32_t p_numMeshes{0};
+  u32 p_numMeshes{0};
   std::unique_ptr<Mesh[]> p_meshes;
-  uint32_t p_numAnimations{0};
+  u32 p_numAnimations{0};
   std::unique_ptr<Animation[]> p_animations;
   Material defaultMat;
 };

@@ -9,6 +9,7 @@ file(GLOB_RECURSE GAME_FILES
 add_library(Game ${GAME_FILES})
 target_link_libraries(Game PUBLIC exts Engine)
 target_include_directories(Game SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Game)
+target_precompile_headers(Game PRIVATE ${CMAKE_SOURCE_DIR}/src/Engine/engine_pch.hpp)
 target_compile_options(Game PRIVATE
                         $<$<CONFIG:Debug>:
                               $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:

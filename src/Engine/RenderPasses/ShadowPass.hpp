@@ -9,7 +9,7 @@ public:
   ShadowPass();
   virtual ~ShadowPass() = default;
   void Execute(ECSManager &eManager) override;
-  void setViewport(uint32_t w, uint32_t h) override;
+  void setViewport(u32 w, u32 h) override;
   void Init(FrameGraph &fGraph) override;
 
 private:

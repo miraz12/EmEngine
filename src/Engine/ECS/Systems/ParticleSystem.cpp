@@ -7,13 +7,13 @@ void ParticleSystem::update(float dt) {
   for (auto &e : view) {
     std::shared_ptr<ParticlesComponent> partComp =
         m_manager->getComponent<ParticlesComponent>(e);
-    for (uint32_t i = 0; i < partComp->getNumNewParticles(); i++) {
+    for (u32 i = 0; i < partComp->getNumNewParticles(); i++) {
       reviveParticle(partComp);
     }
     std::vector<std::unique_ptr<Particle>> &aliveParticles =
         partComp->getAliveParticles();
     // Loop through all alive particles, removing all dying ones
-    for (uint32_t i = 0; i < aliveParticles.size();)
+    for (u32 i = 0; i < aliveParticles.size();)
       if (aliveParticles[i]->life <= 0) {
         killParticle(partComp, aliveParticles[i]);
       } else {

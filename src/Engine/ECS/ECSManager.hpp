@@ -24,8 +24,8 @@
 #include "Objects/Quad.hpp"
 #include <ECS/Components/PhysicsComponent.hpp>
 
-using Entity = std::size_t;
-using ComponentType = std::type_index;
+typedef std::size_t Entity;
+typedef std::type_index ComponentType;
 
 #define MAX_COMPONENTS 10
 #define MAX_ENTITIES 10
@@ -52,7 +52,7 @@ public:
   Entity getLastEntity() { return m_entityCount - 1; }
 
   template <typename T> void addComponent(Entity entity, std::shared_ptr<T> component) {
-    uint32_t index = getComponentTypeID<T>();
+    u32 index = getComponentTypeID<T>();
     m_components[entity][index] = component;
     m_entityComponentMasks[entity] |= (1 << index);
   }
@@ -78,7 +78,7 @@ public:
     }
   }
 
-  template <typename T> void removeEntity(int entityID);
+  template <typename T> void removeEntity(Entity  entityID);
   template <typename T> void removeComponent(Entity &entity, T component);
 
   template <typename T> ComponentType getComponentType() {
@@ -88,7 +88,7 @@ public:
       return type;
     } else {
       // T has not been registered yet, assign it a new ID and return it
-      int32_t next = m_nextComponentTypeID++;
+      i32 next = m_nextComponentTypeID++;
       m_componentTypeToIndex.insert({type, next});
       return type;
     }
@@ -140,12 +140,12 @@ public:
   Entity &getPickedEntity() { return m_pickedEntity; }
   bool &getEntitySelected() { return m_entitySelected; }
 
-  void setViewport(uint32_t w, uint32_t h);
+  void setViewport(u32 w, u32 h);
   void setPickedEntity(Entity en) { m_pickedEntity = en; }
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
 
   glm::vec3 dDir;
-  int32_t debugView;
+  i32 debugView;
   bool simulatePhysics{false};
 
 private:

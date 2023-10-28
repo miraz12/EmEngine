@@ -20,7 +20,7 @@ public:
     enum PathType { TRANSLATION, ROTATION, SCALE };
     PathType path;
     // Node *node;
-    uint32_t samplerIndex;
+    u32 samplerIndex;
   };
 
   std::string name;

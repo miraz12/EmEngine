@@ -10,21 +10,21 @@ class TextureManager : public Singleton<TextureManager> {
 
 public:
   // TODO: Make a new function that regenerates textures
-  uint32_t loadTexture(uint32_t internalFormat, uint32_t format, uint32_t type, uint32_t width,
-                       uint32_t height, unsigned char *data);
-  uint32_t loadTexture(std::string name, uint32_t internalFormat, uint32_t format, uint32_t type,
-                       uint32_t width, uint32_t height, unsigned char *data);
-  void setTexture(std::string name, uint32_t texId, uint32_t type = GL_TEXTURE_2D);
-  uint32_t bindTexture(std::string name);
-  uint32_t bindActivateTexture(std::string name, uint32_t pos);
+  u32 loadTexture(u32 internalFormat, u32 format, u32 type, u32 width,
+                       u32 height, unsigned char *data);
+  u32 loadTexture(std::string name, u32 internalFormat, u32 format, u32 type,
+                       u32 width, u32 height, unsigned char *data);
+  void setTexture(std::string name, u32 texId, u32 type = GL_TEXTURE_2D);
+  u32 bindTexture(std::string name);
+  u32 bindActivateTexture(std::string name, u32 pos);
   void bindCubeTexture(std::string name);
-  void bindActivateCubeTexture(std::string name, uint32_t pos);
+  void bindActivateCubeTexture(std::string name, u32 pos);
   void deleteTexture(std::string name);
 
 private:
   struct Texture {
-    uint32_t id;
-    uint32_t type;
+    u32 id;
+    u32 type;
   };
   std::unordered_map<std::string, Texture> texIds;
   TextureManager() = default;

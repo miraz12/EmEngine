@@ -77,39 +77,39 @@ void GeometryPass::Execute(ECSManager &eManager) {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GeometryPass::setViewport(uint32_t w, uint32_t h) {
+void GeometryPass::setViewport(u32 w, u32 h) {
   p_width = w;
   p_height = h;
 
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
 
   // - position color buffer
-  uint32_t gPosition = p_textureManager.loadTexture(
+  u32 gPosition = p_textureManager.loadTexture(
       "gPositionAo", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          gPosition, 0);
 
   // - normal color buffer
-  uint32_t gNormal = p_textureManager.loadTexture(
+  u32 gNormal = p_textureManager.loadTexture(
       "gNormalMetal", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
                          gNormal, 0);
 
   // - color
-  uint32_t gAlbedo = p_textureManager.loadTexture(
+  u32 gAlbedo = p_textureManager.loadTexture(
       "gAlbedoSpecRough", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
                          gAlbedo, 0);
 
   // - emissive color buffer
-  uint32_t gEmissive = p_textureManager.loadTexture(
+  u32 gEmissive = p_textureManager.loadTexture(
       "gEmissive", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D,
                          gEmissive, 0);
 
   // - tell OpenGL which color attachments we'll use (of this framebuffer) for
   // rendering
-  uint32_t attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+  u32 attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
                              GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
   glDrawBuffers(4, attachments);
   // create and attach depth buffer (renderbuffer)

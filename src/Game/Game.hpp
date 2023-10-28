@@ -14,7 +14,7 @@ public:
   void reset();
   void setPitchYaw(float p, float y) { m_InputManager.setPitchYaw(p, y); }
   void setMousePos(float x, float y) { m_InputManager.setMousePos(x, y); }
-  void setViewport(uint32_t w, uint32_t h);
+  void setViewport(u32 w, u32 h);
   // Dir light
   std::shared_ptr<DirectionalLight> dLight;
   // TODO: Dont hardcode this as it defeats the purpose of having dir light set in scene file

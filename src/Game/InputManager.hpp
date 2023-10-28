@@ -30,7 +30,7 @@ private:
   ~InputManager() = default;
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
-  int32_t m_mousePosX, m_mousePosY;
+  i32 m_mousePosX, m_mousePosY;
   Entity m_player{0};
 };
 

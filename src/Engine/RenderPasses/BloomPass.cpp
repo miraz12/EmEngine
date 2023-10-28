@@ -14,24 +14,24 @@ BloomPass::BloomPass()
       m_bloomCombine("resources/Shaders/vertex2D.glsl",
                      "resources/Shaders/bloomCombineFragment.glsl") {
 
-  uint32_t fbos[3];
+  u32 fbos[3];
   glGenFramebuffers(3, fbos);
   p_fboManager.setFBO("brightFBO", fbos[0]);
   p_fboManager.setFBO("bloomFBO", fbos[1]);
   p_fboManager.setFBO("bloomFinalFBO", fbos[2]);
 
-  uint32_t frameBright;
+  u32 frameBright;
   glGenTextures(1, &frameBright);
   p_textureManager.setTexture("frameBright", frameBright, GL_TEXTURE_2D);
 
-  uint32_t frameBloomFinal;
+  u32 frameBloomFinal;
   glGenTextures(1, &frameBloomFinal);
   p_textureManager.setTexture("frameBloomFinal", frameBloomFinal,
                               GL_TEXTURE_2D);
 
   glm::vec2 currentMipSize(p_width, p_height);
   glm::ivec2 currentMipSizeInt(p_width, p_height);
-  for (unsigned int i = 0; i < 5; i++) {
+  for (u32 i = 0; i < 5; i++) {
     mipLevel mip;
     currentMipSize *= 0.5f;
     currentMipSizeInt /= 2;
@@ -89,7 +89,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   p_textureManager.bindActivateTexture("frameBright", 0);
 
   // Progressively downsample through the mip chain
-  for (int i = 0; i < (int)m_mipChain.size(); i++) {
+  for (u32 i = 0; i < (u32)m_mipChain.size(); i++) {
     const mipLevel &mip = m_mipChain[i];
     glViewport(0, 0, mip.size.x, mip.size.y);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -116,7 +116,7 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   glBlendFunc(GL_ONE, GL_ONE);
   glBlendEquation(GL_FUNC_ADD);
 
-  for (int i = (int)m_mipChain.size() - 1; i > 0; i--) {
+  for (u32 i = (u32)m_mipChain.size() - 1; i > 0; i--) {
     const mipLevel &mip = m_mipChain[i];
     const mipLevel &nextMip = m_mipChain[i - 1];
 
@@ -149,12 +149,12 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   Util::renderQuad();
 }
 
-void BloomPass::setViewport(uint32_t w, uint32_t h) {
+void BloomPass::setViewport(u32 w, u32 h) {
   p_width = w;
   p_height = h;
 
   p_fboManager.bindFBO("brightFBO");
-  uint32_t frameBright = p_textureManager.bindTexture("frameBright");
+  u32 frameBright = p_textureManager.bindTexture("frameBright");
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p_width, p_height, 0, GL_RGBA,
                GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -167,7 +167,7 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          frameBright, 0);
 
-  uint32_t attachments[1] = {GL_COLOR_ATTACHMENT0};
+  u32 attachments[1] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1, attachments);
   // check completion status
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -175,13 +175,13 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
   }
 
   p_fboManager.bindFBO("bloomFBO");
-  for (unsigned int i = 0; i < 5; i++) {
+  for (u32 i = 0; i < 5; i++) {
     mipLevel mip = m_mipChain[i];
 
     glBindTexture(GL_TEXTURE_2D, mip.texture);
     // we are downscaling a HDR color buffer, so we need a float texture format
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (int)mip.size.x,
-                 (int)mip.size.y, 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F, (i32)mip.size.x,
+                 (i32)mip.size.y, 0, GL_RGB, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -199,7 +199,7 @@ void BloomPass::setViewport(uint32_t w, uint32_t h) {
   }
 
   p_fboManager.bindFBO("bloomFinalFBO");
-  uint32_t frameBloomFinal = p_textureManager.bindTexture("frameBloomFinal");
+  u32 frameBloomFinal = p_textureManager.bindTexture("frameBloomFinal");
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p_width, p_height, 0, GL_RGBA,
                GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

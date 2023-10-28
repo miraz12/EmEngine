@@ -2,18 +2,18 @@
 
 // #include <iostream>
 
-// Entity::Entity(int32_t  ID) : m_ID(ID), m_playable(false), m_name("none"),
+// Entity::Entity(i32  ID) : m_ID(ID), m_playable(false), m_name("none"),
 // m_components() {}
 
 // // Dont know if this is the correct way to free components
 // Entity::~Entity() {
-//   for (uint32_t 32_t i = 0; i < m_components.size(); i++) {
+//   for (u32 32_t i = 0; i < m_components.size(); i++) {
 //     delete m_components[i];
 //   }
 //   m_components.clear();
 // }
 
-// int32_t  Entity::getID() { return m_ID; }
+// i32  Entity::getID() { return m_ID; }
 
 // template<typename T>
 // bool Entity::addComponent(T *component) {
@@ -34,7 +34,7 @@
 // }
 
 // void Entity::removeComponent(ComponentTypeEnum removeComponent) {
-//   for (uint32_t 32_t i = 0; i < m_components.size(); i++) {
+//   for (u32 32_t i = 0; i < m_components.size(); i++) {
 //     if (m_components[i]->getComponentType() == removeComponent) {
 //       delete m_components[i];
 //       m_components.erase(m_components.begin() + i);
