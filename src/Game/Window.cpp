@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "InputManager.hpp"
+#include "Gui.hpp"
 
 static double currentTime;
 static double previousTime;
@@ -39,6 +40,7 @@ static double SCR_YAW = -90.0;
 double lastX, lastY;
 
 static InputManager &inMgr = InputManager::getInstance();
+static GUI &gui = GUI::getInstance();
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height);
@@ -156,10 +158,10 @@ bool Window::open() {
     return false;
   }
   glfwMakeContextCurrent(window);
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  glfwSetCursorPosCallback(window, mouse_callback);
-  glfwSetKeyCallback(window, keyPressCallback);
   glfwSetMouseButtonCallback(window, mousePressCallback);
+  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetKeyCallback(window, keyPressCallback);
 
   // Setup IMGUI
   IMGUI_CHECKVERSION();
@@ -196,7 +198,7 @@ void Window::gameLoop() {
   // -----
   glfwPollEvents();
 
-  renderImgui();
+  gui.renderGUI();
 
   // Update
   // -----
@@ -279,7 +281,11 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   if (SCR_PITCH < -89.0f)
     SCR_PITCH = -89.0f;
 
-  game->setPitchYaw(SCR_PITCH, SCR_YAW);
+  inMgr.setPitchYaw(SCR_PITCH, SCR_YAW);
+  double xposRef, yposRef;
+  glfwGetCursorPos(window, &xposRef, &yposRef);
+  inMgr.setMousePos(xpos, ypos);
+
 }
 
 void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
@@ -329,68 +335,19 @@ void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
 void mousePressCallback(GLFWwindow * /* win */, i32 button, i32 action,
                         i32 /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
-  io.AddMouseButtonEvent(button, action);
+  // io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {
     inMgr.handleInput(InputManager::KEY::Mouse1, action);
   }
-
-  double xpos, ypos;
-  glfwGetCursorPos(window, &xpos, &ypos);
-  game->setMousePos(xpos, ypos);
 }
 
-void framebuffer_size_callback(GLFWwindow * /*window*/, i32 width, i32 height) {
+void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height) {
   SCR_WIDTH = width;
   SCR_HEIGHT = height;
   game->setViewport(width, height);
   glViewport(0, 0, width, height);
+  glfwSetWindowSize(window, width, height);
+  ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 }
 
-void Window::renderImgui() {
-  // Start the Dear ImGui frame
 
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-  ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
-
-  if (ImGui::CollapsingHeader("Lights")) {
-    ImGui::SliderFloat3("Direction", glm::value_ptr(game->dirLightDir), -1.0f,
-                        1.0f);
-    ImGui::SliderFloat("Ambient", &game->dirLightAmbient, 0.0f, 2.0f);
-    ImGui::ColorEdit3("Color", glm::value_ptr(game->dirLightColor));
-  }
-
-  if (ImGui::CollapsingHeader("Physics")) {
-    ImGui::Checkbox("Enabled", &ECSManager::getInstance().simulatePhysics);
-    Entity en = game->m_ECSManager.getPickedEntity();
-    if (game->m_ECSManager.getEntitySelected()) {
-      ImGui::Text("Selected entity: %lu", en);
-      glm::vec3 pos =
-          game->m_ECSManager.getComponent<PositionComponent>(en)->position;
-      ImGui::Text("Position: X: %f Y: %f Z: %f ", pos.x, pos.y, pos.z);
-    }
-  }
-
-  static i32 offset = 0;
-  offset = (offset + 1) % 50;
-  if (ImGui::CollapsingHeader("Debug")) {
-    ImGui::PlotLines("FPS", fpsArray, 50, offset, nullptr, 0, 60,
-                     ImVec2(0, 80.f));
-
-    const std::vector<std::string> debugNamesInputs = {
-        "none",     "Base color", "Normal",   "Occlusion",
-        "Emissive", "Metallic",   "Roughness"};
-    std::vector<const char *> charitems;
-    charitems.reserve(debugNamesInputs.size());
-    for (size_t i = 0; i < debugNamesInputs.size(); i++) {
-      charitems.push_back(debugNamesInputs[i].c_str());
-    }
-    ImGui::Combo("views", &ECSManager::getInstance().debugView, &charitems[0],
-                 7, 7);
-  }
-
-  ImGui::End();
-  // Rendering
-  ImGui::Render();
-}

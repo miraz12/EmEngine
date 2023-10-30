@@ -53,11 +53,28 @@ ADD_LIBRARY(imgui STATIC  imgui/imgui.cpp
                           imgui/backends/imgui_impl_opengl3.cpp)
 TARGET_INCLUDE_DIRECTORIES(imgui PUBLIC imgui glfw/include)
 
+# IMGUIZMO
+ADD_LIBRARY(imguizmo STATIC
+                            ImGuizmo/GraphEditor.cpp
+                            ImGuizmo/GraphEditor.h
+                            ImGuizmo/ImCurveEdit.cpp
+                            ImGuizmo/ImCurveEdit.h
+                            ImGuizmo/ImGradient.cpp
+                            ImGuizmo/ImGradient.h
+                            ImGuizmo/ImGuizmo.cpp
+                            ImGuizmo/ImGuizmo.h
+                            ImGuizmo/ImSequencer.cpp
+                            ImGuizmo/ImSequencer.h
+                            ImGuizmo/ImZoomSlider.h)
+TARGET_INCLUDE_DIRECTORIES(imguizmo PUBLIC ImGuizmo imgui)
+
+
+
 # Header only
 TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE header_only)
 
 
-TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui BulletDynamics BulletCollision LinearMath yaml-cpp)
+TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui BulletDynamics BulletCollision LinearMath yaml-cpp imguizmo)
 
 if (NOT DEFINED EMSCRIPTEN)
 TARGET_LINK_LIBRARIES(exts INTERFACE glad)

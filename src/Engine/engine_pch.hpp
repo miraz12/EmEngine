@@ -36,6 +36,14 @@
 #include <LinearMath/btVector3.h>
 #include <btBulletDynamicsCommon.h>
 
+// ImGui
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui.h>
+#include <imgui_internal.h>
+
+// ImGuizmo
+#include <ImGuizmo.h>
+
 typedef std::uint64_t u64;
 typedef std::int64_t i64;
 typedef std::uint32_t u32;

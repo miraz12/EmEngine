@@ -14,6 +14,9 @@
               cmake
               clang-tools
               ccache
+              emscripten
+              python3
+              ninja
               libGL
               xorg.libX11
               xorg.libXrandr
@@ -21,6 +24,10 @@
               xorg.libXcursor
               xorg.libXi
             ];
+            shellHook = ''
+              export EM_CACHE=.emscripten_cache
+	      export DRI_PRIME=1
+            '';
           };
       });
 }

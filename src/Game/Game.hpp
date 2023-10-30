@@ -12,8 +12,6 @@ public:
 
   void update(float dt);
   void reset();
-  void setPitchYaw(float p, float y) { m_InputManager.setPitchYaw(p, y); }
-  void setMousePos(float x, float y) { m_InputManager.setMousePos(x, y); }
   void setViewport(u32 w, u32 h);
   // Dir light
   std::shared_ptr<DirectionalLight> dLight;
