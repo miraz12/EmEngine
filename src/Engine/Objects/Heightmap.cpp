@@ -1,7 +1,4 @@
 #include "Heightmap.hpp"
-#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-#include <iostream>
-#include <ostream>
 
 Heightmap::Heightmap(std::string filename) {
   i32 numChannels;

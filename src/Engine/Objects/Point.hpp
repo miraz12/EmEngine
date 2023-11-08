@@ -1,8 +1,7 @@
 #ifndef POINT_H_
 #define POINT_H_
 
-#include <Objects/GraphicsObject.hpp>
-#include <array>
+#include "Objects/GraphicsObject.hpp"
 
 class Point : public GraphicsObject {
 public:

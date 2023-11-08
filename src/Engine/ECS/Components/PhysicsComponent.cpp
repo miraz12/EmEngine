@@ -1,6 +1,6 @@
 #include "PhysicsComponent.hpp"
 
-#include <ECS/Components/DebugComponent.hpp>
+#include "DebugComponent.hpp"
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <Objects/Cube.hpp>

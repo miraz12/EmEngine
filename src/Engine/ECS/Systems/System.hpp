@@ -1,11 +1,8 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
+#include <ECS/Components/Component.hpp>
 #include <Singleton.hpp>
-#include <vector>
-
-#include "../Components/Component.hpp"
-#include "../Entity.hpp"
 
 class ECSManager;
 class System {

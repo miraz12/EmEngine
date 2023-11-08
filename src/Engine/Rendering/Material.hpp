@@ -3,8 +3,6 @@
 
 #include <Managers/TextureManager.hpp>
 #include <ShaderPrograms/ShaderProgram.hpp>
-#include <string>
-#include <vector>
 
 class Material {
 public:

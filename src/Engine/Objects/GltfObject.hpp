@@ -1,9 +1,7 @@
 #ifndef GLTFOBJECT_H_
 #define GLTFOBJECT_H_
 
-#include <Objects/GraphicsObject.hpp>
-#include <queue>
-#include <string>
+#include "GraphicsObject.hpp"
 #include <tiny_gltf.h>
 
 class GltfObject : public GraphicsObject {

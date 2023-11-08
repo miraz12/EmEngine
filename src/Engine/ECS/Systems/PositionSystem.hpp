@@ -1,7 +1,7 @@
 #ifndef POSITIONSYSTEM_H_
 #define POSITIONSYSTEM_H_
 
-#include <ECS/Systems/System.hpp>
+#include "System.hpp"
 #include <Singleton.hpp>
 
 class PositionSystem : public System, public Singleton<PositionSystem> {

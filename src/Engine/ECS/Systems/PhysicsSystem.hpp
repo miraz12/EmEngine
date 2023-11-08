@@ -1,11 +1,11 @@
 #ifndef PHYSICSSYSTEM_H_
 #define PHYSICSSYSTEM_H_
 
-#include "Camera.hpp"
-#include "Managers/FrameBufferManager.hpp"
-#include "ShaderPrograms/QuadShaderProgram.hpp"
 #include "System.hpp"
+#include <Camera.hpp>
+#include <Managers/FrameBufferManager.hpp>
 #include <Rendering/DebugDrawer.hpp>
+#include <ShaderPrograms/QuadShaderProgram.hpp>
 
 class PhysicsSystem : public System, public Singleton<PhysicsSystem> {
   friend class Singleton<PhysicsSystem>;

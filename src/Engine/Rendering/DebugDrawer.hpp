@@ -1,10 +1,6 @@
 #ifndef DEBUGDRAWER_H_
 #define DEBUGDRAWER_H_
 
-#include <LinearMath/btIDebugDraw.h>
-#include <iostream>
-#include <vector>
-
 /* vertex data is passed as input to this shader
  * ourColor is passed as input to the to the fragment shader. */
 class DebugDrawer : public btIDebugDraw {

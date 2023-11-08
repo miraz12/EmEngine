@@ -1,13 +1,11 @@
 #ifndef GRAPHICSSYSTEM_H_
 #define GRAPHICSSYSTEM_H_
 
-#include <RenderPasses/FrameGraph.hpp>
-#include <array>
-
-#include "Camera.hpp"
-#include "Managers/FrameBufferManager.hpp"
-#include "ShaderPrograms/QuadShaderProgram.hpp"
 #include "System.hpp"
+
+#include <Camera.hpp>
+#include <Managers/FrameBufferManager.hpp>
+#include <RenderPasses/FrameGraph.hpp>
 
 class GraphicsSystem : public System, public Singleton<GraphicsSystem> {
   friend class Singleton<GraphicsSystem>;

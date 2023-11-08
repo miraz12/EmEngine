@@ -2,7 +2,7 @@
 #define DEBUGCOMPONENT_H_
 
 #include "Component.hpp"
-#include "Objects/GraphicsObject.hpp"
+#include <Objects/GraphicsObject.hpp>
 
 class DebugComponent : public Component {
 public:

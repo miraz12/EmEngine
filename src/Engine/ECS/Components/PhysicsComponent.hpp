@@ -2,9 +2,8 @@
 #define PHYSICSCOMPONENT_H_
 
 #include "Component.hpp"
-#include <ECS/Components/GraphicsComponent.hpp>
-#include <ECS/Components/PositionComponent.hpp>
-#include <memory>
+#include "GraphicsComponent.hpp"
+#include "PositionComponent.hpp"
 
 class PhysicsComponent : public Component {
 public:

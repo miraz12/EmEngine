@@ -3,18 +3,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include "GltfObject.hpp"
-#include <BulletCollision/CollisionShapes/btConvexHullShape.h>
-#include <BulletCollision/CollisionShapes/btConvexShape.h>
-#include <BulletCollision/CollisionShapes/btConvexTriangleMeshShape.h>
-#include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
 #include <Rendering/Primitive.hpp>
-#include <cstddef>
-#include <iostream>
-#include <memory>
-#include <ostream>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -182,7 +174,7 @@ void GltfObject::loadTextures(tinygltf::Model &model) {
         std::cout << "WARNING: no matching type." << std::endl;
       }
       u32 id = texMan.loadTexture(GL_RGBA, format, type, image.width,
-                                       image.height, &image.image.at(0));
+                                  image.height, &image.image.at(0));
       m_texIds.push_back(std::to_string(id));
     }
   }
@@ -227,8 +219,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         const void *indicesData =
             &buffer.data[bufferView.byteOffset + accessor.byteOffset];
         if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-          const u16 *indices =
-              reinterpret_cast<const u16 *>(indicesData);
+          const u16 *indices = reinterpret_cast<const u16 *>(indicesData);
           for (u32 i = 0; i < newPrim->m_count; i += 3) {
             i32 index1 = indices[i];
             i32 index2 = indices[i + 1];
@@ -237,8 +228,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
           }
         } else if (accessor.componentType ==
                    TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-          const u32 *indices =
-              reinterpret_cast<const u32 *>(indicesData);
+          const u32 *indices = reinterpret_cast<const u32 *>(indicesData);
           for (u32 i = 0; i < newPrim->m_count; i += 3) {
             i32 index1 = indices[i];
             i32 index2 = indices[i + 1];

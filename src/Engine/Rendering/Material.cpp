@@ -1,6 +1,4 @@
 #include "Material.hpp"
-#include <iostream>
-#include <ostream>
 
 Material::Material() : m_textureMan(TextureManager::getInstance()) {}
 

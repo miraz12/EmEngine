@@ -11,6 +11,7 @@ public:
   GUI() = default;
   ~GUI() = default;
   void renderGUI();
+    void renderGizmos();
 
 private:
   void editTransform(float *cameraView, float *cameraProjection, float *matrix,

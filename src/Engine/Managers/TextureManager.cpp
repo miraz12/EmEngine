@@ -1,9 +1,5 @@
 #include "TextureManager.hpp"
 
-#include <cassert>
-#include <iostream>
-#include <string>
-
 u32 TextureManager::loadTexture(u32 internalFormat, GLenum format,
                                      GLenum type, u32 width,
                                      u32 height, unsigned char *data) {

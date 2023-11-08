@@ -1,6 +1,4 @@
 #include "GraphicsObject.hpp"
-#include <iostream>
-#include <ostream>
 
 void GraphicsObject::draw(const ShaderProgram &sPrg) {
   for (auto &n : p_nodes) {

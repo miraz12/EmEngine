@@ -1,5 +1,4 @@
 #include "Cube.hpp"
-#include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 Cube::Cube() {
   float vertices[] = {

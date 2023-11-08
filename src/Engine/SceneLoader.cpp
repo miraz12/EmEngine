@@ -1,11 +1,11 @@
 #include "SceneLoader.hpp"
-#include <ECS/Components/ParticlesComponent.hpp>
-#include <ECS/ECSManager.hpp>
-#include <Objects/Cube.hpp>
-#include <Objects/GltfObject.hpp>
-#include <Objects/Heightmap.hpp>
-#include <Objects/Line.hpp>
-#include <yaml-cpp/yaml.h>
+#include "ECS/Components/ParticlesComponent.hpp"
+#include "ECS/ECSManager.hpp"
+#include "Objects/Cube.hpp"
+#include "Objects/GltfObject.hpp"
+#include "Objects/Heightmap.hpp"
+#include "Objects/Line.hpp"
+#include "Objects/Quad.hpp"
 
 void SceneLoader::init(std::string sceneFile) {
   YAML::Node config = YAML::LoadFile(sceneFile);

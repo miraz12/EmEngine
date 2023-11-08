@@ -1,4 +1,5 @@
 #include "DebugDrawer.hpp"
+
 DebugDrawer::DebugDrawer() { lines.reserve(1000); }
 
 #ifdef EMSCRIPTEN

@@ -1,8 +1,6 @@
 #ifndef FRAMEBUFFERMANAGER_H_
 #define FRAMEBUFFERMANAGER_H_
 #include <Singleton.hpp>
-#include <string>
-#include <unordered_map>
 
 class FrameBufferManager : public Singleton<FrameBufferManager> {
   friend class Singleton<FrameBufferManager>;

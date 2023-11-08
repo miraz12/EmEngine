@@ -1,7 +1,6 @@
 #ifndef QUAD_H_
 #define QUAD_H_
 
-
 #include "GraphicsObject.hpp"
 
 class Quad : public GraphicsObject {
@@ -11,9 +10,10 @@ public:
 
 private:
   float m_vertices[36] = {
-      -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f,  0.0f, 1.0f, 0.5f, -0.5f, 0.0f,
-      0.0f,  1.0f,  0.0f, 0.5f, 1.0f, 1.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  1.0f,
-      0.5f,  0.0f,  0.0f, 0.5f, 0.5f, 0.0f, 1.0f,  1.0f, 0.0f, 0.5f, 1.0f,  0.0f,
+      -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 0.0f, 1.0f,
+      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 1.0f,
+      -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 0.0f, 0.0f,
+      0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f,
   };
 
   u32 m_indices[6] = {

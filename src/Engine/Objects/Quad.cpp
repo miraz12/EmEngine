@@ -1,9 +1,5 @@
 #include "Quad.hpp"
 
-#include "glm/fwd.hpp"
-#include <BulletCollision/CollisionShapes/btBoxShape.h>
-#include <iostream>
-
 Quad::Quad() {
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   Node *n = new Node;

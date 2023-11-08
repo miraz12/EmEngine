@@ -1,11 +1,4 @@
 #include "ECSManager.hpp"
-#include "ECS/Systems/System.hpp"
-#include "Systems/GraphicsSystem.hpp"
-#include "Systems/ParticleSystem.hpp"
-#include "Systems/PhysicsSystem.hpp"
-#include <ECS/Systems/PositionSystem.hpp>
-#include <Types/LightTypes.hpp>
-#include <memory>
 
 ECSManager::ECSManager() { initializeSystems(); }
 

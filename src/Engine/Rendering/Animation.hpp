@@ -1,9 +1,6 @@
 #ifndef ANIMATION_H_
 #define ANIMATION_H_
 
-#include "glm/fwd.hpp"
-#include <limits>
-#include <vector>
 class Animation {
 public:
   Animation() = default;

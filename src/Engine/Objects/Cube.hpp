@@ -1,8 +1,8 @@
 #ifndef CUBE_H_
 #define CUBE_H_
 
-#include <Objects/GraphicsObject.hpp>
-#include <array>
+#include "GraphicsObject.hpp"
+
 class Cube : public GraphicsObject {
 public:
   Cube();

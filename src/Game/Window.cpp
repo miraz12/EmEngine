@@ -336,7 +336,7 @@ void mousePressCallback(GLFWwindow * /* win */, i32 button, i32 action,
                         i32 /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
   // io.AddMouseButtonEvent(button, action);
-  if (!io.WantCaptureMouse) {
+  if (!io.WantCaptureMouse ) {
     inMgr.handleInput(InputManager::KEY::Mouse1, action);
   }
 }

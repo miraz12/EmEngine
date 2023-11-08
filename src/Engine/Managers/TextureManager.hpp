@@ -1,9 +1,6 @@
 #ifndef TEXTUREMANAGER_H_
 #define TEXTUREMANAGER_H_
 #include <Singleton.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 class TextureManager : public Singleton<TextureManager> {
   friend class Singleton<TextureManager>;

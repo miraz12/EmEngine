@@ -1,8 +1,6 @@
 #ifndef SKIN_H_
 #define SKIN_H_
 
-#include "glm/fwd.hpp"
-#include <vector>
 class Skin {
   std::string name;
   // Node *skeletonRoot = nullptr;

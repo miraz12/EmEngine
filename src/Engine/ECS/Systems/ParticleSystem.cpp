@@ -1,6 +1,5 @@
 #include "ParticleSystem.hpp"
 #include <ECS/ECSManager.hpp>
-#include <algorithm>
 
 void ParticleSystem::update(float dt) {
   std::vector<Entity> view = m_manager->view<ParticlesComponent>();

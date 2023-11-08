@@ -1,14 +1,13 @@
 #ifndef GAME_H_
 #define GAME_H_
 
-#include "ECS/ECSManager.hpp"
+#include <ECS/ECSManager.hpp>
 #include "InputManager.hpp"
-#include "glm/fwd.hpp"
 
 class Game {
 public:
   Game(GLFWwindow &window);
-  ~Game();
+  ~Game() = default;
 
   void update(float dt);
   void reset();

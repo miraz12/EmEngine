@@ -1,12 +1,8 @@
 #ifndef MESHOBJ_H_
 #define MESHOBJ_H_
 
-#include <Rendering/Primitive.hpp>
+#include "Primitive.hpp"
 #include <ShaderPrograms/ShaderProgram.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <map>
-#include <vector>
 
 class Mesh {
 public:

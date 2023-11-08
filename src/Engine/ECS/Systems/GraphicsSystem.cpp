@@ -1,14 +1,10 @@
 #include "GraphicsSystem.hpp"
+#include "System.hpp"
 
-#include <ECS/Systems/System.hpp>
+#include <ECS/Components/GraphicsComponent.hpp>
+#include <ECS/Components/PositionComponent.hpp>
+#include <ECS/ECSManager.hpp>
 #include <RenderPasses/FrameGraph.hpp>
-#include <iostream>
-#include <vector>
-
-#include "ECS/Components/GraphicsComponent.hpp"
-#include "ECS/Components/PositionComponent.hpp"
-
-#include "ECS/ECSManager.hpp"
 
 GraphicsSystem::GraphicsSystem()
     : m_fboManager(FrameBufferManager::getInstance()),
@@ -18,6 +14,4 @@ GraphicsSystem::~GraphicsSystem() { delete &m_fGraph; }
 
 void GraphicsSystem::update(float /*dt*/) { m_fGraph.draw(*m_manager); }
 
-void GraphicsSystem::setViewport(u32 w, u32 h) {
-  m_fGraph.setViewport(w, h);
-}
+void GraphicsSystem::setViewport(u32 w, u32 h) { m_fGraph.setViewport(w, h); }

@@ -1,28 +1,18 @@
 #ifndef ECSMANAGER_H_
 #define ECSMANAGER_H_
 
-#include <GLFW/glfw3.h>
 #include <Types/LightTypes.hpp>
-#include <bitset>
-#include <cassert>
-#include <cstddef>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <ostream>
-#include <string>
-#include <typeindex>
-#include <typeinfo>
-#include <unordered_map>
-#include <vector>
 
+#include "Components/Component.hpp"
 #include "Components/GraphicsComponent.hpp"
+#include "Components/LightingComponent.hpp"
+#include "Components/PhysicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
-#include "ECS/Components/Component.hpp"
-#include "ECS/Components/LightingComponent.hpp"
-#include "ECS/Systems/System.hpp"
-#include "Objects/Quad.hpp"
-#include <ECS/Components/PhysicsComponent.hpp>
+#include "Systems/GraphicsSystem.hpp"
+#include "Systems/ParticleSystem.hpp"
+#include "Systems/PhysicsSystem.hpp"
+#include "Systems/PositionSystem.hpp"
+#include "Systems/System.hpp"
 
 typedef std::size_t Entity;
 typedef std::type_index ComponentType;
@@ -51,13 +41,15 @@ public:
   // TODO: Figure out something better than this
   Entity getLastEntity() { return m_entityCount - 1; }
 
-  template <typename T> void addComponent(Entity entity, std::shared_ptr<T> component) {
+  template <typename T>
+  void addComponent(Entity entity, std::shared_ptr<T> component) {
     u32 index = getComponentTypeID<T>();
     m_components[entity][index] = component;
     m_entityComponentMasks[entity] |= (1 << index);
   }
 
-  template <typename... Args> void addComponents(Entity entity, std::shared_ptr<Args>... args) {
+  template <typename... Args>
+  void addComponents(Entity entity, std::shared_ptr<Args>... args) {
     (addComponent(entity, std::forward<std::shared_ptr<Args>>(args)), ...);
   }
 
@@ -78,12 +70,13 @@ public:
     }
   }
 
-  template <typename T> void removeEntity(Entity  entityID);
+  template <typename T> void removeEntity(Entity entityID);
   template <typename T> void removeComponent(Entity &entity, T component);
 
   template <typename T> ComponentType getComponentType() {
     ComponentType type = typeid(T);
-    if (auto iter = m_componentTypeToIndex.find(type); iter != m_componentTypeToIndex.end()) {
+    if (auto iter = m_componentTypeToIndex.find(type);
+        iter != m_componentTypeToIndex.end()) {
       // T has already been registered, return it
       return type;
     } else {
@@ -112,7 +105,8 @@ public:
       // Check if the entity has the required components
       Signature entityMask = m_entityComponentMasks[entity];
       if ((entityMask & requiredComponents) == requiredComponents) {
-        // If the entity has the required components, add it to the matching entities vector
+        // If the entity has the required components, add it to the matching
+        // entities vector
         matchingEntities.push_back(entity);
       }
     }
@@ -124,15 +118,17 @@ public:
   template <typename T> std::shared_ptr<T> getComponent(Entity entity) {
     // Return the component at the specified entity's index in the array
     assert(!hasComponent<T>(entity));
-    return std::dynamic_pointer_cast<T>(m_components.at(entity).at(getComponentTypeID<T>()));
+    return std::dynamic_pointer_cast<T>(
+        m_components.at(entity).at(getComponentTypeID<T>()));
   }
 
   // // Create point light
-  std::shared_ptr<PointLight> SetupPointLight(glm::vec3 color, float constant, float linear,
-                                              float quadratic, glm::vec3 pos);
+  std::shared_ptr<PointLight> SetupPointLight(glm::vec3 color, float constant,
+                                              float linear, float quadratic,
+                                              glm::vec3 pos);
   // // Create directional light
-  std::shared_ptr<DirectionalLight> SetupDirectionalLight(glm::vec3 color, float ambient,
-                                                          glm::vec3 dir);
+  std::shared_ptr<DirectionalLight>
+  SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
   void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
@@ -155,7 +151,8 @@ private:
   std::vector<Entity> m_entities;
   std::unordered_map<std::string, System *> m_systems;
 
-  std::unordered_map<Entity, std::vector<std::shared_ptr<Component>>> m_components;
+  std::unordered_map<Entity, std::vector<std::shared_ptr<Component>>>
+      m_components;
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
   std::unordered_map<Entity, Signature> m_entityComponentMasks;
 

@@ -1,17 +1,13 @@
 #ifndef GRAPHICSOBJECT_H_
 #define GRAPHICSOBJECT_H_
 
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
+#include <Camera.hpp>
 #include <Rendering/Animation.hpp>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
 #include <Rendering/Primitive.hpp>
-#include <map>
-#include <vector>
-
-#include "../ShaderPrograms/ShaderProgram.hpp"
-#include "Camera.hpp"
+#include <ShaderPrograms/ShaderProgram.hpp>
 
 class GraphicsObject {
 public:
