@@ -8,6 +8,8 @@ static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
 static const float identityMatrix[16] = {1.f, 0.f, 0.f, 0.f, 0.f, 1.f,
                                          0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
                                          0.f, 0.f, 0.f, 1.f};
+GUI::GUI(Game &game) : m_game(game) {}
+
 void GUI::renderGUI() {
 
   // Start the Dear ImGui frame
@@ -18,25 +20,20 @@ void GUI::renderGUI() {
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
   if (ImGui::CollapsingHeader("Lights")) {
-    ImGui::SliderFloat3("Direction", glm::value_ptr(m_game->dirLightDir), -1.0f,
+    ImGui::SliderFloat3("Direction", glm::value_ptr(m_game.dirLightDir), -1.0f,
                         1.0f);
-    ImGui::SliderFloat("Ambient", &m_game->dirLightAmbient, 0.0f, 2.0f);
-    ImGui::ColorEdit3("Color", glm::value_ptr(m_game->dirLightColor));
+    ImGui::SliderFloat("Ambient", &m_game.dirLightAmbient, 0.0f, 2.0f);
+    ImGui::ColorEdit3("Color", glm::value_ptr(m_game.dirLightColor));
   }
 
   if (ImGui::CollapsingHeader("Physics")) {
     ImGui::Checkbox("Enabled", &ECSManager::getInstance().simulatePhysics);
-    Entity en = m_game->m_ECSManager.getPickedEntity();
-    if (m_game->m_ECSManager.getEntitySelected()) {
+    Entity en = m_game.m_ECSManager.getPickedEntity();
+    if (m_game.m_ECSManager.getPickedEntity()) {
       ImGui::Text("Selected entity: %lu", en);
       glm::vec3 pos =
-          m_game->m_ECSManager.getComponent<PositionComponent>(en)->position;
+          m_game.m_ECSManager.getComponent<PositionComponent>(en)->position;
       ImGui::Text("Position: X: %f Y: %f Z: %f ", pos.x, pos.y, pos.z);
-      Camera &cam = ECSManager::getInstance().getCamera();
-      // ImGuizmo::Manipulate(glm::value_ptr(cam.getViewMatrix()),
-      //                      glm::value_ptr(cam.getProjectionMatrix()),
-      //                      mCurrentGizmoOperation, mCurrentGizmoMode,
-      //                      glm::value_ptr(pos), NULL, NULL, NULL, NULL);
     }
   }
 
@@ -59,7 +56,34 @@ void GUI::renderGUI() {
   }
   ImGui::End();
 
-  renderGizmos();
+  // Manipulate the matrix of the selected entity
+  Entity en = m_game.m_ECSManager.getPickedEntity();
+  if (m_game.m_ECSManager.getPickedEntity()) {
+
+    ImGuizmo::SetOrthographic(false);
+    ImGuizmo::BeginFrame();
+    glm::mat4 matrix =
+        glm::identity<glm::mat4>(); // You need to obtain or compute the matrix
+                                    // of the entity
+    // For instance, if you have a TransformComponent, you would construct the
+    // matrix from position, rotation, and scale
+    bool useSnap = false;
+    // You can add snapping functionality based on the gizmo operation
+    float snapValue = 0.5f; // example value for snapping
+    float snapValues[3] = {snapValue, snapValue, snapValue};
+
+    Camera &cam = ECSManager::getInstance().getCamera();
+    // Edit the matrix using the gizmo
+    ImGuizmo::Manipulate(glm::value_ptr(cam.getViewMatrix()),
+                         glm::value_ptr(cam.getProjectionMatrix()),
+                         mCurrentGizmoOperation, mCurrentGizmoMode,
+                         glm::value_ptr(matrix), NULL,
+                         useSnap ? snapValues : NULL);
+
+    // If the matrix is edited, update the entity's transform component
+    // This typically involves decomposing the matrix back into position,
+    // rotation, and scale
+  }
 
   // Rendering
   ImGui::Render();

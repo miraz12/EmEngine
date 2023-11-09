@@ -17,8 +17,8 @@
 #include <fstream>
 #include <iostream>
 
-#include "InputManager.hpp"
 #include "Gui.hpp"
+#include "InputManager.hpp"
 
 static double currentTime;
 static double previousTime;
@@ -40,7 +40,6 @@ static double SCR_YAW = -90.0;
 double lastX, lastY;
 
 static InputManager &inMgr = InputManager::getInstance();
-static GUI &gui = GUI::getInstance();
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height);
@@ -89,6 +88,7 @@ void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
 
 static GLFWwindow *window;
 static Game *game;
+static GUI *gui;
 
 bool isBigEndian() {
   i32 a = 1;
@@ -198,7 +198,7 @@ void Window::gameLoop() {
   // -----
   glfwPollEvents();
 
-  gui.renderGUI();
+  gui->renderGUI();
 
   // Update
   // -----
@@ -235,6 +235,7 @@ bool Window::start() {
   previousTime = currentTime;
 
   game = new Game(*window);
+  gui = new GUI(*game);
 
 #ifdef EMSCRIPTEN
   emscripten_set_main_loop(&gameLoop, 0, 1);
@@ -285,7 +286,6 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   double xposRef, yposRef;
   glfwGetCursorPos(window, &xposRef, &yposRef);
   inMgr.setMousePos(xpos, ypos);
-
 }
 
 void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
@@ -335,8 +335,8 @@ void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
 void mousePressCallback(GLFWwindow * /* win */, i32 button, i32 action,
                         i32 /* mods */) {
   ImGuiIO &io = ImGui::GetIO();
-  // io.AddMouseButtonEvent(button, action);
-  if (!io.WantCaptureMouse ) {
+  io.AddMouseButtonEvent(button, action);
+  if (!io.WantCaptureMouse) {
     inMgr.handleInput(InputManager::KEY::Mouse1, action);
   }
 }
@@ -349,5 +349,3 @@ void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height) {
   glfwSetWindowSize(window, width, height);
   ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 }
-
-

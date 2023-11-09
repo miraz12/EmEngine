@@ -6,8 +6,15 @@ void ParticleSystem::update(float dt) {
   for (auto &e : view) {
     std::shared_ptr<ParticlesComponent> partComp =
         m_manager->getComponent<ParticlesComponent>(e);
+    std::shared_ptr<PositionComponent> posComp =
+        m_manager->getComponent<PositionComponent>(e);
+
     for (u32 i = 0; i < partComp->getNumNewParticles(); i++) {
-      reviveParticle(partComp);
+      glm::vec3 pos = glm::vec3(0);
+      if (posComp) {
+        pos = posComp->position;
+      }
+      reviveParticle(partComp, pos);
     }
     std::vector<std::unique_ptr<Particle>> &aliveParticles =
         partComp->getAliveParticles();
@@ -40,7 +47,8 @@ void ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
   }
 }
 
-void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp) {
+void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
+                                    glm::vec3 &pos) {
   std::vector<std::unique_ptr<Particle>> &deadParticles =
       pComp->getDeadParticles();
   if (!deadParticles.empty()) {
@@ -51,7 +59,8 @@ void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp) {
     float g = (distribution(generator) + 1.0f) * 0.5f;
     float b = (distribution(generator) + 1.0f) * 0.5f;
     glm::vec3 offset(0.0f, 0.0f, 0.0f);
-    p->position = pComp->getPosition() + offset;
+
+    p->position = pos + offset;
     // Make particles glow
     float mul = 50.0f;
     p->color = glm::vec4(r * mul, g * mul, b * mul, 1.0f);

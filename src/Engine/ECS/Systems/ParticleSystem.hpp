@@ -17,7 +17,8 @@ private:
 
   void killParticle(std::shared_ptr<ParticlesComponent> pComp,
                     std::unique_ptr<Particle> &p);
-  void reviveParticle(std::shared_ptr<ParticlesComponent> pComp);
+  void reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
+                      glm::vec3 &pos);
 
   std::default_random_engine generator;
   std::uniform_real_distribution<float> distribution{-1, 1};

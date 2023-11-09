@@ -2,22 +2,21 @@
 #define GUI_H_
 
 #include <Game.hpp>
-#include <Singleton.hpp>
 
-class GUI : public Singleton<GUI> {
-  friend class Singleton<GUI>;
+class GUI {
 
 public:
-  GUI() = default;
+  GUI() = delete;
+  GUI(Game &game);
   ~GUI() = default;
   void renderGUI();
-    void renderGizmos();
+  void renderGizmos();
 
 private:
   void editTransform(float *cameraView, float *cameraProjection, float *matrix,
                      bool editTransformDecomposition);
 
-  Game *m_game;
+  Game &m_game;
   bool useWindow = true;
   int gizmoCount = 1;
   float camDistance = 8.f;

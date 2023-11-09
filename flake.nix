@@ -17,6 +17,7 @@
               emscripten
               python3
               ninja
+              gdb
               libGL
               xorg.libX11
               xorg.libXrandr
@@ -25,8 +26,8 @@
               xorg.libXi
             ];
             shellHook = ''
-              export EM_CACHE=.emscripten_cache
-	      export DRI_PRIME=1
+                            export EM_CACHE=.emscripten_cache
+              	      export DRI_PRIME=1
             '';
           };
       });
