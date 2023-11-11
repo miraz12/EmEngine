@@ -22,7 +22,7 @@ void ECSManager::update(float dt) {
 }
 
 Entity ECSManager::createEntity() {
-  Entity newEntity = m_entityCount++;
+  Entity newEntity = ++m_entityCount;
   m_components[newEntity] =
       std::vector<std::shared_ptr<Component>>(MAX_COMPONENTS, nullptr);
   m_entities.push_back(newEntity);

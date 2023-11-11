@@ -283,9 +283,6 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
     SCR_PITCH = -89.0f;
 
   inMgr.setPitchYaw(SCR_PITCH, SCR_YAW);
-  double xposRef, yposRef;
-  glfwGetCursorPos(window, &xposRef, &yposRef);
-  inMgr.setMousePos(xpos, ypos);
 }
 
 void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
@@ -339,6 +336,10 @@ void mousePressCallback(GLFWwindow * /* win */, i32 button, i32 action,
   if (!io.WantCaptureMouse) {
     inMgr.handleInput(InputManager::KEY::Mouse1, action);
   }
+
+  double xpos, ypos;
+  glfwGetCursorPos(window, &xpos, &ypos);
+  inMgr.setMousePos(xpos, ypos);
 }
 
 void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height) {

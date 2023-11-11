@@ -29,7 +29,7 @@ void GUI::renderGUI() {
   if (ImGui::CollapsingHeader("Physics")) {
     ImGui::Checkbox("Enabled", &ECSManager::getInstance().simulatePhysics);
     Entity en = m_game.m_ECSManager.getPickedEntity();
-    if (m_game.m_ECSManager.getPickedEntity()) {
+    if (m_game.m_ECSManager.getPickedEntity() > 0) {
       ImGui::Text("Selected entity: %lu", en);
       glm::vec3 pos =
           m_game.m_ECSManager.getComponent<PositionComponent>(en)->position;
@@ -58,7 +58,7 @@ void GUI::renderGUI() {
 
   // Manipulate the matrix of the selected entity
   Entity en = m_game.m_ECSManager.getPickedEntity();
-  if (m_game.m_ECSManager.getPickedEntity()) {
+  if (m_game.m_ECSManager.getPickedEntity() > 0) {
 
     ImGuizmo::SetOrthographic(false);
     ImGuizmo::BeginFrame();
