@@ -2,12 +2,8 @@
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
-static const float identityMatrix[16] = {1.f, 0.f, 0.f, 0.f, 0.f, 1.f,
-                                         0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
-                                         0.f, 0.f, 0.f, 1.f};
 GUI::GUI(Game &game) : m_game(game) {}
 
 void GUI::renderGUI() {
@@ -19,6 +15,18 @@ void GUI::renderGUI() {
   ImGui::NewFrame();
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
+  if (ImGui::CollapsingHeader("Camera")) {
+    float fov = ECSManager::getInstance().getCamera().getFOV();
+    ImGui::SliderFloat("FOV", &fov, 0.0f, 120.0f);
+    ECSManager::getInstance().getCamera().setFOV(fov);
+    float nearFar[2];
+    nearFar[0] = ECSManager::getInstance().getCamera().getNear();
+    nearFar[1] = ECSManager::getInstance().getCamera().getFar();
+    ImGui::InputFloat2("FOV", nearFar);
+    ECSManager::getInstance().getCamera().setNear(nearFar[0]);
+    ECSManager::getInstance().getCamera().setFar(nearFar[1]);
+  }
+
   if (ImGui::CollapsingHeader("Lights")) {
     ImGui::SliderFloat3("Direction", glm::value_ptr(m_game.dirLightDir), -1.0f,
                         1.0f);
@@ -28,13 +36,6 @@ void GUI::renderGUI() {
 
   if (ImGui::CollapsingHeader("Physics")) {
     ImGui::Checkbox("Enabled", &ECSManager::getInstance().simulatePhysics);
-    Entity en = m_game.m_ECSManager.getPickedEntity();
-    if (m_game.m_ECSManager.getPickedEntity() > 0) {
-      ImGui::Text("Selected entity: %lu", en);
-      glm::vec3 pos =
-          m_game.m_ECSManager.getComponent<PositionComponent>(en)->position;
-      ImGui::Text("Position: X: %f Y: %f Z: %f ", pos.x, pos.y, pos.z);
-    }
   }
 
   static i32 offset = 0;
@@ -54,57 +55,72 @@ void GUI::renderGUI() {
     ImGui::Combo("views", &ECSManager::getInstance().debugView, &charitems[0],
                  7, 7);
   }
-  ImGui::End();
 
-  // Manipulate the matrix of the selected entity
   Entity en = m_game.m_ECSManager.getPickedEntity();
-  if (m_game.m_ECSManager.getPickedEntity() > 0) {
+  if (en > 0) {
 
-    ImGuizmo::SetOrthographic(false);
+    glm::vec3 &pos =
+        m_game.m_ECSManager.getComponent<PositionComponent>(en)->position;
+    glm::quat &rot =
+        m_game.m_ECSManager.getComponent<PositionComponent>(en)->rotation;
+    glm::vec3 &scale =
+        m_game.m_ECSManager.getComponent<PositionComponent>(en)->scale;
+
     ImGuizmo::BeginFrame();
-    glm::mat4 matrix =
-        glm::identity<glm::mat4>(); // You need to obtain or compute the matrix
-                                    // of the entity
-    // For instance, if you have a TransformComponent, you would construct the
-    // matrix from position, rotation, and scale
-    bool useSnap = false;
-    // You can add snapping functionality based on the gizmo operation
-    float snapValue = 0.5f; // example value for snapping
-    float snapValues[3] = {snapValue, snapValue, snapValue};
 
+    ImGui::Text("Selected entity: %lu", en);
+
+    if (ImGui::RadioButton("Translate",
+                           mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+      mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate",
+                           mCurrentGizmoOperation == ImGuizmo::ROTATE))
+      mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+      mCurrentGizmoOperation = ImGuizmo::SCALE;
+    ImGui::InputFloat3("Tr", glm::value_ptr(pos));
+    ImGui::InputFloat3("Rt", glm::value_ptr(rot));
+    ImGui::InputFloat3("Sc", glm::value_ptr(scale));
+
+    if (mCurrentGizmoOperation != ImGuizmo::SCALE) {
+      if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+        mCurrentGizmoMode = ImGuizmo::LOCAL;
+      ImGui::SameLine();
+      if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+        mCurrentGizmoMode = ImGuizmo::WORLD;
+    }
     Camera &cam = ECSManager::getInstance().getCamera();
-    // Edit the matrix using the gizmo
-    ImGuizmo::Manipulate(glm::value_ptr(cam.getViewMatrix()),
-                         glm::value_ptr(cam.getProjectionMatrix()),
-                         mCurrentGizmoOperation, mCurrentGizmoMode,
-                         glm::value_ptr(matrix), NULL,
-                         useSnap ? snapValues : NULL);
-
-    // If the matrix is edited, update the entity's transform component
-    // This typically involves decomposing the matrix back into position,
-    // rotation, and scale
+    glm::vec3 euler = glm::eulerAngles(rot) * RAD2DEG;
+    editTransform(cam, pos, euler, scale);
+    rot = glm::quat(euler * DEG2RAD);
   }
-
   // Rendering
+  ImGui::End();
   ImGui::Render();
 }
 
-void GUI::renderGizmos() {
+void GUI::editTransform(Camera &camera, glm::vec3 &pos, glm::vec3 &rot,
+                        glm::vec3 &scale) {
 
-  ImGuiIO &io = ImGui::GetIO();
-  Camera &cam = ECSManager::getInstance().getCamera();
-
+  glm::mat4 matrix = glm::identity<glm::mat4>();
+  ImGuizmo::RecomposeMatrixFromComponents(
+      glm::value_ptr(pos), glm::value_ptr(rot), glm::value_ptr(scale),
+      glm::value_ptr(matrix));
+  ImGuizmo::SetRect(0, 0, camera.getWidth(), camera.getHeight());
   ImGuizmo::SetOrthographic(false);
-  ImGuizmo::BeginFrame();
+  ImGuizmo::Manipulate(glm::value_ptr(camera.getViewMatrix()),
+                       glm::value_ptr(camera.getProjectionMatrix()),
+                       mCurrentGizmoOperation, mCurrentGizmoMode,
+                       glm::value_ptr(matrix), NULL, NULL);
 
-  float viewManipulateRight = io.DisplaySize.x;
-  float viewManipulateTop = 0;
+  ImGuizmo::DecomposeMatrixToComponents(
+      glm::value_ptr(matrix), glm::value_ptr(pos), glm::value_ptr(rot),
+      glm::value_ptr(scale));
 
-  ImGuizmo::DrawGrid(glm::value_ptr(cam.getViewMatrix()),
-                     glm::value_ptr(cam.getProjectionMatrix()), identityMatrix,
-                     1000.f);
-
-  ImGuizmo::ViewManipulate(glm::value_ptr(cam.getViewMatrix()), camDistance,
-                           ImVec2(viewManipulateRight - 128, viewManipulateTop),
-                           ImVec2(128, 128), 0x10101010);
+  // DEBUG grid
+  // ImGuizmo::DrawGrid(glm::value_ptr(camera.getViewMatrix()),
+  //                    glm::value_ptr(camera.getProjectionMatrix()),
+  //                    glm::value_ptr(glm::identity<glm::mat4>()), 100.f);
 }

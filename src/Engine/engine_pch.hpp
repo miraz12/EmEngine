@@ -80,4 +80,10 @@ typedef std::int16_t i16;
 typedef std::uint8_t u8;
 typedef std::int8_t i8;
 
+// Defines
+#define PI 3.14159f
+
+#define DEG2RAD PI / 180.f
+#define RAD2DEG 180.f / PI
+
 #endif // ENGINE_PCH_

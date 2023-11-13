@@ -4,21 +4,16 @@ Camera::Camera()
     : m_viewMatrix(1.0f),
       m_matrixNeedsUpdate(true), m_position{0.0f, 0.0f, 3.0f},
       m_front(0.0f, 0.0f, -1.0f), m_up(0.0f, 1.0f, 0.0f), m_zoom(1.0f),
-      fov(60.0f), m_height(800), m_width(800) {}
+      m_fov(45.0f), m_height(800), m_width(800), m_near(0.1f), m_far(100.f) {}
 
 Camera::~Camera() {}
 
 
-void Camera::setZoom(float zoomAmount) {
-  m_zoom = zoomAmount;
-  m_matrixNeedsUpdate = true;
-}
-
 void Camera::checkDirty() {
   if (m_matrixNeedsUpdate) {
     m_viewMatrix = glm::lookAt(m_position, m_position + m_front, m_up);
-    m_ProjectionMatrix = glm::perspective(glm::radians(fov),
-                                          m_width / m_height, 0.1f, 1000.0f);
+    m_ProjectionMatrix = glm::perspective(glm::radians(m_fov),
+                                          m_width / m_height, m_near, m_far);
     m_matrixNeedsUpdate = false;
   }
 }

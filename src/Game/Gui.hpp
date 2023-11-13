@@ -13,24 +13,9 @@ public:
   void renderGizmos();
 
 private:
-  void editTransform(float *cameraView, float *cameraProjection, float *matrix,
-                     bool editTransformDecomposition);
+  void editTransform(Camera &camera, glm::vec3 &pos, glm::vec3 &rot, glm::vec3 &scale);
 
   Game &m_game;
-  bool useWindow = true;
-  int gizmoCount = 1;
-  float camDistance = 8.f;
-  float objectMatrix[4][16] = {{1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-                                0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f},
-
-                               {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-                                0.f, 1.f, 0.f, 2.f, 0.f, 0.f, 1.f},
-
-                               {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-                                0.f, 1.f, 0.f, 2.f, 0.f, 2.f, 1.f},
-
-                               {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f,
-                                0.f, 1.f, 0.f, 0.f, 0.f, 2.f, 1.f}};
 };
 
 #endif // GUI_H_

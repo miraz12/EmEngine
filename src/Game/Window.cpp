@@ -348,5 +348,5 @@ void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height) {
   game->setViewport(width, height);
   glViewport(0, 0, width, height);
   glfwSetWindowSize(window, width, height);
-  ImGui::SetCurrentContext(ImGui::GetCurrentContext());
+  // ImGui::SetCurrentContext(ImGui::GetCurrentContext());
 }
