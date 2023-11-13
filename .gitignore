@@ -37,3 +37,4 @@ build*/*
 .cache/*
 .vs*/*
 out*/*
+/.direnv/
