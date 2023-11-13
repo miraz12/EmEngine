@@ -28,4 +28,4 @@ jobs:
       - name: Copy build
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          rsync -r --checksum  build/* /tmp/emengine
+          rsync -r --checksum  build/* /var/lib/www/engine.rlyeh.nu
