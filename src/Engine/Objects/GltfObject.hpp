@@ -9,6 +9,8 @@ public:
   GltfObject(std::string filename);
   virtual ~GltfObject() = default;
 
+  std::string_view getFileName() { return m_filename; };
+
 private:
   void loadModel(tinygltf::Model &model);
   void loadNode(tinygltf::Model &model, tinygltf::Node &node, glm::mat4 mat);
@@ -22,6 +24,7 @@ private:
 
   btTriangleMesh *m_mesh;
   std::vector<std::string> m_texIds;
+  std::string m_filename;
 };
 
 #endif // GLTFOBJECT_H_

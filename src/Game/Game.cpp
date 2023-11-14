@@ -5,6 +5,7 @@ Game::Game(GLFWwindow &window)
     : m_ECSManager(ECSManager::getInstance()), m_window(window),
       m_InputManager(InputManager::getInstance()) {
   SceneLoader::getInstance().init("resources/scene.yaml");
+  SceneLoader::getInstance().saveScene("resources/sceneOUT.yaml");
 }
 
 void Game::update(float dt) {

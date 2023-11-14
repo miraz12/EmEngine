@@ -12,5 +12,7 @@ public:
   GraphicsComponent() = delete;
 
   GraphicsObject &m_grapObj;
+
+  enum TYPE { POINT, LINE, QUAD, CUBE, MESH, HEIGHTMAP } type;
 };
 #endif // GRAPHICSCOMPONENT_H_

@@ -135,6 +135,7 @@ public:
   System &getSystem(std::string s) { return *m_systems[s]; }
   Entity &getPickedEntity() { return m_pickedEntity; }
   bool &getEntitySelected() { return m_entitySelected; }
+  std::vector<Entity> &getEntities() { return m_entities; };
 
   void setViewport(u32 w, u32 h);
   void setPickedEntity(Entity en) { m_pickedEntity = en; }

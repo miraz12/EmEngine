@@ -16,7 +16,7 @@ static std::string GetFilePathExtension(const std::string &FileName) {
   return "";
 }
 
-GltfObject::GltfObject(std::string filename) {
+GltfObject::GltfObject(std::string filename) : m_filename(filename) {
   std::string ext = GetFilePathExtension(filename);
   tinygltf::TinyGLTF loader;
   std::string err;

@@ -12,6 +12,7 @@ public:
   PhysicsComponent(std::size_t en, float mass);
   ~PhysicsComponent();
   btRigidBody *getRigidBody() { return body; }
+  btScalar getMass() { return mass; }
   bool initialized{false};
   // Used for delayed init as this component needs graphics component
   void init();

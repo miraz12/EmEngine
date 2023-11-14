@@ -1,6 +1,6 @@
 #include "Heightmap.hpp"
 
-Heightmap::Heightmap(std::string filename) {
+Heightmap::Heightmap(std::string filename) : m_filename(filename) {
   i32 numChannels;
   i32 width, height;
   stbi_set_flip_vertically_on_load(true); // Flip the image vertically
