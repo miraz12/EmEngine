@@ -27,15 +27,23 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Engine Game)
 target_compile_options(${PROJECT_NAME} PRIVATE
                         $<$<CONFIG:Debug>:
                             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                                    -pedantic -Wall -Wextra -g3 -O0>
-                                    $<$<CXX_COMPILER_ID:MSVC>:
-                                    /W4;>>)
+                                -pedantic -Wall -Wextra -g3 -O0>
+                            $<$<CXX_COMPILER_ID:MSVC>:
+                                /W4;>>)
+
 target_compile_options(${PROJECT_NAME} PRIVATE
                         $<$<CONFIG:Release>:
                             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                                    -pedantic -Wall -Wextra -O3 -Werror -fno-exceptions -flto -ffast-math>
-                                    $<$<CXX_COMPILER_ID:MSVC>:
-                                    /W4;>>)
+                                -pedantic -Wall -Wextra -O3 -Werror -fno-exceptions -flto -ffast-math >
+                            $<$<CXX_COMPILER_ID:MSVC>:
+                                /W4;>>)
+
+target_link_options(${PROJECT_NAME} PRIVATE
+                        $<$<CONFIG:Release>:
+                            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+                                -flto >
+                            $<$<CXX_COMPILER_ID:MSVC>:
+                                >>)
 
 target_link_options(${PROJECT_NAME} PRIVATE -static-libsan )
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

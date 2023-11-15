@@ -36,7 +36,7 @@ public:
   void updateRenderingSystems(float dt);
 
   // creates and returns a new entity
-  Entity createEntity();
+  Entity createEntity(std::string name = "no_name");
 
   // TODO: Figure out something better than this
   Entity getLastEntity() { return m_entityCount - 1; }
@@ -123,12 +123,14 @@ public:
   }
 
   // // Create point light
-  std::shared_ptr<PointLight> SetupPointLight(glm::vec3 color, float constant,
-                                              float linear, float quadratic,
-                                              glm::vec3 pos);
+  std::shared_ptr<PointLight> SetupPointLight(Entity en, glm::vec3 color,
+                                              float constant, float linear,
+                                              float quadratic, glm::vec3 pos);
   // // Create directional light
-  std::shared_ptr<DirectionalLight>
-  SetupDirectionalLight(glm::vec3 color, float ambient, glm::vec3 dir);
+  std::shared_ptr<DirectionalLight> SetupDirectionalLight(Entity en,
+                                                          glm::vec3 color,
+                                                          float ambient,
+                                                          glm::vec3 dir);
   void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
@@ -136,6 +138,7 @@ public:
   Entity &getPickedEntity() { return m_pickedEntity; }
   bool &getEntitySelected() { return m_entitySelected; }
   std::vector<Entity> &getEntities() { return m_entities; };
+  std::string_view getEntityName(Entity en) { return m_entityNames[en]; };
 
   void setViewport(u32 w, u32 h);
   void setPickedEntity(Entity en) { m_pickedEntity = en; }
@@ -150,6 +153,7 @@ private:
   ~ECSManager();
   // Entities
   std::vector<Entity> m_entities;
+  std::map<Entity, std::string> m_entityNames;
   std::unordered_map<std::string, System *> m_systems;
 
   std::unordered_map<Entity, std::vector<std::shared_ptr<Component>>>

@@ -20,7 +20,7 @@ void DebugDrawer::drawLine(const btVector3 & /* from */,
 
 void DebugDrawer::drawContactPoint(const btVector3 & /* pointOnB */,
                                    const btVector3 & /* normalOnB */,
-                                   btScalar /* distance */, int /* lifeTime */,
+                                   btScalar /* distance */, i32 /* lifeTime */,
                                    const btVector3 & /* color */) {
   // Implement if needed
 }

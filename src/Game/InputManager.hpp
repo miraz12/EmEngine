@@ -3,8 +3,6 @@
 
 #include <ECS/ECSManager.hpp>
 #include <Singleton.hpp>
-#include <cstdint>
-#include <unordered_map>
 
 class InputManager : public Singleton<InputManager> {
   friend class Singleton<InputManager>;

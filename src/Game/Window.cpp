@@ -1,21 +1,6 @@
 #include "Window.hpp"
 
-#ifdef EMSCRIPTEN
-#define GL_OES_vertex_array_object
-#include <GLES3/gl3.h>
-#include <emscripten.h>
-#else
-#include <glad/glad.h>
-// #define _DEBUG_
-#endif
-
-#include <GLFW/glfw3.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-
 #include <Game.hpp>
-#include <fstream>
-#include <iostream>
 
 #include "Gui.hpp"
 #include "InputManager.hpp"
@@ -46,6 +31,9 @@ void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height);
 void keyPressCallback(GLFWwindow *win, i32 key, i32 scancode, i32 action,
                       i32 mods);
 void mousePressCallback(GLFWwindow *win, i32 button, i32 action, i32 mods);
+void GLFW_error(int error, const char *description) {
+  std::cout << description << std::endl;
+}
 
 #ifndef EMSCRIPTEN
 void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
@@ -149,6 +137,7 @@ bool Window::open() {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
   // glfwWindowHint(GLFW_SAMPLES, 4);
 
+  glfwSetErrorCallback(GLFW_error);
   SCR_WIDTH = 800;
   SCR_HEIGHT = 800;
   window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);

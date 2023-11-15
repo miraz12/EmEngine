@@ -4,7 +4,7 @@ Camera::Camera()
     : m_viewMatrix(1.0f),
       m_matrixNeedsUpdate(true), m_position{0.0f, 0.0f, 3.0f},
       m_front(0.0f, 0.0f, -1.0f), m_up(0.0f, 1.0f, 0.0f), m_zoom(1.0f),
-      m_fov(45.0f), m_height(800), m_width(800), m_near(0.1f), m_far(100.f) {}
+      m_height(800), m_width(800), m_fov(45.0f), m_near(0.1f), m_far(100.f) {}
 
 Camera::~Camera() {}
 

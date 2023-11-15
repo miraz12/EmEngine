@@ -1,6 +1,8 @@
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#undef int
+#include <tiny_gltf.h>
 
 #include "GltfObject.hpp"
 #include <Rendering/Material.hpp>

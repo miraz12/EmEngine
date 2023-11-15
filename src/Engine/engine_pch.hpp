@@ -29,6 +29,16 @@
 #include <unordered_map>
 #include <vector>
 
+// OpenGL glad
+#ifdef EMSCRIPTEN
+#define GL_OES_vertex_array_object
+#include <GLES3/gl3.h>
+#include <emscripten.h>
+#else
+#include <glad/glad.h>
+// #define _DEBUG_
+#endif
+
 // GLM
 #include "glm/geometric.hpp"
 #include <glm/ext.hpp>
@@ -62,8 +72,12 @@
 
 // ImGui
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+
+#include <tiny_gltf.h>
 
 // ImGuizmo
 #include <ImGuizmo.h>
@@ -80,6 +94,8 @@ typedef std::uint16_t u16;
 typedef std::int16_t i16;
 typedef std::uint8_t u8;
 typedef std::int8_t i8;
+// Undef int to only allow the ones defined here
+// #define int undefined
 
 // Defines
 #define PI 3.14159f

@@ -7,23 +7,12 @@
       position: [0.0, 2.0, -5.0]
     - type: Phy
       mass: 1.0
-
 - entity: particles
   components:
     - type: Par
       velocity: [0.0, 5.0, 0.0]
     - type: Pos
       position: [2.0, 2.0, -5.0]
-
-# - entity: sponza
-#   components:
-#     - type: Gra
-#       primitive: "Mesh"
-#       file: "../../../glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf"
-#     - type: Pos
-#     - type: Phy
-#       mass: 0.0
-
 - entity: map
   components:
     - type: Gra
@@ -32,33 +21,37 @@
     - type: Pos
     - type: Phy
       mass: 0.0
-
-- light: dir
-  type: dir
-  color: [0.988, 0.898, 0.439]
-  ambient: 0.1
-  direction: [0.01, -1.0, 0.0]
-
-- light: point1
-  type: point
-  color: [1.0, 0.0, 0.0]
-  constant: 1.0
-  linear: 0.7
-  quadratic: 1.8
-  position: [0.0, 1.0, 0.0]
-
-- light: point2
-  type: point
-  color: [0.0, 1.0, 0.0]
-  constant: 1.0
-  linear: 0.7
-  quadratic: 1.8
-  position: [1.5, 1.0, 0.0]
-
-- light: point3
-  type: point
-  color: [0.0, 0.0, 1.0]
-  constant: 1.0
-  linear: 0.7
-  quadratic: 1.8
-  position: [-1.5, 1.0, 0.0]
+- entity: dir1
+  components:
+    - type: Lig
+      lightType: dir
+      color: [0.988, 0.898, 0.439]
+      ambient: 0.1
+      direction: [0.01, -1.0, 0.0]
+- entity: point1
+  components:
+    - type: Lig
+      lightType: point
+      color: [0.0, 1.0, 0.0]
+      constant: 1.0
+      linear: 0.7
+      quadratic: 1.8
+      position: [1.5, 1.0, 0.0]
+- entity: point2
+  components:
+    - type: Lig
+      lightType: point
+      color: [0.0, 1.0, 0.0]
+      constant: 1.0
+      linear: 0.7
+      quadratic: 1.8
+      position: [1.5, 1.0, 0.0]
+- entity: point2
+  components:
+    - type: Lig
+      lightType: point
+      color: [0.0, 0.0, 1.0]
+      constant: 1.0
+      linear: 0.7
+      quadratic: 1.8
+      position: [-1.5, 1.0, 0.0]

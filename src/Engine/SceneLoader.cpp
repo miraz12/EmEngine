@@ -12,38 +12,11 @@ void SceneLoader::init(std::string sceneFile) {
   YAML::Node config = YAML::LoadFile(sceneFile);
   m_ecsMan = &ECSManager::getInstance();
   for (auto dict : config) {
-
-    if (dict["light"]) {
-      if (dict["type"].as<std::string>() == "point") {
-        float r = dict["color"][0].as<float>();
-        float g = dict["color"][1].as<float>();
-        float b = dict["color"][2].as<float>();
-        float constant = dict["constant"].as<float>();
-        float linear = dict["linear"].as<float>();
-        float quadratic = dict["quadratic"].as<float>();
-        float x = dict["position"][0].as<float>();
-        float y = dict["position"][1].as<float>();
-        float z = dict["position"][2].as<float>();
-        m_ecsMan->SetupPointLight(glm::vec3(r, g, b), constant, linear,
-                                  quadratic, glm::vec3(x, y, z));
-      } else if (dict["type"].as<std::string>() == "dir") {
-        float r = dict["color"][0].as<float>();
-        float g = dict["color"][1].as<float>();
-        float b = dict["color"][2].as<float>();
-        float ambient = dict["ambient"].as<float>();
-        float x = dict["direction"][0].as<float>();
-        float y = dict["direction"][1].as<float>();
-        float z = dict["direction"][2].as<float>();
-        m_ecsMan->SetupDirectionalLight(glm::vec3(r, g, b), ambient,
-                                        glm::vec3(x, y, z));
-      }
-    }
-    if (dict["entity"]) {
-      YAML::Node n = dict["entity"];
-      Entity en = m_ecsMan->createEntity();
+    YAML::Node n = dict["entity"];
+    if (n) {
+      Entity en = m_ecsMan->createEntity(n.as<std::string>());
       if (dict["components"]) {
         YAML::Node components = dict["components"];
-
         for (size_t i = 0; i < components.size(); i++) {
           if (components[i]["type"].as<std::string>() == "Gra") {
             std::shared_ptr<GraphicsComponent> graphComp;
@@ -115,6 +88,30 @@ void SceneLoader::init(std::string sceneFile) {
             std::shared_ptr<ParticlesComponent> parComp =
                 std::make_shared<ParticlesComponent>(glm::vec3(xv, yv, zv));
             m_ecsMan->addComponents(en, parComp);
+          } else if (components[i]["type"].as<std::string>() == "Lig") {
+            if (components[i]["lightType"].as<std::string>() == "point") {
+              float r = components[i]["color"][0].as<float>();
+              float g = components[i]["color"][1].as<float>();
+              float b = components[i]["color"][2].as<float>();
+              float constant = components[i]["constant"].as<float>();
+              float linear = components[i]["linear"].as<float>();
+              float quadratic = components[i]["quadratic"].as<float>();
+              float x = components[i]["position"][0].as<float>();
+              float y = components[i]["position"][1].as<float>();
+              float z = components[i]["position"][2].as<float>();
+              m_ecsMan->SetupPointLight(en, glm::vec3(r, g, b), constant,
+                                        linear, quadratic, glm::vec3(x, y, z));
+            } else if (components[i]["lightType"].as<std::string>() == "dir") {
+              float r = components[i]["color"][0].as<float>();
+              float g = components[i]["color"][1].as<float>();
+              float b = components[i]["color"][2].as<float>();
+              float ambient = components[i]["ambient"].as<float>();
+              float x = components[i]["direction"][0].as<float>();
+              float y = components[i]["direction"][1].as<float>();
+              float z = components[i]["direction"][2].as<float>();
+              m_ecsMan->SetupDirectionalLight(en, glm::vec3(r, g, b), ambient,
+                                              glm::vec3(x, y, z));
+            }
           }
         }
       }
@@ -129,7 +126,8 @@ void SceneLoader::saveScene(std::string sceneFile) {
   out << YAML::BeginSeq;
   for (const Entity &en : ents) {
     out << YAML::BeginMap;
-    out << YAML::Key << "entity" << YAML::Value << en;
+    out << YAML::Key << "entity" << YAML::Value
+        << m_ecsMan->getEntityName(en).data();
     out << YAML::Key << "components" << YAML::Value << YAML::BeginSeq;
 
     // Serialize each component of the entity
@@ -182,17 +180,42 @@ void SceneLoader::saveScene(std::string sceneFile) {
       };
       out << YAML::EndMap;
     }
-    // auto ligComp = m_ecsMan->getComponent<LightingComponent>(en);
-    // if (ligComp) {
-    //   out << YAML::BeginMap;
-    //   out << YAML::Key << "type" << YAML::Value << "Gra";
-    //   switch (ligComp->getType()) {
-    //   case LightingComponent::POINT:
-    //     break;
-    //   case LightingComponent::DIRECTIONAL:
-    //     break;
-    //   }
-    // }
+    auto ligComp = m_ecsMan->getComponent<LightingComponent>(en);
+    if (ligComp) {
+      out << YAML::BeginMap;
+      out << YAML::Key << "type" << YAML::Value << "Lig";
+      switch (ligComp->getType()) {
+      case LightingComponent::NONE:
+        throw;
+        break;
+      case LightingComponent::POINT: {
+        auto point = static_cast<PointLight *>(&ligComp->getBaseLight());
+        out << YAML::Key << "lightType" << YAML::Value << "point";
+        out << YAML::Key << "color" << YAML::Value << YAML::Flow
+            << YAML::BeginSeq << point->color.r << point->color.g
+            << point->color.b << YAML::EndSeq;
+        out << YAML::Key << "position" << YAML::Value << YAML::Flow
+            << YAML::BeginSeq << point->position.x << point->position.y
+            << point->position.z << YAML::EndSeq;
+        out << YAML::Key << "constant" << YAML::Value << point->constant;
+        out << YAML::Key << "quadratic" << YAML::Value << point->quadratic;
+        out << YAML::Key << "linear" << YAML::Value << point->linear;
+        break;
+      }
+      case LightingComponent::DIRECTIONAL:
+        auto dir = static_cast<DirectionalLight *>(&ligComp->getBaseLight());
+        out << YAML::Key << "lightType" << YAML::Value << "dir";
+        out << YAML::Key << "color" << YAML::Value << YAML::Flow
+            << YAML::BeginSeq << dir->color.r << dir->color.g << dir->color.b
+            << YAML::EndSeq;
+        out << YAML::Key << "direction" << YAML::Value << YAML::Flow
+            << YAML::BeginSeq << dir->direction.x << dir->direction.y
+            << dir->direction.z << YAML::EndSeq;
+        out << YAML::Key << "ambient" << YAML::Value << dir->ambientIntensity;
+        break;
+      }
+      out << YAML::EndMap;
+    }
     auto parComp = m_ecsMan->getComponent<ParticlesComponent>(en);
     if (parComp) {
       out << YAML::BeginMap;

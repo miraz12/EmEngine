@@ -21,18 +21,18 @@ void ECSManager::update(float dt) {
   }
 }
 
-Entity ECSManager::createEntity() {
+Entity ECSManager::createEntity(std::string name) {
   Entity newEntity = ++m_entityCount;
   m_components[newEntity] =
       std::vector<std::shared_ptr<Component>>(MAX_COMPONENTS, nullptr);
   m_entities.push_back(newEntity);
+  m_entityNames[newEntity] = name;
   return m_entities.back();
 }
 
 std::shared_ptr<PointLight>
-ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear,
-                            float quadratic, glm::vec3 pos) {
-  Entity en = createEntity();
+ECSManager::SetupPointLight(Entity en, glm::vec3 color, float constant,
+                            float linear, float quadratic, glm::vec3 pos) {
   std::shared_ptr<PointLight> pLight = std::make_shared<PointLight>();
   pLight->position = pos;
   pLight->color = color;
@@ -45,9 +45,9 @@ ECSManager::SetupPointLight(glm::vec3 color, float constant, float linear,
 }
 
 std::shared_ptr<DirectionalLight>
-ECSManager::SetupDirectionalLight(glm::vec3 color, float ambient,
+ECSManager::SetupDirectionalLight(Entity en, glm::vec3 color, float ambient,
                                   glm::vec3 dir) {
-  m_dirLightEntity = createEntity();
+  m_dirLightEntity = en;
   std::shared_ptr<DirectionalLight> dLight =
       std::make_shared<DirectionalLight>();
   dLight->direction = dir;

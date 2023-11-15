@@ -1,7 +1,7 @@
 #include "Gui.hpp"
 
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#include <SceneLoader.hpp>
+
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
 GUI::GUI(Game &game) : m_game(game) {}
@@ -96,8 +96,11 @@ void GUI::renderGUI() {
     editTransform(cam, pos, euler, scale);
     rot = glm::quat(euler * DEG2RAD);
   }
-  // Rendering
+  if (ImGui::Button("Save scene")) {
+    SceneLoader::getInstance().saveScene("resources/scene.yaml");
+  }
   ImGui::End();
+  // Rendering
   ImGui::Render();
 }
 

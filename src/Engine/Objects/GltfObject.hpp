@@ -2,7 +2,6 @@
 #define GLTFOBJECT_H_
 
 #include "GraphicsObject.hpp"
-#include <tiny_gltf.h>
 
 class GltfObject : public GraphicsObject {
 public:
