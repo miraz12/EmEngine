@@ -68,7 +68,7 @@ void SceneLoader::init(std::string sceneFile) {
               float x = components[i]["rotation"][0].as<float>();
               float y = components[i]["rotation"][1].as<float>();
               float z = components[i]["rotation"][2].as<float>();
-              posComp->rotation = glm::vec3(x, y, z);
+              posComp->rotation = glm::quat(glm::vec3(x, y, z));
             }
             m_ecsMan->addComponents(en, posComp);
 
@@ -138,6 +138,12 @@ void SceneLoader::saveScene(std::string sceneFile) {
       out << YAML::Key << "position" << YAML::Value << YAML::Flow
           << YAML::BeginSeq << posComp->position.x << posComp->position.y
           << posComp->position.z << YAML::EndSeq;
+      glm::vec3 rot = glm::eulerAngles(posComp->rotation);
+      out << YAML::Key << "rotation" << YAML::Value << YAML::Flow
+          << YAML::BeginSeq << rot.x << rot.y << rot.z << YAML::EndSeq;
+      out << YAML::Key << "scale" << YAML::Value << YAML::Flow << YAML::BeginSeq
+          << posComp->scale.x << posComp->scale.y << posComp->scale.z
+          << YAML::EndSeq;
       out << YAML::EndMap;
     }
     auto debComp = m_ecsMan->getComponent<DebugComponent>(en);
