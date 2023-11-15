@@ -8,7 +8,6 @@ Camera::Camera()
 
 Camera::~Camera() {}
 
-
 void Camera::checkDirty() {
   if (m_matrixNeedsUpdate) {
     m_viewMatrix = glm::lookAt(m_position, m_position + m_front, m_up);

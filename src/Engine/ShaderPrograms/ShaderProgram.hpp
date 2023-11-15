@@ -18,7 +18,8 @@ public:
   u32 getUniformLocation(std::string uniformName) const;
   u32 getAttribLocation(std::string attribName) const;
   u32 getId() { return p_shaderProgram; }
-  void loadShaders(std::string vertexShaderPath, std::string fragmentShaderPath);
+  void loadShaders(std::string vertexShaderPath,
+                   std::string fragmentShaderPath);
   void use() const;
 
 protected:

@@ -29,7 +29,8 @@ public:
   void draw(ECSManager &eManager);
   void setViewport(u32 w, u32 h);
 
-  std::array<RenderPass *, static_cast<size_t>(PassId::kNumPasses)> m_renderPass;
+  std::array<RenderPass *, static_cast<size_t>(PassId::kNumPasses)>
+      m_renderPass;
 
 private:
   u32 m_width{800}, m_height{800};

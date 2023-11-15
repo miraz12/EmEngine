@@ -102,15 +102,15 @@ void GeometryPass::setViewport(u32 w, u32 h) {
                          gAlbedo, 0);
 
   // - emissive color buffer
-  u32 gEmissive = p_textureManager.loadTexture(
-      "gEmissive", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  u32 gEmissive = p_textureManager.loadTexture("gEmissive", GL_RGBA16F, GL_RGBA,
+                                               GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D,
                          gEmissive, 0);
 
   // - tell OpenGL which color attachments we'll use (of this framebuffer) for
   // rendering
   u32 attachments[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-                             GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
+                        GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
   glDrawBuffers(4, attachments);
   // create and attach depth buffer (renderbuffer)
   glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);

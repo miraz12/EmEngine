@@ -8,7 +8,21 @@ class InputManager : public Singleton<InputManager> {
   friend class Singleton<InputManager>;
 
 public:
-  enum KEY { Escape, W, A, S, D, F, O, Space, ArrowUp, ArrowDown, ArrowRight, ArrowLeft, Mouse1 };
+  enum KEY {
+    Escape,
+    W,
+    A,
+    S,
+    D,
+    F,
+    O,
+    Space,
+    ArrowUp,
+    ArrowDown,
+    ArrowRight,
+    ArrowLeft,
+    Mouse1
+  };
 
   void handleInput(KEY k, bool pressed);
   void update(float dt);

@@ -22,10 +22,11 @@ private:
 
   u32 m_cubeBuffer, m_rbo;
   u32 m_captureFBO{0}, m_captureRBO{0}, m_envCubemap{0};
-  ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader, m_prefilterShader,
-      m_brdfShader;
+  ShaderProgram m_equirectangularToCubemapShader, m_irradianceShader,
+      m_prefilterShader, m_brdfShader;
 
-  glm::mat4 m_captureProjection{glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f)};
+  glm::mat4 m_captureProjection{
+      glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f)};
   glm::mat4 m_captureViews[6] = {
       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f),
                   glm::vec3(0.0f, -1.0f, 0.0f)),

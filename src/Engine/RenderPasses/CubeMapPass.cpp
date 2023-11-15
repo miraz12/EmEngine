@@ -120,8 +120,8 @@ void CubeMapPass::setViewport(u32 w, u32 h) {
 
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
 
-  u32 cubeFrame = p_textureManager.loadTexture(
-      "cubeFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  u32 cubeFrame = p_textureManager.loadTexture("cubeFrame", GL_RGBA16F, GL_RGBA,
+                                               GL_FLOAT, p_width, p_height, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          cubeFrame, 0);
 

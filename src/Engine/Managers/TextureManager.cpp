@@ -1,8 +1,7 @@
 #include "TextureManager.hpp"
 
-u32 TextureManager::loadTexture(u32 internalFormat, GLenum format,
-                                     GLenum type, u32 width,
-                                     u32 height, unsigned char *data) {
+u32 TextureManager::loadTexture(u32 internalFormat, GLenum format, GLenum type,
+                                u32 width, u32 height, unsigned char *data) {
   GLuint texId;
   glGenTextures(1, &texId);
   glBindTexture(GL_TEXTURE_2D, texId);
@@ -22,8 +21,8 @@ u32 TextureManager::loadTexture(u32 internalFormat, GLenum format,
   return texId;
 }
 u32 TextureManager::loadTexture(std::string name, u32 internalFormat,
-                                     GLenum format, GLenum type, u32 width,
-                                     u32 height, unsigned char *data) {
+                                GLenum format, GLenum type, u32 width,
+                                u32 height, unsigned char *data) {
   // std::cout << "Warning texture reload" << std::endl;
   deleteTexture(name);
   GLuint texId;
@@ -42,8 +41,7 @@ u32 TextureManager::loadTexture(std::string name, u32 internalFormat,
   return texId;
 }
 
-void TextureManager::setTexture(std::string name, u32 texId,
-                                u32 type) {
+void TextureManager::setTexture(std::string name, u32 texId, u32 type) {
   deleteTexture(name);
   texIds.insert({name, Texture{texId, type}});
 }
