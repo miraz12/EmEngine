@@ -31,13 +31,13 @@ public:
     m_matrixNeedsUpdate = true;
   };
 
-  void setNear(float near) {
-    m_near = near;
+  void setNear(float n) {
+    m_near = n;
     m_matrixNeedsUpdate = true;
   };
 
-  void setFar(float far) {
-    m_far = far;
+  void setFar(float f) {
+    m_far = f;
     m_matrixNeedsUpdate = true;
   };
 
