@@ -2,7 +2,7 @@
 #define GAME_H_
 
 #include "InputManager.hpp"
-#include <include/API.hpp>
+#include <API.hpp>
 
 class Game {
 public:
@@ -12,6 +12,8 @@ public:
   void update(float dt);
   void reset();
   void setViewport(u32 w, u32 h);
+  InputManager &getInputManager() { return m_inputManager; };
+
   // Dir light
   // std::shared_ptr<DirectionalLight> dLight;
   // TODO: Dont hardcode this as it defeats the purpose of having dir light set
@@ -28,7 +30,7 @@ private:
   void handleInput(float dt);
 
   GLFWwindow &m_window;
-  InputManager &m_InputManager;
+  InputManager &m_inputManager;
 };
 
 #endif // GAME_H_

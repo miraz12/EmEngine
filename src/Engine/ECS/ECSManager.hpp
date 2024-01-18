@@ -2,6 +2,7 @@
 #define ECSMANAGER_H_
 
 #include <API.hpp>
+#include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
 
 #include "Components/Component.hpp"
@@ -39,6 +40,7 @@ public:
   glm::vec3 &getScale(Entity en) override {
     return getComponent<PositionComponent>(en)->scale;
   };
+
   // resets ECS
   void reset();
 
@@ -154,7 +156,10 @@ public:
   void setViewport(u32 w, u32 h) override;
   void setPickedEntity(Entity en) { m_pickedEntity = en; }
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
-  void setSimulatePhysics(bool sim) { m_simulatePhysics = sim; }
+  void setSimulatePhysics(bool sim) override { m_simulatePhysics = sim; }
+
+  void loadScene(std::string_view file) override;
+  void saveScene(std::string_view file) override;
 
   glm::vec3 dDir;
 

@@ -2,12 +2,12 @@
 #define INPUTMANAGER_H_
 
 #include <API.hpp>
-#include <Singleton.hpp>
 
-class InputManager : public Singleton<InputManager> {
-  friend class Singleton<InputManager>;
-
+class InputManager {
 public:
+  InputManager();
+  ~InputManager() = default;
+
   enum KEY {
     Escape,
     W,
@@ -38,8 +38,6 @@ public:
   std::unordered_map<KEY, bool> keys;
 
 private:
-  InputManager();
-  ~InputManager() = default;
   float m_pitch{0.0f};
   float m_yaw{-90.0f};
   i32 m_mousePosX, m_mousePosY;

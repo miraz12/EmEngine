@@ -24,8 +24,6 @@ static double SCR_YAW = -90.0;
 
 double lastX, lastY;
 
-static InputManager &inMgr = InputManager::getInstance();
-
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height);
 void keyPressCallback(GLFWwindow *win, i32 key, i32 scancode, i32 action,
@@ -248,7 +246,7 @@ bool Window::start() {
 
 void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
 
-  if (!inMgr.keys.at(InputManager::KEY::Mouse1)) {
+  if (!game->getInputManager().keys.at(InputManager::KEY::Mouse1)) {
     lastX = xpos;
     lastY = ypos;
     return;
@@ -271,7 +269,7 @@ void mouse_callback(GLFWwindow * /* window */, double xpos, double ypos) {
   if (SCR_PITCH < -89.0f)
     SCR_PITCH = -89.0f;
 
-  inMgr.setPitchYaw(SCR_PITCH, SCR_YAW);
+  game->getInputManager().setPitchYaw(SCR_PITCH, SCR_YAW);
 }
 
 void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
@@ -281,37 +279,37 @@ void keyPressCallback(GLFWwindow *win, i32 key, i32 /* scancode */, i32 action,
     glfwSetWindowShouldClose(win, true);
     break;
   case GLFW_KEY_W:
-    inMgr.handleInput(InputManager::KEY::W, action);
+    game->getInputManager().handleInput(InputManager::KEY::W, action);
     break;
   case GLFW_KEY_A:
-    inMgr.handleInput(InputManager::KEY::A, action);
+    game->getInputManager().handleInput(InputManager::KEY::A, action);
     break;
   case GLFW_KEY_S:
-    inMgr.handleInput(InputManager::KEY::S, action);
+    game->getInputManager().handleInput(InputManager::KEY::S, action);
     break;
   case GLFW_KEY_D:
-    inMgr.handleInput(InputManager::KEY::D, action);
+    game->getInputManager().handleInput(InputManager::KEY::D, action);
     break;
   case GLFW_KEY_F:
-    inMgr.handleInput(InputManager::KEY::F, action);
+    game->getInputManager().handleInput(InputManager::KEY::F, action);
     break;
   case GLFW_KEY_O:
-    inMgr.handleInput(InputManager::KEY::O, action);
+    game->getInputManager().handleInput(InputManager::KEY::O, action);
     break;
   case GLFW_KEY_SPACE:
-    inMgr.handleInput(InputManager::KEY::Space, action);
+    game->getInputManager().handleInput(InputManager::KEY::Space, action);
     break;
   case GLFW_KEY_UP:
-    inMgr.handleInput(InputManager::KEY::ArrowUp, action);
+    game->getInputManager().handleInput(InputManager::KEY::ArrowUp, action);
     break;
   case GLFW_KEY_DOWN:
-    inMgr.handleInput(InputManager::KEY::ArrowDown, action);
+    game->getInputManager().handleInput(InputManager::KEY::ArrowDown, action);
     break;
   case GLFW_KEY_RIGHT:
-    inMgr.handleInput(InputManager::KEY::ArrowRight, action);
+    game->getInputManager().handleInput(InputManager::KEY::ArrowRight, action);
     break;
   case GLFW_KEY_LEFT:
-    inMgr.handleInput(InputManager::KEY::ArrowLeft, action);
+    game->getInputManager().handleInput(InputManager::KEY::ArrowLeft, action);
     break;
   default:
     break;
@@ -323,12 +321,12 @@ void mousePressCallback(GLFWwindow * /* win */, i32 button, i32 action,
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseButtonEvent(button, action);
   if (!io.WantCaptureMouse) {
-    inMgr.handleInput(InputManager::KEY::Mouse1, action);
+    game->getInputManager().handleInput(InputManager::KEY::Mouse1, action);
   }
 
   double xpos, ypos;
   glfwGetCursorPos(window, &xpos, &ypos);
-  inMgr.setMousePos(xpos, ypos);
+  game->getInputManager().setMousePos(xpos, ypos);
 }
 
 void framebuffer_size_callback(GLFWwindow *window, i32 width, i32 height) {

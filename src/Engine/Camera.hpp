@@ -8,7 +8,7 @@ public:
   Camera();
   ~Camera();
 
-  void setPosition(glm::vec3 v) {
+  void setPosition(glm::vec3 v) override {
     m_position = v;
     m_matrixNeedsUpdate = true;
   };
@@ -18,10 +18,11 @@ public:
     m_matrixNeedsUpdate = true;
   }
 
-  void setFront(glm::vec3 f) {
+  void setFront(glm::vec3 f) override {
     m_front = f;
     m_matrixNeedsUpdate = true;
   };
+
   void setSize(u32 w, u32 h) {
     m_width = w;
     m_height = h;
@@ -48,9 +49,9 @@ public:
   float getFar() override { return m_far; };
   float getWidth() override { return m_width; };
   float getHeight() override { return m_height; };
-  glm::vec3 getPosition() { return m_position; };
-  glm::vec3 getFront() { return m_front; };
-  glm::vec3 getUp() { return m_up; };
+  glm::vec3 getPosition() override { return m_position; };
+  glm::vec3 getFront() override { return m_front; };
+  glm::vec3 getUp() override { return m_up; };
   std::tuple<float, float> getSize() { return {m_width, m_height}; };
   std::tuple<glm::vec3, glm::vec3> getRayTo(i32 x, i32 y);
   glm::mat4 &getViewMatrix() override { return m_viewMatrix; }

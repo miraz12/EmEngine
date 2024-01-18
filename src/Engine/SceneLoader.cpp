@@ -7,9 +7,10 @@
 #include "Objects/Line.hpp"
 #include "Objects/Quad.hpp"
 #include <ECS/Components/DebugComponent.hpp>
+#include <ECS/ECSManager.hpp>
 
-void SceneLoader::init(std::string sceneFile) {
-  YAML::Node config = YAML::LoadFile(sceneFile);
+void SceneLoader::init(std::string_view sceneFile) {
+  YAML::Node config = YAML::LoadFile(sceneFile.data());
   m_ecsMan = &ECSManager::getInstance();
   for (auto dict : config) {
     YAML::Node n = dict["entity"];
@@ -119,7 +120,7 @@ void SceneLoader::init(std::string sceneFile) {
   }
 }
 
-void SceneLoader::saveScene(std::string sceneFile) {
+void SceneLoader::saveScene(std::string_view sceneFile) {
   YAML::Emitter out;
   std::vector<Entity> ents = m_ecsMan->getEntities();
 
@@ -246,6 +247,6 @@ void SceneLoader::saveScene(std::string sceneFile) {
   }
   out << YAML::EndSeq;
 
-  std::ofstream fout(sceneFile);
+  std::ofstream fout(sceneFile.data());
   fout << out.c_str();
 }

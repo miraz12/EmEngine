@@ -1,7 +1,5 @@
 #include "Gui.hpp"
 
-#include <SceneLoader.hpp>
-
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
 GUI::GUI(Game &game) : m_game(game) {}
@@ -94,7 +92,7 @@ void GUI::renderGUI() {
     rot = glm::quat(euler * DEG2RAD);
   }
   if (ImGui::Button("Save scene")) {
-    SceneLoader::getInstance().saveScene("resources/scene.yaml");
+    m_game.m_ECSManager.saveScene("resources/scene.yaml");
   }
   ImGui::End();
   // Rendering

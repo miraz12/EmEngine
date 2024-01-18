@@ -1,7 +1,4 @@
 #include "InputManager.hpp"
-#include "ECS/ECSManager.hpp"
-#include <Camera.hpp>
-#include <ECS/Systems/PhysicsSystem.hpp>
 
 InputManager::InputManager() {
   keys.insert({KEY::Escape, false});
@@ -24,16 +21,16 @@ void InputManager::handleInput(KEY k, bool pressed) { keys.at(k) = pressed; }
 void InputManager::update(float dt) {
   float camSpeed = 1.f;
   float moveSpeed = 0.25f;
-  ECSManager &ecsManager = ECSManager::getInstance();
-  Camera &cam = ecsManager.getCamera();
+  API::ECS &ecsManager = API::ECS::getECS();
+  API::Camera &cam = ecsManager.getCamera();
   // Parse input
   if (keys.at(InputManager::KEY::A)) {
     if (ecsManager.getSimulatePhysics()) {
-      btRigidBody *body =
-          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
-      body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(-1.0, 0.0, 0.0) +
-                              body->getLinearVelocity());
+      // btRigidBody *body =
+      //     ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      // body->activate();
+      // body->setLinearVelocity(moveSpeed * btVector3(-1.0, 0.0, 0.0) +
+      //                         body->getLinearVelocity());
     } else {
       glm::vec3 camPos =
           cam.getPosition() -
@@ -46,11 +43,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::D)) {
     if (ecsManager.getSimulatePhysics()) {
-      btRigidBody *body =
-          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
-      body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(1.0, 0.0, 0.0) +
-                              body->getLinearVelocity());
+      // btRigidBody *body =
+      //     ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      // body->activate();
+      // body->setLinearVelocity(moveSpeed * btVector3(1.0, 0.0, 0.0) +
+      //                         body->getLinearVelocity());
     } else {
       glm::vec3 camPos =
           cam.getPosition() +
@@ -63,11 +60,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::W)) {
     if (ecsManager.getSimulatePhysics()) {
-      btRigidBody *body =
-          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
-      body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, -1.0) +
-                              body->getLinearVelocity());
+      // btRigidBody *body =
+      //     ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      // body->activate();
+      // body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, -1.0) +
+      //                         body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
@@ -77,11 +74,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::S)) {
     if (ecsManager.getSimulatePhysics()) {
-      btRigidBody *body =
-          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
-      body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, 1.0) +
-                              body->getLinearVelocity());
+      //   btRigidBody *body =
+      //       ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      //   body->activate();
+      //   body->setLinearVelocity(moveSpeed * btVector3(0.0, 0.0, 1.0) +
+      //                           body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
@@ -91,11 +88,11 @@ void InputManager::update(float dt) {
   }
   if (keys.at(InputManager::KEY::Space)) {
     if (ecsManager.getSimulatePhysics()) {
-      btRigidBody *body =
-          ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
-      body->activate();
-      body->setLinearVelocity(moveSpeed * btVector3(0.0, 1.0, 0.0) +
-                              body->getLinearVelocity());
+      // btRigidBody *body =
+      //     ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
+      // body->activate();
+      // body->setLinearVelocity(moveSpeed * btVector3(0.0, 1.0, 0.0) +
+      //                         body->getLinearVelocity());
     } else {
       glm::vec3 camPos = cam.getPosition() + glm::vec3(0, 1, 0) * camSpeed * dt;
       if (!glm::all(glm::isnan(camPos))) {
@@ -117,7 +114,7 @@ void InputManager::update(float dt) {
     glm::vec3 cameraFront = glm::normalize(direction);
     cam.setFront(cameraFront);
     if (pressed) {
-      PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
+      // PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
       pressed = false;
     }
   } else {
