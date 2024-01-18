@@ -28,7 +28,7 @@ void InputManager::update(float dt) {
   Camera &cam = ecsManager.getCamera();
   // Parse input
   if (keys.at(InputManager::KEY::A)) {
-    if (ecsManager.simulatePhysics) {
+    if (ecsManager.getSimulatePhysics()) {
       btRigidBody *body =
           ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
@@ -45,7 +45,7 @@ void InputManager::update(float dt) {
     }
   }
   if (keys.at(InputManager::KEY::D)) {
-    if (ecsManager.simulatePhysics) {
+    if (ecsManager.getSimulatePhysics()) {
       btRigidBody *body =
           ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
@@ -62,7 +62,7 @@ void InputManager::update(float dt) {
     }
   }
   if (keys.at(InputManager::KEY::W)) {
-    if (ecsManager.simulatePhysics) {
+    if (ecsManager.getSimulatePhysics()) {
       btRigidBody *body =
           ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
@@ -76,7 +76,7 @@ void InputManager::update(float dt) {
     }
   }
   if (keys.at(InputManager::KEY::S)) {
-    if (ecsManager.simulatePhysics) {
+    if (ecsManager.getSimulatePhysics()) {
       btRigidBody *body =
           ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
@@ -90,7 +90,7 @@ void InputManager::update(float dt) {
     }
   }
   if (keys.at(InputManager::KEY::Space)) {
-    if (ecsManager.simulatePhysics) {
+    if (ecsManager.getSimulatePhysics()) {
       btRigidBody *body =
           ecsManager.getComponent<PhysicsComponent>(m_player)->getRigidBody();
       body->activate();
@@ -104,7 +104,8 @@ void InputManager::update(float dt) {
     }
   }
   if (keys.at(InputManager::KEY::O)) {
-    ecsManager.simulatePhysics = ecsManager.simulatePhysics ? false : true;
+    ecsManager.setSimulatePhysics(ecsManager.getSimulatePhysics() ? false
+                                                                  : true);
   }
 
   static bool pressed = true;

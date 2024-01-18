@@ -1,7 +1,9 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-class Camera {
+#include <API.hpp>
+
+class Camera : public API::Camera {
 public:
   Camera();
   ~Camera();
@@ -26,33 +28,33 @@ public:
     m_matrixNeedsUpdate = true;
   }
 
-  void setFOV(float fov) {
+  void setFOV(float fov) override {
     m_fov = fov;
     m_matrixNeedsUpdate = true;
   };
 
-  void setNear(float n) {
+  void setNear(float n) override {
     m_near = n;
     m_matrixNeedsUpdate = true;
   };
 
-  void setFar(float f) {
+  void setFar(float f) override {
     m_far = f;
     m_matrixNeedsUpdate = true;
   };
 
-  float getFOV() { return m_fov; };
-  float getNear() { return m_near; };
-  float getFar() { return m_far; };
-  float getWidth() { return m_width; };
-  float getHeight() { return m_height; };
+  float getFOV() override { return m_fov; };
+  float getNear() override { return m_near; };
+  float getFar() override { return m_far; };
+  float getWidth() override { return m_width; };
+  float getHeight() override { return m_height; };
   glm::vec3 getPosition() { return m_position; };
   glm::vec3 getFront() { return m_front; };
   glm::vec3 getUp() { return m_up; };
   std::tuple<float, float> getSize() { return {m_width, m_height}; };
   std::tuple<glm::vec3, glm::vec3> getRayTo(i32 x, i32 y);
-  glm::mat4 &getViewMatrix() { return m_viewMatrix; }
-  glm::mat4 &getProjectionMatrix() { return m_ProjectionMatrix; }
+  glm::mat4 &getViewMatrix() override { return m_viewMatrix; }
+  glm::mat4 &getProjectionMatrix() override { return m_ProjectionMatrix; }
 
   void bindProjViewMatrix(u32 proj, u32 view);
   void bindProjMatrix(u32 proj);

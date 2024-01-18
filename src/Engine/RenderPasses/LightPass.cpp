@@ -80,7 +80,7 @@ void LightPass::Execute(ECSManager &eManager) {
 
   p_shaderProgram.use();
   glUniform1i(p_shaderProgram.getUniformLocation("debugView"),
-              eManager.debugView);
+              eManager.getDebugView());
 
   glm::mat4 lightProjection, lightView;
   glm::mat4 lightSpaceMatrix;

@@ -9,8 +9,8 @@ Game::Game(GLFWwindow &window)
 
 void Game::update(float dt) {
   m_InputManager.update(dt);
-  m_ECSManager.updateDirLight(dirLightColor, dirLightAmbient, dirLightDir);
-  m_ECSManager.dDir = dirLightDir;
+  // m_ECSManager.updateDirLight(dirLightColor, dirLightAmbient, dirLightDir);
+  // m_ECSManager.dDir = dirLightDir;
   m_ECSManager.update(dt);
 }
 

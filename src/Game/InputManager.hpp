@@ -1,7 +1,7 @@
 #ifndef INPUTMANAGER_H_
 #define INPUTMANAGER_H_
 
-#include <ECS/ECSManager.hpp>
+#include <API.hpp>
 #include <Singleton.hpp>
 
 class InputManager : public Singleton<InputManager> {

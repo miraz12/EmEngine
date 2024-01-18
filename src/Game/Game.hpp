@@ -2,7 +2,7 @@
 #define GAME_H_
 
 #include "InputManager.hpp"
-#include <ECS/ECSManager.hpp>
+#include <include/API.hpp>
 
 class Game {
 public:
@@ -13,14 +13,14 @@ public:
   void reset();
   void setViewport(u32 w, u32 h);
   // Dir light
-  std::shared_ptr<DirectionalLight> dLight;
+  // std::shared_ptr<DirectionalLight> dLight;
   // TODO: Dont hardcode this as it defeats the purpose of having dir light set
   // in scene file
   glm::vec3 dirLightColor{0.988f, 0.898f, 0.439f};
   float dirLightAmbient{0.1};
   glm::vec3 dirLightDir{0.01, -1.0, 0.0};
   Entity selectedEntity{0};
-  ECSManager &m_ECSManager;
+  API::ECS &m_ECSManager;
 
 private:
   void init();

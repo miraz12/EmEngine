@@ -80,7 +80,7 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
 
 void PhysicsSystem::update(float dt) {
 
-  if (m_manager->simulatePhysics) {
+  if (m_manager->getSimulatePhysics()) {
     m_dynamicsWorld->stepSimulation(dt, 10);
     m_dynamicsWorld->debugDrawWorld();
     std::vector<Entity> view =

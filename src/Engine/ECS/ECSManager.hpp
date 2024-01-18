@@ -1,6 +1,7 @@
 #ifndef ECSMANAGER_H_
 #define ECSMANAGER_H_
 
+#include <API.hpp>
 #include <Types/LightTypes.hpp>
 
 #include "Components/Component.hpp"
@@ -14,22 +15,30 @@
 #include "Systems/PositionSystem.hpp"
 #include "Systems/System.hpp"
 
-typedef std::size_t Entity;
 typedef std::type_index ComponentType;
 
 #define MAX_COMPONENTS 10
 #define MAX_ENTITIES 10
 typedef std::bitset<MAX_COMPONENTS> Signature;
 
-class ECSManager : public Singleton<ECSManager> {
+class ECSManager : public Singleton<ECSManager>, public API::ECS {
   friend class Singleton<ECSManager>;
 
 public:
   void initializeSystems();
 
   // Runs through all systems
-  void update(float dt);
+  void update(float dt) override;
 
+  glm::vec3 &getPosition(Entity en) override {
+    return getComponent<PositionComponent>(en)->position;
+  };
+  glm::quat &getRotation(Entity en) override {
+    return getComponent<PositionComponent>(en)->rotation;
+  };
+  glm::vec3 &getScale(Entity en) override {
+    return getComponent<PositionComponent>(en)->scale;
+  };
   // resets ECS
   void reset();
 
@@ -133,20 +142,21 @@ public:
                                                           glm::vec3 dir);
   void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
-  Camera &getCamera() { return m_camera; };
+  Camera &getCamera() override { return m_camera; };
   System &getSystem(std::string s) { return *m_systems[s]; }
-  Entity &getPickedEntity() { return m_pickedEntity; }
+  Entity &getPickedEntity() override { return m_pickedEntity; }
   bool &getEntitySelected() { return m_entitySelected; }
   std::vector<Entity> &getEntities() { return m_entities; };
   std::string_view getEntityName(Entity en) { return m_entityNames[en]; };
+  bool &getSimulatePhysics() override { return m_simulatePhysics; };
+  i32 &getDebugView() override { return m_debugView; };
 
-  void setViewport(u32 w, u32 h);
+  void setViewport(u32 w, u32 h) override;
   void setPickedEntity(Entity en) { m_pickedEntity = en; }
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
+  void setSimulatePhysics(bool sim) { m_simulatePhysics = sim; }
 
   glm::vec3 dDir;
-  i32 debugView;
-  bool simulatePhysics{false};
 
 private:
   ECSManager();
@@ -166,6 +176,8 @@ private:
   Entity m_pickedEntity{0};
   bool m_entitySelected{false};
   Entity m_dirLightEntity;
+  bool m_simulatePhysics{false};
+  i32 m_debugView;
 
   Camera m_camera;
 };

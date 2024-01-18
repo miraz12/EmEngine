@@ -13,7 +13,7 @@ public:
   void renderGizmos();
 
 private:
-  void editTransform(Camera &camera, glm::vec3 &pos, glm::vec3 &rot,
+  void editTransform(API::Camera &camera, glm::vec3 &pos, glm::vec3 &rot,
                      glm::vec3 &scale);
 
   Game &m_game;

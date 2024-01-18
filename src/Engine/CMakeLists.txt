@@ -6,8 +6,9 @@ file(GLOB_RECURSE ENGINE_FILES
 	${CMAKE_SOURCE_DIR}/src/Engine/*.hpp)
 
 # Add source files as libraries
-add_library(Engine ${ENGINE_FILES})
-target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Engine )
+add_library(Engine SHARED ${ENGINE_FILES})
+target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(Engine PRIVATE exts)
 target_precompile_headers(Engine PRIVATE engine_pch.hpp)
 

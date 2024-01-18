@@ -16,15 +16,15 @@ void GUI::renderGUI() {
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
   if (ImGui::CollapsingHeader("Camera")) {
-    float fov = ECSManager::getInstance().getCamera().getFOV();
+    float fov = m_game.m_ECSManager.getCamera().getFOV();
     ImGui::SliderFloat("FOV", &fov, 0.0f, 120.0f);
-    ECSManager::getInstance().getCamera().setFOV(fov);
+    m_game.m_ECSManager.getCamera().setFOV(fov);
     float nearFar[2];
-    nearFar[0] = ECSManager::getInstance().getCamera().getNear();
-    nearFar[1] = ECSManager::getInstance().getCamera().getFar();
+    nearFar[0] = m_game.m_ECSManager.getCamera().getNear();
+    nearFar[1] = m_game.m_ECSManager.getCamera().getFar();
     ImGui::InputFloat2("FOV", nearFar);
-    ECSManager::getInstance().getCamera().setNear(nearFar[0]);
-    ECSManager::getInstance().getCamera().setFar(nearFar[1]);
+    m_game.m_ECSManager.getCamera().setNear(nearFar[0]);
+    m_game.m_ECSManager.getCamera().setFar(nearFar[1]);
   }
 
   if (ImGui::CollapsingHeader("Lights")) {
@@ -35,7 +35,7 @@ void GUI::renderGUI() {
   }
 
   if (ImGui::CollapsingHeader("Physics")) {
-    ImGui::Checkbox("Enabled", &ECSManager::getInstance().simulatePhysics);
+    ImGui::Checkbox("Enabled", &m_game.m_ECSManager.getSimulatePhysics());
   }
 
   static i32 offset = 0;
@@ -52,19 +52,16 @@ void GUI::renderGUI() {
     for (size_t i = 0; i < debugNamesInputs.size(); i++) {
       charitems.push_back(debugNamesInputs[i].c_str());
     }
-    ImGui::Combo("views", &ECSManager::getInstance().debugView, &charitems[0],
-                 7, 7);
+    ImGui::Combo("views", &m_game.m_ECSManager.getDebugView(), &charitems[0], 7,
+                 7);
   }
 
   Entity en = m_game.m_ECSManager.getPickedEntity();
   if (en > 0) {
 
-    glm::vec3 &pos =
-        m_game.m_ECSManager.getComponent<PositionComponent>(en)->position;
-    glm::quat &rot =
-        m_game.m_ECSManager.getComponent<PositionComponent>(en)->rotation;
-    glm::vec3 &scale =
-        m_game.m_ECSManager.getComponent<PositionComponent>(en)->scale;
+    glm::vec3 &pos = m_game.m_ECSManager.getPosition(en);
+    glm::quat &rot = m_game.m_ECSManager.getRotation(en);
+    glm::vec3 &scale = m_game.m_ECSManager.getScale(en);
 
     ImGuizmo::BeginFrame();
 
@@ -91,7 +88,7 @@ void GUI::renderGUI() {
       if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
         mCurrentGizmoMode = ImGuizmo::WORLD;
     }
-    Camera &cam = ECSManager::getInstance().getCamera();
+    API::Camera &cam = m_game.m_ECSManager.getCamera();
     glm::vec3 euler = glm::eulerAngles(rot) * RAD2DEG;
     editTransform(cam, pos, euler, scale);
     rot = glm::quat(euler * DEG2RAD);
@@ -104,7 +101,7 @@ void GUI::renderGUI() {
   ImGui::Render();
 }
 
-void GUI::editTransform(Camera &camera, glm::vec3 &pos, glm::vec3 &rot,
+void GUI::editTransform(API::Camera &camera, glm::vec3 &pos, glm::vec3 &rot,
                         glm::vec3 &scale) {
 
   glm::mat4 matrix = glm::identity<glm::mat4>();
