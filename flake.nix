@@ -12,6 +12,7 @@
           mkShell.override { stdenv = llvmPackages.stdenv; } {
             buildInputs = [
               cmake
+              cmake-language-server
               clang-tools
               ccache
               emscripten
@@ -24,10 +25,11 @@
               xorg.libXinerama
               xorg.libXcursor
               xorg.libXi
+              vlang
             ];
             shellHook = ''
-                            export EM_CACHE=.emscripten_cache
-              	      export DRI_PRIME=1
+              export EM_CACHE=.emscripten_cache
+              export DRI_PRIME=1
             '';
           };
       });

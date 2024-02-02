@@ -1,29 +1,74 @@
 {
-  "version": 4,
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
   "configurePresets": [
     {
-        "name": "MSVC17x64-debug",
-        "displayName": "Windows MSVC 17 x64 Debug",
-        "generator": "Visual Studio 17 2022",
-        "binaryDir": "${sourceDir}/out/build/${presetName}",
-        "architecture": {
-            "value": "x64",
-            "strategy": "external"
-        },
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-        }
+      "name": "linux-release",
+      "displayName": "Linux Release Build",
+      "description": "Release build for Linux",
+      "hidden": false,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     },
     {
-        "name": "Linux-debug",
-        "displayName": "Linux Ninja Debug",
-        "generator": "Ninja",
-        "binaryDir": "${sourceDir}/out/build/${presetName}",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "Debug",
-            "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-        }
+      "name": "linux-debug",
+      "displayName": "Linux Debug Build",
+      "description": "Debug build for Linux",
+      "hidden": false,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows Release Build",
+      "description": "Release build for Windows",
+      "hidden": false,
+      "binaryDir": "${sourceDir}/build/windows-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows Debug Build",
+      "description": "Debug build for Windows",
+      "hidden": false,
+      "binaryDir": "${sourceDir}/build/windows-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "emscripten-release",
+      "displayName": "Emscripten Release Build",
+      "description": "Release build for Web using Emscripten",
+      "hidden": false,
+      "binaryDir": "${sourceDir}/build/emscripten-release",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "/path/to/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "emscripten-debug",
+      "displayName": "Emscripten Debug Build",
+      "description": "Debug build for Web using Emscripten",
+      "hidden": false,
+      "binaryDir": "${sourceDir}/build/emscripten-debug",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "/path/to/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     }
   ]
 }

@@ -1,6 +1,16 @@
 #+title: Readme
-
 * EmEngine
+** Build instructions:
+*** Get avalible presets
+#+BEGIN_SRC bash
+  cmake --list-presets
+#+END_SRC
+*** Build
+#+BEGIN_SRC bash
+  cmake --preset {preset}
+  cmake --build build/{preset}
+#+END_SRC
+
 ** TODO:
 - Create map of names from scene file to easily identify specific enitites, like player.
 - TAA

@@ -75,11 +75,12 @@ void ECSManager::setViewport(u32 w, u32 h) {
   static_cast<GraphicsSystem *>(m_systems["GRAPHICS"])->setViewport(w, h);
 };
 
-void ECSManager::loadScene(std::string_view file) {
+void ECSManager::loadScene(const char *file) {
   SceneLoader::getInstance().init(file);
 };
-void ECSManager::saveScene(std::string_view file) {
+void ECSManager::saveScene(const char *file) {
   SceneLoader::getInstance().saveScene(file);
 };
 
 API::ECS &API::ECS::getECS() { return ECSManager::getInstance(); };
+void ECS_loadScene(const char *file) { API::ECS::getECS().loadScene(file); }

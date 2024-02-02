@@ -1,30 +1,28 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Add source files
-file(GLOB_RECURSE GAME_FILES
-    ${CMAKE_SOURCE_DIR}/src/Game/*.cpp
-    ${CMAKE_SOURCE_DIR}/src/Game/*.hpp)
+cmake_minimum_required(VERSION 3.10)
 
-# Add source files as libraries
-add_library(Game ${GAME_FILES})
-target_link_libraries(Game PUBLIC exts Engine)
-target_include_directories(Game SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/src/Game)
-target_precompile_headers(Game PRIVATE ${CMAKE_SOURCE_DIR}/src/Engine/engine_pch.hpp)
-target_compile_options(Game PRIVATE
-                        $<$<CONFIG:Debug>:
-                              $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                                          -pedantic -Wall -Wextra -g3 -O0>
-                                          $<$<CXX_COMPILER_ID:MSVC>:
-                                          /W4;>>)
-target_compile_options(Game PRIVATE
-                        $<$<CONFIG:Release>:
-                              $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                                          -pedantic -Wall -Wextra -O3 -Werror>
-                                          $<$<CXX_COMPILER_ID:MSVC>:
-                                          /W4;>>)
+# Project name
+project(v_game_lib)
 
+# Specify the C standard
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED True)
 
+# Set the output directory for the shared library
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/resources/lib)
 
-set_target_properties(Game PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CMAKE_CXX_EXTENSIONS OFF)
-target_compile_definitions(Game PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
+# Custom command to compile the V source code into a shared library
+add_custom_command(
+  OUTPUT ${LIBRARY_OUTPUT_PATH}/libv_example.so
+  COMMAND v -cg -cc gcc -shared -o ${LIBRARY_OUTPUT_PATH}/libv_example.so
+          ${PROJECT_SOURCE_DIR}/Game.v
+  DEPENDS ${PROJECT_SOURCE_DIR}/Game.v
+  COMMENT "Building V shared library")
 
+# Custom target that depends on the output of the custom command
+add_custom_target(v_game_lib ALL DEPENDS ${LIBRARY_OUTPUT_PATH}/libv_example.so)
+
+# Example of how to link the V shared library with another C project
+# add_executable(c_example main.c) add_dependencies(c_example v_game_lib)
+# target_link_libraries(c_example ${LIBRARY_OUTPUT_PATH}/libv_example.so)

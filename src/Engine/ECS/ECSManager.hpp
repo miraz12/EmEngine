@@ -1,9 +1,9 @@
 #ifndef ECSMANAGER_H_
 #define ECSMANAGER_H_
 
-#include <API.hpp>
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
+#include <engine_api.hpp>
 
 #include "Components/Component.hpp"
 #include "Components/GraphicsComponent.hpp"
@@ -31,14 +31,24 @@ public:
   // Runs through all systems
   void update(float dt) override;
 
-  glm::vec3 &getPosition(Entity en) override {
+  glm::vec3 &getPosition(Entity en) {
     return getComponent<PositionComponent>(en)->position;
   };
-  glm::quat &getRotation(Entity en) override {
+  glm::quat &getRotation(Entity en) {
     return getComponent<PositionComponent>(en)->rotation;
   };
-  glm::vec3 &getScale(Entity en) override {
+  glm::vec3 &getScale(Entity en) {
     return getComponent<PositionComponent>(en)->scale;
+  };
+
+  float *getPositionPtr(Entity en) override {
+    return glm::value_ptr(getComponent<PositionComponent>(en)->position);
+  };
+  float *getRotationPtr(Entity en) override {
+    return glm::value_ptr(getComponent<PositionComponent>(en)->rotation);
+  };
+  float *getScalePtr(Entity en) override {
+    return glm::value_ptr(getComponent<PositionComponent>(en)->scale);
   };
 
   // resets ECS
@@ -158,8 +168,8 @@ public:
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
   void setSimulatePhysics(bool sim) override { m_simulatePhysics = sim; }
 
-  void loadScene(std::string_view file) override;
-  void saveScene(std::string_view file) override;
+  void loadScene(const char *file) override;
+  void saveScene(const char *file) override;
 
   glm::vec3 dDir;
 

@@ -1,21 +1,27 @@
-ADD_LIBRARY(exts INTERFACE)
+add_library(exts INTERFACE)
 
-if (NOT DEFINED EMSCRIPTEN)
+if(NOT DEFINED EMSCRIPTEN)
 
-    find_package(OpenGL REQUIRED)
+  find_package(OpenGL REQUIRED)
 
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    add_subdirectory(glfw)
+  set(GLFW_BUILD_DOCS
+      OFF
+      CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_TESTS
+      OFF
+      CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_EXAMPLES
+      OFF
+      CACHE BOOL "" FORCE)
+  add_subdirectory(glfw)
 endif()
 
 # GLAD
 add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
-TARGET_INCLUDE_DIRECTORIES(glad PUBLIC glad/include)
+target_include_directories(glad PUBLIC glad/include)
 
 # GLFW
-TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE glfw/include)
+target_include_directories(exts SYSTEM INTERFACE glfw/include)
 
 # Bullet3
 option(BUILD_BULLET2_DEMOS OFF)
@@ -26,56 +32,66 @@ option(BUILD_UNIT_TESTS OFF)
 option(BUILD_CPU_DEMOS OFF)
 option(BUILD_EXTRAS OFF)
 
-ADD_SUBDIRECTORY(bullet3)
+add_subdirectory(bullet3)
 target_include_directories(exts SYSTEM INTERFACE bullet3/src)
 
 # GLM
-ADD_SUBDIRECTORY(glm)
-TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE glm/include)
+add_subdirectory(glm)
+target_include_directories(exts SYSTEM INTERFACE glm/include)
 
 # YAML-CPP
-ADD_SUBDIRECTORY(yaml-cpp)
-TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE yaml-cpp/include)
+add_subdirectory(yaml-cpp)
+target_include_directories(exts SYSTEM INTERFACE yaml-cpp/include)
 
 # IMGUI
-ADD_LIBRARY(imgui STATIC  imgui/imgui.cpp 
-                          imgui/imgui_demo.cpp
-                          imgui/imgui_draw.cpp
-                          imgui/imgui_internal.h
-                          imgui/imgui_tables.cpp
-                          imgui/imgui_widgets.cpp
-                          imgui/imstb_rectpack.h
-                          imgui/imstb_textedit.h
-                          imgui/imstb_truetype.h
-                          imgui/backends/imgui_impl_glfw.h
-                          imgui/backends/imgui_impl_glfw.cpp
-                          imgui/backends/imgui_impl_opengl3.h
-                          imgui/backends/imgui_impl_opengl3.cpp)
-TARGET_INCLUDE_DIRECTORIES(imgui PUBLIC imgui glfw/include)
+add_library(
+  imgui STATIC
+  imgui/imgui.cpp
+  imgui/imgui_demo.cpp
+  imgui/imgui_draw.cpp
+  imgui/imgui_internal.h
+  imgui/imgui_tables.cpp
+  imgui/imgui_widgets.cpp
+  imgui/imstb_rectpack.h
+  imgui/imstb_textedit.h
+  imgui/imstb_truetype.h
+  imgui/backends/imgui_impl_glfw.h
+  imgui/backends/imgui_impl_glfw.cpp
+  imgui/backends/imgui_impl_opengl3.h
+  imgui/backends/imgui_impl_opengl3.cpp)
+target_include_directories(imgui PUBLIC imgui glfw/include)
 
 # IMGUIZMO
-ADD_LIBRARY(imguizmo STATIC
-                            ImGuizmo/GraphEditor.cpp
-                            ImGuizmo/GraphEditor.h
-                            ImGuizmo/ImCurveEdit.cpp
-                            ImGuizmo/ImCurveEdit.h
-                            ImGuizmo/ImGradient.cpp
-                            ImGuizmo/ImGradient.h
-                            ImGuizmo/ImGuizmo.cpp
-                            ImGuizmo/ImGuizmo.h
-                            ImGuizmo/ImSequencer.cpp
-                            ImGuizmo/ImSequencer.h
-                            ImGuizmo/ImZoomSlider.h)
-TARGET_INCLUDE_DIRECTORIES(imguizmo PUBLIC ImGuizmo imgui)
-
-
+add_library(
+  imguizmo STATIC
+  ImGuizmo/GraphEditor.cpp
+  ImGuizmo/GraphEditor.h
+  ImGuizmo/ImCurveEdit.cpp
+  ImGuizmo/ImCurveEdit.h
+  ImGuizmo/ImGradient.cpp
+  ImGuizmo/ImGradient.h
+  ImGuizmo/ImGuizmo.cpp
+  ImGuizmo/ImGuizmo.h
+  ImGuizmo/ImSequencer.cpp
+  ImGuizmo/ImSequencer.h
+  ImGuizmo/ImZoomSlider.h)
+target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
 
 # Header only
-TARGET_INCLUDE_DIRECTORIES(exts SYSTEM INTERFACE header_only)
+target_include_directories(exts SYSTEM INTERFACE header_only)
 
+target_link_libraries(
+  exts
+  INTERFACE glfw
+            ${OPENGL_LIBRARIES}
+            glm
+            imgui
+            BulletDynamics
+            BulletCollision
+            LinearMath
+            yaml-cpp
+            imguizmo)
 
-TARGET_LINK_LIBRARIES(exts INTERFACE glfw ${OPENGL_LIBRARIES} glm imgui BulletDynamics BulletCollision LinearMath yaml-cpp imguizmo)
-
-if (NOT DEFINED EMSCRIPTEN)
-TARGET_LINK_LIBRARIES(exts INTERFACE glad)
+if(NOT DEFINED EMSCRIPTEN)
+  target_link_libraries(exts INTERFACE glad)
 endif()

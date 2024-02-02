@@ -1,14 +1,19 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include <API.hpp>
+#include <engine_api.hpp>
 
 class Camera : public API::Camera {
 public:
   Camera();
   ~Camera();
 
-  void setPosition(glm::vec3 v) override {
+  void setPosition(float x, float y, float z) override {
+    m_position = glm::vec3(x, y, z);
+    m_matrixNeedsUpdate = true;
+  };
+
+  void setPosition(glm::vec3 v) {
     m_position = v;
     m_matrixNeedsUpdate = true;
   };
@@ -18,8 +23,8 @@ public:
     m_matrixNeedsUpdate = true;
   }
 
-  void setFront(glm::vec3 f) override {
-    m_front = f;
+  void setFront(float x, float y, float z) override {
+    m_front = glm::vec3(x, y, z);
     m_matrixNeedsUpdate = true;
   };
 
@@ -49,13 +54,22 @@ public:
   float getFar() override { return m_far; };
   float getWidth() override { return m_width; };
   float getHeight() override { return m_height; };
-  glm::vec3 getPosition() override { return m_position; };
-  glm::vec3 getFront() override { return m_front; };
-  glm::vec3 getUp() override { return m_up; };
+  glm::vec3 getPosition() { return m_position; };
+  glm::vec3 getFront() { return m_front; };
+  glm::vec3 getUp() { return m_up; };
+
   std::tuple<float, float> getSize() { return {m_width, m_height}; };
   std::tuple<glm::vec3, glm::vec3> getRayTo(i32 x, i32 y);
-  glm::mat4 &getViewMatrix() override { return m_viewMatrix; }
-  glm::mat4 &getProjectionMatrix() override { return m_ProjectionMatrix; }
+  glm::mat4 &getViewMatrix() { return m_viewMatrix; }
+  glm::mat4 &getProjectionMatrix() { return m_ProjectionMatrix; }
+
+  float *getViewMatrixPtr() override { return glm::value_ptr(m_viewMatrix); }
+  float *getProjectionMatrixPtr() override {
+    return glm::value_ptr(m_ProjectionMatrix);
+  }
+  float *getPositionPtr() override { return glm::value_ptr(m_position); };
+  float *getFrontPtr() override { return glm::value_ptr(m_front); };
+  float *getUpPtr() override { return glm::value_ptr(m_up); };
 
   void bindProjViewMatrix(u32 proj, u32 view);
   void bindProjMatrix(u32 proj);

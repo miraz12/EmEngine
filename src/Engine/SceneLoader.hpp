@@ -7,8 +7,8 @@ class SceneLoader : public Singleton<SceneLoader> {
   friend class Singleton<SceneLoader>;
 
 public:
-  void init(std::string_view sceneFile);
-  void saveScene(std::string_view sceneFile);
+  void init(const char *file);
+  void saveScene(const char *file);
 
 private:
   SceneLoader() = default;

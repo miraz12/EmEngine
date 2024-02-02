@@ -469,7 +469,7 @@ void GltfObject::generateCollisionShape() {
   cHull->buildHull(cShape->getMargin());
   btConvexHullShape *chShape = new btConvexHullShape();
   cHull->numTriangles();
-  for (u32 i = 0; i < cHull->numTriangles(); ++i) {
+  for (i32 i = 0; i < cHull->numTriangles(); ++i) {
     chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
   }
   chShape->optimizeConvexHull();

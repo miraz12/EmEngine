@@ -1,6 +1,8 @@
 #ifndef ENGINE_PCH_
 #define ENGINE_PCH_
 
+#include "Singleton.hpp"
+
 #ifdef EMSCRIPTEN
 #define GL_OES_vertex_array_object
 #include <GLES3/gl3.h>
@@ -28,16 +30,6 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <vector>
-
-// OpenGL glad
-#ifdef EMSCRIPTEN
-#define GL_OES_vertex_array_object
-#include <GLES3/gl3.h>
-#include <emscripten.h>
-#else
-#include <glad/glad.h>
-// #define _DEBUG_
-#endif
 
 // GLM
 #include "glm/geometric.hpp"

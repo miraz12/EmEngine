@@ -9,7 +9,7 @@ class PhysicsComponent : public Component {
 public:
   PhysicsComponent();
   // Create colision mesh from grapComp and give position
-  PhysicsComponent(std::size_t en, float mass);
+  PhysicsComponent(Entity en, float mass);
   ~PhysicsComponent();
   btRigidBody *getRigidBody() { return body; }
   btScalar getMass() { return mass; }
