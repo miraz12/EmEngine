@@ -63,7 +63,3 @@ void InputManager::setMousePos(double x, double y) {
   m_mousePosX = x;
   m_mousePosY = y;
 }
-
-API::InputManager &API::InputManager::getInputManager() {
-  return ::InputManager::getInstance();
-};

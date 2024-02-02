@@ -1,14 +1,12 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include <engine_api.hpp>
-
-class Camera : public API::Camera {
+class Camera {
 public:
   Camera();
   ~Camera();
 
-  void setPosition(float x, float y, float z) override {
+  void setPosition(float x, float y, float z) {
     m_position = glm::vec3(x, y, z);
     m_matrixNeedsUpdate = true;
   };
@@ -23,7 +21,7 @@ public:
     m_matrixNeedsUpdate = true;
   }
 
-  void setFront(float x, float y, float z) override {
+  void setFront(float x, float y, float z) {
     m_front = glm::vec3(x, y, z);
     m_matrixNeedsUpdate = true;
   };
@@ -34,26 +32,26 @@ public:
     m_matrixNeedsUpdate = true;
   }
 
-  void setFOV(float fov) override {
+  void setFOV(float fov) {
     m_fov = fov;
     m_matrixNeedsUpdate = true;
   };
 
-  void setNear(float n) override {
+  void setNear(float n) {
     m_near = n;
     m_matrixNeedsUpdate = true;
   };
 
-  void setFar(float f) override {
+  void setFar(float f) {
     m_far = f;
     m_matrixNeedsUpdate = true;
   };
 
-  float getFOV() override { return m_fov; };
-  float getNear() override { return m_near; };
-  float getFar() override { return m_far; };
-  float getWidth() override { return m_width; };
-  float getHeight() override { return m_height; };
+  float getFOV() { return m_fov; };
+  float getNear() { return m_near; };
+  float getFar() { return m_far; };
+  float getWidth() { return m_width; };
+  float getHeight() { return m_height; };
   glm::vec3 getPosition() { return m_position; };
   glm::vec3 getFront() { return m_front; };
   glm::vec3 getUp() { return m_up; };
@@ -63,13 +61,11 @@ public:
   glm::mat4 &getViewMatrix() { return m_viewMatrix; }
   glm::mat4 &getProjectionMatrix() { return m_ProjectionMatrix; }
 
-  float *getViewMatrixPtr() override { return glm::value_ptr(m_viewMatrix); }
-  float *getProjectionMatrixPtr() override {
-    return glm::value_ptr(m_ProjectionMatrix);
-  }
-  float *getPositionPtr() override { return glm::value_ptr(m_position); };
-  float *getFrontPtr() override { return glm::value_ptr(m_front); };
-  float *getUpPtr() override { return glm::value_ptr(m_up); };
+  float *getViewMatrixPtr() { return glm::value_ptr(m_viewMatrix); }
+  float *getProjectionMatrixPtr() { return glm::value_ptr(m_ProjectionMatrix); }
+  float *getPositionPtr() { return glm::value_ptr(m_position); };
+  float *getFrontPtr() { return glm::value_ptr(m_front); };
+  float *getUpPtr() { return glm::value_ptr(m_up); };
 
   void bindProjViewMatrix(u32 proj, u32 view);
   void bindProjMatrix(u32 proj);

@@ -18,7 +18,13 @@ add_subdirectory(src/Game)
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
 target_precompile_headers(${PROJECT_NAME} PRIVATE
                           ${CMAKE_SOURCE_DIR}/src/Engine/engine_pch.hpp)
-add_dependencies(${PROJECT_NAME} v_game_lib)
+
+if(NOT DEFINED EMSCRIPTEN)
+  add_dependencies(${PROJECT_NAME} v_game_lib)
+else(NOT DEFINED EMSCRIPTEN)
+  add_dependencies(${PROJECT_NAME} Game)
+  target_link_libraries(${PROJECT_NAME} PUBLIC Game)
+endif(NOT DEFINED EMSCRIPTEN)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine exts)
@@ -81,8 +87,9 @@ if(DEFINED EMSCRIPTEN)
 
   set_target_properties(
     ${PROJECT_NAME}
-    PROPERTIES SUFFIX ".html"
-               LINK_FLAGS " --bind -sFULL_ES3 -sUSE_GLFW=3
-                     -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH
-                     --preload-file ../resources")
+    PROPERTIES
+      SUFFIX ".html"
+      LINK_FLAGS
+      "--bind -sFULL_ES3 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../resources"
+  )
 endif(DEFINED EMSCRIPTEN)

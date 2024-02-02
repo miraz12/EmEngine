@@ -3,7 +3,6 @@
 
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
-#include <engine_api.hpp>
 
 #include "Components/Component.hpp"
 #include "Components/GraphicsComponent.hpp"
@@ -17,19 +16,20 @@
 #include "Systems/System.hpp"
 
 typedef std::type_index ComponentType;
+typedef std::size_t Entity;
 
 #define MAX_COMPONENTS 10
 #define MAX_ENTITIES 10
 typedef std::bitset<MAX_COMPONENTS> Signature;
 
-class ECSManager : public Singleton<ECSManager>, public API::ECS {
+class ECSManager : public Singleton<ECSManager> {
   friend class Singleton<ECSManager>;
 
 public:
   void initializeSystems();
 
   // Runs through all systems
-  void update(float dt) override;
+  void update(float dt);
 
   glm::vec3 &getPosition(Entity en) {
     return getComponent<PositionComponent>(en)->position;
@@ -41,13 +41,13 @@ public:
     return getComponent<PositionComponent>(en)->scale;
   };
 
-  float *getPositionPtr(Entity en) override {
+  float *getPositionPtr(Entity en) {
     return glm::value_ptr(getComponent<PositionComponent>(en)->position);
   };
-  float *getRotationPtr(Entity en) override {
+  float *getRotationPtr(Entity en) {
     return glm::value_ptr(getComponent<PositionComponent>(en)->rotation);
   };
-  float *getScalePtr(Entity en) override {
+  float *getScalePtr(Entity en) {
     return glm::value_ptr(getComponent<PositionComponent>(en)->scale);
   };
 
@@ -154,22 +154,22 @@ public:
                                                           glm::vec3 dir);
   void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
-  Camera &getCamera() override { return m_camera; };
+  Camera &getCamera() { return m_camera; };
   System &getSystem(std::string s) { return *m_systems[s]; }
-  Entity &getPickedEntity() override { return m_pickedEntity; }
+  Entity &getPickedEntity() { return m_pickedEntity; }
   bool &getEntitySelected() { return m_entitySelected; }
   std::vector<Entity> &getEntities() { return m_entities; };
   std::string_view getEntityName(Entity en) { return m_entityNames[en]; };
-  bool &getSimulatePhysics() override { return m_simulatePhysics; };
-  i32 &getDebugView() override { return m_debugView; };
+  bool &getSimulatePhysics() { return m_simulatePhysics; };
+  i32 &getDebugView() { return m_debugView; };
 
-  void setViewport(u32 w, u32 h) override;
+  void setViewport(u32 w, u32 h);
   void setPickedEntity(Entity en) { m_pickedEntity = en; }
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
-  void setSimulatePhysics(bool sim) override { m_simulatePhysics = sim; }
+  void setSimulatePhysics(bool sim) { m_simulatePhysics = sim; }
 
-  void loadScene(const char *file) override;
-  void saveScene(const char *file) override;
+  void loadScene(const char *file);
+  void saveScene(const char *file);
 
   glm::vec3 dDir;
 

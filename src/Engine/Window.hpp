@@ -1,7 +1,11 @@
 #ifndef WINDOW_H_
 #define WINDOW_H_
 
-class Window {
+#include <Singleton.hpp>
+
+class Window : public Singleton<Window> {
+  friend class Singleton<Window>;
+
 public:
   Window() = default;
   ~Window() = default;

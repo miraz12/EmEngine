@@ -1,5 +1,5 @@
 #include "Window.hpp"
-#define _DEBUG_ 1
+// #define _DEBUG_ 1
 
 #ifndef EMSCRIPTEN
 void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
@@ -40,7 +40,7 @@ void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
 }
 #endif
 
-void glfw_error(int error, const char *description) {
+void glfw_error(int /* error */, const char *description) {
   std::cout << description << std::endl;
 }
 

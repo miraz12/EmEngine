@@ -5,16 +5,21 @@ file(GLOB_RECURSE ENGINE_FILES ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
      ${CMAKE_SOURCE_DIR}/src/Engine/*.hpp)
 
 # Add source files as libraries
-add_library(Engine SHARED ${ENGINE_FILES})
+add_library(Engine ${ENGINE_FILES})
 target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Engine SYSTEM
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(Engine SYSTEM
                            PUBLIC ${CMAKE_SOURCE_DIR}/src/Game/include)
 
-add_dependencies(Engine v_game_lib)
-target_link_libraries(
-  Engine PRIVATE ${PROJECT_SOURCE_DIR}/resources/lib/libv_example.so)
+if(NOT DEFINED EMSCRIPTEN)
+  add_dependencies(Engine v_game_lib)
+  target_link_libraries(
+    Engine PRIVATE ${PROJECT_SOURCE_DIR}/resources/lib/libv_example.so)
+else(NOT DEFINED EMSCRIPTEN)
+  add_dependencies(Engine Game)
+  target_link_libraries(Engine PRIVATE Game)
+endif(NOT DEFINED EMSCRIPTEN)
 
 target_link_libraries(Engine PRIVATE exts)
 target_precompile_headers(Engine PRIVATE engine_pch.hpp)

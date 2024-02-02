@@ -82,5 +82,6 @@ void ECSManager::saveScene(const char *file) {
   SceneLoader::getInstance().saveScene(file);
 };
 
-API::ECS &API::ECS::getECS() { return ECSManager::getInstance(); };
-void ECS_loadScene(const char *file) { API::ECS::getECS().loadScene(file); }
+extern "C" void ECS_loadScene(const char *file) {
+  ECSManager::getInstance().loadScene(file);
+}
