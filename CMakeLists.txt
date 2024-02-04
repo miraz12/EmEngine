@@ -90,6 +90,6 @@ if(DEFINED EMSCRIPTEN)
     PROPERTIES
       SUFFIX ".html"
       LINK_FLAGS
-      "--bind -sFULL_ES3 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../resources"
+      "--bind -sFULL_ES3 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources"
   )
 endif(DEFINED EMSCRIPTEN)

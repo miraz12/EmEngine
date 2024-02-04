@@ -1,6 +1,8 @@
 import os
 
-#include "../Engine/include/engine_api.hpp"
+#flag -I ../../../../src/Engine/include
+
+#include "engine_api.hpp"
 
 // Declare the C function
 fn C.ECS_loadScene(file &char)
@@ -14,5 +16,5 @@ fn game_initialize() {
 
 @[export: 'game_update']
 fn game_update(dt f32) {
-	println('[game] update')
+	// println('[game] update')
 }

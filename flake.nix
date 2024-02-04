@@ -29,6 +29,7 @@
             ];
             shellHook = ''
               export EM_CACHE=.emscripten_cache
+              export EMSCRIPTEN_ROOT=${pkgs.emscripten}/share/emscripten
               export DRI_PRIME=1
             '';
           };

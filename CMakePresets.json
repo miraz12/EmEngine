@@ -53,9 +53,10 @@
       "displayName": "Emscripten Release Build",
       "description": "Release build for Web using Emscripten",
       "hidden": false,
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/emscripten-release",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "/path/to/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "CMAKE_TOOLCHAIN_FILE": "$env{EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake",
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
@@ -64,9 +65,10 @@
       "displayName": "Emscripten Debug Build",
       "description": "Debug build for Web using Emscripten",
       "hidden": false,
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/emscripten-debug",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "/path/to/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "CMAKE_TOOLCHAIN_FILE": "$env{EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     }

@@ -15,7 +15,7 @@ target_include_directories(Engine SYSTEM
 if(NOT DEFINED EMSCRIPTEN)
   add_dependencies(Engine v_game_lib)
   target_link_libraries(
-    Engine PRIVATE ${PROJECT_SOURCE_DIR}/resources/lib/libv_example.so)
+    Engine PRIVATE ${PROJECT_SOURCE_DIR}/resources/lib/libv_game.so)
 else(NOT DEFINED EMSCRIPTEN)
   add_dependencies(Engine Game)
   target_link_libraries(Engine PRIVATE Game)
