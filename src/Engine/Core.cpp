@@ -6,8 +6,8 @@ bool Core::initialize() {
   std::cout << "[core] Initialize" << std::endl;
   if (Window::getInstance().start() && Window::getInstance().open()) {
     m_ECSManager = &ECSManager::getInstance();
-
     game_initialize();
+    m_prevTime = glfwGetTime();
   }
 
   Window::getInstance().setCursorPosCallback(
@@ -35,9 +35,17 @@ bool Core::initialize() {
   return true;
 }
 
-void Core::update(float dt) {
+float &Core::getDeltaTime() {
+  m_currentTime = glfwGetTime();
+  m_dt = m_currentTime - m_prevTime;
+  m_prevTime = m_currentTime;
+  return m_dt;
+}
+
+void Core::update() {
   glfwPollEvents();
 
+  float &dt = Core::getInstance().getDeltaTime();
   ECSManager::getInstance().update(dt);
   game_update(dt);
 

@@ -1,7 +1,7 @@
 // #include <Game.hpp>
 #include <Core.hpp>
 
-static void mainLoop() { Core::getInstance().update(1); }
+static void mainLoop() { Core::getInstance().update(); }
 
 auto main(int /* argc */, char * /* argv */[]) -> int {
   if (Core::getInstance().initialize()) {
