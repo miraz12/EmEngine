@@ -19,7 +19,7 @@ bool Core::initialize() {
                                                   i32 /* mods */) -> void {
     InputManager::getInstance().handleInput(button, action);
   });
-  Window::getInstance().setKeyCallback([](GLFWwindow *win, i32 key,
+  Window::getInstance().setKeyCallback([](GLFWwindow * /* win */, i32 key,
                                           i32 /* scancode */, i32 action,
                                           i32 /* mods */) -> void {
     if (key == GLFW_KEY_ESCAPE) {
