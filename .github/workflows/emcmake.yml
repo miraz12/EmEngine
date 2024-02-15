@@ -20,17 +20,14 @@ jobs:
         run: |
           /run/current-system/sw/bin/direnv allow && echo "use nix"
           eval "$(/run/current-system/sw/bin/direnv export bash)"
-          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
           emcmake cmake --preset emscripten-release
 
       - name: Build
         shell: bash
         run: |
-          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
           EM_CACHE=~/.emscripten_cache cmake --build build/emscripten-release
 
       - name: Copy build
         shell: bash
         run: |
-          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
           rsync -r --checksum  build/emscripten-release/* /var/lib/www/engine.rlyeh.nu
