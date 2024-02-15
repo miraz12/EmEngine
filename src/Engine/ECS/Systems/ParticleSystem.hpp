@@ -16,7 +16,7 @@ private:
   virtual ~ParticleSystem() = default;
 
   void killParticle(std::shared_ptr<ParticlesComponent> pComp,
-                    std::unique_ptr<Particle> &p);
+                    std::shared_ptr<Particle> &p);
   void reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
                       glm::vec3 &pos);
 

@@ -68,7 +68,7 @@ target_link_options(
   $<$<CXX_COMPILER_ID:MSVC>:
   >>)
 
-target_link_options(${PROJECT_NAME} PRIVATE -static-libsan)
+# target_link_options(${PROJECT_NAME} PRIVATE -static-libsan)
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY
                                              "${CMAKE_SOURCE_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

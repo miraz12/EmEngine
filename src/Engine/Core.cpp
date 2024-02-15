@@ -23,7 +23,7 @@ bool Core::initialize() {
                                           i32 /* scancode */, i32 action,
                                           i32 /* mods */) -> void {
     if (key == GLFW_KEY_ESCAPE) {
-      glfwSetWindowShouldClose(win, true);
+      Window::getInstance().close();
     }
     InputManager::getInstance().handleInput(key, action);
   });
@@ -39,6 +39,17 @@ float &Core::getDeltaTime() {
   m_currentTime = glfwGetTime();
   m_dt = m_currentTime - m_prevTime;
   m_prevTime = m_currentTime;
+
+  static double lastFPSPrintTime = 0.0;
+  // Check if 3 seconds have passed since the last FPS print
+  if (m_currentTime - lastFPSPrintTime >= 3.0) {
+    // Calculate and print FPS
+    float fps = 1.0f / m_dt;
+    std::cout << "FPS: " << fps << std::endl;
+
+    // Update the last FPS print time
+    lastFPSPrintTime = m_currentTime;
+  }
   return m_dt;
 }
 
@@ -49,6 +60,7 @@ void Core::update() {
   ECSManager::getInstance().update(dt);
   game_update(dt);
 
+  InputManager::getInstance().update();
   Window::getInstance().swap();
 }
 

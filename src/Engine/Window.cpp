@@ -78,6 +78,7 @@ bool Window::open() {
     return false;
   }
   glfwMakeContextCurrent(m_window);
+  glfwSwapInterval(0);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -110,6 +111,7 @@ bool Window::open() {
 bool Window::closed() { return glfwWindowShouldClose(m_window); }
 
 bool Window::close() {
+  std::cout << "[window] Close" << std::endl;
   glfwSetWindowShouldClose(m_window, true);
   return true;
 }

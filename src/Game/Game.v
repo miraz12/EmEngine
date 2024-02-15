@@ -17,4 +17,7 @@ fn game_initialize() {
 @[export: 'game_update']
 fn game_update(dt f32) {
 	// println('[game] update')
+	update_input()
 }
+
+fn main() {}

@@ -21,20 +21,20 @@ public:
     }
   };
   virtual ~ParticlesComponent() = default;
-  std::vector<std::unique_ptr<Particle>> &getAliveParticles() {
+  std::vector<std::shared_ptr<Particle>> &getAliveParticles() {
     return m_aliveParticles;
   }
-  std::vector<std::unique_ptr<Particle>> &getDeadParticles() {
+  std::vector<std::shared_ptr<Particle>> &getDeadParticles() {
     return m_deadParticles;
   }
   glm::vec3 &getVelocity() { return m_velocity; }
   u32 getNumNewParticles() { return m_numNewParticles; }
 
 private:
-  std::vector<std::unique_ptr<Particle>> m_aliveParticles;
-  std::vector<std::unique_ptr<Particle>> m_deadParticles;
+  std::vector<std::shared_ptr<Particle>> m_aliveParticles;
+  std::vector<std::shared_ptr<Particle>> m_deadParticles;
   glm::vec3 m_velocity;
-  u32 m_numNewParticles{20};
+  u32 m_numNewParticles{10};
 };
 
 #endif // PARTICLESCOMPONENT_H_

@@ -16,7 +16,7 @@ void ParticleSystem::update(float dt) {
       }
       reviveParticle(partComp, pos);
     }
-    std::vector<std::unique_ptr<Particle>> &aliveParticles =
+    std::vector<std::shared_ptr<Particle>> &aliveParticles =
         partComp->getAliveParticles();
     // Loop through all alive particles, removing all dying ones
     for (u32 i = 0; i < aliveParticles.size();)
@@ -34,12 +34,12 @@ void ParticleSystem::update(float dt) {
 }
 
 void ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
-                                  std::unique_ptr<Particle> &p) {
-  std::vector<std::unique_ptr<Particle>> &aliveParticles =
+                                  std::shared_ptr<Particle> &p) {
+  std::vector<std::shared_ptr<Particle>> &aliveParticles =
       pComp->getAliveParticles();
-  std::vector<std::unique_ptr<Particle>> &deadParticles =
+  std::vector<std::shared_ptr<Particle>> &deadParticles =
       pComp->getDeadParticles();
-  std::vector<std::unique_ptr<Particle>>::iterator it =
+  std::vector<std::shared_ptr<Particle>>::iterator it =
       std::find(aliveParticles.begin(), aliveParticles.end(), p);
   if (it != aliveParticles.end()) {
     deadParticles.push_back(std::move(*it));
@@ -49,12 +49,12 @@ void ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
 
 void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
                                     glm::vec3 &pos) {
-  std::vector<std::unique_ptr<Particle>> &deadParticles =
+  std::vector<std::shared_ptr<Particle>> &deadParticles =
       pComp->getDeadParticles();
   if (!deadParticles.empty()) {
-    std::vector<std::unique_ptr<Particle>> &aliveParticles =
+    std::vector<std::shared_ptr<Particle>> &aliveParticles =
         pComp->getAliveParticles();
-    std::unique_ptr<Particle> &p = deadParticles.back();
+    std::shared_ptr<Particle> &p = deadParticles.back();
     float r = (distribution(generator) + 1.0f) * 0.5f;
     float g = (distribution(generator) + 1.0f) * 0.5f;
     float b = (distribution(generator) + 1.0f) * 0.5f;

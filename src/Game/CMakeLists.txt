@@ -13,20 +13,21 @@ if(NOT DEFINED EMSCRIPTEN)
   add_custom_command(
     OUTPUT ${LIBRARY_OUTPUT_PATH}/libv_game.so
     COMMAND v -cc gcc -shared -o ${LIBRARY_OUTPUT_PATH}/libv_game.so
-            ${CMAKE_CURRENT_SOURCE_DIR}/Game.v
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Game.v
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Building V shared library")
 
   # Custom target that depends on the output of the custom command
   add_custom_target(v_game_lib ALL DEPENDS ${LIBRARY_OUTPUT_PATH}/libv_game.so)
 
 else(NOT DEFINED EMSCRIPTEN)
+
   # Add source files Custom command to compile the V source code into a shared
   # library
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Game.c
     COMMAND v -d no_main -o ${CMAKE_CURRENT_SOURCE_DIR}/Game.c -os
-            wasm32_emscripten -w ${CMAKE_CURRENT_SOURCE_DIR}/Game.v -rpath=.
+            wasm32_emscripten -w ${CMAKE_CURRENT_SOURCE_DIR} -rpath=.
     DEPENDS Game.v
     COMMENT "Building V to C")
 

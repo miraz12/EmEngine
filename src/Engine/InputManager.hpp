@@ -24,9 +24,14 @@ public:
   InputManager();
   ~InputManager() = default;
 
+  void update() { m_active.clear(); };
   void handleInput(i32 key, i32 action);
+  void handleAction(KEY key, i32 action);
   void setMousePos(double x, double y);
   bool getKey(KEY k) { return m_keys.at(k); }
+  KEY *getActive() { return m_active.data(); };
+
+  std::vector<KEY> m_active;
 
 private:
   i32 m_mousePosX, m_mousePosY;
