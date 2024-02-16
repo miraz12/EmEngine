@@ -8,7 +8,7 @@
     utils.lib.eachDefaultSystem (system:
       let pkgs = import nixpkgs { inherit system; };
       in {
-        devShell = with pkgs;
+        devShells.default = with pkgs;
           mkShell.override { stdenv = llvmPackages.stdenv; } {
             buildInputs = [
               cmake
