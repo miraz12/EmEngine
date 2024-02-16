@@ -15,16 +15,12 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Configure CMake
+      - name: Build
         shell: bash
         run: |
           /run/current-system/sw/bin/direnv allow && echo "use nix"
           eval "$(/run/current-system/sw/bin/direnv export bash)"
           emcmake cmake --preset emscripten-release
-
-      - name: Build
-        shell: bash
-        run: |
           EM_CACHE=~/.emscripten_cache cmake --build build/emscripten-release
 
       - name: Copy build
