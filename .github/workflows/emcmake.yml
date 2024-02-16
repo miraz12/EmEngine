@@ -18,10 +18,9 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          /run/current-system/sw/bin/direnv allow && echo "use nix"
-          eval "$(/run/current-system/sw/bin/direnv export bash)"
+          nix develop
           emcmake cmake --preset emscripten-release
-          EM_CACHE=~/.emscripten_cache cmake --build build/emscripten-release
+          cmake --build build/emscripten-release
 
       - name: Copy build
         shell: bash
