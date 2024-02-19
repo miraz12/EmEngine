@@ -18,10 +18,10 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          nix develop -c emcmake cmake --preset emscripten-release
-          nix develop -c cmake --build build/emscripten-release
+          nix develop -c emcmake cmake --preset emscripten-debug
+          nix develop -c cmake --build build/emscripten-debug
 
       - name: Copy build
         shell: bash
         run: |
-          rsync -r --checksum  build/emscripten-release/* /var/lib/www/engine.rlyeh.nu
+          rsync -r --checksum  build/emscripten-debug/* /var/lib/www/engine.rlyeh.nu
