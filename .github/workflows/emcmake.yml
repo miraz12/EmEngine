@@ -18,9 +18,8 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          nix develop
-          emcmake cmake --preset emscripten-release
-          cmake --build build/emscripten-release
+          nix develop -c emcmake cmake --preset emscripten-release
+          nix develop -c cmake --build build/emscripten-release
 
       - name: Copy build
         shell: bash
