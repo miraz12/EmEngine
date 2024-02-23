@@ -1,15 +1,20 @@
-name: "Build legacy Nix package on Ubuntu"
+name: EmCMake
 
 on:
   push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: self-hosted
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - uses: cachix/install-nix-action@v12
       - name: Building package
         run: nix-build . -A defaultPackage.x86_64-linux
