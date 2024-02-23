@@ -15,13 +15,17 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build
-        shell: bash
+      - name: Configure CMake
         run: |
-          nix develop -c cmake --preset emscripten-debug
-          nix develop -c cmake --build build/emscripten-debug
+          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+          emcmake cmake -B build/embuild -GNinja -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: |
+          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+          EM_CACHE=~/.emscripten_cache cmake --build build/embuild
 
       - name: Copy build
-        shell: bash
         run: |
-          rsync -r --checksum  build/emscripten-debug/* /var/lib/www/engine.rlyeh.nu
+          PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+          rsync -r --checksum  build/* /var/lib/www/engine.rlyeh.nu
