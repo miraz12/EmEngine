@@ -15,6 +15,9 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: cachix/install-nix-action@v12
-      - name: Building package
-        run: nix-build . -A defaultPackage.x86_64-linux
+      - name: "Setup env"
+        uses: JRMurr/direnv-nix-action@v4.1.0
+
+      - name: use node
+        run: emcc --version
+        shell: bash
