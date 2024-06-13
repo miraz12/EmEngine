@@ -12,14 +12,8 @@ target_include_directories(Engine SYSTEM
 target_include_directories(Engine SYSTEM
                            PUBLIC ${CMAKE_SOURCE_DIR}/src/Game/include)
 
-if(NOT DEFINED EMSCRIPTEN)
-  add_dependencies(Engine v_game_lib)
-  target_link_libraries(
-    Engine PRIVATE ${PROJECT_SOURCE_DIR}/resources/lib/libv_game.so)
-else(NOT DEFINED EMSCRIPTEN)
-  add_dependencies(Engine Game)
-  target_link_libraries(Engine PRIVATE Game)
-endif(NOT DEFINED EMSCRIPTEN)
+add_dependencies(Engine Game)
+target_link_libraries(Engine PRIVATE Game)
 
 target_link_libraries(Engine PRIVATE exts)
 target_precompile_headers(Engine PRIVATE engine_pch.hpp)

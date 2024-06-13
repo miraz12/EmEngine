@@ -16,8 +16,8 @@ enum KEY {
   Mouse1
 };
 
-extern void ECS_loadScene(const char *file);
-extern int Input_getPressed(void *vec);
-extern int Input_getReleased(void *vec);
+extern "C" void ECS_loadScene(const char *file);
+extern "C" int Input_getPressed(void *vec);
+extern "C" int Input_getReleased(void *vec);
 
 #endif // ENGINE_API_HPP_

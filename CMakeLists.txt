@@ -19,12 +19,8 @@ add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
 target_precompile_headers(${PROJECT_NAME} PRIVATE
                           ${CMAKE_SOURCE_DIR}/src/Engine/engine_pch.hpp)
 
-if(NOT DEFINED EMSCRIPTEN)
-  add_dependencies(${PROJECT_NAME} v_game_lib)
-else(NOT DEFINED EMSCRIPTEN)
-  add_dependencies(${PROJECT_NAME} Game)
-  target_link_libraries(${PROJECT_NAME} PUBLIC Game)
-endif(NOT DEFINED EMSCRIPTEN)
+add_dependencies(${PROJECT_NAME} Game)
+target_link_libraries(${PROJECT_NAME} PUBLIC Game)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC Engine exts)

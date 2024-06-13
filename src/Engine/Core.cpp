@@ -2,10 +2,15 @@
 #include "InputManager.hpp"
 #include <game_api.hpp>
 
+extern "C" void LoadScene() {
+  ECSManager::getInstance().loadScene("resources/scene.yaml");
+}
+
 bool Core::initialize() {
   std::cout << "[core] Initialize" << std::endl;
   if (Window::getInstance().start() && Window::getInstance().open()) {
     m_ECSManager = &ECSManager::getInstance();
+    InitializeFunctions(*LoadScene);
     game_initialize();
     m_prevTime = glfwGetTime();
   }
@@ -58,7 +63,7 @@ void Core::update() {
 
   float &dt = Core::getInstance().getDeltaTime();
   ECSManager::getInstance().update(dt);
-  game_update(dt);
+  // game_update(dt);
 
   InputManager::getInstance().update();
   Window::getInstance().swap();

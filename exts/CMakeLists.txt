@@ -4,24 +4,11 @@ if(NOT DEFINED EMSCRIPTEN)
 
   find_package(OpenGL REQUIRED)
 
-  set(GLFW_BUILD_DOCS
-      OFF
-      CACHE BOOL "" FORCE)
-  set(GLFW_BUILD_TESTS
-      OFF
-      CACHE BOOL "" FORCE)
-  set(GLFW_BUILD_EXAMPLES
-      OFF
-      CACHE BOOL "" FORCE)
-  add_subdirectory(glfw)
 endif()
 
 # GLAD
 add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
 target_include_directories(glad PUBLIC glad/include)
-
-# GLFW
-target_include_directories(exts SYSTEM INTERFACE glfw/include)
 
 # Bullet3
 option(BUILD_BULLET2_DEMOS OFF)
@@ -59,7 +46,7 @@ add_library(
   imgui/backends/imgui_impl_glfw.cpp
   imgui/backends/imgui_impl_opengl3.h
   imgui/backends/imgui_impl_opengl3.cpp)
-target_include_directories(imgui PUBLIC imgui glfw/include)
+target_include_directories(imgui PUBLIC imgui)
 
 # IMGUIZMO
 add_library(
