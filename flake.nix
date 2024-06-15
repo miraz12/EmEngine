@@ -14,7 +14,13 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        dotnetPkg = (with pkgs.dotnetCorePackages; combinePackages [ sdk_9_0 ]);
+        dotnetPkg = (
+          with pkgs.dotnetCorePackages;
+          combinePackages [
+            sdk_8_0
+            sdk_9_0
+          ]
+        );
         deps = with pkgs; [
           zlib
           zlib.dev

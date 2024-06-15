@@ -3,8 +3,7 @@ add_library(Game INTERFACE)
 
 # Add custom target to publish the .NET project
 add_custom_target(
-  PublishDotNet
-  PRE_BUILD
+  PublishDotNet ALL
   COMMAND dotnet publish -c Release -r linux-x64 --self-contained --packages
           .nuget/
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
