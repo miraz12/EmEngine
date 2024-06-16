@@ -33,8 +33,13 @@
 *.app
 
 # Folders
-build*/*
+*build*/*
 .cache/*
 .vs*/*
 out*/*
 /.direnv/
+src/Game/bin/*
+src/Game/obj/*
+src/Game/.nuget/*
+Testing/*
+.emscripten_cache/*
