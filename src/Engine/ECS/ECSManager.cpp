@@ -1,6 +1,6 @@
 #include "ECSManager.hpp"
 
-ECSManager::ECSManager() { initializeSystems(); }
+ECSManager::ECSManager() {}
 
 ECSManager::~ECSManager() {}
 

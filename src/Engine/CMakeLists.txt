@@ -14,6 +14,7 @@ target_include_directories(Engine SYSTEM
 
 add_dependencies(Engine Game)
 target_link_libraries(Engine PRIVATE Game)
+target_link_directories(Engine INTERFACE ${CMAKE_SOURCE_DIR}/resources/lib)
 
 target_link_libraries(Engine PRIVATE exts)
 target_precompile_headers(Engine PRIVATE engine_pch.hpp)

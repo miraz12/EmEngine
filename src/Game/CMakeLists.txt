@@ -9,6 +9,10 @@ add_custom_target(
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Publishing .NET Native AOT project")
 
-target_link_directories(Game INTERFACE bin/Release//net9.0/linux-x64/native)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release//net9.0/linux-x64/native/libdotnet.so
+  ${CMAKE_SOURCE_DIR}/resources/lib/libdotnet.so COPYONLY)
+
+target_link_directories(Game INTERFACE ${CMAKE_SOURCE_DIR}/resources/lib)
 target_include_directories(Game INTERFACE include)
 target_link_libraries(Game INTERFACE dotnet)

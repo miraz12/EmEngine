@@ -12,7 +12,7 @@ class GraphicsSystem : public System, public Singleton<GraphicsSystem> {
 
 public:
   void update(float dt) override;
-  void setViewport(u32 w, u32 h);
+  virtual void setViewport(u32 w, u32 h);
 
 private:
   GraphicsSystem();

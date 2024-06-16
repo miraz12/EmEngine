@@ -11,6 +11,7 @@ bool Core::initialize() {
   std::cout << "[core] Initialize" << std::endl;
   if (Window::getInstance().start() && Window::getInstance().open()) {
     m_ECSManager = &ECSManager::getInstance();
+    m_ECSManager->initializeSystems();
     InitializeFunctions(*LoadScene, *Input_getPressed);
     game_initialize();
     m_prevTime = glfwGetTime();

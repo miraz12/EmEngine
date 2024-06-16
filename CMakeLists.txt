@@ -14,6 +14,10 @@ add_subdirectory(exts)
 add_subdirectory(src/Engine)
 add_subdirectory(src/Game)
 
+# Enable testing
+enable_testing()
+add_subdirectory(tests)
+
 # Creaty executable
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
 target_precompile_headers(${PROJECT_NAME} PRIVATE

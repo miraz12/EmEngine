@@ -1,4 +1,10 @@
 add_library(exts INTERFACE)
+target_compile_options(
+  exts
+  INTERFACE -Wno-unused-variable # Disable warnings for unused variables
+            -Wno-deprecated-declarations # Disable warnings for deprecated
+                                         # declarations
+)
 
 if(NOT DEFINED EMSCRIPTEN)
 
@@ -29,6 +35,10 @@ target_include_directories(exts SYSTEM INTERFACE glm/include)
 # YAML-CPP
 add_subdirectory(yaml-cpp)
 target_include_directories(exts SYSTEM INTERFACE yaml-cpp/include)
+
+# gtest
+add_subdirectory(googletest)
+target_include_directories(exts SYSTEM INTERFACE googletest/src)
 
 # IMGUI
 add_library(

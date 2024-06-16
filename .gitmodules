@@ -16,3 +16,6 @@
 [submodule "exts/ImGuizmo"]
 	path = exts/ImGuizmo
 	url = git@github.com:CedricGuillemet/ImGuizmo.git
+[submodule "exts/googletest"]
+	path = exts/googletest
+	url = https://github.com/google/googletest.git
