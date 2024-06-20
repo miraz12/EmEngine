@@ -12,8 +12,8 @@ public:
   Singleton &operator=(const Singleton &) = delete;
 
 protected:
-  Singleton() {}
-  ~Singleton() {}
+  Singleton() = default;
+  ~Singleton() = default;
 };
 
 #endif // SINGLETON_H_

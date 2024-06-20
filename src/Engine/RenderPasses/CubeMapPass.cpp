@@ -19,7 +19,9 @@ CubeMapPass::CubeMapPass()
                    "resources/Shaders/brdfFragment.glsl") {
 
   stbi_set_flip_vertically_on_load(true);
-  i32 width, height, nrComponents;
+  i32 width;
+  i32 height;
+  i32 nrComponents;
 
   float *data = stbi_loadf("resources/Textures/clarens_midday_1k.hdr", &width,
                            &height, &nrComponents, 0);

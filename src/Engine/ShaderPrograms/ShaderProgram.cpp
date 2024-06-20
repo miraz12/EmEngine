@@ -5,8 +5,8 @@
 #include <iostream>
 #include <string>
 
-ShaderProgram::ShaderProgram(std::string vertexShaderPath,
-                             std::string fragmentShaderPath) {
+ShaderProgram::ShaderProgram(std::string_view vertexShaderPath,
+                             std::string_view fragmentShaderPath) {
   loadShaders(vertexShaderPath, fragmentShaderPath);
 }
 
@@ -20,8 +20,8 @@ void ShaderProgram::setAttribBinding(std::string a) {
   m_attribBindings[a] = glGetAttribLocation(p_shaderProgram, a.c_str());
 }
 
-void ShaderProgram::loadShaders(std::string vertexShaderPath,
-                                std::string fragmentShaderPath) {
+void ShaderProgram::loadShaders(std::string_view vertexShaderPath,
+                                std::string_view fragmentShaderPath) {
   // vertex shader
   std::string vertexShaderString = "";
   readFile(vertexShaderPath, &vertexShaderString);
@@ -96,9 +96,9 @@ u32 ShaderProgram::getAttribLocation(std::string attribName) const {
   return 0;
 }
 
-void ShaderProgram::readFile(std::string filePath, std::string *result) {
+void ShaderProgram::readFile(std::string_view filePath, std::string *result) {
   std::string line;
-  std::ifstream theFile(filePath);
+  std::ifstream theFile(filePath.data());
   if (theFile.is_open()) {
     while (std::getline(theFile, line)) {
       result->append(line + "\n");

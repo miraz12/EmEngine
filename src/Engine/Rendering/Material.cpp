@@ -15,8 +15,8 @@ void Material::bind(const ShaderProgram &sPrg) {
   glUniform3f(sPrg.getUniformLocation("emissiveFactor"), m_emissiveFactor.x,
               m_emissiveFactor.y, m_emissiveFactor.z);
 
-  GLint tex[5] = {0, 1, 2, 3, 4};
-  glUniform1iv(sPrg.getUniformLocation("textures"), 5, tex);
+  std::array<GLint, 5> tex = {0, 1, 2, 3, 4};
+  glUniform1iv(sPrg.getUniformLocation("textures"), 5, tex.data());
 
   if ((m_material & (1 << 0)) > 0) {
     glActiveTexture(GL_TEXTURE0 + 0);
@@ -53,9 +53,6 @@ void Material::bind(const ShaderProgram &sPrg) {
   } else if (m_alphaMode == "MASK") {
     glUniform1i(sPrg.getUniformLocation("alphaMode"), 1);
     glUniform1f(sPrg.getUniformLocation("alphaCutoff"), m_alphaCutoff);
-    // glEnable(GL_ALPHA_TEST);
-    // glAlphaFunc(GL_GREATER, m_alphaCutoff);
-    // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   } else if (m_alphaMode == "OPAQUE") {
     glDisable(GL_BLEND);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

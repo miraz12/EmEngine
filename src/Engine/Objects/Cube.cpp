@@ -54,10 +54,7 @@ Cube::Cube() {
   // clang-format on
 
   glm::mat4 modelMat = glm::identity<glm::mat4>();
-  Node *n = new Node;
-  n->mesh = 0;
-  n->nodeMat = modelMat;
-  p_nodes.push_back(n);
+  newNode(modelMat);
 
   p_numMeshes = 1;
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);

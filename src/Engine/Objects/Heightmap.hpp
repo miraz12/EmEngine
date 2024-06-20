@@ -3,11 +3,11 @@
 
 #include "GraphicsObject.hpp"
 
-class Heightmap : public GraphicsObject {
+class Heightmap final : public GraphicsObject {
 public:
   Heightmap() = delete;
-  Heightmap(std::string filename);
-  virtual ~Heightmap() = default;
+  explicit Heightmap(std::string filename);
+  ~Heightmap() override = default;
 
   std::string_view getFileName() { return m_filename; };
 

@@ -4,6 +4,6 @@
 class Component {
 public:
   Component() = default;
-  virtual ~Component() {}
+  virtual ~Component() = default;
 };
 #endif // COMPONENT_H_

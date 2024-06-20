@@ -9,7 +9,8 @@
 class ShaderProgram {
 public:
   ShaderProgram() = delete;
-  ShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath);
+  ShaderProgram(std::string_view vertexShaderPath,
+                std::string_view fragmentShaderPath);
   virtual ~ShaderProgram();
   ShaderProgram(const ShaderProgram &) = delete;
 
@@ -18,16 +19,15 @@ public:
   u32 getUniformLocation(std::string uniformName) const;
   u32 getAttribLocation(std::string attribName) const;
   u32 getId() { return p_shaderProgram; }
-  void loadShaders(std::string vertexShaderPath,
-                   std::string fragmentShaderPath);
+  void loadShaders(std::string_view vertexShaderPath,
+                   std::string_view fragmentShaderPath);
   void use() const;
 
-protected:
+private:
   u32 p_shaderProgram;
   std::unordered_map<std::string, u32> m_uniformBindings;
   std::unordered_map<std::string, i32> m_attribBindings;
 
-private:
-  void readFile(std::string filePath, std::string *result);
+  void readFile(std::string_view filePath, std::string *result);
 };
 #endif // SHADERPROGRAM_H_

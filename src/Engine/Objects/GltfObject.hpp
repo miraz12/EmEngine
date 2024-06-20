@@ -3,10 +3,10 @@
 
 #include "GraphicsObject.hpp"
 
-class GltfObject : public GraphicsObject {
+class GltfObject final : public GraphicsObject {
 public:
-  GltfObject(std::string filename);
-  virtual ~GltfObject() = default;
+  explicit GltfObject(std::string filename);
+  ~GltfObject() override = default;
 
   std::string_view getFileName() { return m_filename; };
 

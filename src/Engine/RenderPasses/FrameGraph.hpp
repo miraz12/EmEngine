@@ -1,7 +1,6 @@
 #ifndef FRAMEGRAPH_H_
 #define FRAMEGRAPH_H_
 
-#include "Camera.hpp"
 #include <RenderPasses/RenderPass.hpp>
 #include <ShaderPrograms/QuadShaderProgram.hpp>
 #include <array>
@@ -24,16 +23,18 @@ class FrameGraph : public Singleton<FrameGraph> {
 
 public:
   FrameGraph();
-  ~FrameGraph();
+  ~FrameGraph() = default;
 
   void draw(ECSManager &eManager);
   void setViewport(u32 w, u32 h);
 
-  std::array<RenderPass *, static_cast<size_t>(PassId::kNumPasses)>
+  std::array<std::unique_ptr<RenderPass>,
+             static_cast<size_t>(PassId::kNumPasses)>
       m_renderPass;
 
 private:
-  u32 m_width{800}, m_height{800};
+  u32 m_width{800};
+  u32 m_height{800};
 };
 
 #endif // FRAMEGRAPH_H_

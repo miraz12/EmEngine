@@ -3,10 +3,10 @@
 
 #include "Objects/GraphicsObject.hpp"
 
-class Point : public GraphicsObject {
+class Point final : public GraphicsObject {
 public:
   Point(float x, float y, float z);
-  ~Point() = default;
+  ~Point() override = default;
 
 private:
   std::array<float, 3> m_vertices;

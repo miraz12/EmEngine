@@ -2,12 +2,11 @@
 #define SHADOWPASS_H_
 
 #include "RenderPasses/RenderPass.hpp"
-#include "glm/fwd.hpp"
 
-class ShadowPass : public RenderPass {
+class ShadowPass final : public RenderPass {
 public:
   ShadowPass();
-  virtual ~ShadowPass() = default;
+  ~ShadowPass() override = default;
   void Execute(ECSManager &eManager) override;
   void setViewport(u32 w, u32 h) override;
   void Init(FrameGraph &fGraph) override;

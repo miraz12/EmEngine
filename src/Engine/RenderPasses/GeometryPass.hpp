@@ -1,12 +1,11 @@
 #ifndef GEOMETRYPASS_H_
 #define GEOMETRYPASS_H_
-#include "Managers/FrameBufferManager.hpp"
 #include "RenderPasses/RenderPass.hpp"
 
-class GeometryPass : public RenderPass {
+class GeometryPass final : public RenderPass {
 public:
   GeometryPass();
-  virtual ~GeometryPass() = default;
+  ~GeometryPass() override = default;
   void Execute(ECSManager &eManager) override;
   void setViewport(u32 w, u32 h) override;
   void Init(FrameGraph &fGraph) override;

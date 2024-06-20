@@ -78,19 +78,20 @@
 #include <yaml-cpp/yaml.h>
 
 // Types
-typedef std::uint64_t u64;
-typedef std::int64_t i64;
-typedef std::uint32_t u32;
-typedef std::int32_t i32;
-typedef std::uint16_t u16;
-typedef std::int16_t i16;
-typedef std::uint8_t u8;
-typedef std::int8_t i8;
+using u64 = std::uint64_t;
+using i64 = std::int64_t;
+using u32 = std::uint32_t;
+using i32 = std::int32_t;
+using u16 = std::uint16_t;
+using i16 = std::int16_t;
+using u8 = std::uint8_t;
+using i8 = std::int8_t;
+
 // Undef int to only allow the ones defined here
 // #define int undefined
 
 // Defines
-#define PI 3.14159f
+constexpr float PI = 3.14159f;
 
 #define DEG2RAD PI / 180.f
 #define RAD2DEG 180.f / PI

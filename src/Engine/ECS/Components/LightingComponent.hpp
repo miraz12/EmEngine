@@ -6,12 +6,16 @@
 
 class LightingComponent : public Component {
 public:
-  enum TYPE {
+  enum class TYPE {
     NONE,
     POINT,
     DIRECTIONAL,
   };
 
+  LightingComponent(const LightingComponent &) = default;
+  LightingComponent(LightingComponent &&) = delete;
+  LightingComponent &operator=(const LightingComponent &) = default;
+  LightingComponent &operator=(LightingComponent &&) = delete;
   LightingComponent(std::shared_ptr<BaseLight> light, TYPE type)
       : m_t(type), light(light) {}
   virtual ~LightingComponent() = default;
@@ -20,7 +24,7 @@ public:
   BaseLight &getBaseLight() { return *light.get(); };
 
 private:
-  TYPE m_t{NONE};
+  TYPE m_t{TYPE::NONE};
   std::shared_ptr<BaseLight> light;
 };
 #endif // LIGHTINGCOMPONENT_H_

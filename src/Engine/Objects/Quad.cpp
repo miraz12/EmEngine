@@ -2,10 +2,7 @@
 
 Quad::Quad() {
   glm::mat4 modelMat = glm::identity<glm::mat4>();
-  Node *n = new Node;
-  n->mesh = 0;
-  n->nodeMat = modelMat;
-  p_nodes.push_back(n);
+  newNode(modelMat);
 
   p_numMeshes = 1;
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
@@ -36,7 +33,7 @@ Quad::Quad() {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
   glEnableVertexAttribArray(0);
   Primitive::AttribInfo attribInfo;
   attribInfo.vbo = 0;

@@ -135,7 +135,6 @@ void BloomPass::Execute(ECSManager & /* eManager */) {
   glDisable(GL_BLEND);
 
   p_fboManager.bindFBO("bloomFinalFBO");
-  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, p_width, p_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_bloomCombine.use();

@@ -62,7 +62,8 @@ void ShadowPass::Execute(ECSManager &eManager) {
   p_shaderProgram.use();
 
   // TODO Don't do this every frame
-  glm::mat4 lightProjection, lightView;
+  glm::mat4 lightProjection;
+  glm::mat4 lightView;
   glm::mat4 lightSpaceMatrix;
   float shadowBox = 9.0f;
   lightProjection =
@@ -87,7 +88,7 @@ void ShadowPass::Execute(ECSManager &eManager) {
 
     std::shared_ptr<GraphicsComponent> g =
         eManager.getComponent<GraphicsComponent>(e);
-    g->m_grapObj.drawGeom(p_shaderProgram);
+    g->m_grapObj->drawGeom(p_shaderProgram);
   }
 
   glCullFace(GL_BACK);

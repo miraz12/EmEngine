@@ -28,7 +28,6 @@ public:
 
   u32 m_vao;
   u32 m_mode;
-  // std::vector<unsigned char> data;
   std::map<std::string, AttribInfo> attributes;
 };
 

@@ -23,7 +23,6 @@ u32 TextureManager::loadTexture(u32 internalFormat, GLenum format, GLenum type,
 u32 TextureManager::loadTexture(std::string name, u32 internalFormat,
                                 GLenum format, GLenum type, u32 width,
                                 u32 height, unsigned char *data) {
-  // std::cout << "Warning texture reload" << std::endl;
   deleteTexture(name);
   GLuint texId;
   glGenTextures(1, &texId);

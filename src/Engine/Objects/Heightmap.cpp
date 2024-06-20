@@ -2,7 +2,8 @@
 
 Heightmap::Heightmap(std::string filename) : m_filename(filename) {
   i32 numChannels;
-  i32 width, height;
+  i32 width;
+  i32 height;
   stbi_set_flip_vertically_on_load(true); // Flip the image vertically
   unsigned char *imageData =
       stbi_load(filename.c_str(), &width, &height, &numChannels, 1);
@@ -59,10 +60,7 @@ Heightmap::Heightmap(std::string filename) : m_filename(filename) {
     }
 
     glm::mat4 modelMat = glm::identity<glm::mat4>();
-    Node *n = new Node;
-    n->mesh = 0;
-    n->nodeMat = modelMat;
-    p_nodes.push_back(n);
+    newNode(modelMat);
 
     p_numMeshes = 1;
     p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
@@ -94,8 +92,7 @@ Heightmap::Heightmap(std::string filename) : m_filename(filename) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size() * 3,
                  m_vertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3,
-                          (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);
     Primitive::AttribInfo attribInfo;
     attribInfo.vbo = 0;

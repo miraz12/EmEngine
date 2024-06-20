@@ -1,7 +1,7 @@
 #ifndef INPUTMANAGER_H_
 #define INPUTMANAGER_H_
 
-enum KEY {
+enum class KEY {
   Escape,
   W,
   A,
@@ -34,7 +34,8 @@ public:
   std::vector<KEY> m_active;
 
 private:
-  i32 m_mousePosX, m_mousePosY;
+  i32 m_mousePosX;
+  i32 m_mousePosY;
   std::unordered_map<KEY, bool> m_keys;
 };
 

@@ -7,14 +7,14 @@ public:
   ~Animation() = default;
 
   struct AnimationSampler {
-    enum InterpolationType { LINEAR, STEP, CUBICSPLINE };
+    enum class InterpolationType { LINEAR, STEP, CUBICSPLINE };
     InterpolationType interpolation;
     std::vector<float> inputs;
     std::vector<glm::vec4> outputsVec4;
   };
 
   struct AnimationChannel {
-    enum PathType { TRANSLATION, ROTATION, SCALE };
+    enum class PathType { TRANSLATION, ROTATION, SCALE };
     PathType path;
     // Node *node;
     u32 samplerIndex;

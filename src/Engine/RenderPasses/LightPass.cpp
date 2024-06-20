@@ -1,5 +1,4 @@
 #include "LightPass.hpp"
-#include "FrameGraph.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 #include <ECS/Components/LightingComponent.hpp>
@@ -66,7 +65,7 @@ LightPass::LightPass()
   glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
                GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                         (void *)(3 * sizeof(float)));
@@ -82,7 +81,8 @@ void LightPass::Execute(ECSManager &eManager) {
   glUniform1i(p_shaderProgram.getUniformLocation("debugView"),
               eManager.getDebugView());
 
-  glm::mat4 lightProjection, lightView;
+  glm::mat4 lightProjection;
+  glm::mat4 lightView;
   glm::mat4 lightSpaceMatrix;
   float shadowBox = 9.0f;
   lightProjection =
@@ -100,7 +100,7 @@ void LightPass::Execute(ECSManager &eManager) {
         eManager.getComponent<LightingComponent>(e);
 
     LightingComponent::TYPE t = g->getType();
-    if (t == LightingComponent::DIRECTIONAL) {
+    if (t == LightingComponent::TYPE::DIRECTIONAL) {
       DirectionalLight &light =
           static_cast<DirectionalLight &>(g->getBaseLight());
       glUniform3fv(
@@ -114,7 +114,7 @@ void LightPass::Execute(ECSManager &eManager) {
                       "directionalLight.ambientIntensity"),
                   light.ambientIntensity);
 
-    } else if (t == LightingComponent::POINT) {
+    } else if (t == LightingComponent::TYPE::POINT) {
       PointLight &light = static_cast<PointLight &>(g->getBaseLight());
       glUniform3fv(
           p_shaderProgram.getUniformLocation(

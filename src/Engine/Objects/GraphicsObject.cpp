@@ -1,5 +1,12 @@
 #include "GraphicsObject.hpp"
 
+void GraphicsObject::newNode(glm::mat4 model) {
+  size_t idx = p_nodes.size();
+  p_nodes.push_back(std::make_unique<Node>());
+  p_nodes[idx]->mesh = 0;
+  p_nodes[idx]->nodeMat = model;
+}
+
 void GraphicsObject::draw(const ShaderProgram &sPrg) {
   for (auto &n : p_nodes) {
     glUniformMatrix4fv(sPrg.getUniformLocation("meshMatrix"), 1, GL_FALSE,
@@ -23,11 +30,5 @@ void GraphicsObject::drawGeom(const ShaderProgram &sPrg) {
     for (u32 i = 0; i < m.numPrims; i++) {
       m.m_primitives[i].draw();
     }
-  }
-}
-
-GraphicsObject::~GraphicsObject() {
-  for (auto &n : p_nodes) {
-    delete n;
   }
 }

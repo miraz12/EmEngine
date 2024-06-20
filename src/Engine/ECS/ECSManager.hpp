@@ -15,12 +15,12 @@
 #include "Systems/PositionSystem.hpp"
 #include "Systems/System.hpp"
 
-typedef std::type_index ComponentType;
-typedef std::size_t Entity;
+constexpr std::size_t MAX_COMPONENTS = 10;
+constexpr std::size_t MAX_ENTITIES = 10;
 
-#define MAX_COMPONENTS 10
-#define MAX_ENTITIES 10
-typedef std::bitset<MAX_COMPONENTS> Signature;
+using ComponentType = std::type_index;
+using Entity = std::size_t;
+using Signature = std::bitset<MAX_COMPONENTS>;
 
 class ECSManager : public Singleton<ECSManager> {
   friend class Singleton<ECSManager>;
@@ -155,7 +155,7 @@ public:
   void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   Camera &getCamera() { return m_camera; };
-  System &getSystem(std::string s) { return *m_systems[s]; }
+  System &getSystem(std::string const &s) { return *m_systems[s]; }
   Entity &getPickedEntity() { return m_pickedEntity; }
   bool &getEntitySelected() { return m_entitySelected; }
   std::vector<Entity> &getEntities() { return m_entities; };
@@ -174,8 +174,9 @@ public:
   glm::vec3 dDir;
 
 private:
-  ECSManager();
-  ~ECSManager();
+  ECSManager() = default;
+  ~ECSManager() = default;
+
   // Entities
   std::vector<Entity> m_entities;
   std::map<Entity, std::string> m_entityNames;

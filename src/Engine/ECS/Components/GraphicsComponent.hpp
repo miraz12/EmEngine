@@ -4,15 +4,16 @@
 #include "Component.hpp"
 #include "Objects/GraphicsObject.hpp"
 
-class GraphicsComponent : public Component {
+class GraphicsComponent final : public Component {
 public:
-  GraphicsComponent(GraphicsObject &grapComp) : m_grapObj(grapComp) {}
-  virtual ~GraphicsComponent() { delete &m_grapObj; }
+  explicit GraphicsComponent(std::shared_ptr<GraphicsObject> grapComp)
+      : m_grapObj(grapComp) {}
+  ~GraphicsComponent() final = default;
 
   GraphicsComponent() = delete;
 
-  GraphicsObject &m_grapObj;
+  std::shared_ptr<GraphicsObject> m_grapObj;
 
-  enum TYPE { POINT, LINE, QUAD, CUBE, MESH, HEIGHTMAP } type;
+  enum class TYPE { POINT, LINE, QUAD, CUBE, MESH, HEIGHTMAP } type;
 };
 #endif // GRAPHICSCOMPONENT_H_

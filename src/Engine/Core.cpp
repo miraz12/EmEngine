@@ -1,5 +1,6 @@
 #include "Core.hpp"
 #include "InputManager.hpp"
+#include "Window.hpp"
 #include "engine_api.hpp"
 #include <game_api.hpp>
 
@@ -12,7 +13,7 @@ bool Core::initialize() {
   if (Window::getInstance().start() && Window::getInstance().open()) {
     m_ECSManager = &ECSManager::getInstance();
     m_ECSManager->initializeSystems();
-    InitializeFunctions(*LoadScene, *Input_getPressed);
+    InitializeFunctions(LoadScene, Input_getPressed);
     game_initialize();
     m_prevTime = glfwGetTime();
   }
@@ -21,14 +22,13 @@ bool Core::initialize() {
       [](GLFWwindow * /* win */, double xpos, double ypos) -> void {
         InputManager::getInstance().setMousePos(xpos, ypos);
       });
-  Window::getInstance().setMouseButtonCallback([](GLFWwindow * /* win */,
-                                                  i32 button, i32 action,
-                                                  i32 /* mods */) -> void {
-    InputManager::getInstance().handleInput(button, action);
-  });
+  Window::getInstance().setMouseButtonCallback(
+      [](GLFWwindow * /* win */, i32 button, i32 action, i32 /* mods */) {
+        InputManager::getInstance().handleInput(button, action);
+      });
   Window::getInstance().setKeyCallback([](GLFWwindow * /* win */, i32 key,
                                           i32 /* scancode */, i32 action,
-                                          i32 /* mods */) -> void {
+                                          i32 /* mods */) {
     if (key == GLFW_KEY_ESCAPE) {
       Window::getInstance().close();
     }

@@ -3,12 +3,13 @@
 
 #include "RenderPasses/RenderPass.hpp"
 
-class BloomPass : public RenderPass {
+class BloomPass final : public RenderPass {
 public:
   BloomPass();
-  virtual ~BloomPass() = default;
+  ~BloomPass() override = default;
   void Execute(ECSManager &eManager) override;
   void setViewport(u32 w, u32 h) override;
+  void Init(FrameGraph & /* fGraph */) override{};
 
 private:
   struct mipLevel {
@@ -18,7 +19,9 @@ private:
   };
 
   std::vector<mipLevel> m_mipChain;
-  ShaderProgram m_extractBright, m_downShader, m_bloomCombine;
+  ShaderProgram m_extractBright;
+  ShaderProgram m_downShader;
+  ShaderProgram m_bloomCombine;
 };
 
 #endif // BLOOMPASS_H_

@@ -36,13 +36,13 @@ void PhysicsComponent::init() {
   }
 
   if (graphComp) {
-    colShape = graphComp->m_grapObj.p_coll;
+    colShape = graphComp->m_grapObj->p_coll;
     colShape->setLocalScaling(initialScale);
 
     ECSManager &eManager = ECSManager::getInstance();
     // BUG: Cant remove this without breaking debug draw?
-    std::shared_ptr<DebugComponent> dComp =
-        std::make_shared<DebugComponent>(new Cube());
+    // std::shared_ptr<DebugComponent> dComp =
+    //     std::make_shared<DebugComponent>(Cube());
 
     /// Create Dynamic Objects
     startTransform.setIdentity();
@@ -65,8 +65,7 @@ void PhysicsComponent::init() {
     body = new btRigidBody(rbInfo);
     body->setUserIndex(m_en);
 
-    PhysicsSystem &pSys =
-        dynamic_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
+    auto &pSys = dynamic_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
     pSys.addRigidBody(body);
     initialized = true;
   }

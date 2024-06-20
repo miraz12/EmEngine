@@ -22,31 +22,35 @@ void SceneLoader::init(const char *file) {
           if (components[i]["type"].as<std::string>() == "Gra") {
             std::shared_ptr<GraphicsComponent> graphComp;
             if (components[i]["primitive"].as<std::string>() == "Cube") {
-              graphComp = std::make_shared<GraphicsComponent>(*new Cube());
-              graphComp->type = GraphicsComponent::CUBE;
+              graphComp =
+                  std::make_shared<GraphicsComponent>(std::shared_ptr<Cube>());
+              graphComp->type = GraphicsComponent::TYPE::CUBE;
             } else if (components[i]["primitive"].as<std::string>() == "Quad") {
-              graphComp = std::make_shared<GraphicsComponent>(*new Quad());
-              graphComp->type = GraphicsComponent::QUAD;
+              graphComp =
+                  std::make_shared<GraphicsComponent>(std::shared_ptr<Quad>());
+              graphComp->type = GraphicsComponent::TYPE::QUAD;
             } else if (components[i]["primitive"].as<std::string>() == "Line") {
               // TODO: Fix this when needed
               // graphComp = std::make_shared<GraphicsComponent>(*new Line());
-              graphComp->type = GraphicsComponent::LINE;
+              graphComp->type = GraphicsComponent::TYPE::LINE;
             } else if (components[i]["primitive"].as<std::string>() ==
                        "Point") {
               // TODO: Fix this when needed
               // graphComp = std::make_shared<GraphicsComponent>(*new Point());
-              graphComp->type = GraphicsComponent::POINT;
+              graphComp->type = GraphicsComponent::TYPE::POINT;
             } else if (components[i]["primitive"].as<std::string>() == "Mesh") {
               graphComp = std::make_shared<GraphicsComponent>(
-                  *new GltfObject("resources/Models/" +
-                                  components[i]["file"].as<std::string>()));
-              graphComp->type = GraphicsComponent::MESH;
+                  std::make_shared<GltfObject>(
+                      "resources/Models/" +
+                      components[i]["file"].as<std::string>()));
+              graphComp->type = GraphicsComponent::TYPE::MESH;
             } else if (components[i]["primitive"].as<std::string>() ==
                        "Heightmap") {
+              std::string name = "resources/Textures/" +
+                                 components[i]["file"].as<std::string>();
               graphComp = std::make_shared<GraphicsComponent>(
-                  *new Heightmap("resources/Textures/" +
-                                 components[i]["file"].as<std::string>()));
-              graphComp->type = GraphicsComponent::HEIGHTMAP;
+                  std::make_shared<Heightmap>(name));
+              graphComp->type = GraphicsComponent::TYPE::HEIGHTMAP;
             }
             m_ecsMan->addComponents(en, graphComp);
 
@@ -155,20 +159,20 @@ void SceneLoader::saveScene(const char *file) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Gra";
       switch (graComp->type) {
-      case GraphicsComponent::POINT:
+      case GraphicsComponent::TYPE::POINT:
         out << YAML::Key << "primitive" << YAML::Value << "Point";
         break;
-      case GraphicsComponent::LINE:
+      case GraphicsComponent::TYPE::LINE:
         out << YAML::Key << "primitive" << YAML::Value << "Line";
         break;
-      case GraphicsComponent::QUAD:
+      case GraphicsComponent::TYPE::QUAD:
         out << YAML::Key << "primitive" << YAML::Value << "Quad";
         break;
-      case GraphicsComponent::CUBE:
+      case GraphicsComponent::TYPE::CUBE:
         out << YAML::Key << "primitive" << YAML::Value << "Cube";
         break;
-      case GraphicsComponent::HEIGHTMAP: {
-        auto map = static_cast<Heightmap *>(&graComp->m_grapObj);
+      case GraphicsComponent::TYPE::HEIGHTMAP: {
+        auto map = std::static_pointer_cast<Heightmap>(graComp->m_grapObj);
         out << YAML::Key << "primitive" << YAML::Value << "Heightmap";
         out << YAML::Key << "file" << YAML::Value
             << map->getFileName()
@@ -176,8 +180,8 @@ void SceneLoader::saveScene(const char *file) {
                    .data();
         break;
       }
-      case GraphicsComponent::MESH:
-        auto mesh = static_cast<GltfObject *>(&graComp->m_grapObj);
+      case GraphicsComponent::TYPE::MESH:
+        auto mesh = std::static_pointer_cast<GltfObject>(graComp->m_grapObj);
         out << YAML::Key << "primitive" << YAML::Value << "Mesh";
         out << YAML::Key << "file" << YAML::Value
             << mesh->getFileName()
@@ -192,10 +196,10 @@ void SceneLoader::saveScene(const char *file) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Lig";
       switch (ligComp->getType()) {
-      case LightingComponent::NONE:
+      case LightingComponent::TYPE::NONE:
         throw;
         break;
-      case LightingComponent::POINT: {
+      case LightingComponent::TYPE::POINT: {
         auto point = static_cast<PointLight *>(&ligComp->getBaseLight());
         out << YAML::Key << "lightType" << YAML::Value << "point";
         out << YAML::Key << "color" << YAML::Value << YAML::Flow
@@ -209,7 +213,7 @@ void SceneLoader::saveScene(const char *file) {
         out << YAML::Key << "linear" << YAML::Value << point->linear;
         break;
       }
-      case LightingComponent::DIRECTIONAL:
+      case LightingComponent::TYPE::DIRECTIONAL:
         auto dir = static_cast<DirectionalLight *>(&ligComp->getBaseLight());
         out << YAML::Key << "lightType" << YAML::Value << "dir";
         out << YAML::Key << "color" << YAML::Value << YAML::Flow

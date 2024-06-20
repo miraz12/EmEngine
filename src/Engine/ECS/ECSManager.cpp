@@ -1,28 +1,24 @@
 #include "ECSManager.hpp"
 
-ECSManager::ECSManager() {}
-
-ECSManager::~ECSManager() {}
-
 void ECSManager::initializeSystems() {
   m_systems["PHYSICS"] = &PhysicsSystem::getInstance();
   m_systems["POSITION"] = &PositionSystem::getInstance();
   m_systems["PARTICLES"] = &ParticleSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
-  for (auto &s : m_systems) {
-    s.second->initialize(*this);
+  for (const auto &[key, value] : m_systems) {
+    value->initialize(*this);
   }
 }
 
 void ECSManager::update(float dt) {
   // update all systems
-  for (auto &s : m_systems) {
-    s.second->update(dt);
+  for (const auto &[key, value] : m_systems) {
+    value->update(dt);
   }
 }
 
 Entity ECSManager::createEntity(std::string name) {
-  Entity newEntity = ++m_entityCount;
+  Entity newEntity = (m_entityCount++);
   m_components[newEntity] =
       std::vector<std::shared_ptr<Component>>(MAX_COMPONENTS, nullptr);
   m_entities.push_back(newEntity);
@@ -63,8 +59,7 @@ void ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir) {
 
   std::shared_ptr<LightingComponent> lComp =
       getComponent<LightingComponent>(m_dirLightEntity);
-  DirectionalLight *dLight =
-      static_cast<DirectionalLight *>(&lComp->getBaseLight());
+  auto *dLight = static_cast<DirectionalLight *>(&lComp->getBaseLight());
   dLight->direction = dir;
   dLight->color = color;
   dLight->ambientIntensity = ambient;

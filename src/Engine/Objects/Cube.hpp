@@ -3,10 +3,10 @@
 
 #include "GraphicsObject.hpp"
 
-class Cube : public GraphicsObject {
+class Cube final : public GraphicsObject {
 public:
   Cube();
-  ~Cube() = default;
+  ~Cube() override = default;
 };
 
 #endif // CUBE_H_

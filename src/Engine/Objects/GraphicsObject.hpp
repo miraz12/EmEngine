@@ -12,15 +12,16 @@
 class GraphicsObject {
 public:
   GraphicsObject() = default;
-  virtual ~GraphicsObject();
+  virtual ~GraphicsObject() = default;
 
+  void newNode(glm::mat4 model);
   virtual void draw(const ShaderProgram &sPrg);
   virtual void drawGeom(const ShaderProgram &sPrg);
   btCollisionShape *p_coll;
 
 protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();
-  std::vector<Node *> p_nodes;
+  std::vector<std::unique_ptr<Node>> p_nodes;
   u32 p_numMats{0};
   std::unique_ptr<Material[]> p_materials;
   u32 p_numMeshes{0};

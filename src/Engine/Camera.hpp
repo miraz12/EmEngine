@@ -3,8 +3,8 @@
 
 class Camera {
 public:
-  Camera();
-  ~Camera();
+  Camera() = default;
+  ~Camera() = default;
 
   void setPosition(float x, float y, float z) {
     m_position = glm::vec3(x, y, z);
@@ -74,19 +74,19 @@ public:
 private:
   void checkDirty();
 
-  glm::mat4 m_viewMatrix;
+  glm::mat4 m_viewMatrix{1.0f};
   glm::mat4 m_ProjectionMatrix;
-  bool m_matrixNeedsUpdate;
+  bool m_matrixNeedsUpdate{true};
 
-  glm::vec3 m_position;
-  glm::vec3 m_front;
-  glm::vec3 m_up;
-  float m_zoom;
-  float m_height;
-  float m_width;
-  float m_fov;
-  float m_near;
-  float m_far;
+  glm::vec3 m_position{0.0f, 0.0f, 3.0f};
+  glm::vec3 m_front{0.0f, 0.0f, -1.0f};
+  glm::vec3 m_up{0.0f, 1.0f, 0.0f};
+  float m_zoom{1.f};
+  float m_height{800};
+  float m_width{800};
+  float m_fov{45.f};
+  float m_near{0.1f};
+  float m_far{100.f};
 };
 
 #endif // CAMERA_H_

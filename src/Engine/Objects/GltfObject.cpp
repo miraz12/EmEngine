@@ -13,6 +13,7 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 static std::string GetFilePathExtension(const std::string &FileName) {
+  // TODO: Use std::filesystem
   if (FileName.find_last_of(".") != std::string::npos)
     return FileName.substr(FileName.find_last_of(".") + 1);
   return "";
@@ -87,10 +88,7 @@ void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node,
                                                   node.translation[2]));
   }
   if (node.mesh >= 0) {
-    Node *n = new Node;
-    n->mesh = node.mesh;
-    n->nodeMat = modelMat;
-    p_nodes.push_back(n);
+    newNode(modelMat);
   }
   for (i32 c : node.children) {
     loadNode(model, model.nodes[c], modelMat);
@@ -240,7 +238,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         }
       }
       // Load all vertex attributes
-      for (auto &attrib : primitive.attributes) {
+      for (const auto &attrib : primitive.attributes) {
         tinygltf::Accessor accessor = model.accessors[attrib.second];
         const tinygltf::BufferView &bufferView =
             model.bufferViews[accessor.bufferView];
@@ -249,7 +247,7 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
         u32 loc = 0;
         if (attrib.first == "POSITION") {
           loc = 0;
-          const float *positions = reinterpret_cast<const float *>(
+          auto positions = reinterpret_cast<const float *>(
               &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
           u32 numVertices = accessor.count;
           for (u32 i = 0; i < numVertices; i += 3) {
@@ -345,7 +343,7 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
 
         const void *dataPtr =
             &buffer.data[accessor.byteOffset + bufferView.byteOffset];
-        const float *buf = static_cast<const float *>(dataPtr);
+        auto buf = static_cast<const float *>(dataPtr);
         for (size_t index = 0; index < accessor.count; index++) {
           sampler.inputs.push_back(buf[index]);
         }

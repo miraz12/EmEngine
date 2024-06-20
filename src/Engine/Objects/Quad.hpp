@@ -3,10 +3,10 @@
 
 #include "GraphicsObject.hpp"
 
-class Quad : public GraphicsObject {
+class Quad final : public GraphicsObject {
 public:
   Quad();
-  virtual ~Quad() = default;
+  ~Quad() override = default;
 
 private:
   float m_vertices[36] = {

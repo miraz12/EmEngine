@@ -72,7 +72,7 @@ void GeometryPass::Execute(ECSManager &eManager) {
 
     std::shared_ptr<GraphicsComponent> g =
         eManager.getComponent<GraphicsComponent>(e);
-    g->m_grapObj.draw(p_shaderProgram);
+    g->m_grapObj->draw(p_shaderProgram);
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

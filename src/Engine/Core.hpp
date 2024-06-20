@@ -1,6 +1,5 @@
 #ifndef CORE_H_
 #define CORE_H_
-#include "Window.hpp"
 #include <ECS/ECSManager.hpp>
 
 class Core : public Singleton<Core> {
@@ -17,7 +16,9 @@ public:
 
 private:
   ECSManager *m_ECSManager;
-  float m_dt, m_prevTime, m_currentTime;
+  float m_dt;
+  float m_prevTime;
+  float m_currentTime;
 };
 
 #endif // CORE_H_

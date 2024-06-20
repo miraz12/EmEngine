@@ -4,11 +4,12 @@
 #include "Component.hpp"
 #include <Objects/GraphicsObject.hpp>
 
-class DebugComponent : public Component {
+class DebugComponent final : public Component {
 public:
-  DebugComponent(GraphicsObject *grapComp) : m_grapObj(grapComp){};
+  explicit DebugComponent(std::unique_ptr<GraphicsObject> grapComp)
+      : m_grapObj(std::move(grapComp)){};
   DebugComponent() = delete;
-  ~DebugComponent() = default;
+  ~DebugComponent() final = default;
 
   std::unique_ptr<GraphicsObject> m_grapObj;
 };

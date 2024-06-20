@@ -6,6 +6,6 @@
 class QuadShaderProgram : public ShaderProgram {
 public:
   QuadShaderProgram();
-  ~QuadShaderProgram() = default;
+  ~QuadShaderProgram() override = default;
 };
 #endif // QUADSHADERPROGRAM_H_

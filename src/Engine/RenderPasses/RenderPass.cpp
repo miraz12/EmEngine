@@ -1,9 +1,7 @@
 #include "RenderPass.hpp"
-#include <iostream>
 
 RenderPass::RenderPass(std::string vs, std::string fs)
-    : p_shaderProgram(vs, fs), p_fboManager(FrameBufferManager::getInstance()),
-      p_textureManager(TextureManager::getInstance()) {}
+    : p_shaderProgram(vs, fs) {}
 
 void RenderPass::addTexture(std::string texName) {
   p_shaderProgram.use();
