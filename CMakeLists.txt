@@ -14,9 +14,11 @@ add_subdirectory(exts)
 add_subdirectory(src/Engine)
 add_subdirectory(src/Game)
 
-# Enable testing
-enable_testing()
-add_subdirectory(tests)
+if(NOT DEFINED EMSCRIPTEN)
+  # Enable testing
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 # Creaty executable
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
