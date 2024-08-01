@@ -1,18 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>libdotnet</AssemblyName>
+    <AssemblyName>EmEngine</AssemblyName>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <PublishAot>true</PublishAot>
+
+    <PublishTrimmed>true</PublishTrimmed>
     <SelfContained>true</SelfContained>
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
+
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="9.0.0-*" />
+    <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="7.0.0-*" />
+    <PackageReference Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="7.0.0-*" />
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+    <DirectPInvoke Include="Engine"/>
+    <NativeLibrary Include="Engine.wasm" Condition="!$(RuntimeIdentifier.StartsWith('win'))"/>
   </ItemGroup>
 
 </Project>

@@ -2,19 +2,19 @@
 #include "InputManager.hpp"
 #include "Window.hpp"
 #include "engine_api.hpp"
-#include <game_api.hpp>
 
 extern "C" void LoadScene(const char *filename) {
   ECSManager::getInstance().loadScene(filename);
 }
+extern "C" void Initialize() { Core::getInstance().initialize(); }
+extern "C" bool Open() { return Core::getInstance().open(); };
+extern "C" void Update() { Core::getInstance().update(); };
 
 bool Core::initialize() {
   std::cout << "[core] Initialize" << std::endl;
   if (Window::getInstance().start() && Window::getInstance().open()) {
     m_ECSManager = &ECSManager::getInstance();
     m_ECSManager->initializeSystems();
-    InitializeFunctions(LoadScene, Input_getPressed);
-    game_initialize();
     m_prevTime = glfwGetTime();
   }
 
@@ -63,10 +63,8 @@ float &Core::getDeltaTime() {
 void Core::update() {
   glfwPollEvents();
 
-  float &dt = Core::getInstance().getDeltaTime();
+  float &dt = getDeltaTime();
   ECSManager::getInstance().update(dt);
-  game_update(dt);
-
   InputManager::getInstance().update();
   Window::getInstance().swap();
 }

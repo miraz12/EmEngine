@@ -10,7 +10,7 @@ public:
   ~Core() = default;
 
   bool initialize();
-  static void update();
+  void update();
   bool open();
   float &getDeltaTime();
 

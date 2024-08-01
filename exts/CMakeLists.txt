@@ -1,4 +1,5 @@
-add_library(exts INTERFACE)
+file(WRITE null.cpp "")
+add_library(exts STATIC null.cpp)
 target_compile_options(
   exts
   INTERFACE -Wno-unused-variable # Disable warnings for unused variables
@@ -75,20 +76,20 @@ add_library(
 target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
 
 # Header only
-target_include_directories(exts SYSTEM INTERFACE header_only)
+target_include_directories(exts PUBLIC header_only)
 
 target_link_libraries(
   exts
-  INTERFACE glfw
-            ${OPENGL_LIBRARIES}
-            glm
-            imgui
-            BulletDynamics
-            BulletCollision
-            LinearMath
-            yaml-cpp
-            imguizmo)
+  PUBLIC glfw
+         ${OPENGL_LIBRARIES}
+         glm
+         imgui
+         BulletDynamics
+         BulletCollision
+         LinearMath
+         yaml-cpp
+         imguizmo)
 
 if(NOT DEFINED EMSCRIPTEN)
-  target_link_libraries(exts INTERFACE glad)
+  target_link_libraries(exts PUBLIC glad)
 endif()

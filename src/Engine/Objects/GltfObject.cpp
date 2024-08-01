@@ -303,33 +303,27 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
 }
 
 void GltfObject::loadAnimation(tinygltf::Model &model) {
-  p_numAnimations = model.animations.size();
-  std::cout << "Num animations: " << p_numAnimations << std::endl;
-  p_animations = std::make_unique<Animation[]>(p_numAnimations);
-
-  u32 numNodes = 0;
+  std::cout << "Num animations: " << model.animations.size() << std::endl;
   for (tinygltf::Animation &anim : model.animations) {
     Animation animation{};
-    p_animations[numNodes].name = anim.name;
+    animation.name = anim.name;
     if (anim.name.empty()) {
-      p_animations[numNodes].name = std::to_string(p_numAnimations);
+      animation.name = std::to_string(m_animations.size());
     }
 
     // Samplers
     for (auto &samp : anim.samplers) {
-      Animation::AnimationSampler sampler{};
+      AnimationSampler sampler{};
 
       if (samp.interpolation == "LINEAR") {
-        sampler.interpolation =
-            Animation::AnimationSampler::InterpolationType::LINEAR;
+        sampler.interpolation = AnimationSampler::InterpolationType::LINEAR;
       }
       if (samp.interpolation == "STEP") {
-        sampler.interpolation =
-            Animation::AnimationSampler::InterpolationType::STEP;
+        sampler.interpolation = AnimationSampler::InterpolationType::STEP;
       }
       if (samp.interpolation == "CUBICSPLINE") {
         sampler.interpolation =
-            Animation::AnimationSampler::InterpolationType::CUBICSPLINE;
+            AnimationSampler::InterpolationType::CUBICSPLINE;
       }
 
       // Read sampler input time values
@@ -343,17 +337,17 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
 
         const void *dataPtr =
             &buffer.data[accessor.byteOffset + bufferView.byteOffset];
-        auto buf = static_cast<const float *>(dataPtr);
+        const float *buf = static_cast<const float *>(dataPtr);
         for (size_t index = 0; index < accessor.count; index++) {
           sampler.inputs.push_back(buf[index]);
         }
 
         for (auto input : sampler.inputs) {
-          if (input < p_animations[numNodes].start) {
-            p_animations[numNodes].start = input;
+          if (input < animation.start) {
+            animation.start = input;
           };
-          if (input > p_animations[numNodes].end) {
-            p_animations[numNodes].end = input;
+          if (input > animation.end) {
+            animation.end = input;
           }
         }
       }
@@ -375,6 +369,9 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
           const glm::vec3 *buf = static_cast<const glm::vec3 *>(dataPtr);
           for (size_t index = 0; index < accessor.count; index++) {
             sampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
+            sampler.outputs.push_back(buf[index][0]);
+            sampler.outputs.push_back(buf[index][1]);
+            sampler.outputs.push_back(buf[index][2]);
           }
           break;
         }
@@ -382,6 +379,10 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
           const glm::vec4 *buf = static_cast<const glm::vec4 *>(dataPtr);
           for (size_t index = 0; index < accessor.count; index++) {
             sampler.outputsVec4.push_back(buf[index]);
+            sampler.outputs.push_back(buf[index][0]);
+            sampler.outputs.push_back(buf[index][1]);
+            sampler.outputs.push_back(buf[index][2]);
+            sampler.outputs.push_back(buf[index][3]);
           }
           break;
         }
@@ -392,21 +393,21 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
         }
       }
 
-      p_animations[numNodes].samplers.push_back(sampler);
+      animation.samplers.push_back(sampler);
     }
 
     // Channels
     for (auto &source : anim.channels) {
-      Animation::AnimationChannel channel{};
+      AnimationChannel channel{};
 
       if (source.target_path == "rotation") {
-        channel.path = Animation::AnimationChannel::PathType::ROTATION;
+        channel.path = AnimationChannel::PathType::ROTATION;
       }
       if (source.target_path == "translation") {
-        channel.path = Animation::AnimationChannel::PathType::TRANSLATION;
+        channel.path = AnimationChannel::PathType::TRANSLATION;
       }
       if (source.target_path == "scale") {
-        channel.path = Animation::AnimationChannel::PathType::SCALE;
+        channel.path = AnimationChannel::PathType::SCALE;
       }
       if (source.target_path == "weights") {
         std::cout << "weights not yet supported, skipping channel" << std::endl;
@@ -414,14 +415,14 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
       }
       channel.samplerIndex = source.sampler;
       // channel.node = nodeFromIndex(source.target_node);
-      // if (!channel.node) {
-      // continue;
-      // }
+      if (!channel.node) {
+        continue;
+      }
 
-      p_animations[numNodes].channels.push_back(channel);
+      animation.channels.push_back(channel);
     }
 
-    numNodes++;
+    m_animations.push_back(animation);
   }
 }
 

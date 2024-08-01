@@ -6,23 +6,11 @@ file(GLOB_RECURSE ENGINE_FILES ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
 
 # Add source files as libraries
 add_library(Engine ${ENGINE_FILES})
-target_include_directories(Engine SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(Engine SYSTEM
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(Engine SYSTEM
-                           PUBLIC ${CMAKE_SOURCE_DIR}/src/Game/include)
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_dependencies(Engine Game)
-target_link_libraries(Engine PRIVATE Game)
-if(NOT DEFINED EMSCRIPTEN)
-  target_link_directories(Engine INTERFACE ${CMAKE_SOURCE_DIR}/resources/lib)
-else()
-  target_link_directories(Engine INTERFACE
-                          ${CMAKE_SOURCE_DIR}/resources/libwasm)
-endif()
-
-target_link_libraries(Engine PRIVATE exts)
-target_precompile_headers(Engine PRIVATE engine_pch.hpp)
+target_link_libraries(Engine PUBLIC exts)
+target_precompile_headers(Engine PUBLIC engine_pch.hpp)
 
 target_compile_options(
   Engine
@@ -55,3 +43,5 @@ set_target_properties(
              CXX_STANDARD_REQUIRED ON
              CMAKE_CXX_EXTENSIONS OFF)
 target_compile_definitions(Engine PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/resources/lib/)

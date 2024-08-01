@@ -45,6 +45,7 @@
               glfw
               omnisharp-roslyn
               nodejs
+              lld
             ] ++ deps;
 
             NIX_LD_LIBRARY_PATH = lib.makeLibraryPath ([ stdenv.cc.cc ] ++ deps);
