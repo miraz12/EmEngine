@@ -8,17 +8,8 @@ if(NOT DEFINED EMSCRIPTEN)
     COMMAND dotnet publish -c Release -r linux-x64 --packages .nuget/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Publishing .NET Native AOT project")
-
-  # configure_file(
-  # ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release//net9.0/linux-x64/native/libdotnet.so
-  # ${CMAKE_SOURCE_DIR}/resources/lib/libdotnet.so COPYONLY)
-
-  # target_link_directories(Game INTERFACE ${CMAKE_SOURCE_DIR}/resources/lib)
-  # target_include_directories(Game INTERFACE include)
-  # target_link_libraries(Game INTERFACE dotnet)
-
 else()
-  # target_link_directories(Game INTERFACE
-  # ${CMAKE_SOURCE_DIR}/resources/libwasm) target_include_directories(Game
-  # INTERFACE include) target_link_libraries(Game INTERFACE dotnet)
+  # add_custom_target( PublishDotNet ALL COMMAND dotnet publish -c Release -r
+  # browser-wasm --packages .nuget/ WORKING_DIRECTORY
+  # ${CMAKE_CURRENT_SOURCE_DIR} COMMENT "Publishing .NET Native AOT project")
 endif()

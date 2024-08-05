@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/resources/lib/)
+
 # Add source files
 file(GLOB_RECURSE ENGINE_FILES ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
      ${CMAKE_SOURCE_DIR}/src/Engine/*.hpp)
 
 # Add source files as libraries
-add_library(Engine ${ENGINE_FILES})
+if(DEFINED EMSCRIPTEN)
+  add_library(Engine ${ENGINE_FILES})
+else()
+  add_library(Engine SHARED ${ENGINE_FILES})
+endif(DEFINED EMSCRIPTEN)
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -43,5 +49,3 @@ set_target_properties(
              CXX_STANDARD_REQUIRED ON
              CMAKE_CXX_EXTENSIONS OFF)
 target_compile_definitions(Engine PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/resources/lib/)
