@@ -8,7 +8,7 @@ file(GLOB_RECURSE ENGINE_FILES ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
 
 # Add source files as libraries
 if(DEFINED EMSCRIPTEN)
-  add_library(Engine ${ENGINE_FILES})
+  add_library(Engine STATIC ${ENGINE_FILES} $<TARGET_OBJECTS:yaml-cpp> $<TARGET_OBJECTS:imgui> $<TARGET_OBJECTS:BulletCollision> $<TARGET_OBJECTS:BulletDynamics> $<TARGET_OBJECTS:LinearMath>)
 else()
   add_library(Engine SHARED ${ENGINE_FILES})
 endif(DEFINED EMSCRIPTEN)

@@ -46,7 +46,7 @@ void glfw_error(int /* error */, const char *description) {
 
 bool Window::start() {
   std::cout << "[window] Start" << std::endl;
-  glfwSetErrorCallback(glfw_error);
+  //glfwSetErrorCallback(glfw_error);
 
   if (glfwInit()) {
 #ifdef _DEBUG_

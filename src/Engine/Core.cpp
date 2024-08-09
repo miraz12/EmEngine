@@ -6,12 +6,18 @@
 extern "C" void LoadScene(const char *filename) {
   ECSManager::getInstance().loadScene(filename);
 }
+extern "C" void Game_Update();
 extern "C" void Initialize() { Core::getInstance().initialize(); }
 extern "C" bool Open() { return Core::getInstance().open(); };
 extern "C" void Update() { Core::getInstance().update(); };
+extern "C" void Start() {
+  emscripten_set_main_loop(&Game_Update, 0, 1);
+}
+
 
 bool Core::initialize() {
   std::cout << "[core] Initialize" << std::endl;
+
   if (Window::getInstance().start() && Window::getInstance().open()) {
     m_ECSManager = &ECSManager::getInstance();
     m_ECSManager->initializeSystems();
@@ -41,6 +47,7 @@ bool Core::initialize() {
 
   return true;
 }
+
 
 float &Core::getDeltaTime() {
   m_currentTime = glfwGetTime();

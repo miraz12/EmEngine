@@ -1,20 +1,27 @@
-file(WRITE null.cpp "")
-add_library(exts STATIC null.cpp)
-target_compile_options(
-  exts
-  INTERFACE -Wno-unused-variable # Disable warnings for unused variables
-            -Wno-deprecated-declarations # Disable warnings for deprecated
-                                         # declarations
-)
+add_library(exts INTERFACE null.cpp)
 
 if(NOT DEFINED EMSCRIPTEN)
 
   find_package(OpenGL REQUIRED)
+  
+  set(GLFW_BUILD_DOCS
+      OFF
+      CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_TESTS
+      OFF
+      CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_EXAMPLES
+      OFF
+      CACHE BOOL "" FORCE)
+  add_subdirectory(glfw)
 
 endif()
 
+ # GLFW
+target_include_directories(exts SYSTEM INTERFACE glfw/include)
+
 # GLAD
-add_library(glad STATIC glad/src/glad.c glad/include/glad/glad.h)
+add_library(glad glad/src/glad.c glad/include/glad/glad.h)
 target_include_directories(glad PUBLIC glad/include)
 
 # Bullet3
@@ -43,7 +50,7 @@ target_include_directories(exts SYSTEM INTERFACE googletest/src)
 
 # IMGUI
 add_library(
-  imgui STATIC
+  imgui
   imgui/imgui.cpp
   imgui/imgui_demo.cpp
   imgui/imgui_draw.cpp
@@ -57,38 +64,38 @@ add_library(
   imgui/backends/imgui_impl_glfw.cpp
   imgui/backends/imgui_impl_opengl3.h
   imgui/backends/imgui_impl_opengl3.cpp)
-target_include_directories(imgui PUBLIC imgui)
+target_include_directories(imgui PUBLIC imgui glfw/include )
 
 # IMGUIZMO
-add_library(
-  imguizmo STATIC
-  ImGuizmo/GraphEditor.cpp
-  ImGuizmo/GraphEditor.h
-  ImGuizmo/ImCurveEdit.cpp
-  ImGuizmo/ImCurveEdit.h
-  ImGuizmo/ImGradient.cpp
-  ImGuizmo/ImGradient.h
-  ImGuizmo/ImGuizmo.cpp
-  ImGuizmo/ImGuizmo.h
-  ImGuizmo/ImSequencer.cpp
-  ImGuizmo/ImSequencer.h
-  ImGuizmo/ImZoomSlider.h)
-target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
+# add_library(
+#   imguizmo
+#   ImGuizmo/GraphEditor.cpp
+#   ImGuizmo/GraphEditor.h
+#   ImGuizmo/ImCurveEdit.cpp
+#   ImGuizmo/ImCurveEdit.h
+#   ImGuizmo/ImGradient.cpp
+#   ImGuizmo/ImGradient.h
+#   ImGuizmo/ImGuizmo.cpp
+#   ImGuizmo/ImGuizmo.h
+#   ImGuizmo/ImSequencer.cpp
+#   ImGuizmo/ImSequencer.h
+#   ImGuizmo/ImZoomSlider.h)
+# target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
 
 # Header only
-target_include_directories(exts PUBLIC header_only)
+target_include_directories(exts INTERFACE header_only)
 
 target_link_libraries(
   exts
-  PUBLIC glfw
+  INTERFACE glfw
          ${OPENGL_LIBRARIES}
          glm
          imgui
          BulletDynamics
          BulletCollision
          LinearMath
-         yaml-cpp
-         imguizmo)
+         yaml-cpp)
+         #imguizmo)
 
 if(NOT DEFINED EMSCRIPTEN)
   target_link_libraries(exts PUBLIC glad)

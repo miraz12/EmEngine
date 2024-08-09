@@ -26,7 +26,7 @@ glm::vec4 AnimationSampler::cubicSplineInterpolation(size_t index, float time,
   //   +
   //           ((-2.f * t3 + 3.f * t2) * p1) + ((t3 - t2) * m0);
   // }
-  // return pt;
+   return glm::vec4();
 }
 
 // Calculates the translation of this sampler for the given node at a given time

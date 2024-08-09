@@ -2,6 +2,8 @@ using System;
 using Input;
 using FunctionsSetup;
 using Entities;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 public class Game
 {
@@ -12,9 +14,6 @@ public class Game
     {
         Console.WriteLine("Hello World!");
         Game.Instance.Initialize();
-        while (NativeMethods.Open()) {
-           Game.Instance.Update(0);
-        }
     }
 
     private static readonly Lazy<Game> lazy =
@@ -31,11 +30,12 @@ public class Game
     {
         NativeMethods.Initialize();
         NativeMethods.LoadScene("resources/scene.yaml");
+        NativeMethods.Start();
     }
 
-    public void Update(float dt)
+    [UnmanagedCallersOnly(EntryPoint = "Game_Update")]
+    public static void Update()
     {
-
         NativeMethods.Update();
         // inputManager.Update(dt);
     }
