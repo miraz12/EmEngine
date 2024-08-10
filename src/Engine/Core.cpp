@@ -11,9 +11,14 @@ extern "C" void Initialize() { Core::getInstance().initialize(); }
 extern "C" bool Open() { return Core::getInstance().open(); };
 extern "C" void Update() { Core::getInstance().update(); };
 extern "C" void Start() {
-  emscripten_set_main_loop(&Game_Update, 0, 1);
+#ifdef EMSCRIPTEN
+    emscripten_set_main_loop(&Game_Update, 0, 1);
+#else
+    while (Core::getInstance().open()) {
+      Game_Update();
+    }
+#endif
 }
-
 
 bool Core::initialize() {
   std::cout << "[core] Initialize" << std::endl;
