@@ -5,15 +5,15 @@ void ECSManager::initializeSystems() {
   m_systems["POSITION"] = &PositionSystem::getInstance();
   m_systems["PARTICLES"] = &ParticleSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
-  for (const auto &[key, value] : m_systems) {
-    value->initialize(*this);
+  for (const auto &[name, system] : m_systems) {
+    system->initialize(*this);
   }
 }
 
 void ECSManager::update(float dt) {
   // update all systems
-  for (const auto &[key, value] : m_systems) {
-    value->update(dt);
+  for (const auto &[name, system] : m_systems) {
+    system->update(dt);
   }
 }
 

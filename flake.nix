@@ -25,7 +25,19 @@
           zlib
           zlib.dev
           openssl
+          icu
           dotnetPkg
+          glfw
+          glm
+          xorg.libX11
+          xorg.libXrandr
+          xorg.libXinerama
+          xorg.libXcursor
+          xorg.libXi
+          xorg.libXext
+          wayland
+          wayland-protocols
+          libxkbcommon
         ];
       in
       {
@@ -42,10 +54,12 @@
               ninja
               gdb
               libGL
-              glfw
               omnisharp-roslyn
               nodejs
               lld
+              tree-sitter
+              tree-sitter-grammars.tree-sitter-cpp
+              tree-sitter-grammars.tree-sitter-c-sharp
             ] ++ deps;
 
             NIX_LD_LIBRARY_PATH = lib.makeLibraryPath ([ stdenv.cc.cc ] ++ deps);

@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
 project(emEngine)
 # Generate compile_commands.json for LSP
-#set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-#if(CMAKE_EXPORT_COMPILE_COMMANDS)
-#  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
-#      ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-#endif()
-#set(EMCC_DEBUG 1)
-#set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+if(UNIX)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+  if(CMAKE_EXPORT_COMPILE_COMMANDS)
+    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
+        ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+  endif()
+endif()
+# set(EMCC_DEBUG 1) set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
 # Add external libs
 add_subdirectory(exts)
@@ -17,11 +18,8 @@ add_subdirectory(src/Game)
 include_directories(${CMAKE_SYSROOT}/include)
 include_directories(${CMAKE_SYSROOT}/include/c++/v1)
 
-if(NOT DEFINED EMSCRIPTEN)
-  # Enable testing
-  enable_testing()
-  add_subdirectory(tests)
-endif()
+# if(NOT DEFINED EMSCRIPTEN) Enable testing enable_testing()
+# add_subdirectory(tests) endif()
 
 # Creaty executable add_executable(${PROJECT_NAME}
 # ${CMAKE_SOURCE_DIR}/src/main.cpp) target_precompile_headers(${PROJECT_NAME}
@@ -50,22 +48,11 @@ endif()
 set_property(GLOBAL PROPERTY CXX_STANDARD 17)
 
 if(DEFINED EMSCRIPTEN)
-  # target_compile_options(
-  #   ${PROJECT_NAME}
-  #   PRIVATE -pedantic
-  #           -Wall
-  #           -Wextra
-  #           -O2
-  #           -Werror
-  #           -fno-exceptions
-  #           -flto
-  #           -ffast-math)
+  # target_compile_options( ${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra -O2
+  # -Werror -fno-exceptions -flto -ffast-math)
 
-  # set_target_properties(
-  #   ${PROJECT_NAME}
-  #   PROPERTIES
-  #     SUFFIX ".html"
-  #     LINK_FLAGS
-  #     "../../resources --bind -sFULL_ES2 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources  -sFORCE_FILESYSTEM"
-  # )
+  # set_target_properties( ${PROJECT_NAME} PROPERTIES SUFFIX ".html" LINK_FLAGS
+  # "../../resources --bind -sFULL_ES2 -sUSE_GLFW=3 -sWASM=1
+  # -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources
+  # -sFORCE_FILESYSTEM" )
 endif(DEFINED EMSCRIPTEN)

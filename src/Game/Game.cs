@@ -9,15 +9,14 @@ public class Game
 {
     private InputManager inputManager;
     public Player player;
+    private static readonly Lazy<Game> lazy =
+        new Lazy<Game>(() => new Game());
+    public static Game Instance { get { return lazy.Value; } }
 
     static void Main(string[] args)
     {
         Game.Instance.Initialize();
     }
-
-    private static readonly Lazy<Game> lazy =
-        new Lazy<Game>(() => new Game());
-    public static Game Instance { get { return lazy.Value; } }
 
     private Game()
     {

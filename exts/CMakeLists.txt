@@ -3,7 +3,8 @@ add_library(exts INTERFACE null.cpp)
 if(NOT DEFINED EMSCRIPTEN)
 
   find_package(OpenGL REQUIRED)
-  
+
+  # set(GLFW_USE_WAYLAND ON) set(GLFW_USE_X11 OFF)
   set(GLFW_BUILD_DOCS
       OFF
       CACHE BOOL "" FORCE)
@@ -17,7 +18,7 @@ if(NOT DEFINED EMSCRIPTEN)
 
 endif()
 
- # GLFW
+# GLFW
 target_include_directories(exts SYSTEM INTERFACE glfw/include)
 
 # GLAD
@@ -64,22 +65,12 @@ add_library(
   imgui/backends/imgui_impl_glfw.cpp
   imgui/backends/imgui_impl_opengl3.h
   imgui/backends/imgui_impl_opengl3.cpp)
-target_include_directories(imgui PUBLIC imgui glfw/include )
+target_include_directories(imgui PUBLIC imgui glfw/include)
 
-# IMGUIZMO
-# add_library(
-#   imguizmo
-#   ImGuizmo/GraphEditor.cpp
-#   ImGuizmo/GraphEditor.h
-#   ImGuizmo/ImCurveEdit.cpp
-#   ImGuizmo/ImCurveEdit.h
-#   ImGuizmo/ImGradient.cpp
-#   ImGuizmo/ImGradient.h
-#   ImGuizmo/ImGuizmo.cpp
-#   ImGuizmo/ImGuizmo.h
-#   ImGuizmo/ImSequencer.cpp
-#   ImGuizmo/ImSequencer.h
-#   ImGuizmo/ImZoomSlider.h)
+# IMGUIZMO add_library( imguizmo ImGuizmo/GraphEditor.cpp ImGuizmo/GraphEditor.h
+# ImGuizmo/ImCurveEdit.cpp ImGuizmo/ImCurveEdit.h ImGuizmo/ImGradient.cpp
+# ImGuizmo/ImGradient.h ImGuizmo/ImGuizmo.cpp ImGuizmo/ImGuizmo.h
+# ImGuizmo/ImSequencer.cpp ImGuizmo/ImSequencer.h ImGuizmo/ImZoomSlider.h)
 # target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
 
 # Header only
@@ -88,15 +79,15 @@ target_include_directories(exts INTERFACE header_only)
 target_link_libraries(
   exts
   INTERFACE glfw
-         ${OPENGL_LIBRARIES}
-         glm
-         imgui
-         BulletDynamics
-         BulletCollision
-         LinearMath
-         yaml-cpp)
-         #imguizmo)
+            ${OPENGL_LIBRARIES}
+            glm
+            imgui
+            BulletDynamics
+            BulletCollision
+            LinearMath
+            yaml-cpp)
+# imguizmo)
 
 if(NOT DEFINED EMSCRIPTEN)
-  target_link_libraries(exts PUBLIC glad)
+  target_link_libraries(exts INTERFACE glad)
 endif()
