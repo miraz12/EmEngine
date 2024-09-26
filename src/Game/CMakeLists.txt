@@ -5,7 +5,8 @@ if(NOT DEFINED EMSCRIPTEN)
   # Add custom target to publish the .NET project
   add_custom_target(
     PublishDotNet ALL
-    COMMAND dotnet publish -r linux-x64 -c Release --packages .nuget/
+    COMMAND rm -r bin && dotnet publish -r linux-x64 -c Release --packages
+            .nuget/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS Engine
     COMMENT "Publishing .NET Native AOT project")

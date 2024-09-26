@@ -6,6 +6,9 @@
 extern "C" void LoadScene(const char *filename) {
   ECSManager::getInstance().loadScene(filename);
 }
+
+extern "C" void ClearPressed();
+extern "C" int GetPressed(int *vec);
 extern "C" void Game_Update();
 extern "C" void Initialize() { Core::getInstance().initialize(); }
 extern "C" bool Open() { return Core::getInstance().open(); };

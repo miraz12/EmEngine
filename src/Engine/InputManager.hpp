@@ -24,7 +24,7 @@ public:
   InputManager();
   ~InputManager() = default;
 
-  void update() { m_active.clear(); };
+  void update(float dt);
   void handleInput(i32 key, i32 action);
   void handleAction(KEY key, i32 action);
   void setMousePos(double x, double y);
@@ -36,6 +36,10 @@ public:
 private:
   i32 m_mousePosX;
   i32 m_mousePosY;
+  double lastX;
+  double lastY;
+  double m_pitch{0.0f};
+  double m_yaw{-90.0f};
   std::unordered_map<KEY, bool> m_keys;
 };
 

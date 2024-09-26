@@ -26,6 +26,11 @@ public:
     m_matrixNeedsUpdate = true;
   };
 
+  void setFront(glm::vec3 v) {
+    m_front = v;
+    m_matrixNeedsUpdate = true;
+  };
+
   void setSize(u32 w, u32 h) {
     m_width = w;
     m_height = h;

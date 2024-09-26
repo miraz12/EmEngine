@@ -19,6 +19,11 @@ bool Core::initialize() {
   Window::getInstance().setMouseButtonCallback(
       [](GLFWwindow * /* win */, i32 button, i32 action, i32 /* mods */) {
         InputManager::getInstance().handleInput(button, action);
+
+        double xpos;
+        double ypos;
+        glfwGetCursorPos(Window::getInstance().getWindow(), &xpos, &ypos);
+        InputManager::getInstance().setMousePos(xpos, ypos);
       });
   Window::getInstance().setKeyCallback([](GLFWwindow * /* win */, i32 key,
                                           i32 /* scancode */, i32 action,
@@ -58,8 +63,8 @@ void Core::update() {
   glfwPollEvents();
 
   float &dt = getDeltaTime();
+  InputManager::getInstance().update(dt);
   ECSManager::getInstance().update(dt);
-  InputManager::getInstance().update();
   Window::getInstance().swap();
 }
 

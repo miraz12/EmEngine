@@ -16,5 +16,9 @@ namespace FunctionsSetup
         public static extern void Update();
         [DllImport("Engine", EntryPoint = "Start")]
         public static extern void Start();
+        [DllImport("Engine", EntryPoint = "GetPressed")]
+        public static extern int GetPressed(out IntPtr vec);
+        [DllImport("Engine", EntryPoint = "ClearPressed")]
+        public static extern void ClearPressed();
     }
 }

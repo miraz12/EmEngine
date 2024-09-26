@@ -7,7 +7,7 @@ using System.Threading;
 
 public class Game
 {
-    private InputManager inputManager;
+    public InputManager inputManager;
     public Player player;
     private static readonly Lazy<Game> lazy =
         new Lazy<Game>(() => new Game());
@@ -35,7 +35,7 @@ public class Game
     public static void Update()
     {
         NativeMethods.Update();
-        // inputManager.Update(dt);
+        Game.Instance.inputManager.Update();
     }
 
 }

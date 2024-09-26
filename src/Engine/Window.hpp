@@ -25,6 +25,8 @@ public:
   void setFramebufferSizeCallback(void (*callback)(GLFWwindow *window,
                                                    i32 width, i32 height));
 
+  GLFWwindow *getWindow() { return m_window; };
+
 private:
   u32 m_width = 800;
   u32 m_height = 800;
