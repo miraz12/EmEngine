@@ -29,6 +29,7 @@ endif(DEFINED EMSCRIPTEN)
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+
 target_link_libraries(Engine PUBLIC exts)
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
 
@@ -43,7 +44,7 @@ target_compile_options(
     -g3
     -O0>
     $<$<CXX_COMPILER_ID:MSVC>:
-    /W4;>>)
+    /W4 /MTd;>>)
 target_compile_options(
   Engine
   PRIVATE
@@ -55,7 +56,7 @@ target_compile_options(
     -O3
     -Werror>
     $<$<CXX_COMPILER_ID:MSVC>:
-    /W4;>>)
+    /W4 /MT;>>)
 
 set_target_properties(
   Engine

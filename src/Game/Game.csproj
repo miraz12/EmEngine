@@ -9,15 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="9.0.0-*" /> -->
+    <!-- <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" Version="9.0.0-*" /> -->
     <DirectPInvoke Include="Engine" />
     <!-- Specify library to link against -->
     <NativeLibrary Include="../../resources/lib/libEngine.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="../../resources/lib/Engine.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="../../resources/lib/glfw3.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="user32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="gdi32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
+
     <LinkerArg Include="-lstdc++ -lX11 -lglfw " Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="8.0.8" /> -->
-  </ItemGroup>
 
 </Project>
 
