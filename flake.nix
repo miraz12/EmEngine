@@ -27,7 +27,6 @@
           openssl
           icu
           dotnetPkg
-          glfw
           glm
           xorg.libX11
           xorg.libXrandr
@@ -38,6 +37,8 @@
           wayland
           wayland-protocols
           libxkbcommon
+          libGL
+          glfw
         ];
       in
       {
@@ -53,7 +54,6 @@
               python3
               ninja
               gdb
-              libGL
               omnisharp-roslyn
               nodejs
               lld

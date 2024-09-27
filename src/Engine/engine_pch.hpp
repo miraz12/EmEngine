@@ -72,7 +72,7 @@
 #include <tiny_gltf.h>
 
 // ImGuizmo
-//#include <ImGuizmo.h>
+#include <ImGuizmo.h>
 
 // yaml-cpp
 #include <yaml-cpp/yaml.h>

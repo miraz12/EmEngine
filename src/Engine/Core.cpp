@@ -10,20 +10,23 @@ bool Core::initialize() {
     m_ECSManager = &ECSManager::getInstance();
     m_ECSManager->initializeSystems();
     m_prevTime = glfwGetTime();
+  } else {
+    return false;
   }
 
   Window::getInstance().setCursorPosCallback(
-      [](GLFWwindow * /* win */, double xpos, double ypos) -> void {
+      [](GLFWwindow * /* win */, double xpos, double ypos) {
         InputManager::getInstance().setMousePos(xpos, ypos);
+        ImGuiIO &io = ImGui::GetIO();
+        io.AddMousePosEvent(xpos, ypos);
       });
   Window::getInstance().setMouseButtonCallback(
       [](GLFWwindow * /* win */, i32 button, i32 action, i32 /* mods */) {
-        InputManager::getInstance().handleInput(button, action);
-
-        double xpos;
-        double ypos;
-        glfwGetCursorPos(Window::getInstance().getWindow(), &xpos, &ypos);
-        InputManager::getInstance().setMousePos(xpos, ypos);
+        ImGuiIO &io = ImGui::GetIO();
+        io.AddMouseButtonEvent(button, action);
+        if (!io.WantCaptureMouse) {
+          InputManager::getInstance().handleInput(button, action);
+        }
       });
   Window::getInstance().setKeyCallback([](GLFWwindow * /* win */, i32 key,
                                           i32 /* scancode */, i32 action,
@@ -62,6 +65,7 @@ float &Core::getDeltaTime() {
 void Core::update() {
   glfwPollEvents();
 
+  m_gui.renderGUI();
   float &dt = getDeltaTime();
   InputManager::getInstance().update(dt);
   ECSManager::getInstance().update(dt);

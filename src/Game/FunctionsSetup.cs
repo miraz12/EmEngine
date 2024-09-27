@@ -9,7 +9,7 @@ namespace FunctionsSetup
         [DllImport("Engine", EntryPoint = "LoadScene")]
         public static extern void LoadScene(string filename);
         [DllImport("Engine", EntryPoint = "Initialize")]
-        unsafe public static extern void Initialize();
+        unsafe public static extern bool Initialize();
         [DllImport("Engine", EntryPoint = "Open")]
         public static extern bool Open();
         [DllImport("Engine", EntryPoint = "Update")]

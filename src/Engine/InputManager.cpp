@@ -119,8 +119,6 @@ void InputManager::handleInput(i32 key, i32 action) {
   case GLFW_MOUSE_BUTTON_1:
     handleAction(KEY::Mouse1, action);
     break;
-  default:
-    break;
   }
 }
 

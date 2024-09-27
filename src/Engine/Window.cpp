@@ -46,7 +46,7 @@ void glfw_error(int /* error */, const char *description) {
 
 bool Window::start() {
   std::cout << "[window] Start" << std::endl;
-  //glfwSetErrorCallback(glfw_error);
+  // glfwSetErrorCallback(glfw_error);
 
   if (glfwInit()) {
 #ifdef _DEBUG_
@@ -79,19 +79,6 @@ bool Window::open() {
   }
   glfwMakeContextCurrent(m_window);
   glfwSwapInterval(0);
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
-
-  io.IniFilename = NULL;
-
-  // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
-
-  // Setup Platform/Renderer backends
-  ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-  ImGui_ImplOpenGL3_Init("#version 300 es");
 
 #ifndef EMSCRIPTEN
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -99,6 +86,22 @@ bool Window::open() {
     return false;
   }
 #endif
+
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.IniFilename = NULL;
+
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+#ifdef __EMSCRIPTEN__
+  ImGui_ImplGlfw_InstallEmscriptenCallbacks(m_window, "#canvas");
+#endif
+  ImGui_ImplOpenGL3_Init("#version 300 es");
 
 #ifdef _DEBUG_
   glEnable(GL_DEBUG_OUTPUT);
@@ -117,7 +120,8 @@ bool Window::close() {
 }
 
 void Window::swap() {
-  // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   glfwSwapBuffers(m_window);
 }
 

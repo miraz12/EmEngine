@@ -26,9 +26,11 @@ public class Game
 
     public void Initialize()
     {
-        NativeMethods.Initialize();
-        NativeMethods.LoadScene("resources/scene.yaml");
-        NativeMethods.Start();
+        if (NativeMethods.Initialize())
+        {
+            NativeMethods.LoadScene("resources/scene.yaml");
+            NativeMethods.Start();
+        }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "Game_Update")]

@@ -187,7 +187,7 @@ private:
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
   std::unordered_map<Entity, Signature> m_entityComponentMasks;
 
-  size_t m_entityCount{0};
+  size_t m_entityCount{1};
   size_t m_nextComponentTypeID{0};
   Entity m_pickedEntity{0};
   bool m_entitySelected{false};

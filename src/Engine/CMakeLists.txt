@@ -21,6 +21,7 @@ else()
     $<TARGET_OBJECTS:yaml-cpp>
     # $<TARGET_OBJECTS:glm>
     $<TARGET_OBJECTS:imgui>
+    $<TARGET_OBJECTS:imguizmo>
     $<TARGET_OBJECTS:BulletCollision>
     $<TARGET_OBJECTS:BulletDynamics>
     $<TARGET_OBJECTS:LinearMath>
