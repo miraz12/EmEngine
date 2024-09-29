@@ -21,11 +21,11 @@ public:
   std::string m_alphaMode{"OPAQUE"};
   std::vector<std::string> m_textures;
 
-  std::string m_baseColorTexture;
-  std::string m_metallicRoughnessTexture;
+  std::string m_baseColorTexture{"black_default"};
+  std::string m_metallicRoughnessTexture{"black_default"};
   std::string m_emissiveTexture{"black_default"};
-  std::string m_occlusionTexture;
-  std::string m_normalTexture;
+  std::string m_occlusionTexture{"black_default"};
+  std::string m_normalTexture{};
 };
 
 #endif // MATERIAL_H_

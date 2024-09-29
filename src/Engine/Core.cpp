@@ -37,7 +37,7 @@ bool Core::initialize() {
     InputManager::getInstance().handleInput(key, action);
   });
   Window::getInstance().setFramebufferSizeCallback(
-      [](GLFWwindow * /* win */, i32 width, i32 height) -> void {
+      [](GLFWwindow * /* win */, i32 width, i32 height) {
         ECSManager::getInstance().setViewport(width, height);
       });
 

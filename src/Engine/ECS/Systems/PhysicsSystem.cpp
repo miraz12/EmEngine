@@ -107,6 +107,29 @@ void PhysicsSystem::update(float dt) {
         phy->init();
       }
     }
+  } else {
+    std::vector<Entity> view =
+        m_manager->view<PositionComponent, PhysicsComponent>();
+    for (auto e : view) {
+      if (e == m_manager->getEntitySelected()) {
+        std::shared_ptr<PositionComponent> p =
+            m_manager->getComponent<PositionComponent>(e);
+        std::shared_ptr<PhysicsComponent> phy =
+            m_manager->getComponent<PhysicsComponent>(e);
+
+        // Update bullet
+        btTransform btTrans;
+        btTrans.setFromOpenGLMatrix(glm::value_ptr(p->model));
+
+        btRigidBody *body = phy->getRigidBody();
+        body->setWorldTransform(btTrans);
+
+        // Recalculate aabbs
+        btCollisionWorld *collisionWorld = m_dynamicsWorld->getCollisionWorld();
+        collisionWorld->updateAabbs();
+        collisionWorld->computeOverlappingPairs();
+      }
+    }
   }
 }
 void PhysicsSystem::performPicking(i32 mouseX, i32 mouseY) {
@@ -142,5 +165,6 @@ void PhysicsSystem::performPicking(i32 mouseX, i32 mouseY) {
     }
   } else {
     m_manager->setEntitySelected(false);
+    m_manager->setPickedEntity(0);
   }
 }
