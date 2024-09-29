@@ -58,8 +58,7 @@ vec3 getNormal() {
       b = cross(ng, t);
     } else {
        ng = normalize(cross(dFdx(pPosition), dFdy(pPosition)));
-       t = normalize(t_ - ng * dot(ng, t_));
-       b = cross(ng, t);
+       return ng;
     }
 
     // For a back-facing surface, the tangential basis vectors are negated.
