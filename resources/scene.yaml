@@ -17,6 +17,8 @@
       scale: [1, 1, 1]
     - type: Par
       velocity: [0, 5, 0]
+    - type: Phy
+      mass: 0
 - entity: map
   components:
     - type: Pos
