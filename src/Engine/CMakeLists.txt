@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/resources/lib/)
-
 # Add source files
 file(GLOB_RECURSE ENGINE_FILES ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
      ${CMAKE_SOURCE_DIR}/src/Engine/*.hpp)
@@ -29,7 +27,11 @@ else()
 endif(DEFINED EMSCRIPTEN)
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
+set_target_properties(
+  Engine
+  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
 target_link_libraries(Engine PUBLIC exts)
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
