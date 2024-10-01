@@ -9,10 +9,10 @@ struct AnimationSampler {
   std::vector<float> inputs;
   std::vector<glm::vec4> outputsVec4;
   std::vector<float> outputs;
+  glm::vec3 translate(size_t index, float time);
+  glm::vec3 scale(size_t index, float time);
+  glm::quat rotate(size_t index, float time);
   glm::vec4 cubicSplineInterpolation(size_t index, float time, uint32_t stride);
-  void translate(size_t index, float time, Node *node);
-  void scale(size_t index, float time, Node *node);
-  void rotate(size_t index, float time, Node *node);
 };
 
 struct AnimationChannel {

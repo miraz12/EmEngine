@@ -24,7 +24,6 @@ private:
 
   btTriangleMesh *m_mesh;
   std::vector<std::string> m_texIds;
-  std::vector<Animation> m_animations;
   std::string m_filename;
 };
 

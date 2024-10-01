@@ -5,6 +5,7 @@ void ECSManager::initializeSystems() {
   m_systems["POSITION"] = &PositionSystem::getInstance();
   m_systems["PARTICLES"] = &ParticleSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
+  m_systems["ANIMATION"] = &AnimationSystem::getInstance();
   for (const auto &[name, system] : m_systems) {
     system->initialize(*this);
   }

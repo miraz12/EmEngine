@@ -1,4 +1,5 @@
 #include "SceneLoader.hpp"
+#include "ECS/Components/AnimationComponent.hpp"
 #include "ECS/Components/ParticlesComponent.hpp"
 #include "ECS/ECSManager.hpp"
 #include "Objects/Cube.hpp"
@@ -44,6 +45,11 @@ void SceneLoader::init(const char *file) {
                       "resources/Models/" +
                       components[i]["file"].as<std::string>()));
               graphComp->type = GraphicsComponent::TYPE::MESH;
+              if (graphComp->m_grapObj->hasAnimation()) {
+                std::shared_ptr<AnimationComponent> animComp =
+                    std::make_shared<AnimationComponent>();
+                m_ecsMan->addComponents(en, animComp);
+              }
             } else if (components[i]["primitive"].as<std::string>() ==
                        "Heightmap") {
               std::string name = "resources/Textures/" +

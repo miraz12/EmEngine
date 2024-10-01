@@ -304,11 +304,14 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
 
 void GltfObject::loadAnimation(tinygltf::Model &model) {
   std::cout << "Num animations: " << model.animations.size() << std::endl;
+  p_numAnimations = model.animations.size();
+  p_animations = std::make_unique<Animation[]>(p_numAnimations);
+  u32 animCount = 0;
   for (tinygltf::Animation &anim : model.animations) {
-    Animation animation{};
+    Animation animation;
     animation.name = anim.name;
     if (anim.name.empty()) {
-      animation.name = std::to_string(m_animations.size());
+      animation.name = std::to_string(p_numAnimations);
     }
 
     // Samplers
@@ -317,11 +320,9 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
 
       if (samp.interpolation == "LINEAR") {
         sampler.interpolation = AnimationSampler::InterpolationType::LINEAR;
-      }
-      if (samp.interpolation == "STEP") {
+      } else if (samp.interpolation == "STEP") {
         sampler.interpolation = AnimationSampler::InterpolationType::STEP;
-      }
-      if (samp.interpolation == "CUBICSPLINE") {
+      } else if (samp.interpolation == "CUBICSPLINE") {
         sampler.interpolation =
             AnimationSampler::InterpolationType::CUBICSPLINE;
       }
@@ -414,15 +415,14 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
         continue;
       }
       channel.samplerIndex = source.sampler;
-      // channel.node = nodeFromIndex(source.target_node);
-      if (!channel.node) {
-        continue;
-      }
+      // if (!channel.node) {
+      //   continue;
+      // }
 
       animation.channels.push_back(channel);
     }
 
-    m_animations.push_back(animation);
+    p_animations[animCount++] = animation;
   }
 }
 

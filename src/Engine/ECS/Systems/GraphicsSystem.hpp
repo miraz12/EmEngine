@@ -7,16 +7,16 @@
 #include <Managers/FrameBufferManager.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 
-class GraphicsSystem : public System, public Singleton<GraphicsSystem> {
+class GraphicsSystem final : public System, public Singleton<GraphicsSystem> {
   friend class Singleton<GraphicsSystem>;
 
 public:
   void update(float dt) override;
-  virtual void setViewport(u32 w, u32 h);
+  void setViewport(u32 w, u32 h);
 
 private:
   GraphicsSystem();
-  ~GraphicsSystem();
+  ~GraphicsSystem() override;
   FrameBufferManager &m_fboManager;
   FrameGraph &m_fGraph;
 };

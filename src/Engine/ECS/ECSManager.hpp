@@ -9,6 +9,7 @@
 #include "Components/LightingComponent.hpp"
 #include "Components/PhysicsComponent.hpp"
 #include "Components/PositionComponent.hpp"
+#include "Systems/AnimationSystem.hpp"
 #include "Systems/GraphicsSystem.hpp"
 #include "Systems/ParticleSystem.hpp"
 #include "Systems/PhysicsSystem.hpp"

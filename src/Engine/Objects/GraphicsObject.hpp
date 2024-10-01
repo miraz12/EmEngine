@@ -18,8 +18,8 @@ public:
   virtual void draw(const ShaderProgram &sPrg);
   virtual void drawGeom(const ShaderProgram &sPrg);
   btCollisionShape *p_coll;
+  bool hasAnimation() { return p_numAnimations > 0; };
 
-protected:
   glm::mat4 p_modelMatrix = glm::identity<glm::mat4>();
   std::vector<std::unique_ptr<Node>> p_nodes;
   u32 p_numMats{0};

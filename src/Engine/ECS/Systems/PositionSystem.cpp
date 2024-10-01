@@ -7,9 +7,11 @@ void PositionSystem::update(float /* dt */) {
   for (auto e : view) {
     std::shared_ptr<PositionComponent> p =
         m_manager->getComponent<PositionComponent>(e);
-    glm::mat4 tempMatrix = glm::scale(glm::identity<glm::mat4>(), p->scale);
-    tempMatrix = glm::translate(tempMatrix, p->position);
-    tempMatrix *= glm::mat4_cast(p->rotation);
-    p->model = tempMatrix;
+
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), p->position);
+    glm::mat4 rotationMatrix = glm::mat4_cast(p->rotation);
+    glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), p->scale);
+
+    p->model = translationMatrix * rotationMatrix * scaleMatrix;
   }
 }
