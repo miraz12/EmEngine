@@ -2,10 +2,11 @@
 #define SKIN_H_
 
 class Skin {
+public:
   std::string name;
-  // Node *skeletonRoot = nullptr;
+  u32 skeletonRoot = 0;
   std::vector<glm::mat4> inverseBindMatrices;
-  // std::vector<Node *> joints;
+  std::vector<i32> joints;
 };
 
 #endif // SKIN_H_

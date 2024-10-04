@@ -18,7 +18,7 @@ struct AnimationSampler {
 struct AnimationChannel {
   enum class PathType { TRANSLATION, ROTATION, SCALE };
   PathType path;
-  Node *node;
+  u32 node;
   uint32_t samplerIndex;
 };
 

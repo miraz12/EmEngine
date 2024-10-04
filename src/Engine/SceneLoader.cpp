@@ -45,7 +45,7 @@ void SceneLoader::init(const char *file) {
                       "resources/Models/" +
                       components[i]["file"].as<std::string>()));
               graphComp->type = GraphicsComponent::TYPE::MESH;
-              if (graphComp->m_grapObj->hasAnimation()) {
+              if (graphComp->m_grapObj->p_numAnimations > 0) {
                 std::shared_ptr<AnimationComponent> animComp =
                     std::make_shared<AnimationComponent>();
                 m_ecsMan->addComponents(en, animComp);

@@ -1,3 +1,4 @@
+#include "Rendering/Skin.hpp"
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -57,41 +58,47 @@ void GltfObject::loadModel(tinygltf::Model &model) {
   loadMaterials(model);
   loadMeshes(model);
   loadAnimation(model);
+  loadSkins(model);
 
   const tinygltf::Scene &scene = model.scenes[model.defaultScene];
-  for (auto &n : scene.nodes) {
-    loadNode(model, model.nodes[n], glm::identity<glm::mat4>());
+  for (auto &n : model.nodes) {
+    p_nodes.push_back(std::make_unique<Node>());
+  }
+  for (u32 i = 0; i < model.nodes.size(); i++) {
+    loadNode(model, model.nodes[i], i);
   }
 }
 
 void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node,
-                          glm::mat4 mat) {
-  glm::mat4 modelMat = mat;
+                          u32 nodeIdx) {
+
+  p_nodes[nodeIdx]->mesh = node.mesh;
+  p_nodes[nodeIdx]->skin = node.skin;
+  p_nodes[nodeIdx]->name = node.name;
+  p_nodes[nodeIdx]->nodeMat = glm::mat4(1.0f);
+
+  p_nodes[nodeIdx]->nodeMat =
+      glm::mat4(1.0f); // Identity matrix for local transformation
+
   if (!node.matrix.empty()) {
-    modelMat *= glm::mat4(node.matrix[0]);
-  }
-  if (!node.rotation.empty()) {
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[0]),
-                           glm::vec3(1.0, 0.0, 0.0));
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[1]),
-                           glm::vec3(0.0, 1.0, 0.0));
-    modelMat = glm::rotate(modelMat, (float)(node.rotation[2]),
-                           glm::vec3(0.0, 0.0, 1.0));
-  }
-  if (!node.scale.empty()) {
-    modelMat = glm::scale(
-        modelMat, glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
-  }
-  if (!node.translation.empty()) {
-    modelMat = glm::translate(modelMat, glm::vec3(node.translation[0],
-                                                  node.translation[1],
-                                                  node.translation[2]));
-  }
-  if (node.mesh >= 0) {
-    newNode(modelMat);
+    p_nodes[nodeIdx]->nodeMat = glm::make_mat4x4(node.matrix.data());
+  } else {
+    if (!node.translation.empty()) {
+      p_nodes[nodeIdx]->trans = glm::vec3(
+          node.translation[0], node.translation[1], node.translation[2]);
+    }
+    if (!node.rotation.empty()) {
+      glm::quat rotationQuat(node.rotation[3], node.rotation[0],
+                             node.rotation[1], node.rotation[2]);
+      p_nodes[nodeIdx]->rot = rotationQuat;
+    }
+    if (!node.scale.empty()) {
+      p_nodes[nodeIdx]->scale =
+          glm::vec3(node.scale[0], node.scale[1], node.scale[2]);
+    }
   }
   for (i32 c : node.children) {
-    loadNode(model, model.nodes[c], modelMat);
+    p_nodes[c]->parent = nodeIdx;
   }
 }
 
@@ -270,6 +277,10 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
           loc = 2;
         } else if (attrib.first == "TEXCOORD_0") {
           loc = 3;
+        } else if (attrib.first == "JOINTS_0") {
+          loc = 4;
+        } else if (attrib.first == "WEIGHTS_0") {
+          loc = 5;
         }
 
         u32 vbo;
@@ -415,9 +426,10 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
         continue;
       }
       channel.samplerIndex = source.sampler;
-      // if (!channel.node) {
-      //   continue;
-      // }
+      channel.node = source.target_node;
+      if (channel.node < 0) {
+        continue;
+      }
 
       animation.channels.push_back(channel);
     }
@@ -426,51 +438,59 @@ void GltfObject::loadAnimation(tinygltf::Model &model) {
   }
 }
 
-// void GltfObject::loadSkins(tinygltf::Model &model) {
-//   for (tinygltf::Skin &source : model.skins) {
-//     Skin *newSkin = new Skin{};
-//     newSkin->name = source.name;
+void GltfObject::loadSkins(tinygltf::Model &model) {
+  p_numSkins = model.skins.size();
+  p_skins = std::make_unique<Skin[]>(p_numSkins);
 
-//     // Find skeleton root node
-//     if (source.skeleton > -1) {
-//       newSkin->skeletonRoot = nodeFromIndex(source.skeleton);
-//     }
+  u32 numSkins = 0;
+  for (tinygltf::Skin &source : model.skins) {
+    p_skins[numSkins].name = source.name;
 
-//     // Find joint nodes
-//     for (u32 jointIndex : source.joints) {
-//       Node *node = nodeFromIndex(jointIndex);
-//       if (node) {
-//         newSkin->joints.push_back(nodeFromIndex(jointIndex));
-//       }
-//     }
+    // Find skeleton root node
+    if (source.skeleton > -1) {
+      p_skins[numSkins].skeletonRoot = source.skeleton;
+    }
 
-//     // Get inverse bind matrices from buffer
-//     if (source.inverseBindMatrices > -1) {
-//       const tinygltf::Accessor &accessor =
-//           model.accessors[source.inverseBindMatrices];
-//       const tinygltf::BufferView &bufferView =
-//           model.bufferViews[accessor.bufferView];
-//       const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-//       newSkin->inverseBindMatrices.resize(accessor.count);
-//       memcpy(newSkin->inverseBindMatrices.data(),
-//              &buffer.data[accessor.byteOffset + bufferView.byteOffset],
-//              accessor.count * sizeof(glm::mat4));
-//     }
+    // Find joint nodes
+    for (i32 jointIndex : source.joints) {
+      if (jointIndex >= 0) {
+        p_skins[numSkins].joints.push_back(jointIndex);
+      }
+    }
 
-//     skins.push_back(newSkin);
-//   }
-// }
-void GltfObject::loadJoints(tinygltf::Model & /* model */) {}
+    // Get inverse bind matrices from buffer
+    if (source.inverseBindMatrices != -1) {
+      const tinygltf::Accessor &accessor =
+          model.accessors[source.inverseBindMatrices];
+      const tinygltf::BufferView &bufferView =
+          model.bufferViews[accessor.bufferView];
+      const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+
+      auto matrices = reinterpret_cast<const float *>(
+          &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+
+      for (size_t i = 0; i < accessor.count; ++i) {
+        glm::mat4 invMatrix =
+            glm::make_mat4x4(matrices + (i * 16)); // 4x4 matrix = 16 floats
+        p_skins[numSkins].inverseBindMatrices.push_back(invMatrix);
+      }
+    }
+    numSkins++;
+  }
+}
 
 void GltfObject::generateCollisionShape() {
   btConvexShape *cShape = new btConvexTriangleMeshShape(m_mesh);
   btShapeHull *cHull = new btShapeHull(cShape);
   cHull->buildHull(cShape->getMargin());
   btConvexHullShape *chShape = new btConvexHullShape();
-  cHull->numTriangles();
-  for (i32 i = 0; i < cHull->numTriangles(); ++i) {
-    chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
+  if (cHull->numTriangles() > 0) {
+
+    for (i32 i = 0; i < cHull->numTriangles(); ++i) {
+      chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
+    }
+
+    chShape->optimizeConvexHull();
   }
-  chShape->optimizeConvexHull();
   p_coll = chShape;
 }
