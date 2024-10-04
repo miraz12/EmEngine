@@ -1,4 +1,5 @@
 #include "GeometryPass.hpp"
+#include "ECS/Components/AnimationComponent.hpp"
 
 #include <ECS/ECSManager.hpp>
 #include <Managers/FrameBufferManager.hpp>
@@ -17,6 +18,8 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setUniformBinding("modelMatrix");
   p_shaderProgram.setUniformBinding("viewMatrix");
   p_shaderProgram.setUniformBinding("projMatrix");
+  p_shaderProgram.setUniformBinding("jointTransforms");
+
   p_shaderProgram.setUniformBinding("textures");
   p_shaderProgram.setUniformBinding("material");
   p_shaderProgram.setUniformBinding("alphaMode");
@@ -31,6 +34,8 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setAttribBinding("NORMAL");
   p_shaderProgram.setAttribBinding("TANGENT");
   p_shaderProgram.setAttribBinding("TEXCOORD_0");
+  p_shaderProgram.setAttribBinding("JOINTS_0");
+  p_shaderProgram.setAttribBinding("WEIGHTS_0");
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -62,6 +67,8 @@ void GeometryPass::Execute(ECSManager &eManager) {
   for (auto e : view) {
     std::shared_ptr<PositionComponent> p =
         eManager.getComponent<PositionComponent>(e);
+
+    // Check for position component and apply its model matrix
     if (p) {
       glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
                          GL_FALSE, glm::value_ptr(p->model));
@@ -72,6 +79,9 @@ void GeometryPass::Execute(ECSManager &eManager) {
 
     std::shared_ptr<GraphicsComponent> g =
         eManager.getComponent<GraphicsComponent>(e);
+    if (g->m_grapObj->hasAnimation()) {
+    }
+
     g->m_grapObj->draw(p_shaderProgram);
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

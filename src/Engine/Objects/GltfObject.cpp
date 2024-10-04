@@ -270,6 +270,12 @@ void GltfObject::loadMeshes(tinygltf::Model &model) {
           loc = 2;
         } else if (attrib.first == "TEXCOORD_0") {
           loc = 3;
+        } else if (attrib.first == "JOINTS_0") {
+          std::cout << "Loaded joints!" << std::endl;
+          loc = 4;
+        } else if (attrib.first == "WEIGHTS_0") {
+          std::cout << "Loaded weights!" << std::endl;
+          loc = 5;
         }
 
         u32 vbo;
