@@ -6,8 +6,8 @@ if(NOT EMSCRIPTEN)
   if(WIN32)
     add_custom_target(
       PublishDotNet ALL
-      COMMAND dotnet publish Game.csproj -r win-x64 -c Release
-              --packages .nuget/
+      COMMAND dotnet publish Game.csproj -r win-x64 -c Release --packages
+              .nuget/
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS Engine
       COMMENT "Publishing .NET Native AOT project")
@@ -15,7 +15,7 @@ if(NOT EMSCRIPTEN)
   if(LINUX)
     add_custom_target(
       PublishDotNet ALL
-      COMMAND rm bin -r && dotnet publish Game.csproj -r linux-x64 -c Release
+      COMMAND rm bin -r | dotnet publish Game.csproj -r linux-x64 -c Release
               --packages .nuget/
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS Engine

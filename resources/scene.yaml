@@ -6,7 +6,7 @@
       scale: [0.999999702, 0.999999404, 0.999999404]
     - type: Gra
       primitive: Mesh
-      file: gltf/helmet/DamagedHelmet.gltf
+      file: gltf/SimpleSkin/glTF/SimpleSkin.gltf
     - type: Phy
       mass: 1
 - entity: particles
