@@ -10,6 +10,10 @@ if(LINUX)
 endif()
 # set(EMCC_DEBUG 1) set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
+if(WIN32)
+  add_compile_options(
+      /W4 /MT;)
+endif()
 # Add external libs
 add_subdirectory(exts)
 add_subdirectory(src/Engine)
@@ -17,6 +21,7 @@ add_subdirectory(src/Game)
 
 include_directories(${CMAKE_SYSROOT}/include)
 include_directories(${CMAKE_SYSROOT}/include/c++/v1)
+
 
 # if(NOT DEFINED EMSCRIPTEN) Enable testing enable_testing()
 # add_subdirectory(tests) endif()

@@ -31,13 +31,13 @@ namespace Input
         {
             _game = game;
         }
-        private List<KEY> ConvertIntPtrToList(IntPtr vectorPointer, int count)
+        private List<int> ConvertIntPtrToList(IntPtr vectorPointer, int count)
         {
-            List<KEY> keys = new List<KEY>(count);
+            List<int> keys = new List<int>(count);
             for (int i = 0; i < count; i++)
             {
-                IntPtr keyPointer = IntPtr.Add(vectorPointer, i * Marshal.SizeOf<KEY>());
-                keys.Add(Marshal.PtrToStructure<KEY>(keyPointer));
+                IntPtr keyPointer = IntPtr.Add(vectorPointer, i * sizeof(int));
+                keys.Add(Marshal.PtrToStructure<int>(keyPointer));
             }
             return keys;
         }
@@ -46,12 +46,12 @@ namespace Input
         {
             IntPtr vectorPointer;
             int count = NativeMethods.GetPressed(out vectorPointer);
-            List<KEY> pressedKeys = ConvertIntPtrToList(vectorPointer, count);
+            List<int> pressedKeys = ConvertIntPtrToList(vectorPointer, count);
 
 
             foreach (var key in pressedKeys)
             {
-                switch (key)
+                switch ((KEY)key)
                 {
                     case KEY.W:
                         // _game.player.acceleration = Vector3.Add(_game.player.acceleration,

@@ -47,7 +47,7 @@ target_compile_options(
     -g3
     -O0>
     $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /MTd;>>)
+    /W4 /MT;>>)
 target_compile_options(
   Engine
   PRIVATE
