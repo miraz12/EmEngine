@@ -55,17 +55,17 @@ void AnimationSystem::update(float dt) {
               switch (channel.path) {
               case AnimationChannel::PathType::TRANSLATION: {
                 translation = sampler.translate(i, animComp->currentTime);
-                graComp->m_grapObj->p_nodes[channel.node]->trans = translation;
+                graComp->m_grapObj->p_nodes[channel.node].trans = translation;
                 break;
               }
               case AnimationChannel::PathType::SCALE: {
                 scale = sampler.scale(i, animComp->currentTime);
-                graComp->m_grapObj->p_nodes[channel.node]->scale = scale;
+                graComp->m_grapObj->p_nodes[channel.node].scale = scale;
                 break;
               }
               case AnimationChannel::PathType::ROTATION: {
                 rotation = sampler.rotate(i, animComp->currentTime);
-                graComp->m_grapObj->p_nodes[channel.node]->rot = rotation;
+                graComp->m_grapObj->p_nodes[channel.node].rot = rotation;
                 break;
               }
               }

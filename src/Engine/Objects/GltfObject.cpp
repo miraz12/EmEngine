@@ -60,10 +60,9 @@ void GltfObject::loadModel(tinygltf::Model &model) {
   loadAnimation(model);
   loadSkins(model);
 
-  const tinygltf::Scene &scene = model.scenes[model.defaultScene];
-  for (auto &n : model.nodes) {
-    p_nodes.push_back(std::make_unique<Node>());
-  }
+  p_numNodes = model.nodes.size();
+  p_nodes = std::make_unique<Node[]>(p_numNodes);
+
   for (u32 i = 0; i < model.nodes.size(); i++) {
     loadNode(model, model.nodes[i], i);
   }
@@ -72,33 +71,33 @@ void GltfObject::loadModel(tinygltf::Model &model) {
 void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node,
                           u32 nodeIdx) {
 
-  p_nodes[nodeIdx]->mesh = node.mesh;
-  p_nodes[nodeIdx]->skin = node.skin;
-  p_nodes[nodeIdx]->name = node.name;
-  p_nodes[nodeIdx]->nodeMat = glm::mat4(1.0f);
+  p_nodes[nodeIdx].mesh = node.mesh;
+  p_nodes[nodeIdx].skin = node.skin;
+  p_nodes[nodeIdx].name = node.name;
+  p_nodes[nodeIdx].nodeMat = glm::mat4(1.0f);
 
-  p_nodes[nodeIdx]->nodeMat =
+  p_nodes[nodeIdx].nodeMat =
       glm::mat4(1.0f); // Identity matrix for local transformation
 
   if (!node.matrix.empty()) {
-    p_nodes[nodeIdx]->nodeMat = glm::make_mat4x4(node.matrix.data());
+    p_nodes[nodeIdx].nodeMat = glm::make_mat4x4(node.matrix.data());
   } else {
     if (!node.translation.empty()) {
-      p_nodes[nodeIdx]->trans = glm::vec3(
+      p_nodes[nodeIdx].trans = glm::vec3(
           node.translation[0], node.translation[1], node.translation[2]);
     }
     if (!node.rotation.empty()) {
       glm::quat rotationQuat(node.rotation[3], node.rotation[0],
                              node.rotation[1], node.rotation[2]);
-      p_nodes[nodeIdx]->rot = rotationQuat;
+      p_nodes[nodeIdx].rot = rotationQuat;
     }
     if (!node.scale.empty()) {
-      p_nodes[nodeIdx]->scale =
+      p_nodes[nodeIdx].scale =
           glm::vec3(node.scale[0], node.scale[1], node.scale[2]);
     }
   }
   for (i32 c : node.children) {
-    p_nodes[c]->parent = nodeIdx;
+    p_nodes[c].parent = nodeIdx;
   }
 }
 
