@@ -1,27 +1,36 @@
 add_library(exts INTERFACE null.cpp)
 
+if(LINUX)
+  add_compile_options(-Wno-everything)
+elseif(WIN32)
+  add_compile_options(/W0 /MT;)
+endif()
+
 if(NOT DEFINED EMSCRIPTEN)
 
   find_package(OpenGL REQUIRED)
 
-
   if(WIN32)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE) 
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) 
+    set(GLFW_BUILD_DOCS
+        OFF
+        CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS
+        OFF
+        CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES
+        OFF
+        CACHE BOOL "" FORCE)
     add_subdirectory(glfw)
     # GLFW
     target_include_directories(exts SYSTEM INTERFACE glfw/include)
     set_target_properties(
       glfw
       PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
+                 LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+                 RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
   endif()
 
 endif()
-
-
 
 # GLAD
 add_library(glad glad/src/glad.c glad/include/glad/glad.h)
@@ -84,11 +93,11 @@ add_library(
   ImGuizmo/ImSequencer.h
   ImGuizmo/ImZoomSlider.h)
 target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
-    set_target_properties(
-      imguizmo
-      PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
+set_target_properties(
+  imguizmo
+  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
 # Header only
 target_include_directories(exts INTERFACE header_only)

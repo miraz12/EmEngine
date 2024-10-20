@@ -62,7 +62,7 @@ void GraphicsObject::draw(const ShaderProgram &sPrg) {
     }
   }
 }
-void GraphicsObject::drawGeom(const ShaderProgram &sPrg) {
+void GraphicsObject::drawGeom(const ShaderProgram &) {
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
       // if (p_nodes[i].skin >= 0) {

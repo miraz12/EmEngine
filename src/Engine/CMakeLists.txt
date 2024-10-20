@@ -35,6 +35,7 @@ set_target_properties(
 
 target_link_libraries(Engine PUBLIC exts)
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
+set_property(TARGET Engine PROPERTY CXX_STANDARD 23)
 
 target_compile_options(
   Engine
@@ -47,7 +48,8 @@ target_compile_options(
     -g3
     -O0>
     $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /MT;>>)
+    /W4
+    /MT;>>)
 target_compile_options(
   Engine
   PRIVATE
@@ -59,7 +61,8 @@ target_compile_options(
     -O3
     -Werror>
     $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /MT;>>)
+    /W4
+    /MT;>>)
 
 set_target_properties(
   Engine
