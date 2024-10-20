@@ -13,7 +13,7 @@ public:
 
 private:
   void loadModel(tinygltf::Model &model);
-  void loadNode(tinygltf::Model &model, tinygltf::Node &node, u32 nodeIdx);
+  void loadNode(tinygltf::Node &node, u32 nodeIdx);
   void loadMaterials(tinygltf::Model &model);
   void loadTextures(tinygltf::Model &model);
   void loadMeshes(tinygltf::Model &model);

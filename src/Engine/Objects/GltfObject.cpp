@@ -64,12 +64,11 @@ void GltfObject::loadModel(tinygltf::Model &model) {
   p_nodes = std::make_unique<Node[]>(p_numNodes);
 
   for (u32 i = 0; i < model.nodes.size(); i++) {
-    loadNode(model, model.nodes[i], i);
+    loadNode(model.nodes[i], i);
   }
 }
 
-void GltfObject::loadNode(tinygltf::Model &model, tinygltf::Node &node,
-                          u32 nodeIdx) {
+void GltfObject::loadNode(tinygltf::Node &node, u32 nodeIdx) {
 
   p_nodes[nodeIdx].mesh = node.mesh;
   p_nodes[nodeIdx].skin = node.skin;
