@@ -1,20 +1,11 @@
 #ifndef ECSMANAGER_H_
 #define ECSMANAGER_H_
 
+#include "Camera.hpp"
+#include "Components/Component.hpp"
+#include "Systems/System.hpp"
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
-
-#include "Components/Component.hpp"
-#include "Components/GraphicsComponent.hpp"
-#include "Components/LightingComponent.hpp"
-#include "Components/PhysicsComponent.hpp"
-#include "Components/PositionComponent.hpp"
-#include "Systems/AnimationSystem.hpp"
-#include "Systems/GraphicsSystem.hpp"
-#include "Systems/ParticleSystem.hpp"
-#include "Systems/PhysicsSystem.hpp"
-#include "Systems/PositionSystem.hpp"
-#include "Systems/System.hpp"
 
 constexpr std::size_t MAX_ENTITIES = 10;
 
@@ -26,26 +17,6 @@ public:
 
   // Runs through all systems
   void update(float dt);
-
-  glm::vec3 &getPosition(Entity en) {
-    return getComponent<PositionComponent>(en)->position;
-  };
-  glm::quat &getRotation(Entity en) {
-    return getComponent<PositionComponent>(en)->rotation;
-  };
-  glm::vec3 &getScale(Entity en) {
-    return getComponent<PositionComponent>(en)->scale;
-  };
-
-  float *getPositionPtr(Entity en) {
-    return glm::value_ptr(getComponent<PositionComponent>(en)->position);
-  };
-  float *getRotationPtr(Entity en) {
-    return glm::value_ptr(getComponent<PositionComponent>(en)->rotation);
-  };
-  float *getScalePtr(Entity en) {
-    return glm::value_ptr(getComponent<PositionComponent>(en)->scale);
-  };
 
   // resets ECS
   void reset();

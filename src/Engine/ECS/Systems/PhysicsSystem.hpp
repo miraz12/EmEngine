@@ -1,6 +1,7 @@
 #ifndef PHYSICSSYSTEM_H_
 #define PHYSICSSYSTEM_H_
 
+#include "ECS/Components/PhysicsComponent.hpp"
 #include "System.hpp"
 #include <Camera.hpp>
 #include <ECS/ECSManager.hpp>

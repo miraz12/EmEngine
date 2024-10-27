@@ -1,4 +1,5 @@
 #include "Gui.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 
 #include <ECS/ECSManager.hpp>
 #include <SceneLoader.hpp>

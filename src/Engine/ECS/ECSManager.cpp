@@ -1,4 +1,10 @@
 #include "ECSManager.hpp"
+#include "ECS/Components/LightingComponent.hpp"
+#include "Systems/AnimationSystem.hpp"
+#include "Systems/GraphicsSystem.hpp"
+#include "Systems/ParticleSystem.hpp"
+#include "Systems/PhysicsSystem.hpp"
+#include "Systems/PositionSystem.hpp"
 
 void ECSManager::initializeSystems() {
   m_systems["PHYSICS"] = &PhysicsSystem::getInstance();

@@ -1,4 +1,5 @@
 #include "ParticleSystem.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 #include <ECS/ECSManager.hpp>
 
 void ParticleSystem::update(float dt) {

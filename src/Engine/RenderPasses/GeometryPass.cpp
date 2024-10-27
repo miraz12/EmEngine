@@ -1,5 +1,7 @@
 #include "GeometryPass.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
+#include "ECS/Components/GraphicsComponent.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 
 #include <ECS/ECSManager.hpp>
 #include <Managers/FrameBufferManager.hpp>

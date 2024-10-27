@@ -1,4 +1,6 @@
 #include "ShadowPass.hpp"
+#include "ECS/Components/GraphicsComponent.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 #include "glm/geometric.hpp"
 
 #include "ECS/ECSManager.hpp"

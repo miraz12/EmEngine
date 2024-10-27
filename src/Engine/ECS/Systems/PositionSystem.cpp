@@ -1,4 +1,5 @@
 #include "PositionSystem.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 #include <ECS/ECSManager.hpp>
 
 void PositionSystem::update(float /* dt */) {
