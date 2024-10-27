@@ -1,4 +1,4 @@
-- entity: helmet
+- entity: player
   components:
     - type: Pos
       position: [0, 0, 0]
@@ -6,9 +6,10 @@
       scale: [1, 1, 1]
     - type: Gra
       primitive: Mesh
-      file: gltf/untitled.glb
+      file: gltf/Running/running.glb
     - type: Phy
       mass: 1
+      shape: 3
 - entity: particles
   components:
     - type: Pos
@@ -19,6 +20,7 @@
       velocity: [0, 5, 0]
     - type: Phy
       mass: 0
+      shape: 0
 - entity: map
   components:
     - type: Pos
@@ -30,6 +32,7 @@
       file: Heightmap.png
     - type: Phy
       mass: 0
+      shape: 3
 - entity: dir1
   components:
     - type: Lig

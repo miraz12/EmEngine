@@ -15,9 +15,7 @@ else()
   add_library(
     Engine STATIC
     ${ENGINE_FILES}
-    # $<TARGET_OBJECTS:glfw>
     $<TARGET_OBJECTS:yaml-cpp>
-    # $<TARGET_OBJECTS:glm>
     $<TARGET_OBJECTS:imgui>
     $<TARGET_OBJECTS:imguizmo>
     $<TARGET_OBJECTS:BulletCollision>
@@ -35,7 +33,9 @@ set_target_properties(
 
 target_link_libraries(Engine PUBLIC exts)
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
+target_compile_definitions(Engine PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
 set_property(TARGET Engine PROPERTY CXX_STANDARD 23)
+set_property(TARGET Engine PROPERTY CXX_STANDARD_REQUIRED)
 
 target_compile_options(
   Engine
@@ -63,10 +63,3 @@ target_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
     /MT;>>)
-
-set_target_properties(
-  Engine
-  PROPERTIES CXX_STANDARD 17
-             CXX_STANDARD_REQUIRED ON
-             CMAKE_CXX_EXTENSIONS OFF)
-target_compile_definitions(Engine PUBLIC GLM_FORCE_SILENT_WARNINGS=1)

@@ -5,28 +5,37 @@
 #include "GraphicsComponent.hpp"
 #include "PositionComponent.hpp"
 
-class PhysicsComponent : public Component {
+enum class CollisionShapeType { BOX, SPHERE, CAPSULE, CONVEX_HULL };
+
+class PhysicsComponent final : public Component {
 public:
-  PhysicsComponent();
+  PhysicsComponent() = delete;
   // Create colision mesh from grapComp and give position
-  PhysicsComponent(std::size_t en, float mass);
-  ~PhysicsComponent();
+  PhysicsComponent(std::size_t en, float mass, CollisionShapeType type);
+  ~PhysicsComponent() override;
+
   btRigidBody *getRigidBody() { return body; }
   btScalar getMass() { return mass; }
-  bool initialized{false};
-  // Used for delayed init as this component needs graphics component
-  void init();
 
 private:
-  btRigidBody *body;
+  void setupConvexHub();
+
+public:
   btTransform startTransform;
   btVector3 initialPos{0., 0., 0.};
   btVector3 initialScale{1., 1., 1.};
   btQuaternion initialRotation{1., 1., 1., 1.};
-  btScalar mass;
-  btCollisionShape *colShape;
   btDefaultMotionState *myMotionState;
   std::size_t m_en;
+
+  btRigidBody *body;            // Bullet physics body
+  btCollisionShape *shape;      // Bullet collision shape
+  CollisionShapeType shapeType; // Type of collision shape
+  btScalar mass;                // Mass of the object
+  btVector3 dimensions;         // General dimensions (for box and sphere)
+  float capsuleRadius;          // Radius for capsule shape
+  float capsuleHeight;          // Height for capsule shape
+  btTriangleMesh *mesh;         // Optional mesh (for complex shapes)
 };
 
 #endif // PHYSICSCOMPONENT_H_

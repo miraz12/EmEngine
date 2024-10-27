@@ -16,12 +16,7 @@
 #include "Systems/PositionSystem.hpp"
 #include "Systems/System.hpp"
 
-constexpr std::size_t MAX_COMPONENTS = 10;
 constexpr std::size_t MAX_ENTITIES = 10;
-
-using ComponentType = std::type_index;
-using Entity = std::size_t;
-using Signature = std::bitset<MAX_COMPONENTS>;
 
 class ECSManager : public Singleton<ECSManager> {
   friend class Singleton<ECSManager>;

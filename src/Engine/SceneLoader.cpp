@@ -87,9 +87,12 @@ void SceneLoader::init(const char *file) {
             std::shared_ptr<PhysicsComponent> physComp;
             if (components[i]["mass"]) {
               physComp = std::make_shared<PhysicsComponent>(
-                  en, components[i]["mass"].as<float>());
+                  en, components[i]["mass"].as<float>(),
+                  CollisionShapeType(components[i]["shape"].as<int>()));
             } else {
-              physComp = std::make_shared<PhysicsComponent>(en, 0.0f);
+              physComp = std::make_shared<PhysicsComponent>(
+                  en, 0.0f,
+                  CollisionShapeType(components[i]["shape"].as<int>()));
             }
             m_ecsMan->addComponents(en, physComp);
           } else if (components[i]["type"].as<std::string>() == "Par") {
