@@ -20,6 +20,67 @@ PhysicsSystem::~PhysicsSystem() {
   delete groundShape;
 }
 
+void PhysicsSystem::CreatePhysicsBody(Entity entity,
+                                      PhysicsComponent &physicsComponent) {
+  btCollisionShape *shape = nullptr;
+
+  switch (physicsComponent.shapeType) {
+  case CollisionShapeType::BOX:
+    shape = new btBoxShape(physicsComponent.dimensions *
+                           0.5f); // Box dimensions are half-extents
+    break;
+
+  case CollisionShapeType::SPHERE:
+    shape = new btSphereShape(
+        physicsComponent.dimensions.x()); // Use x as the radius
+    break;
+
+  case CollisionShapeType::CAPSULE:
+    shape = new btCapsuleShape(physicsComponent.capsuleRadius,
+                               physicsComponent.capsuleHeight);
+    break;
+
+  case CollisionShapeType::CONVEX_HULL:
+    // Assuming you already have a convex mesh defined in the component
+    shape = new btConvexTriangleMeshShape(physicsComponent.mesh);
+    break;
+
+  default:
+    // Handle error or unsupported shape
+    std::cerr << "Error: Unsupported collision shape type!" << std::endl;
+    return;
+  }
+
+  // Calculate inertia for dynamic bodies (mass > 0)
+  btVector3 localInertia(0, 0, 0);
+  if (physicsComponent.mass > 0.0f) {
+    shape->calculateLocalInertia(physicsComponent.mass, localInertia);
+  }
+
+  // Set up motion state and initial transform
+  btTransform startTransform;
+  startTransform.setIdentity();
+  startTransform.setOrigin(
+      physicsComponent.dimensions); // Set initial position (if applicable)
+
+  btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
+
+  btRigidBody::btRigidBodyConstructionInfo rbInfo(
+      physicsComponent.mass, motionState, shape, localInertia);
+  physicsComponent.body = new btRigidBody(rbInfo);
+
+  // Optionally disable rotation (common for characters)
+  if (physicsComponent.shapeType == CollisionShapeType::CAPSULE) {
+    physicsComponent.body->setAngularFactor(btVector3(0, 0, 0));
+  }
+
+  // Add the body to the dynamics world
+  m_dynamicsWorld->addRigidBody(physicsComponent.body);
+
+  // Store the shape in the component for later cleanup
+  physicsComponent.shape = shape;
+}
+
 void PhysicsSystem::initialize(ECSManager &ecsManager) {
   m_manager = &ecsManager;
 
@@ -90,21 +151,17 @@ void PhysicsSystem::update(float dt) {
           m_manager->getComponent<PositionComponent>(e);
       std::shared_ptr<PhysicsComponent> phy =
           m_manager->getComponent<PhysicsComponent>(e);
-      if (phy->initialized) {
-        btTransform btTrans;
-        btRigidBody *body = phy->getRigidBody();
-        if (body) {
-          body->getMotionState()->getWorldTransform(btTrans);
-          btTrans = body->getWorldTransform();
-          p->position =
-              glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
-                        btTrans.getOrigin().getZ());
-          p->rotation =
-              glm::quat(btTrans.getRotation().w(), btTrans.getRotation().x(),
-                        btTrans.getRotation().y(), btTrans.getRotation().z());
-        }
-      } else {
-        phy->init();
+      btTransform btTrans;
+      btRigidBody *body = phy->getRigidBody();
+      if (body) {
+        body->getMotionState()->getWorldTransform(btTrans);
+        btTrans = body->getWorldTransform();
+        p->position =
+            glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(),
+                      btTrans.getOrigin().getZ());
+        p->rotation =
+            glm::quat(btTrans.getRotation().w(), btTrans.getRotation().x(),
+                      btTrans.getRotation().y(), btTrans.getRotation().z());
       }
     }
   } else {

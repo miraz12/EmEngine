@@ -27,7 +27,6 @@
           openssl
           icu
           dotnetPkg
-          glm
           xorg.libX11
           xorg.libXrandr
           xorg.libXinerama

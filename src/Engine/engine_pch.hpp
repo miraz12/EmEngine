@@ -89,6 +89,11 @@ using i16 = std::int16_t;
 using u8 = std::uint8_t;
 using i8 = std::int8_t;
 
+constexpr std::size_t MAX_COMPONENTS = 10;
+using ComponentType = std::type_index;
+using Entity = std::size_t;
+using Signature = std::bitset<MAX_COMPONENTS>;
+
 // Undef int to only allow the ones defined here
 // #define int undefined
 

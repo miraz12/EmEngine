@@ -478,17 +478,31 @@ void GltfObject::loadSkins(tinygltf::Model &model) {
 }
 
 void GltfObject::generateCollisionShape() {
-  btConvexShape *cShape = new btConvexTriangleMeshShape(m_mesh);
+  // Generate convex shape from a triangle mesh
+  btConvexShape *cShape = new btConvexTriangleMeshShape(
+      m_mesh); // m_mesh is assumed to be a btTriangleMesh
   btShapeHull *cHull = new btShapeHull(cShape);
-  cHull->buildHull(cShape->getMargin());
-  btConvexHullShape *chShape = new btConvexHullShape();
-  if (cHull->numTriangles() > 0) {
 
-    for (i32 i = 0; i < cHull->numTriangles(); ++i) {
-      chShape->addPoint(cHull->getVertexPointer()[cHull->getIndexPointer()[i]]);
+  // Build hull from the triangle mesh shape with margin
+  cHull->buildHull(cShape->getMargin());
+
+  // Create a new convex hull shape to hold the simplified vertices
+  btConvexHullShape *chShape = new btConvexHullShape();
+
+  // Check if the hull has valid data
+  if (cHull->numVertices() > 0) {
+
+    // Iterate through all vertices in the hull and add them to the convex hull
+    // shape
+    for (i32 i = 0; i < cHull->numVertices(); ++i) {
+      // Add the vertex to the convex hull shape
+      chShape->addPoint(cHull->getVertexPointer()[i]);
     }
 
+    // Optional: Optimize the convex hull shape for better performance
     chShape->optimizeConvexHull();
   }
+
+  // Assign the final collision shape
   p_coll = chShape;
 }
