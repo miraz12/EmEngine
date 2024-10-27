@@ -1,6 +1,7 @@
 #include "InputManager.hpp"
 #include <Camera.hpp>
 #include <ECS/ECSManager.hpp>
+#include <ECS/Systems/PhysicsSystem.hpp>
 
 InputManager::InputManager() {
   m_keys.insert({KEY::Escape, false});

@@ -2,8 +2,6 @@
 #define PHYSICSCOMPONENT_H_
 
 #include "Component.hpp"
-#include "GraphicsComponent.hpp"
-#include "PositionComponent.hpp"
 
 enum class CollisionShapeType { BOX, SPHERE, CAPSULE, CONVEX_HULL };
 
