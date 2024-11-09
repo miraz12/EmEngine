@@ -32,6 +32,7 @@ public:
   KEY *getActive() { return m_active.data(); };
 
   std::vector<KEY> m_active;
+  std::unordered_map<KEY, bool> m_keys;
 
 private:
   i32 m_mousePosX;
@@ -40,7 +41,6 @@ private:
   double lastY;
   double m_pitch{0.0f};
   double m_yaw{-90.0f};
-  std::unordered_map<KEY, bool> m_keys;
 };
 
 #endif // INPUTMANAGER_H_

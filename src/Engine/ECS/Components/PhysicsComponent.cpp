@@ -43,7 +43,8 @@ PhysicsComponent::PhysicsComponent(Entity en, float mass,
       shape = new btCapsuleShape(btScalar(1.), btScalar(1.));
       break;
     case CONVEX_HULL:
-      setupConvexHub();
+    case HEIGHTMAP:
+      setupCollisionShapeFromGra();
       break;
     }
 
@@ -68,6 +69,15 @@ PhysicsComponent::PhysicsComponent(Entity en, float mass,
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, shape,
                                                     localInertia);
     body = new btRigidBody(rbInfo);
+    if (type == CAPSULE) {
+      // Configure rigid body for character movement
+      body->setAngularFactor(btVector3(0, 0, 0)); // No rotation
+      body->setFriction(0.8f);                    // Ground friction
+      body->setRestitution(0.0f);                 // No bouncing
+      body->setDamping(0.5f, 0.0f); // Linear damping for smooth deceleration
+      body->setActivationState(DISABLE_DEACTIVATION);
+      // body->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+    }
 
     body->setUserIndex(m_en);
 
@@ -76,7 +86,7 @@ PhysicsComponent::PhysicsComponent(Entity en, float mass,
   }
 }
 
-void PhysicsComponent::setupConvexHub() {
+void PhysicsComponent::setupCollisionShapeFromGra() {
   std::shared_ptr<GraphicsComponent> graphComp =
       ECSManager::getInstance().getComponent<GraphicsComponent>(m_en);
   if (graphComp) {

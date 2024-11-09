@@ -1,5 +1,10 @@
 #include "ECSManager.hpp"
+#include "Components/GraphicsComponent.hpp"
+#include "ECS/Components/AnimationComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
+#include "ECS/Components/PhysicsComponent.hpp"
+#include "ECS/Components/PositionComponent.hpp"
+#include "Objects/GltfObject.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/GraphicsSystem.hpp"
 #include "Systems/ParticleSystem.hpp"
@@ -84,6 +89,42 @@ void ECSManager::saveScene(const char *file) {
   SceneLoader::getInstance().saveScene(file);
 };
 
-extern "C" void ECS_loadScene(const char *file) {
-  ECSManager::getInstance().loadScene(file);
+// Api stuff
+extern "C" {
+void SetVelocity(unsigned int entity, float x, float y, float z) {
+  std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+  phy->body->setLinearVelocity(btVector3(x, y, z));
 }
+
+void AddGraphicsComponent(int entity, const char *model) {
+  std::shared_ptr<GraphicsComponent> graphComp;
+  graphComp = std::make_shared<GraphicsComponent>(
+      std::make_shared<GltfObject>("resources/Models/" + std::string(model)));
+  if (graphComp->m_grapObj->p_numAnimations > 0) {
+    ECSManager::getInstance().addComponents(
+        entity, std::make_shared<AnimationComponent>());
+  }
+  ECSManager::getInstance().addComponents(entity, graphComp);
+}
+
+void AddPositionComponent(int entity, float pos[3], float scale[3],
+                          float rot[3]) {
+  std::shared_ptr<PositionComponent> posComp =
+      std::make_shared<PositionComponent>();
+  posComp->position = glm::vec3(pos[0], pos[1], pos[2]);
+  posComp->scale = glm::vec3(scale[0], scale[1], scale[2]);
+  posComp->rotation = glm::vec3(rot[0], rot[1], rot[2]);
+  ECSManager::getInstance().addComponents(entity, posComp);
+}
+
+void AddPhysicsComponent(int entity, float mass, int type) {
+  ECSManager::getInstance().addComponents(
+      entity, std::make_shared<PhysicsComponent>(entity, mass,
+                                                 CollisionShapeType(type)));
+}
+
+int CreateEntity(const char *name) {
+  return ECSManager::getInstance().createEntity(name);
+}
+};

@@ -2,6 +2,7 @@
 #include <Camera.hpp>
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
+#include <ranges>
 
 InputManager::InputManager() {
   m_keys.insert({KEY::Escape, false});
@@ -25,40 +26,42 @@ void InputManager::update(float dt) {
   ECSManager &ecsManager = ECSManager::getInstance();
   Camera &cam = ecsManager.getCamera();
   // Parse input
-  if (m_keys.at(KEY::A)) {
-    glm::vec3 camPos =
-        cam.getPosition() -
-        glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
-    }
-  }
-  if (m_keys.at(KEY::D)) {
-    glm::vec3 camPos =
-        cam.getPosition() +
-        glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
-    }
-  }
-  if (m_keys.at(KEY::W)) {
-    glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
-    }
-  }
-  if (m_keys.at(KEY::S)) {
-    glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
-    }
-  }
-  if (m_keys.at(KEY::Space)) {
-    glm::vec3 camPos = cam.getPosition() + glm::vec3(0, 1, 0) * camSpeed * dt;
-    if (!glm::all(glm::isnan(camPos))) {
-      cam.setPosition(camPos);
-    }
-  }
+  // if (m_keys.at(KEY::A)) {
+  //   glm::vec3 camPos =
+  //       cam.getPosition() -
+  //       glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed *
+  //       dt;
+  //   if (!glm::all(glm::isnan(camPos))) {
+  //     cam.setPosition(camPos);
+  //   }
+  // }
+  // if (m_keys.at(KEY::D)) {
+  //   glm::vec3 camPos =
+  //       cam.getPosition() +
+  //       glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed *
+  //       dt;
+  //   if (!glm::all(glm::isnan(camPos))) {
+  //     cam.setPosition(camPos);
+  //   }
+  // }
+  // if (m_keys.at(KEY::W)) {
+  //   glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
+  //   if (!glm::all(glm::isnan(camPos))) {
+  //     cam.setPosition(camPos);
+  //   }
+  // }
+  // if (m_keys.at(KEY::S)) {
+  //   glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
+  //   if (!glm::all(glm::isnan(camPos))) {
+  //     cam.setPosition(camPos);
+  //   }
+  // }
+  // if (m_keys.at(KEY::Space)) {
+  //   glm::vec3 camPos = cam.getPosition() + glm::vec3(0, 1, 0) * camSpeed *
+  //   dt; if (!glm::all(glm::isnan(camPos))) {
+  //     cam.setPosition(camPos);
+  //   }
+  // }
 
   if (m_keys.at(KEY::O)) {
     ecsManager.setSimulatePhysics(ecsManager.getSimulatePhysics() ? false
@@ -125,9 +128,6 @@ void InputManager::handleInput(i32 key, i32 action) {
 
 void InputManager::handleAction(KEY key, i32 action) {
   m_keys.at(key) = action;
-  if (action) {
-    m_active.push_back(key);
-  }
 }
 
 void InputManager::setMousePos(double x, double y) {
@@ -158,8 +158,15 @@ void InputManager::setMousePos(double x, double y) {
 }
 
 extern "C" int GetPressed(int **vec) {
-  *vec = reinterpret_cast<int *>(InputManager::getInstance().getActive());
+  InputManager::getInstance().m_active.clear();
+  for (KEY key :
+       InputManager::getInstance().m_keys |
+           std::views::filter([](const auto &entry) { return entry.second; }) |
+           std::views::transform(
+               [](const auto &entry) { return entry.first; })) {
+    InputManager::getInstance().m_active.push_back(key);
+  }
+
+  *vec = reinterpret_cast<int *>(InputManager::getInstance().m_active.data());
   return InputManager::getInstance().m_active.size();
 }
-
-extern "C" void ClearPressed() { InputManager::getInstance().m_active.clear(); }

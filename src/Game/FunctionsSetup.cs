@@ -6,6 +6,7 @@ namespace FunctionsSetup
 {
     public class NativeMethods
     {
+
         [DllImport("Engine", EntryPoint = "LoadScene")]
         public static extern void LoadScene(string filename);
         [DllImport("Engine", EntryPoint = "Initialize")]
@@ -16,9 +17,23 @@ namespace FunctionsSetup
         public static extern void Update();
         [DllImport("Engine", EntryPoint = "Start")]
         public static extern void Start();
+        [DllImport("Engine", EntryPoint = "SetVelocity")]
+        public static extern void SetVelocity(int entity, float x, float y, float z);
+        [DllImport("Engine", EntryPoint = "SetAcceleration")]
+        public static extern void SetAcceleration(int entity, float x, float y, float z);
         [DllImport("Engine", EntryPoint = "GetPressed")]
         public static extern int GetPressed(out IntPtr vec);
-        [DllImport("Engine", EntryPoint = "ClearPressed")]
-        public static extern void ClearPressed();
+
+        [DllImport("Engine", EntryPoint = "AddPositionComponent")]
+        public static extern void AddPositionComponent(int entity,
+                                                       [In] float[] position,
+                                                       [In] float[] scale,
+                                                       [In] float[] rotation);
+        [DllImport("Engine", EntryPoint = "AddPhysicsComponent")]
+        public static extern void AddPhysicsComponent(int entity, float mass, int type);
+        [DllImport("Engine", EntryPoint = "AddGraphicsComponent")]
+        public static extern void AddGraphicsComponent(int entity, string model);
+        [DllImport("Engine", EntryPoint = "CreateEntity")]
+        public static extern int CreateEntity(string name);
     }
 }

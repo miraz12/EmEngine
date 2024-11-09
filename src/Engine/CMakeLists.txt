@@ -34,8 +34,8 @@ set_target_properties(
 target_link_libraries(Engine PUBLIC exts)
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
 target_compile_definitions(Engine PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
-set_property(TARGET Engine PROPERTY CXX_STANDARD 23)
-set_property(TARGET Engine PROPERTY CXX_STANDARD_REQUIRED)
+set_property(TARGET Engine PROPERTY CXX_STANDARD 20)
+set_property(TARGET Engine PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_compile_options(
   Engine
