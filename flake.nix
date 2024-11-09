@@ -43,7 +43,7 @@
       {
         devShells.default =
           with pkgs;
-          mkShell.override { stdenv = llvmPackages.stdenv; } {
+          mkShell.override { stdenv = llvmPackages_17.stdenv; } {
             nativeBuildInputs = [
               cmake
               cmake-language-server

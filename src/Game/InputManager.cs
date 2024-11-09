@@ -1,8 +1,8 @@
 using System;
-using FunctionsSetup;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Numerics;
+using FunctionsSetup;
 
 namespace Input
 {
@@ -13,24 +13,18 @@ namespace Input
         A,
         S,
         D,
-        F,
-        O,
         Space,
-        ArrowUp,
-        ArrowDown,
-        ArrowRight,
-        ArrowLeft,
-        Mouse1
     };
-
 
     public class InputManager
     {
         private Game _game;
+
         public InputManager(Game game)
         {
             _game = game;
         }
+
         private List<int> ConvertIntPtrToList(IntPtr vectorPointer, int count)
         {
             List<int> keys = new List<int>(count);
@@ -48,46 +42,39 @@ namespace Input
             int count = NativeMethods.GetPressed(out vectorPointer);
             List<int> pressedKeys = ConvertIntPtrToList(vectorPointer, count);
 
+            // Default to no force in any direction
+            Vector3 forceDirection = Vector3.Zero;
 
             foreach (var key in pressedKeys)
             {
                 switch ((KEY)key)
                 {
                     case KEY.W:
-                        // _game.player.acceleration = Vector3.Add(_game.player.acceleration,
-                        // _game.player.forward);
+                        forceDirection -= _game.player.forward;
                         break;
                     case KEY.A:
-                        // _game.player.acceleration = Vector3.Add(_game.player.acceleration,
-                        //                                         _game.player.right);
+                        forceDirection -= _game.player.right;
                         break;
                     case KEY.S:
-                        // _game.player.acceleration = Vector3.Add(_game.player.acceleration,
-                        //                                         _game.player.forward);
+                        forceDirection += _game.player.forward;
                         break;
                     case KEY.D:
-                        // _game.player.acceleration = Vector3.Add(_game.player.acceleration,
-                        //                                         _game.player.right);
-                        break;
-                    case KEY.F:
-                        break;
-                    case KEY.O:
+                        forceDirection += _game.player.right;
                         break;
                     case KEY.Space:
-                        break;
-                    case KEY.ArrowUp:
-                        break;
-                    case KEY.ArrowDown:
-                        break;
-                    case KEY.ArrowRight:
-                        break;
-                    case KEY.ArrowLeft:
-                        break;
-                    case KEY.Mouse1:
+                        forceDirection += new Vector3(0, 1, 0); // Apply upward force for jumping
                         break;
                 }
             }
-            NativeMethods.ClearPressed();
+
+            // Normalize the direction if input is diagonal to maintain consistent force
+            if (forceDirection.Length() > 0)
+            {
+                forceDirection = Vector3.Normalize(forceDirection);
+            }
+
+            // Set the direction of force to the player
+            _game.player.SetForceDirection(forceDirection);
         }
     }
 }

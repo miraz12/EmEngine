@@ -1,15 +1,15 @@
-- entity: player
-  components:
-    - type: Pos
-      position: [0, 0, 0]
-      rotation: [0, -0, 0]
-      scale: [1, 1, 1]
-    - type: Gra
-      primitive: Mesh
-      file: gltf/Running/running.glb
-    - type: Phy
-      mass: 1
-      shape: 3
+# - entity: player
+#   components:
+#     - type: Pos
+#       position: [0, 0, 0]
+#       rotation: [0, -0, 0]
+#       scale: [1, 1, 1]
+#     - type: Gra
+#       primitive: Mesh
+#       file: gltf/Running/running.glb
+#     - type: Phy
+#       mass: 80
+#       shape: 2
 - entity: particles
   components:
     - type: Pos

@@ -3,15 +3,17 @@ using Input;
 using FunctionsSetup;
 using Entities;
 using System.Runtime.InteropServices;
-using System.Threading;
+using System.Diagnostics;
 
 public class Game
 {
     public InputManager inputManager;
     public Player player;
-    private static readonly Lazy<Game> lazy =
-        new Lazy<Game>(() => new Game());
+    private static readonly Lazy<Game> lazy = new Lazy<Game>(() => new Game());
     public static Game Instance { get { return lazy.Value; } }
+
+    private Stopwatch stopwatch;
+    private float deltaTime;
 
     static void Main(string[] args)
     {
@@ -21,7 +23,7 @@ public class Game
     private Game()
     {
         inputManager = new InputManager(this);
-        player = new Player();
+        stopwatch = new Stopwatch();
     }
 
     public void Initialize()
@@ -29,15 +31,24 @@ public class Game
         if (NativeMethods.Initialize())
         {
             NativeMethods.LoadScene("resources/scene.yaml");
+            player = new Player();
             NativeMethods.Start();
+            stopwatch.Start(); // Start the stopwatch after initialization
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "Game_Update")]
     public static void Update()
     {
-        NativeMethods.Update();
-        Game.Instance.inputManager.Update();
+        Game.Instance.CalculateDeltaTime();       // Calculate delta time for the frame
+        NativeMethods.Update();                   // Update native methods (external code)
+        Game.Instance.inputManager.Update();      // Update player input
+        Game.Instance.player.Update(Game.Instance.deltaTime); // Update player with delta time
     }
 
+    private void CalculateDeltaTime()
+    {
+        deltaTime = (float)stopwatch.Elapsed.TotalSeconds; // Convert elapsed time to seconds
+        stopwatch.Restart();                               // Reset the stopwatch for the next frame
+    }
 }

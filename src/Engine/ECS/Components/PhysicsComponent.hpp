@@ -3,7 +3,7 @@
 
 #include "Component.hpp"
 
-enum class CollisionShapeType { BOX, SPHERE, CAPSULE, CONVEX_HULL };
+enum class CollisionShapeType { BOX, SPHERE, CAPSULE, CONVEX_HULL, HEIGHTMAP };
 
 class PhysicsComponent final : public Component {
 public:
@@ -16,7 +16,7 @@ public:
   btScalar getMass() { return mass; }
 
 private:
-  void setupConvexHub();
+  void setupCollisionShapeFromGra();
 
 public:
   btTransform startTransform;
