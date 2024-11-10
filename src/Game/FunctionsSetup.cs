@@ -19,10 +19,16 @@ namespace FunctionsSetup
         public static extern void Start();
         [DllImport("Engine", EntryPoint = "SetVelocity")]
         public static extern void SetVelocity(int entity, float x, float y, float z);
+        [DllImport("Engine", EntryPoint = "AddImpulse")]
+        public static extern void AddImpulse(int entity, float x, float y, float z);
+        [DllImport("Engine", EntryPoint = "AddForce")]
+        public static extern void AddForce(int entity, float x, float y, float z);
         [DllImport("Engine", EntryPoint = "SetAcceleration")]
         public static extern void SetAcceleration(int entity, float x, float y, float z);
         [DllImport("Engine", EntryPoint = "GetPressed")]
         public static extern int GetPressed(out IntPtr vec);
+        [DllImport("Engine", EntryPoint = "EntityOnGround")]
+        public static extern Boolean EntityOnGround(int entity);
 
         [DllImport("Engine", EntryPoint = "AddPositionComponent")]
         public static extern void AddPositionComponent(int entity,

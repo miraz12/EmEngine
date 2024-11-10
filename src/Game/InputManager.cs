@@ -62,7 +62,7 @@ namespace Input
                         forceDirection += _game.player.right;
                         break;
                     case KEY.Space:
-                        forceDirection += new Vector3(0, 1, 0); // Apply upward force for jumping
+                        _game.player.jump = true;
                         break;
                 }
             }

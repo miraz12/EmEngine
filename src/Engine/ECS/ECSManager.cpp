@@ -91,10 +91,29 @@ void ECSManager::saveScene(const char *file) {
 
 // Api stuff
 extern "C" {
+bool EntityOnGround(unsigned int entity) {
+  return dynamic_cast<PhysicsSystem *>(
+             &ECSManager::getInstance().getSystem("PHYSICS"))
+      ->EntityOnGround(entity);
+}
+
 void SetVelocity(unsigned int entity, float x, float y, float z) {
   std::shared_ptr<PhysicsComponent> phy =
       ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-  phy->body->setLinearVelocity(btVector3(x, y, z));
+  btVector3 vel = phy->body->getLinearVelocity();
+  phy->body->setLinearVelocity(btVector3(x, vel.getY(), z));
+}
+
+void AddImpulse(unsigned int entity, float x, float y, float z) {
+  std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+  phy->body->applyCentralImpulse(btVector3(x, y, z));
+}
+
+void AddForce(unsigned int entity, float x, float y, float z) {
+  std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+  phy->body->applyCentralForce(btVector3(x, y, z));
 }
 
 void AddGraphicsComponent(int entity, const char *model) {
