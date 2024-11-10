@@ -22,6 +22,7 @@ public:
   void performPicking(i32 mouseX, i32 mouseY);
   void setWindowSize(float x, float y);
   void CreatePhysicsBody(Entity entity, PhysicsComponent &physicsComponent);
+  bool EntityOnGround(Entity entity);
 
   DebugDrawer m_dDraw;
 

@@ -20,6 +20,34 @@ PhysicsSystem::~PhysicsSystem() {
   delete groundShape;
 }
 
+bool PhysicsSystem::EntityOnGround(Entity entity) {
+  std::shared_ptr<PhysicsComponent> phyComp =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+  if (!phyComp->body)
+    return false;
+
+  // Get the bottom center of the object
+  btTransform transform = phyComp->body->getWorldTransform();
+  btVector3 start = transform.getOrigin();
+
+  // Get collision shape's height to cast from bottom
+  btVector3 extent =
+      static_cast<btBoxShape *>(phyComp->body->getCollisionShape())
+          ->getHalfExtentsWithoutMargin();
+  start.setY(start.y() - extent.y()); // Move to bottom of shape
+
+  btVector3 end = start + btVector3(0, -1.06, 0);
+
+  // Perform raycast
+  btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);
+  m_dynamicsWorld->rayTest(start, end, rayCallback);
+
+  std::cout << "Distance: " << (rayCallback.m_hitPointWorld - start).length()
+            << std::endl;
+
+  return rayCallback.hasHit();
+}
+
 void PhysicsSystem::CreatePhysicsBody(Entity entity,
                                       PhysicsComponent &physicsComponent) {
   btCollisionShape *shape = nullptr;
