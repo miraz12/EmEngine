@@ -38,6 +38,7 @@
           libxkbcommon
           libGL
           glfw
+          libxml2
         ];
       in
       {
