@@ -9,7 +9,6 @@ namespace Entities
         public Vector3 position = new Vector3(0, 0, 0);
         public Vector3 forward = new Vector3(0, 0, 1);
         public Vector3 right = new Vector3(1, 0, 0);
-        public Boolean jump = false;
 
         private Vector3 velocity = new Vector3(0, 0, 0);
         private Vector3 forceDirection = new Vector3(0, 0, 0);
@@ -18,12 +17,6 @@ namespace Entities
         private float maxSpeed = 10.0f;
         private int entityId;
 
-        // Jump-related variables
-        private float jumpCooldown = 1.0f;      // Time required between jumps (in seconds)
-        private float jumpTimer = 0f;           // Timer to track cooldown
-        private bool canJump = true;            // Flag to control jump availability
-        private float jumpForce = 10000f;         // Your existing jump force
-        private bool wasOnGround = false;       // Track previous ground state
 
         public Player()
         {
@@ -38,37 +31,6 @@ namespace Entities
 
         public void Update(float dt)
         {
-            bool isOnGround = NativeMethods.EntityOnGround(entityId);
-
-            // Update jump timer
-            if (!canJump)
-            {
-                jumpTimer += dt;
-                if (jumpTimer >= jumpCooldown)
-                {
-                    jumpTimer = 0f;
-                    canJump = true;
-                }
-            }
-
-            // Reset canJump when landing
-            if (isOnGround && !wasOnGround)
-            {
-                canJump = true;
-                jumpTimer = 0f;
-            }
-
-            // Handle jumping
-            if (jump && canJump && isOnGround)
-            {
-                NativeMethods.AddForce(entityId, 0, jumpForce, 0);
-                canJump = false;
-                jumpTimer = 0f;
-            }
-            jump = false;
-
-            // Store ground state for next frame
-            wasOnGround = isOnGround;
 
             // Calculate the force vector based on input direction
             Vector3 force = forceDirection * maxForce;
@@ -96,17 +58,6 @@ namespace Entities
         public void SetForceDirection(Vector3 direction)
         {
             forceDirection = direction;
-        }
-
-        // Optional: Methods to check jump status
-        public bool CanJumpNow()
-        {
-            return canJump && NativeMethods.EntityOnGround(entityId);
-        }
-
-        public float GetJumpCooldownRemaining()
-        {
-            return canJump ? 0f : (jumpCooldown - jumpTimer);
         }
     }
 }

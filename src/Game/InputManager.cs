@@ -61,9 +61,6 @@ namespace Input
                     case KEY.D:
                         forceDirection += _game.player.right;
                         break;
-                    case KEY.Space:
-                        _game.player.jump = true;
-                        break;
                 }
             }
 

@@ -50,7 +50,6 @@
               cmake-language-server
               clang-tools
               ccache
-              emscripten
               python3
               ninja
               gdb
@@ -67,7 +66,6 @@
 
             shellHook = ''
               DOTNET_ROOT="${dotnetPkg}";
-              EMSCRIPTEN_ROOT=${pkgs.emscripten}/share/emscripten
               DRI_PRIME=1
             '';
           };
