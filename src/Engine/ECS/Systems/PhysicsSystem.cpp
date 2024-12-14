@@ -42,9 +42,6 @@ bool PhysicsSystem::EntityOnGround(Entity entity) {
   btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);
   m_dynamicsWorld->rayTest(start, end, rayCallback);
 
-  std::cout << "Distance: " << (rayCallback.m_hitPointWorld - start).length()
-            << std::endl;
-
   return rayCallback.hasHit();
 }
 
