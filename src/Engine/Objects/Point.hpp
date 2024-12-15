@@ -3,7 +3,8 @@
 
 #include "Objects/GraphicsObject.hpp"
 
-class Point final : public GraphicsObject {
+class Point final : public GraphicsObject
+{
 public:
   Point(float x, float y, float z);
   ~Point() override = default;

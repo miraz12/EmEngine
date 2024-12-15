@@ -4,7 +4,10 @@
 #include "System.hpp"
 #include <ECS/Components/ParticlesComponent.hpp>
 
-class ParticleSystem : public System, public Singleton<ParticleSystem> {
+class ParticleSystem
+  : public System
+  , public Singleton<ParticleSystem>
+{
   friend class Singleton<ParticleSystem>;
 
 public:
@@ -16,12 +19,12 @@ private:
   virtual ~ParticleSystem() = default;
 
   void killParticle(std::shared_ptr<ParticlesComponent> pComp,
-                    std::shared_ptr<Particle> &p);
+                    std::shared_ptr<Particle>& p);
   void reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
-                      glm::vec3 &pos);
+                      glm::vec3& pos);
 
   std::default_random_engine generator;
-  std::uniform_real_distribution<float> distribution{-1, 1};
+  std::uniform_real_distribution<float> distribution{ -1, 1 };
 };
 
 #endif // PARTICLESYSTEM_H_

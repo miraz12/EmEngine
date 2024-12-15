@@ -2,12 +2,13 @@
 #define FRAMEBUFFERMANAGER_H_
 #include <Singleton.hpp>
 
-class FrameBufferManager : public Singleton<FrameBufferManager> {
+class FrameBufferManager : public Singleton<FrameBufferManager>
+{
   friend class Singleton<FrameBufferManager>;
 
 public:
   u32 getFBO(std::string name) { return fbos.at(name); };
-  void setFBO(std::string name, u32 &fbo) { fbos[name] = fbo; };
+  void setFBO(std::string name, u32& fbo) { fbos[name] = fbo; };
   u32 bindFBO(std::string name);
 
 private:

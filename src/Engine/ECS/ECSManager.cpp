@@ -13,77 +13,96 @@
 #include "Systems/PhysicsSystem.hpp"
 #include "Systems/PositionSystem.hpp"
 
-void ECSManager::initializeSystems() {
+void
+ECSManager::initializeSystems()
+{
   m_systems["PHYSICS"] = &PhysicsSystem::getInstance();
   m_systems["POSITION"] = &PositionSystem::getInstance();
   m_systems["PARTICLES"] = &ParticleSystem::getInstance();
   m_systems["ANIMATION"] = &AnimationSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
   m_systems["CAMERA"] = &CameraSystem::getInstance();
-  for (const auto &[name, system] : m_systems) {
+  for (const auto& [name, system] : m_systems) {
     system->initialize(*this);
   }
 }
 
-void ECSManager::update(float dt) {
+void
+ECSManager::update(float dt)
+{
   // update all systems
-  for (const auto &[name, system] : m_systems) {
+  for (const auto& [name, system] : m_systems) {
     system->update(dt);
   }
 }
 
-Entity ECSManager::createEntity(std::string name) {
+Entity
+ECSManager::createEntity(std::string name)
+{
   Entity newEntity = (m_entityCount++);
   m_components[newEntity] =
-      std::vector<std::shared_ptr<Component>>(MAX_COMPONENTS, nullptr);
+    std::vector<std::shared_ptr<Component>>(MAX_COMPONENTS, nullptr);
   m_entities.push_back(newEntity);
   m_entityNames[newEntity] = name;
   return m_entities.back();
 }
 
 std::shared_ptr<PointLight>
-ECSManager::SetupPointLight(Entity en, glm::vec3 color, float constant,
-                            float linear, float quadratic, glm::vec3 pos) {
+ECSManager::SetupPointLight(Entity en,
+                            glm::vec3 color,
+                            float constant,
+                            float linear,
+                            float quadratic,
+                            glm::vec3 pos)
+{
   std::shared_ptr<PointLight> pLight = std::make_shared<PointLight>();
   pLight->position = pos;
   pLight->color = color;
   pLight->constant = constant;
   pLight->linear = linear;
   pLight->quadratic = quadratic;
-  addComponent(en, std::make_shared<LightingComponent>(
-                       pLight, LightingComponent::TYPE::POINT));
+  addComponent(en,
+               std::make_shared<LightingComponent>(
+                 pLight, LightingComponent::TYPE::POINT));
   return pLight;
 }
 
 std::shared_ptr<DirectionalLight>
-ECSManager::SetupDirectionalLight(Entity en, glm::vec3 color, float ambient,
-                                  glm::vec3 dir) {
+ECSManager::SetupDirectionalLight(Entity en,
+                                  glm::vec3 color,
+                                  float ambient,
+                                  glm::vec3 dir)
+{
   m_dirLightEntity = en;
   std::shared_ptr<DirectionalLight> dLight =
-      std::make_shared<DirectionalLight>();
+    std::make_shared<DirectionalLight>();
   dLight->direction = dir;
   dLight->color = color;
   dLight->ambientIntensity = ambient;
   addComponent(m_dirLightEntity,
                std::make_shared<LightingComponent>(
-                   dLight, LightingComponent::TYPE::DIRECTIONAL));
+                 dLight, LightingComponent::TYPE::DIRECTIONAL));
   return dLight;
 }
 
-void ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir) {
+void
+ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir)
+{
 
   std::shared_ptr<LightingComponent> lComp =
-      getComponent<LightingComponent>(m_dirLightEntity);
-  auto *dLight = static_cast<DirectionalLight *>(&lComp->getBaseLight());
+    getComponent<LightingComponent>(m_dirLightEntity);
+  auto* dLight = static_cast<DirectionalLight*>(&lComp->getBaseLight());
   dLight->direction = dir;
   dLight->color = color;
   dLight->ambientIntensity = ambient;
 }
 
-std::shared_ptr<Component> ECSManager::getCamera() {
+std::shared_ptr<Component>
+ECSManager::getCamera()
+{
   std::vector<Entity> view = this->view<CameraComponent>();
 
-  for (auto &e : view) {
+  for (auto& e : view) {
     std::shared_ptr<CameraComponent> c = getComponent<CameraComponent>(e);
 
     if (c->mainCamera) {
@@ -93,84 +112,103 @@ std::shared_ptr<Component> ECSManager::getCamera() {
   return nullptr;
 }
 
-void ECSManager::setViewport(u32 w, u32 h) {
-  auto cam = static_pointer_cast<CameraComponent>(
-      ECSManager::getInstance().getCamera());
+void
+ECSManager::setViewport(u32 w, u32 h)
+{
+  auto cam =
+    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
   cam->m_width = w;
   cam->m_height = h;
 
-  static_cast<GraphicsSystem *>(m_systems["GRAPHICS"])->setViewport(w, h);
+  static_cast<GraphicsSystem*>(m_systems["GRAPHICS"])->setViewport(w, h);
 };
 
-void ECSManager::loadScene(const char *file) {
+void
+ECSManager::loadScene(const char* file)
+{
   SceneLoader::getInstance().init(file);
 };
-void ECSManager::saveScene(const char *file) {
+void
+ECSManager::saveScene(const char* file)
+{
   SceneLoader::getInstance().saveScene(file);
 };
 
 // Api stuff
-extern "C" {
-bool EntityOnGround(unsigned int entity) {
-  return dynamic_cast<PhysicsSystem *>(
+extern "C"
+{
+  bool EntityOnGround(unsigned int entity)
+  {
+    return dynamic_cast<PhysicsSystem*>(
              &ECSManager::getInstance().getSystem("PHYSICS"))
       ->EntityOnGround(entity);
-}
-
-void SetVelocity(unsigned int entity, float x, float y, float z) {
-  std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-  btVector3 vel = phy->body->getLinearVelocity();
-  phy->body->setLinearVelocity(btVector3(x, vel.getY(), z));
-}
-
-void AddImpulse(unsigned int entity, float x, float y, float z) {
-  std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-  phy->body->applyCentralImpulse(btVector3(x, y, z));
-}
-
-void AddForce(unsigned int entity, float x, float y, float z) {
-  std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-  phy->body->applyCentralForce(btVector3(x, y, z));
-}
-
-void AddGraphicsComponent(int entity, const char *model) {
-  std::shared_ptr<GraphicsComponent> graphComp;
-  graphComp = std::make_shared<GraphicsComponent>(
-      std::make_shared<GltfObject>("resources/Models/" + std::string(model)));
-  if (graphComp->m_grapObj->p_numAnimations > 0) {
-    ECSManager::getInstance().addComponents(
-        entity, std::make_shared<AnimationComponent>());
   }
-  ECSManager::getInstance().addComponents(entity, graphComp);
-}
 
-void AddPositionComponent(int entity, float pos[3], float scale[3],
-                          float rot[3]) {
-  std::shared_ptr<PositionComponent> posComp =
+  void SetVelocity(unsigned int entity, float x, float y, float z)
+  {
+    std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    btVector3 vel = phy->body->getLinearVelocity();
+    phy->body->setLinearVelocity(btVector3(x, vel.getY(), z));
+  }
+
+  void AddImpulse(unsigned int entity, float x, float y, float z)
+  {
+    std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    phy->body->applyCentralImpulse(btVector3(x, y, z));
+  }
+
+  void AddForce(unsigned int entity, float x, float y, float z)
+  {
+    std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    phy->body->applyCentralForce(btVector3(x, y, z));
+  }
+
+  void AddGraphicsComponent(int entity, const char* model)
+  {
+    std::shared_ptr<GraphicsComponent> graphComp;
+    graphComp = std::make_shared<GraphicsComponent>(
+      std::make_shared<GltfObject>("resources/Models/" + std::string(model)));
+    if (graphComp->m_grapObj->p_numAnimations > 0) {
+      ECSManager::getInstance().addComponents(
+        entity, std::make_shared<AnimationComponent>());
+    }
+    ECSManager::getInstance().addComponents(entity, graphComp);
+  }
+
+  void AddPositionComponent(int entity,
+                            float pos[3],
+                            float scale[3],
+                            float rot[3])
+  {
+    std::shared_ptr<PositionComponent> posComp =
       std::make_shared<PositionComponent>();
-  posComp->position = glm::vec3(pos[0], pos[1], pos[2]);
-  posComp->scale = glm::vec3(scale[0], scale[1], scale[2]);
-  posComp->rotation = glm::vec3(rot[0], rot[1], rot[2]);
-  ECSManager::getInstance().addComponents(entity, posComp);
-}
+    posComp->position = glm::vec3(pos[0], pos[1], pos[2]);
+    posComp->scale = glm::vec3(scale[0], scale[1], scale[2]);
+    posComp->rotation = glm::vec3(rot[0], rot[1], rot[2]);
+    ECSManager::getInstance().addComponents(entity, posComp);
+  }
 
-void AddPhysicsComponent(int entity, float mass, int type) {
-  ECSManager::getInstance().addComponents(
-      entity, std::make_shared<PhysicsComponent>(entity, mass,
-                                                 CollisionShapeType(type)));
-}
+  void AddPhysicsComponent(int entity, float mass, int type)
+  {
+    ECSManager::getInstance().addComponents(
+      entity,
+      std::make_shared<PhysicsComponent>(
+        entity, mass, CollisionShapeType(type)));
+  }
 
-void AddCameraComponent(int entity, bool main, float offset[3]) {
-  std::shared_ptr<CameraComponent> c = std::make_shared<CameraComponent>(
+  void AddCameraComponent(int entity, bool main, float offset[3])
+  {
+    std::shared_ptr<CameraComponent> c = std::make_shared<CameraComponent>(
       main, glm::vec3(offset[0], offset[1], offset[2]));
-  CameraSystem::tilt(c, -30.0f);
-  ECSManager::getInstance().addComponents(entity, c);
-}
+    CameraSystem::tilt(c, -30.0f);
+    ECSManager::getInstance().addComponents(entity, c);
+  }
 
-int CreateEntity(const char *name) {
-  return ECSManager::getInstance().createEntity(name);
-}
+  int CreateEntity(const char* name)
+  {
+    return ECSManager::getInstance().createEntity(name);
+  }
 };

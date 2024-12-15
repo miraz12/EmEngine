@@ -1,6 +1,7 @@
 #include "Quad.hpp"
 
-Quad::Quad() {
+Quad::Quad()
+{
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   newNode(modelMat);
 
@@ -8,7 +9,7 @@ Quad::Quad() {
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
-  Primitive *newPrim = &p_meshes[0].m_primitives[0];
+  Primitive* newPrim = &p_meshes[0].m_primitives[0];
   u32 vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -23,8 +24,8 @@ Quad::Quad() {
   GLuint ebo;
   glGenBuffers(1, &ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices,
-               GL_STATIC_DRAW);
+  glBufferData(
+    GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
   newPrim->m_ebo = ebo;
   newPrim->m_drawType = 1;
 

@@ -2,24 +2,29 @@
 // #define _DEBUG_ 1
 
 #ifndef EMSCRIPTEN
-void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
-                                GLuint /* id */, GLenum severity,
-                                GLsizei /* length */, const GLchar *message,
-                                const void * /* userParam */) {
+void GLAPIENTRY
+MessageCallback(GLenum /* source */,
+                GLenum type,
+                GLuint /* id */,
+                GLenum severity,
+                GLsizei /* length */,
+                const GLchar* message,
+                const void* /* userParam */)
+{
   std::string msg("[OPENGL DEBUG MESSAGE] ");
 
   // print error severity
   switch (severity) {
-  case GL_DEBUG_SEVERITY_LOW:
-    msg.append("\u001b[32m<Low severity> \u001b[0m");
+    case GL_DEBUG_SEVERITY_LOW:
+      msg.append("\u001b[32m<Low severity> \u001b[0m");
 
-    break;
-  case GL_DEBUG_SEVERITY_MEDIUM:
-    msg.append("\u001b[33m<Medium severity> \u001b[0m");
-    break;
-  case GL_DEBUG_SEVERITY_HIGH:
-    msg.append("\u001b[31m<High severity> \u001b[0m");
-    break;
+      break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+      msg.append("\u001b[33m<Medium severity> \u001b[0m");
+      break;
+    case GL_DEBUG_SEVERITY_HIGH:
+      msg.append("\u001b[31m<High severity> \u001b[0m");
+      break;
   }
 
   // append message to output
@@ -27,24 +32,28 @@ void GLAPIENTRY MessageCallback(GLenum /* source */, GLenum type,
 
   // print message
   switch (type) {
-  case GL_DEBUG_TYPE_ERROR:
-  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-    printf("Error: %s\n", msg.c_str());
-    break;
-  case GL_DEBUG_TYPE_PERFORMANCE:
-    printf("Performance issue: %s\n", msg.c_str());
-    break;
-  default: // Portability, Deprecated, Other
-    break;
+    case GL_DEBUG_TYPE_ERROR:
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+      printf("Error: %s\n", msg.c_str());
+      break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+      printf("Performance issue: %s\n", msg.c_str());
+      break;
+    default: // Portability, Deprecated, Other
+      break;
   }
 }
 #endif
 
-void glfw_error(int /* error */, const char *description) {
+void
+glfw_error(int /* error */, const char* description)
+{
   std::cout << description << std::endl;
 }
 
-bool Window::start() {
+bool
+Window::start()
+{
   std::cout << "[window] Start" << std::endl;
   // glfwSetErrorCallback(glfw_error);
 
@@ -68,7 +77,9 @@ bool Window::start() {
   return false;
 }
 
-bool Window::open() {
+bool
+Window::open()
+{
 
   std::cout << "[window] Open" << std::endl;
   m_window = glfwCreateWindow(m_width, m_height, "Dagon", NULL, NULL);
@@ -89,7 +100,7 @@ bool Window::open() {
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
+  ImGuiIO& io = ImGui::GetIO();
   (void)io;
   io.IniFilename = NULL;
 
@@ -111,37 +122,52 @@ bool Window::open() {
   return true;
 }
 
-bool Window::closed() { return glfwWindowShouldClose(m_window); }
+bool
+Window::closed()
+{
+  return glfwWindowShouldClose(m_window);
+}
 
-bool Window::close() {
+bool
+Window::close()
+{
   std::cout << "[window] Close" << std::endl;
   glfwSetWindowShouldClose(m_window, true);
   return true;
 }
 
-void Window::swap() {
+void
+Window::swap()
+{
 
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   glfwSwapBuffers(m_window);
 }
 
-void Window::setCursorPosCallback(void (*callback)(GLFWwindow *window,
-                                                   double xpos, double ypos)) {
+void
+Window::setCursorPosCallback(void (*callback)(GLFWwindow* window,
+                                              double xpos,
+                                              double ypos))
+{
   glfwSetCursorPosCallback(m_window, callback);
 }
-void Window::setMouseButtonCallback(void (*callback)(GLFWwindow *win,
-                                                     i32 button, i32 action,
-                                                     i32 mods)) {
+void
+Window::setMouseButtonCallback(
+  void (*callback)(GLFWwindow* win, i32 button, i32 action, i32 mods))
+{
   glfwSetMouseButtonCallback(m_window, callback);
 }
-void Window::setKeyCallback(void (*callback)(GLFWwindow *win, i32 key,
-                                             i32 scancode, i32 action,
-                                             i32 mods)) {
+void
+Window::setKeyCallback(void (
+  *callback)(GLFWwindow* win, i32 key, i32 scancode, i32 action, i32 mods))
+{
   glfwSetKeyCallback(m_window, callback);
 }
 
-void Window::setFramebufferSizeCallback(void (*callback)(GLFWwindow *window,
-                                                         i32 width,
-                                                         i32 height)) {
+void
+Window::setFramebufferSizeCallback(void (*callback)(GLFWwindow* window,
+                                                    i32 width,
+                                                    i32 height))
+{
   glfwSetFramebufferSizeCallback(m_window, callback);
 }

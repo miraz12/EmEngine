@@ -4,11 +4,12 @@
 #include "Primitive.hpp"
 #include <ShaderPrograms/ShaderProgram.hpp>
 
-class Mesh {
+class Mesh
+{
 public:
   Mesh() = default;
   virtual ~Mesh() = default;
-  u32 numPrims{0};
+  u32 numPrims{ 0 };
   std::unique_ptr<Primitive[]> m_primitives;
 };
 

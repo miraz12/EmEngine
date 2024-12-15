@@ -1,7 +1,8 @@
 #ifndef SKIN_H_
 #define SKIN_H_
 
-class Skin {
+class Skin
+{
 public:
   std::string name;
   u32 skeletonRoot = 0;

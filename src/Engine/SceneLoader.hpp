@@ -3,18 +3,19 @@
 #include <Singleton.hpp>
 
 class ECSManager;
-class SceneLoader : public Singleton<SceneLoader> {
+class SceneLoader : public Singleton<SceneLoader>
+{
   friend class Singleton<SceneLoader>;
 
 public:
-  void init(const char *file);
-  void saveScene(const char *file);
+  void init(const char* file);
+  void saveScene(const char* file);
 
 private:
   SceneLoader() = default;
   ~SceneLoader() = default;
 
-  ECSManager *m_ecsMan;
+  ECSManager* m_ecsMan;
 };
 
 #endif // SCENELOADER_H_

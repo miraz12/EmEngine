@@ -6,7 +6,10 @@
 #include <Managers/FrameBufferManager.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 
-class GraphicsSystem final : public System, public Singleton<GraphicsSystem> {
+class GraphicsSystem final
+  : public System
+  , public Singleton<GraphicsSystem>
+{
   friend class Singleton<GraphicsSystem>;
 
 public:
@@ -16,7 +19,7 @@ public:
 private:
   GraphicsSystem();
   ~GraphicsSystem() override;
-  FrameBufferManager &m_fboManager;
-  FrameGraph &m_fGraph;
+  FrameBufferManager& m_fboManager;
+  FrameGraph& m_fGraph;
 };
 #endif // GRAPHICSSYSTEM_H_

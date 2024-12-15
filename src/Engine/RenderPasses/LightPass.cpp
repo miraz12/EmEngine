@@ -8,8 +8,9 @@
 #include <ECS/ECSManager.hpp>
 
 LightPass::LightPass()
-    : RenderPass("resources/Shaders/lightVertex.glsl",
-                 "resources/Shaders/pbrLightFragment.glsl") {
+  : RenderPass("resources/Shaders/lightVertex.glsl",
+               "resources/Shaders/pbrLightFragment.glsl")
+{
 
   p_shaderProgram.setUniformBinding("debugView");
   p_shaderProgram.setUniformBinding("gPositionAo");
@@ -53,9 +54,9 @@ LightPass::LightPass()
 
   u32 quadVBO;
   float quadVertices[] = {
-      // positions        // texture Coords
-      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-      1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    // positions        // texture Coords
+    -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+    1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
   };
 
   glGenVertexArrays(1, &quadVAO);
@@ -63,16 +64,18 @@ LightPass::LightPass()
   glBindVertexArray(quadVAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
-               GL_STATIC_DRAW);
+  glBufferData(
+    GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(
+    1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 }
 
-void LightPass::Execute(ECSManager &eManager) {
+void
+LightPass::Execute(ECSManager& eManager)
+{
   p_fboManager.bindFBO("lightFBO");
   glDisable(GL_DEPTH_TEST);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -87,71 +90,76 @@ void LightPass::Execute(ECSManager &eManager) {
   glm::mat4 lightSpaceMatrix;
   float shadowBox = 9.0f;
   lightProjection =
-      glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
+    glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
   glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
   lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   lightSpaceMatrix = lightProjection * lightView;
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"), 1,
-                     GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
+                     1,
+                     GL_FALSE,
+                     glm::value_ptr(lightSpaceMatrix));
 
   std::vector<Entity> view = eManager.view<LightingComponent>();
   i32 numPLights = 0;
   for (auto e : view) {
     std::shared_ptr<LightingComponent> g =
-        eManager.getComponent<LightingComponent>(e);
+      eManager.getComponent<LightingComponent>(e);
 
     LightingComponent::TYPE t = g->getType();
     if (t == LightingComponent::TYPE::DIRECTIONAL) {
-      DirectionalLight &light =
-          static_cast<DirectionalLight &>(g->getBaseLight());
+      DirectionalLight& light =
+        static_cast<DirectionalLight&>(g->getBaseLight());
       glUniform3fv(
-          p_shaderProgram.getUniformLocation("directionalLight.direction"), 1,
-          glm::value_ptr(light.direction));
+        p_shaderProgram.getUniformLocation("directionalLight.direction"),
+        1,
+        glm::value_ptr(light.direction));
 
       glUniform3fv(p_shaderProgram.getUniformLocation("directionalLight.color"),
-                   1, glm::value_ptr(light.color));
-
-      glUniform1f(p_shaderProgram.getUniformLocation(
-                      "directionalLight.ambientIntensity"),
-                  light.ambientIntensity);
-
-    } else if (t == LightingComponent::TYPE::POINT) {
-      PointLight &light = static_cast<PointLight &>(g->getBaseLight());
-      glUniform3fv(
-          p_shaderProgram.getUniformLocation(
-              "pointLights[" + std::to_string(numPLights) + "].position"),
-          1, glm::value_ptr(light.position));
-
-      glUniform3fv(p_shaderProgram.getUniformLocation(
-                       "pointLights[" + std::to_string(numPLights) + "].color"),
-                   1, glm::value_ptr(light.color));
+                   1,
+                   glm::value_ptr(light.color));
 
       glUniform1f(
-          p_shaderProgram.getUniformLocation(
-              "pointLights[" + std::to_string(numPLights) + "].constant"),
-          light.constant);
+        p_shaderProgram.getUniformLocation("directionalLight.ambientIntensity"),
+        light.ambientIntensity);
+
+    } else if (t == LightingComponent::TYPE::POINT) {
+      PointLight& light = static_cast<PointLight&>(g->getBaseLight());
+      glUniform3fv(
+        p_shaderProgram.getUniformLocation(
+          "pointLights[" + std::to_string(numPLights) + "].position"),
+        1,
+        glm::value_ptr(light.position));
+
+      glUniform3fv(p_shaderProgram.getUniformLocation(
+                     "pointLights[" + std::to_string(numPLights) + "].color"),
+                   1,
+                   glm::value_ptr(light.color));
 
       glUniform1f(p_shaderProgram.getUniformLocation(
-                      "pointLights[" + std::to_string(numPLights) + "].linear"),
+                    "pointLights[" + std::to_string(numPLights) + "].constant"),
+                  light.constant);
+
+      glUniform1f(p_shaderProgram.getUniformLocation(
+                    "pointLights[" + std::to_string(numPLights) + "].linear"),
                   light.linear);
 
       glUniform1f(
-          p_shaderProgram.getUniformLocation(
-              "pointLights[" + std::to_string(numPLights) + "].quadratic"),
-          light.quadratic);
+        p_shaderProgram.getUniformLocation(
+          "pointLights[" + std::to_string(numPLights) + "].quadratic"),
+        light.quadratic);
       const float constant =
-          1.0f; // note that we don't send this to the shader, we assume it is
-                // always 1.0 (in our case)
+        1.0f; // note that we don't send this to the shader, we assume it is
+              // always 1.0 (in our case)
       float maxBrightness =
-          std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
+        std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
       float radius =
-          (-light.linear +
-           std::sqrt(light.linear * light.linear -
-                     4 * light.quadratic *
-                         (constant - (256.0f / 5.0f) * maxBrightness))) /
-          (2.0f * light.quadratic);
+        (-light.linear +
+         std::sqrt(light.linear * light.linear -
+                   4 * light.quadratic *
+                     (constant - (256.0f / 5.0f) * maxBrightness))) /
+        (2.0f * light.quadratic);
       glUniform1f(p_shaderProgram.getUniformLocation(
-                      "pointLights[" + std::to_string(numPLights) + "].radius"),
+                    "pointLights[" + std::to_string(numPLights) + "].radius"),
                   radius);
 
       numPLights++;
@@ -161,9 +169,10 @@ void LightPass::Execute(ECSManager &eManager) {
   glUniform1i(p_shaderProgram.getUniformLocation("nrOfPointLights"),
               numPLights);
 
-  auto cam = static_pointer_cast<CameraComponent>(
-      ECSManager::getInstance().getCamera());
-  glUniform3fv(p_shaderProgram.getUniformLocation("camPos"), 1,
+  auto cam =
+    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  glUniform3fv(p_shaderProgram.getUniformLocation("camPos"),
+               1,
                glm::value_ptr(cam->m_position));
 
   glBindVertexArray(quadVAO);
@@ -173,7 +182,9 @@ void LightPass::Execute(ECSManager &eManager) {
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void LightPass::setViewport(u32 w, u32 h) {
+void
+LightPass::setViewport(u32 w, u32 h)
+{
   p_width = w;
   p_height = h;
 
@@ -181,17 +192,17 @@ void LightPass::setViewport(u32 w, u32 h) {
 
   // - position color buffer
   u32 lightFrame = p_textureManager.loadTexture(
-      "lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         lightFrame, 0);
+    "lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  glFramebufferTexture2D(
+    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightFrame, 0);
 
-  u32 attachments[1] = {GL_COLOR_ATTACHMENT0};
+  u32 attachments[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, attachments);
   glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width,
-                        p_height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, m_rbo);
+  glRenderbufferStorage(
+    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
+  glFramebufferRenderbuffer(
+    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
   // finally check if framebuffer is complete
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;

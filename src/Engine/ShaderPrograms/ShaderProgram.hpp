@@ -6,13 +6,14 @@
 
 // Base shader class, inherit from this and define your own
 // setupVertexAttributePointers that matches the shaders
-class ShaderProgram {
+class ShaderProgram
+{
 public:
   ShaderProgram() = delete;
   ShaderProgram(std::string_view vertexShaderPath,
                 std::string_view fragmentShaderPath);
   virtual ~ShaderProgram();
-  ShaderProgram(const ShaderProgram &) = delete;
+  ShaderProgram(const ShaderProgram&) = delete;
 
   void setUniformBinding(std::string u);
   void setAttribBinding(std::string a);
@@ -28,6 +29,6 @@ private:
   std::unordered_map<std::string, u32> m_uniformBindings;
   std::unordered_map<std::string, i32> m_attribBindings;
 
-  void readFile(std::string_view filePath, std::string *result);
+  void readFile(std::string_view filePath, std::string* result);
 };
 #endif // SHADERPROGRAM_H_

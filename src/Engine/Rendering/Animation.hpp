@@ -3,8 +3,14 @@
 
 #include <Rendering/Node.hpp>
 
-struct AnimationSampler {
-  enum class InterpolationType { LINEAR, STEP, CUBICSPLINE };
+struct AnimationSampler
+{
+  enum class InterpolationType
+  {
+    LINEAR,
+    STEP,
+    CUBICSPLINE
+  };
   InterpolationType interpolation;
   std::vector<float> inputs;
   std::vector<glm::vec4> outputsVec4;
@@ -15,14 +21,21 @@ struct AnimationSampler {
   glm::vec4 cubicSplineInterpolation(size_t index, float time, uint32_t stride);
 };
 
-struct AnimationChannel {
-  enum class PathType { TRANSLATION, ROTATION, SCALE };
+struct AnimationChannel
+{
+  enum class PathType
+  {
+    TRANSLATION,
+    ROTATION,
+    SCALE
+  };
   PathType path;
   u32 node;
   uint32_t samplerIndex;
 };
 
-class Animation {
+class Animation
+{
 public:
   Animation() = default;
   ~Animation() = default;

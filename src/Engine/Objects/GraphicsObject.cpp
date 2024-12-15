@@ -1,20 +1,26 @@
 #include "GraphicsObject.hpp"
 
-void GraphicsObject::newNode(glm::mat4 model) {
+void
+GraphicsObject::newNode(glm::mat4 model)
+{
   p_numNodes = 1;
   p_nodes = std::make_unique<Node[]>(p_numNodes);
   p_nodes[0].mesh = 0;
   p_nodes[0].nodeMat = model;
 }
 
-glm::mat4 GraphicsObject::getLocalMat(i32 node) {
+glm::mat4
+GraphicsObject::getLocalMat(i32 node)
+{
   return glm::translate(glm::mat4(1.0f), p_nodes[node].trans) *
          glm::toMat4(p_nodes[node].rot) *
          glm::scale(glm::mat4(1.0f), p_nodes[node].scale) *
          p_nodes[node].nodeMat;
 }
 
-glm::mat4 GraphicsObject::getMatrix(i32 node) {
+glm::mat4
+GraphicsObject::getMatrix(i32 node)
+{
   // If the node has no parent, return its local matrix
   if (p_nodes[node].parent == -1) {
     return getLocalMat(node);
@@ -24,7 +30,9 @@ glm::mat4 GraphicsObject::getMatrix(i32 node) {
   }
 }
 
-void GraphicsObject::applySkinning(const ShaderProgram &sPrg, i32 node) {
+void
+GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
+{
 
   std::vector<glm::mat4> joinMat;
   for (u32 j = 0; j < p_skins[node].joints.size(); j++) {
@@ -34,12 +42,16 @@ void GraphicsObject::applySkinning(const ShaderProgram &sPrg, i32 node) {
   }
 
   if (!joinMat.empty()) {
-    glUniformMatrix4fv(sPrg.getUniformLocation("jointMatrices"), joinMat.size(),
-                       GL_FALSE, &joinMat[0][0][0]);
+    glUniformMatrix4fv(sPrg.getUniformLocation("jointMatrices"),
+                       joinMat.size(),
+                       GL_FALSE,
+                       &joinMat[0][0][0]);
   }
 }
 
-void GraphicsObject::draw(const ShaderProgram &sPrg) {
+void
+GraphicsObject::draw(const ShaderProgram& sPrg)
+{
 
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
@@ -50,11 +62,11 @@ void GraphicsObject::draw(const ShaderProgram &sPrg) {
         glUniform1f(sPrg.getUniformLocation("is_skinned"), 0.0f);
       }
 
-      Mesh &m = p_meshes[p_nodes[i].mesh];
+      Mesh& m = p_meshes[p_nodes[i].mesh];
       for (u32 j = 0; j < m.numPrims; j++) {
-        Material *mat = m.m_primitives[j].m_material > -1
-                            ? &p_materials[m.m_primitives[j].m_material]
-                            : &defaultMat;
+        Material* mat = m.m_primitives[j].m_material > -1
+                          ? &p_materials[m.m_primitives[j].m_material]
+                          : &defaultMat;
 
         mat->bind(sPrg);
         m.m_primitives[j].draw();
@@ -62,7 +74,9 @@ void GraphicsObject::draw(const ShaderProgram &sPrg) {
     }
   }
 }
-void GraphicsObject::drawGeom(const ShaderProgram &) {
+void
+GraphicsObject::drawGeom(const ShaderProgram&)
+{
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
       // if (p_nodes[i].skin >= 0) {
@@ -72,7 +86,7 @@ void GraphicsObject::drawGeom(const ShaderProgram &) {
       //   glUniform1f(sPrg.getUniformLocation("is_skinned"), 0.0f);
       // }
 
-      Mesh &m = p_meshes[p_nodes[i].mesh];
+      Mesh& m = p_meshes[p_nodes[i].mesh];
       for (u32 i = 0; i < m.numPrims; i++) {
         m.m_primitives[i].draw();
       }

@@ -6,26 +6,36 @@
 #include <string>
 
 ShaderProgram::ShaderProgram(std::string_view vertexShaderPath,
-                             std::string_view fragmentShaderPath) {
+                             std::string_view fragmentShaderPath)
+{
   loadShaders(vertexShaderPath, fragmentShaderPath);
 }
 
-ShaderProgram::~ShaderProgram() { glDeleteProgram(p_shaderProgram); }
+ShaderProgram::~ShaderProgram()
+{
+  glDeleteProgram(p_shaderProgram);
+}
 
-void ShaderProgram::setUniformBinding(std::string u) {
+void
+ShaderProgram::setUniformBinding(std::string u)
+{
   m_uniformBindings[u] = glGetUniformLocation(p_shaderProgram, u.c_str());
 }
 
-void ShaderProgram::setAttribBinding(std::string a) {
+void
+ShaderProgram::setAttribBinding(std::string a)
+{
   m_attribBindings[a] = glGetAttribLocation(p_shaderProgram, a.c_str());
 }
 
-void ShaderProgram::loadShaders(std::string_view vertexShaderPath,
-                                std::string_view fragmentShaderPath) {
+void
+ShaderProgram::loadShaders(std::string_view vertexShaderPath,
+                           std::string_view fragmentShaderPath)
+{
   // vertex shader
   std::string vertexShaderString = "";
   readFile(vertexShaderPath, &vertexShaderString);
-  const char *vertexShaderSrc = vertexShaderString.c_str();
+  const char* vertexShaderSrc = vertexShaderString.c_str();
 
   u32 vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
@@ -44,7 +54,7 @@ void ShaderProgram::loadShaders(std::string_view vertexShaderPath,
   // fragment shader
   std::string fragmentShaderString = "";
   readFile(fragmentShaderPath, &fragmentShaderString);
-  const char *fragmentShaderSrc = fragmentShaderString.c_str();
+  const char* fragmentShaderSrc = fragmentShaderString.c_str();
 
   u32 fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSrc, NULL);
@@ -75,9 +85,15 @@ void ShaderProgram::loadShaders(std::string_view vertexShaderPath,
   glDeleteShader(fragmentShader);
 }
 
-void ShaderProgram::use() const { glUseProgram(p_shaderProgram); }
+void
+ShaderProgram::use() const
+{
+  glUseProgram(p_shaderProgram);
+}
 
-u32 ShaderProgram::getUniformLocation(std::string uniformName) const {
+u32
+ShaderProgram::getUniformLocation(std::string uniformName) const
+{
   if (m_uniformBindings.find(uniformName) == m_uniformBindings.end()) {
     std::cout << "No uniform with name " << uniformName << "\n";
     assert(false);
@@ -87,7 +103,9 @@ u32 ShaderProgram::getUniformLocation(std::string uniformName) const {
   return 0;
 }
 
-u32 ShaderProgram::getAttribLocation(std::string attribName) const {
+u32
+ShaderProgram::getAttribLocation(std::string attribName) const
+{
   if (m_attribBindings.find(attribName) == m_attribBindings.end()) {
     std::cout << "No attribute with name " << attribName << "\n";
   } else {
@@ -96,7 +114,9 @@ u32 ShaderProgram::getAttribLocation(std::string attribName) const {
   return 0;
 }
 
-void ShaderProgram::readFile(std::string_view filePath, std::string *result) {
+void
+ShaderProgram::readFile(std::string_view filePath, std::string* result)
+{
   std::string line;
   std::ifstream theFile(filePath.data());
   if (theFile.is_open()) {

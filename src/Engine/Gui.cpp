@@ -7,7 +7,9 @@
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
 
-void GUI::renderGUI() {
+void
+GUI::renderGUI()
+{
 
   // Start the Dear ImGui frame
 
@@ -18,10 +20,10 @@ void GUI::renderGUI() {
 
   if (ImGui::CollapsingHeader("Camera")) {
     auto cam = static_pointer_cast<CameraComponent>(
-        ECSManager::getInstance().getCamera());
+      ECSManager::getInstance().getCamera());
 
     ImGui::SliderFloat("FOV", &cam->m_fov, 0.0f, 120.0f);
-    float *nearFar[2];
+    float* nearFar[2];
     nearFar[0] = &cam->m_near;
     nearFar[1] = &cam->m_far;
     ImGui::InputFloat2("FOV", nearFar[0]);
@@ -46,26 +48,27 @@ void GUI::renderGUI() {
     //                  ImVec2(0, 80.f));
 
     const std::vector<std::string> debugNamesInputs = {
-        "none",     "Base color", "Normal",   "Occlusion",
-        "Emissive", "Metallic",   "Roughness"};
-    std::vector<const char *> charitems;
+      "none",     "Base color", "Normal",   "Occlusion",
+      "Emissive", "Metallic",   "Roughness"
+    };
+    std::vector<const char*> charitems;
     charitems.reserve(debugNamesInputs.size());
     for (size_t i = 0; i < debugNamesInputs.size(); i++) {
       charitems.push_back(debugNamesInputs[i].c_str());
     }
-    ImGui::Combo("views", &ECSManager::getInstance().getDebugView(),
-                 &charitems[0], 7, 7);
+    ImGui::Combo(
+      "views", &ECSManager::getInstance().getDebugView(), &charitems[0], 7, 7);
   }
 
   Entity en = ECSManager::getInstance().getPickedEntity();
   if (en > 0) {
 
-    glm::vec3 &pos =
-        ECSManager::getInstance().getComponent<PositionComponent>(en)->position;
-    glm::quat &rot =
-        ECSManager::getInstance().getComponent<PositionComponent>(en)->rotation;
-    glm::vec3 &scale =
-        ECSManager::getInstance().getComponent<PositionComponent>(en)->scale;
+    glm::vec3& pos =
+      ECSManager::getInstance().getComponent<PositionComponent>(en)->position;
+    glm::quat& rot =
+      ECSManager::getInstance().getComponent<PositionComponent>(en)->rotation;
+    glm::vec3& scale =
+      ECSManager::getInstance().getComponent<PositionComponent>(en)->scale;
 
     ImGuizmo::BeginFrame();
 
@@ -94,7 +97,7 @@ void GUI::renderGUI() {
     }
 
     auto cam = static_pointer_cast<CameraComponent>(
-        ECSManager::getInstance().getCamera());
+      ECSManager::getInstance().getCamera());
 
     glm::vec3 euler = glm::eulerAngles(rot) * RAD2DEG;
     editTransform(cam, pos, euler, scale);
@@ -108,23 +111,32 @@ void GUI::renderGUI() {
   ImGui::Render();
 }
 
-void GUI::editTransform(std::shared_ptr<CameraComponent> camera, glm::vec3 &pos,
-                        glm::vec3 &rot, glm::vec3 &scale) {
+void
+GUI::editTransform(std::shared_ptr<CameraComponent> camera,
+                   glm::vec3& pos,
+                   glm::vec3& rot,
+                   glm::vec3& scale)
+{
 
   glm::mat4 matrix = glm::identity<glm::mat4>();
-  ImGuizmo::RecomposeMatrixFromComponents(
-      glm::value_ptr(pos), glm::value_ptr(rot), glm::value_ptr(scale),
-      glm::value_ptr(matrix));
+  ImGuizmo::RecomposeMatrixFromComponents(glm::value_ptr(pos),
+                                          glm::value_ptr(rot),
+                                          glm::value_ptr(scale),
+                                          glm::value_ptr(matrix));
   ImGuizmo::SetRect(0, 0, camera->m_width, camera->m_height);
   ImGuizmo::SetOrthographic(false);
   ImGuizmo::Manipulate(glm::value_ptr(camera->m_viewMatrix),
                        glm::value_ptr(camera->m_ProjectionMatrix),
-                       mCurrentGizmoOperation, mCurrentGizmoMode,
-                       glm::value_ptr(matrix), NULL, NULL);
+                       mCurrentGizmoOperation,
+                       mCurrentGizmoMode,
+                       glm::value_ptr(matrix),
+                       NULL,
+                       NULL);
 
-  ImGuizmo::DecomposeMatrixToComponents(
-      glm::value_ptr(matrix), glm::value_ptr(pos), glm::value_ptr(rot),
-      glm::value_ptr(scale));
+  ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix),
+                                        glm::value_ptr(pos),
+                                        glm::value_ptr(rot),
+                                        glm::value_ptr(scale));
 
   // DEBUG grid
   // ImGuizmo::DrawGrid(glm::value_ptr(camera.getViewMatrix()),

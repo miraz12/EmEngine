@@ -3,16 +3,17 @@
 
 #include "RenderPasses/RenderPass.hpp"
 
-class ShadowPass final : public RenderPass {
+class ShadowPass final : public RenderPass
+{
 public:
   ShadowPass();
   ~ShadowPass() override = default;
-  void Execute(ECSManager &eManager) override;
+  void Execute(ECSManager& eManager) override;
   void setViewport(u32 w, u32 h) override;
-  void Init(FrameGraph &fGraph) override;
+  void Init(FrameGraph& fGraph) override;
 
 private:
-  bool m_dirty{false};
+  bool m_dirty{ false };
 };
 
 #endif // SHADOWPASS_H_

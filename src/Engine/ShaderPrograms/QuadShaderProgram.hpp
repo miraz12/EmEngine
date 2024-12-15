@@ -3,7 +3,8 @@
 
 #include "ShaderProgram.hpp"
 
-class QuadShaderProgram : public ShaderProgram {
+class QuadShaderProgram : public ShaderProgram
+{
 public:
   QuadShaderProgram();
   ~QuadShaderProgram() override = default;
