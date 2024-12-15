@@ -130,7 +130,7 @@ void PhysicsSystem::initialize(ECSManager &ecsManager) {
       m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
 
   m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
-  m_dynamicsWorld->setDebugDrawer(&m_dDraw);
+  // m_dynamicsWorld->setDebugDrawer(&m_dDraw);
 
   ///-----initialization_end-----
 
@@ -169,7 +169,7 @@ void PhysicsSystem::update(float dt) {
 
   if (m_manager->getSimulatePhysics()) {
     m_dynamicsWorld->stepSimulation(dt, 10);
-    m_dynamicsWorld->debugDrawWorld();
+    // m_dynamicsWorld->debugDrawWorld();
     std::vector<Entity> view =
         m_manager->view<PositionComponent, PhysicsComponent>();
     for (auto e : view) {
