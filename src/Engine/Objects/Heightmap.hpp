@@ -3,7 +3,8 @@
 
 #include "GraphicsObject.hpp"
 
-class Heightmap final : public GraphicsObject {
+class Heightmap final : public GraphicsObject
+{
 public:
   Heightmap() = delete;
   explicit Heightmap(std::string filename);

@@ -3,7 +3,8 @@
 
 #include "GraphicsObject.hpp"
 
-class Cube final : public GraphicsObject {
+class Cube final : public GraphicsObject
+{
 public:
   Cube();
   ~Cube() override = default;

@@ -8,8 +8,9 @@
 #include <RenderPasses/FrameGraph.hpp>
 
 ShadowPass::ShadowPass()
-    : RenderPass("resources/Shaders/shadowVertex.glsl",
-                 "resources/Shaders/shadowFragment.glsl") {
+  : RenderPass("resources/Shaders/shadowVertex.glsl",
+               "resources/Shaders/shadowFragment.glsl")
+{
 
   p_shaderProgram.use();
   p_shaderProgram.setUniformBinding("modelMatrix");
@@ -28,15 +29,22 @@ ShadowPass::ShadowPass()
 
   p_fboManager.bindFBO("depthMapFbo");
   p_textureManager.bindTexture("depthMap");
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, p_width, p_height, 0,
-               GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_DEPTH_COMPONENT16,
+               p_width,
+               p_height,
+               0,
+               GL_DEPTH_COMPONENT,
+               GL_UNSIGNED_INT,
+               0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-                         depthMap, 0);
+  glFramebufferTexture2D(
+    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
   GLuint buffer = GL_NONE; // Emscripten strangeness
   glDrawBuffers(1, &buffer);
   glReadBuffer(GL_NONE);
@@ -49,12 +57,16 @@ ShadowPass::ShadowPass()
   setViewport(p_width, p_height);
 }
 
-void ShadowPass::Init(FrameGraph &fGraph) {
+void
+ShadowPass::Init(FrameGraph& fGraph)
+{
   fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture(
-      "depthMap");
+    "depthMap");
 }
 
-void ShadowPass::Execute(ECSManager &eManager) {
+void
+ShadowPass::Execute(ECSManager& eManager)
+{
   p_fboManager.bindFBO("depthMapFbo");
   glEnable(GL_DEPTH_TEST);
   glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
@@ -69,27 +81,33 @@ void ShadowPass::Execute(ECSManager &eManager) {
   glm::mat4 lightSpaceMatrix;
   float shadowBox = 9.0f;
   lightProjection =
-      glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
+    glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
   glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
   lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
   lightSpaceMatrix = lightProjection * lightView;
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"), 1,
-                     GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
+                     1,
+                     GL_FALSE,
+                     glm::value_ptr(lightSpaceMatrix));
 
   std::vector<Entity> view = eManager.view<GraphicsComponent>();
-  for (auto &e : view) {
+  for (auto& e : view) {
     std::shared_ptr<PositionComponent> p =
-        eManager.getComponent<PositionComponent>(e);
+      eManager.getComponent<PositionComponent>(e);
     if (p) {
-      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
-                         GL_FALSE, glm::value_ptr(p->model));
+      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
+                         1,
+                         GL_FALSE,
+                         glm::value_ptr(p->model));
     } else {
-      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"), 1,
-                         GL_FALSE, glm::value_ptr(glm::identity<glm::mat4>()));
+      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
+                         1,
+                         GL_FALSE,
+                         glm::value_ptr(glm::identity<glm::mat4>()));
     }
 
     std::shared_ptr<GraphicsComponent> g =
-        eManager.getComponent<GraphicsComponent>(e);
+      eManager.getComponent<GraphicsComponent>(e);
     g->m_grapObj->drawGeom(p_shaderProgram);
   }
 
@@ -97,15 +115,24 @@ void ShadowPass::Execute(ECSManager &eManager) {
   m_dirty = false;
 }
 
-void ShadowPass::setViewport(u32 w, u32 h) {
+void
+ShadowPass::setViewport(u32 w, u32 h)
+{
   p_width = w;
   p_height = h;
 
   m_dirty = true;
   p_fboManager.bindFBO("depthMapFbo");
   p_textureManager.bindTexture("depthMap");
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, p_width, p_height, 0,
-               GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_DEPTH_COMPONENT16,
+               p_width,
+               p_height,
+               0,
+               GL_DEPTH_COMPONENT,
+               GL_UNSIGNED_INT,
+               0);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

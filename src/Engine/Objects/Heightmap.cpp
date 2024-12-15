@@ -1,12 +1,14 @@
 #include "Heightmap.hpp"
 
-Heightmap::Heightmap(std::string filename) : m_filename(filename) {
+Heightmap::Heightmap(std::string filename)
+  : m_filename(filename)
+{
   i32 numChannels;
   i32 width;
   i32 height;
   stbi_set_flip_vertically_on_load(true); // Flip the image vertically
-  unsigned char *imageData =
-      stbi_load(filename.c_str(), &width, &height, &numChannels, 1);
+  unsigned char* imageData =
+    stbi_load(filename.c_str(), &width, &height, &numChannels, 1);
 
   if (!imageData) {
     std::cout << "Failed to load HDR image." << std::endl;
@@ -34,9 +36,15 @@ Heightmap::Heightmap(std::string filename) : m_filename(filename) {
       }
     }
 
-    p_coll = new btHeightfieldTerrainShape(width, height, m_data.data(), 1,
-                                           -terrainScale, terrainScale, 1,
-                                           PHY_FLOAT, false);
+    p_coll = new btHeightfieldTerrainShape(width,
+                                           height,
+                                           m_data.data(),
+                                           1,
+                                           -terrainScale,
+                                           terrainScale,
+                                           1,
+                                           PHY_FLOAT,
+                                           false);
 
     i32 numStrips = height - 1;
     i32 numDegens = 2 * (numStrips - 1);
@@ -66,7 +74,7 @@ Heightmap::Heightmap(std::string filename) : m_filename(filename) {
     p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
     p_meshes[0].numPrims = 1;
     p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
-    Primitive *newPrim = &p_meshes[0].m_primitives[0];
+    Primitive* newPrim = &p_meshes[0].m_primitives[0];
     u32 vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -81,16 +89,20 @@ Heightmap::Heightmap(std::string filename) : m_filename(filename) {
     GLuint ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(u32) * m_indices.size(),
-                 m_indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 sizeof(u32) * m_indices.size(),
+                 m_indices.data(),
+                 GL_STATIC_DRAW);
     newPrim->m_ebo = ebo;
     newPrim->m_drawType = 1;
 
     u32 vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size() * 3,
-                 m_vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 sizeof(float) * m_vertices.size() * 3,
+                 m_vertices.data(),
+                 GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
     glEnableVertexAttribArray(0);

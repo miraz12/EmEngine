@@ -4,7 +4,10 @@
 #include "System.hpp"
 #include <Singleton.hpp>
 
-class AnimationSystem final : public System, public Singleton<AnimationSystem> {
+class AnimationSystem final
+  : public System
+  , public Singleton<AnimationSystem>
+{
   friend class Singleton<AnimationSystem>;
 
 public:

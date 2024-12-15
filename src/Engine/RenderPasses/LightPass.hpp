@@ -3,13 +3,14 @@
 #include "RenderPasses/RenderPass.hpp"
 #include <Managers/TextureManager.hpp>
 
-class LightPass final : public RenderPass {
+class LightPass final : public RenderPass
+{
 public:
   LightPass();
   ~LightPass() override = default;
-  void Execute(ECSManager &eManager) override;
+  void Execute(ECSManager& eManager) override;
   void setViewport(u32 w, u32 h) override;
-  void Init(FrameGraph & /* fGraph */) override {};
+  void Init(FrameGraph& /* fGraph */) override {};
 
 private:
   u32 quadVAO;

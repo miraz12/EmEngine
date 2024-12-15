@@ -9,8 +9,9 @@
 #endif
 
 QuadShaderProgram::QuadShaderProgram()
-    : ShaderProgram("resources/Shaders/quadVertex.glsl",
-                    "resources/Shaders/quadFragment.glsl") {
+  : ShaderProgram("resources/Shaders/quadVertex.glsl",
+                  "resources/Shaders/quadFragment.glsl")
+{
   setUniformBinding("gPosition");
   setUniformBinding("gNormal");
   setUniformBinding("gAlbedoSpec");

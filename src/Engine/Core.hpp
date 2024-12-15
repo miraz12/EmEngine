@@ -3,7 +3,8 @@
 #include <ECS/ECSManager.hpp>
 #include <Gui.hpp>
 
-class Core : public Singleton<Core> {
+class Core : public Singleton<Core>
+{
   friend class Singleton<Core>;
 
 public:
@@ -13,10 +14,10 @@ public:
   bool initialize();
   void update();
   bool open();
-  float &getDeltaTime();
+  float& getDeltaTime();
 
 private:
-  ECSManager *m_ECSManager;
+  ECSManager* m_ECSManager;
   float m_dt;
   float m_prevTime;
   float m_currentTime;

@@ -3,7 +3,8 @@
 
 #include "ECS/Components/CameraComponent.hpp"
 
-class GUI {
+class GUI
+{
 
 public:
   GUI() = default;
@@ -11,8 +12,10 @@ public:
   void renderGUI();
 
 private:
-  void editTransform(std::shared_ptr<CameraComponent> camera, glm::vec3 &pos,
-                     glm::vec3 &rot, glm::vec3 &scale);
+  void editTransform(std::shared_ptr<CameraComponent> camera,
+                     glm::vec3& pos,
+                     glm::vec3& rot,
+                     glm::vec3& scale);
 };
 
 #endif // GUI_H_

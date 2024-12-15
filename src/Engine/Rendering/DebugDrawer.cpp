@@ -1,15 +1,22 @@
 #include "DebugDrawer.hpp"
 
-DebugDrawer::DebugDrawer() { lines.reserve(1000); }
+DebugDrawer::DebugDrawer()
+{
+  lines.reserve(1000);
+}
 
 #ifdef EMSCRIPTEN
-void DebugDrawer::drawLine(const btVector3 & /* from */,
-                           const btVector3 & /* to */,
-                           const btVector3 & /* color */) {
+void
+DebugDrawer::drawLine(const btVector3& /* from */,
+                      const btVector3& /* to */,
+                      const btVector3& /* color */)
+{
 #else
-void DebugDrawer::drawLine(const btVector3 & /* from */,
-                           const btVector3 & /* to */,
-                           const btVector3 & /* color */) {
+void
+DebugDrawer::drawLine(const btVector3& /* from */,
+                      const btVector3& /* to */,
+                      const btVector3& /* color */)
+{
   // DebugDrawer::Line l;
   // l.from = from;
   // l.to = to;
@@ -18,23 +25,32 @@ void DebugDrawer::drawLine(const btVector3 & /* from */,
 #endif
 }
 
-void DebugDrawer::drawContactPoint(const btVector3 & /* pointOnB */,
-                                   const btVector3 & /* normalOnB */,
-                                   btScalar /* distance */, i32 /* lifeTime */,
-                                   const btVector3 & /* color */) {
+void
+DebugDrawer::drawContactPoint(const btVector3& /* pointOnB */,
+                              const btVector3& /* normalOnB */,
+                              btScalar /* distance */,
+                              i32 /* lifeTime */,
+                              const btVector3& /* color */)
+{
   // Implement if needed
 }
 
-void DebugDrawer::reportErrorWarning(const char * /* warningString */) {
+void
+DebugDrawer::reportErrorWarning(const char* /* warningString */)
+{
   // Implement if needed
 }
 
-void DebugDrawer::draw3dText(const btVector3 & /* location */,
-                             const char * /* textString */) {
+void
+DebugDrawer::draw3dText(const btVector3& /* location */,
+                        const char* /* textString */)
+{
   // Implement if needed
 }
 
-void DebugDrawer::renderAndFlush() {
+void
+DebugDrawer::renderAndFlush()
+{
 #ifndef EMSCRIPTEN
   // if (lines.size() > 0) {
 

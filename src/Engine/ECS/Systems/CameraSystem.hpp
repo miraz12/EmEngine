@@ -6,14 +6,18 @@
 #include <glm/glm.hpp>
 #include <tuple>
 
-class CameraSystem : public System, public Singleton<CameraSystem> {
+class CameraSystem
+  : public System
+  , public Singleton<CameraSystem>
+{
   friend class Singleton<CameraSystem>;
 
 public:
   void update(float dt) override;
 
   static void bindProjViewMatrix(std::shared_ptr<CameraComponent> camera,
-                                 u32 proj, u32 view);
+                                 u32 proj,
+                                 u32 view);
   static void bindProjMatrix(std::shared_ptr<CameraComponent> camera, u32 proj);
   static void bindViewMatrix(std::shared_ptr<CameraComponent> camera, u32 view);
   static std::tuple<glm::vec3, glm::vec3>

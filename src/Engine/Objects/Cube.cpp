@@ -1,8 +1,8 @@
 #include "Cube.hpp"
 
-Cube::Cube() {
-  float vertices[] = {
-      // clang-format off
+Cube::Cube()
+{
+  float vertices[] = { // clang-format off
     // Front face
     -0.5f, -0.5f,  0.5f,
      0.5f, -0.5f,  0.5f,
@@ -60,7 +60,7 @@ Cube::Cube() {
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
-  Primitive *newPrim = &p_meshes[0].m_primitives[0];
+  Primitive* newPrim = &p_meshes[0].m_primitives[0];
   u32 vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);

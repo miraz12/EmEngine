@@ -2,13 +2,15 @@
 #include "ECS/Components/PositionComponent.hpp"
 #include <ECS/ECSManager.hpp>
 
-void ParticleSystem::update(float dt) {
+void
+ParticleSystem::update(float dt)
+{
   std::vector<Entity> view = m_manager->view<ParticlesComponent>();
-  for (auto &e : view) {
+  for (auto& e : view) {
     std::shared_ptr<ParticlesComponent> partComp =
-        m_manager->getComponent<ParticlesComponent>(e);
+      m_manager->getComponent<ParticlesComponent>(e);
     std::shared_ptr<PositionComponent> posComp =
-        m_manager->getComponent<PositionComponent>(e);
+      m_manager->getComponent<PositionComponent>(e);
 
     for (u32 i = 0; i < partComp->getNumNewParticles(); i++) {
       glm::vec3 pos = glm::vec3(0);
@@ -17,8 +19,8 @@ void ParticleSystem::update(float dt) {
       }
       reviveParticle(partComp, pos);
     }
-    std::vector<std::shared_ptr<Particle>> &aliveParticles =
-        partComp->getAliveParticles();
+    std::vector<std::shared_ptr<Particle>>& aliveParticles =
+      partComp->getAliveParticles();
     // Loop through all alive particles, removing all dying ones
     for (u32 i = 0; i < aliveParticles.size();)
       if (aliveParticles[i]->life <= 0) {
@@ -34,28 +36,32 @@ void ParticleSystem::update(float dt) {
   }
 }
 
-void ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
-                                  std::shared_ptr<Particle> &p) {
-  std::vector<std::shared_ptr<Particle>> &aliveParticles =
-      pComp->getAliveParticles();
-  std::vector<std::shared_ptr<Particle>> &deadParticles =
-      pComp->getDeadParticles();
+void
+ParticleSystem::killParticle(std::shared_ptr<ParticlesComponent> pComp,
+                             std::shared_ptr<Particle>& p)
+{
+  std::vector<std::shared_ptr<Particle>>& aliveParticles =
+    pComp->getAliveParticles();
+  std::vector<std::shared_ptr<Particle>>& deadParticles =
+    pComp->getDeadParticles();
   std::vector<std::shared_ptr<Particle>>::iterator it =
-      std::find(aliveParticles.begin(), aliveParticles.end(), p);
+    std::find(aliveParticles.begin(), aliveParticles.end(), p);
   if (it != aliveParticles.end()) {
     deadParticles.push_back(std::move(*it));
     aliveParticles.erase(it);
   }
 }
 
-void ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
-                                    glm::vec3 &pos) {
-  std::vector<std::shared_ptr<Particle>> &deadParticles =
-      pComp->getDeadParticles();
+void
+ParticleSystem::reviveParticle(std::shared_ptr<ParticlesComponent> pComp,
+                               glm::vec3& pos)
+{
+  std::vector<std::shared_ptr<Particle>>& deadParticles =
+    pComp->getDeadParticles();
   if (!deadParticles.empty()) {
-    std::vector<std::shared_ptr<Particle>> &aliveParticles =
-        pComp->getAliveParticles();
-    std::shared_ptr<Particle> &p = deadParticles.back();
+    std::vector<std::shared_ptr<Particle>>& aliveParticles =
+      pComp->getAliveParticles();
+    std::shared_ptr<Particle>& p = deadParticles.back();
     float r = (distribution(generator) + 1.0f) * 0.5f;
     float g = (distribution(generator) + 1.0f) * 0.5f;
     float b = (distribution(generator) + 1.0f) * 0.5f;

@@ -9,46 +9,52 @@
 
 using enum CollisionShapeType;
 
-PhysicsComponent::~PhysicsComponent() {
+PhysicsComponent::~PhysicsComponent()
+{
   delete shape;
   delete body;
   delete myMotionState;
 };
 
-PhysicsComponent::PhysicsComponent(Entity en, float mass,
+PhysicsComponent::PhysicsComponent(Entity en,
+                                   float mass,
                                    CollisionShapeType type)
-    : m_en(en), mass(mass) {
+  : m_en(en)
+  , mass(mass)
+{
 
   std::shared_ptr<PositionComponent> posComp =
-      ECSManager::getInstance().getComponent<PositionComponent>(m_en);
+    ECSManager::getInstance().getComponent<PositionComponent>(m_en);
 
   if (posComp) {
-    initialPos = btVector3(posComp->position.x, posComp->position.y,
-                           posComp->position.z);
+    initialPos =
+      btVector3(posComp->position.x, posComp->position.y, posComp->position.z);
     // HACK: Changed rotation axels to work with plane..
     initialScale =
-        btVector3(posComp->scale.x, posComp->scale.z, posComp->scale.y);
-    initialRotation = btQuaternion(posComp->rotation.x, posComp->rotation.y,
-                                   posComp->rotation.z, posComp->rotation.w);
+      btVector3(posComp->scale.x, posComp->scale.z, posComp->scale.y);
+    initialRotation = btQuaternion(posComp->rotation.x,
+                                   posComp->rotation.y,
+                                   posComp->rotation.z,
+                                   posComp->rotation.w);
 
     switch (type) {
-    case BOX:
-      shape =
+      case BOX:
+        shape =
           new btBoxShape(btVector3(btScalar(1.), btScalar(1.), btScalar(1.)));
-      break;
-    case SPHERE:
-      shape = new btSphereShape(btScalar(1.));
-      break;
-    case CAPSULE:
-      shape = new btCapsuleShape(btScalar(1.), btScalar(1.));
-      break;
-    case CONVEX_HULL:
-    case HEIGHTMAP:
-      setupCollisionShapeFromGra();
-      break;
+        break;
+      case SPHERE:
+        shape = new btSphereShape(btScalar(1.));
+        break;
+      case CAPSULE:
+        shape = new btCapsuleShape(btScalar(1.), btScalar(1.));
+        break;
+      case CONVEX_HULL:
+      case HEIGHTMAP:
+        setupCollisionShapeFromGra();
+        break;
     }
 
-    ECSManager &eManager = ECSManager::getInstance();
+    ECSManager& eManager = ECSManager::getInstance();
 
     /// Create Dynamic Objects
     startTransform.setIdentity();
@@ -66,8 +72,8 @@ PhysicsComponent::PhysicsComponent(Entity en, float mass,
     // using motionstate is recommended, it provides interpolation capabilities,
     // and only synchronizes 'active' objects
     myMotionState = new btDefaultMotionState(startTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, shape,
-                                                    localInertia);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(
+      mass, myMotionState, shape, localInertia);
     body = new btRigidBody(rbInfo);
     if (type == CAPSULE) {
       // Configure rigid body for character movement
@@ -81,14 +87,16 @@ PhysicsComponent::PhysicsComponent(Entity en, float mass,
 
     body->setUserIndex(m_en);
 
-    auto &pSys = dynamic_cast<PhysicsSystem &>(eManager.getSystem("PHYSICS"));
+    auto& pSys = dynamic_cast<PhysicsSystem&>(eManager.getSystem("PHYSICS"));
     pSys.addRigidBody(body);
   }
 }
 
-void PhysicsComponent::setupCollisionShapeFromGra() {
+void
+PhysicsComponent::setupCollisionShapeFromGra()
+{
   std::shared_ptr<GraphicsComponent> graphComp =
-      ECSManager::getInstance().getComponent<GraphicsComponent>(m_en);
+    ECSManager::getInstance().getComponent<GraphicsComponent>(m_en);
   if (graphComp) {
     shape = graphComp->m_grapObj->p_coll;
     shape->setLocalScaling(initialScale);

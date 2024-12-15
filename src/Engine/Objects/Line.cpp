@@ -1,7 +1,8 @@
 #include "Line.hpp"
 
-Line::Line(float x1, float y1, float z1, float x2, float y2, float z2) {
-  m_vertices = {x1, y1, z1, x2, y2, z2};
+Line::Line(float x1, float y1, float z1, float x2, float y2, float z2)
+{
+  m_vertices = { x1, y1, z1, x2, y2, z2 };
   glm::mat4 modelMat = glm::identity<glm::mat4>();
   newNode(modelMat);
 
@@ -9,7 +10,7 @@ Line::Line(float x1, float y1, float z1, float x2, float y2, float z2) {
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
-  Primitive *newPrim = &p_meshes[0].m_primitives[0];
+  Primitive* newPrim = &p_meshes[0].m_primitives[0];
   u32 vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -24,8 +25,8 @@ Line::Line(float x1, float y1, float z1, float x2, float y2, float z2) {
   u32 vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices.data(),
-               GL_STATIC_DRAW);
+  glBufferData(
+    GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices.data(), GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);

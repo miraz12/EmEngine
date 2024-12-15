@@ -1,11 +1,13 @@
 #ifndef PRIMITIVE_H_
 #define PRIMITIVE_H_
 
-class Primitive {
+class Primitive
+{
 public:
   void draw();
 
-  struct AttribInfo {
+  struct AttribInfo
+  {
     u32 vbo;
     size_t byteOffset;
     size_t byteStride;
@@ -15,11 +17,11 @@ public:
     i32 type;
   };
 
-  i32 m_material{-1};
+  i32 m_material{ -1 };
 
   u32 m_vbo;
 
-  u32 m_drawType{0}; // Either 0 = drawArrays or 1
+  u32 m_drawType{ 0 }; // Either 0 = drawArrays or 1
 
   u32 m_ebo;
   u32 m_count;

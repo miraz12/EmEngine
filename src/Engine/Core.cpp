@@ -3,7 +3,9 @@
 #include "Window.hpp"
 #include "engine_api.hpp"
 
-bool Core::initialize() {
+bool
+Core::initialize()
+{
   std::cout << "[core] Initialize" << std::endl;
 
   if (Window::getInstance().start() && Window::getInstance().open()) {
@@ -15,21 +17,23 @@ bool Core::initialize() {
   }
 
   Window::getInstance().setCursorPosCallback(
-      [](GLFWwindow * /* win */, double xpos, double ypos) {
-        InputManager::getInstance().setMousePos(xpos, ypos);
-        ImGuiIO &io = ImGui::GetIO();
-        io.AddMousePosEvent(xpos, ypos);
-      });
+    [](GLFWwindow* /* win */, double xpos, double ypos) {
+      InputManager::getInstance().setMousePos(xpos, ypos);
+      ImGuiIO& io = ImGui::GetIO();
+      io.AddMousePosEvent(xpos, ypos);
+    });
   Window::getInstance().setMouseButtonCallback(
-      [](GLFWwindow * /* win */, i32 button, i32 action, i32 /* mods */) {
-        ImGuiIO &io = ImGui::GetIO();
-        io.AddMouseButtonEvent(button, action);
-        if (!io.WantCaptureMouse) {
-          InputManager::getInstance().handleInput(button, action);
-        }
-      });
-  Window::getInstance().setKeyCallback([](GLFWwindow * /* win */, i32 key,
-                                          i32 /* scancode */, i32 action,
+    [](GLFWwindow* /* win */, i32 button, i32 action, i32 /* mods */) {
+      ImGuiIO& io = ImGui::GetIO();
+      io.AddMouseButtonEvent(button, action);
+      if (!io.WantCaptureMouse) {
+        InputManager::getInstance().handleInput(button, action);
+      }
+    });
+  Window::getInstance().setKeyCallback([](GLFWwindow* /* win */,
+                                          i32 key,
+                                          i32 /* scancode */,
+                                          i32 action,
                                           i32 /* mods */) {
     if (key == GLFW_KEY_ESCAPE) {
       Window::getInstance().close();
@@ -37,14 +41,16 @@ bool Core::initialize() {
     InputManager::getInstance().handleInput(key, action);
   });
   Window::getInstance().setFramebufferSizeCallback(
-      [](GLFWwindow * /* win */, i32 width, i32 height) {
-        ECSManager::getInstance().setViewport(width, height);
-      });
+    [](GLFWwindow* /* win */, i32 width, i32 height) {
+      ECSManager::getInstance().setViewport(width, height);
+    });
 
   return true;
 }
 
-float &Core::getDeltaTime() {
+float&
+Core::getDeltaTime()
+{
   m_currentTime = glfwGetTime();
   m_dt = m_currentTime - m_prevTime;
   m_prevTime = m_currentTime;
@@ -62,14 +68,20 @@ float &Core::getDeltaTime() {
   return m_dt;
 }
 
-void Core::update() {
+void
+Core::update()
+{
   glfwPollEvents();
 
   m_gui.renderGUI();
-  float &dt = getDeltaTime();
+  float& dt = getDeltaTime();
   InputManager::getInstance().update(dt);
   ECSManager::getInstance().update(dt);
   Window::getInstance().swap();
 }
 
-bool Core::open() { return !Window::getInstance().closed(); }
+bool
+Core::open()
+{
+  return !Window::getInstance().closed();
+}

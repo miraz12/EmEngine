@@ -3,7 +3,8 @@
 
 #include "tiny_gltf.h"
 
-class TextureResource {
+class TextureResource
+{
 public:
   TextureResource();
   virtual ~TextureResource();

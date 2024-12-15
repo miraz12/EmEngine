@@ -1,21 +1,30 @@
 #include "Material.hpp"
 
-Material::Material() : m_textureMan(TextureManager::getInstance()) {}
+Material::Material()
+  : m_textureMan(TextureManager::getInstance())
+{
+}
 
-void Material::bind(const ShaderProgram &sPrg) {
+void
+Material::bind(const ShaderProgram& sPrg)
+{
 
   glUniform1i(sPrg.getUniformLocation("material"), m_material);
 
-  glUniform3f(sPrg.getUniformLocation("baseColorFactor"), m_baseColorFactor.x,
-              m_baseColorFactor.y, m_baseColorFactor.z);
+  glUniform3f(sPrg.getUniformLocation("baseColorFactor"),
+              m_baseColorFactor.x,
+              m_baseColorFactor.y,
+              m_baseColorFactor.z);
 
   glUniform1f(sPrg.getUniformLocation("roughnessFactor"), m_roughnessFactor);
   glUniform1f(sPrg.getUniformLocation("metallicFactor"), m_metallicFactor);
 
-  glUniform3f(sPrg.getUniformLocation("emissiveFactor"), m_emissiveFactor.x,
-              m_emissiveFactor.y, m_emissiveFactor.z);
+  glUniform3f(sPrg.getUniformLocation("emissiveFactor"),
+              m_emissiveFactor.x,
+              m_emissiveFactor.y,
+              m_emissiveFactor.z);
 
-  std::array<GLint, 5> tex = {0, 1, 2, 3, 4};
+  std::array<GLint, 5> tex = { 0, 1, 2, 3, 4 };
   glUniform1iv(sPrg.getUniformLocation("textures"), 5, tex.data());
 
   if ((m_material & (1 << 0)) > 0) {
