@@ -2,7 +2,6 @@
 #define GRAPHICSOBJECT_H_
 
 #include "Rendering/Skin.hpp"
-#include <Camera.hpp>
 #include <Rendering/Animation.hpp>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>

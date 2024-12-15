@@ -13,6 +13,7 @@ void AddPositionComponent(int entity, float pos[3], float scale[3],
                           float rot[3]);
 void AddPhysicsComponent(int entity, float mass, int type);
 void AddGraphicsComponent(int entity, const char *model);
+void AddCameraComponent(int entity, bool main, float offset[3]);
 int CreateEntity(const char *name);
 int GetPressed(int *vec);
 void Game_Update();

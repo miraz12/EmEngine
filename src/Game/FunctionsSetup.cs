@@ -39,6 +39,8 @@ namespace FunctionsSetup
         public static extern void AddPhysicsComponent(int entity, float mass, int type);
         [DllImport("Engine", EntryPoint = "AddGraphicsComponent")]
         public static extern void AddGraphicsComponent(int entity, string model);
+        [DllImport("Engine", EntryPoint = "AddCameraComponent")]
+        public static extern void AddCameraComponent(int entity, bool model, [In] float[] offset);
         [DllImport("Engine", EntryPoint = "CreateEntity")]
         public static extern int CreateEntity(string name);
     }

@@ -5,7 +5,8 @@
 
 class CameraComponent : public Component {
 public:
-  CameraComponent(bool isMainCam) : mainCamera(isMainCam) {}
+  CameraComponent(bool isMainCam, glm::vec3 offset)
+      : mainCamera(isMainCam), m_offset(offset) {}
   CameraComponent(bool isMainCam, float fov, float width, float height,
                   float near, float far)
       : mainCamera(isMainCam), m_fov(fov), m_width(width), m_height(height),
@@ -15,6 +16,7 @@ public:
   glm::mat4 m_viewMatrix{1.0f};
   glm::mat4 m_ProjectionMatrix{1.0f};
   glm::vec3 m_position{0.0f};
+  glm::vec3 m_offset{0.0f};
   glm::vec3 m_front{0.0f, 0.0f, -1.0f};
   glm::vec3 m_up{0.0f, 1.0f, 0.0f};
   float m_fov{45.0f};

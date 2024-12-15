@@ -27,6 +27,7 @@ namespace Entities
                                                new float[] { 0, 0, 0 });
             NativeMethods.AddGraphicsComponent(entityId, "gltf/Running/running.glb");
             NativeMethods.AddPhysicsComponent(entityId, 80.0f, 2);
+            NativeMethods.AddCameraComponent(entityId, true, new float[] { 0, 10.0F, 10.0F });
         }
 
         public void Update(float dt)

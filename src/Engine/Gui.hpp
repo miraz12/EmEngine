@@ -1,7 +1,6 @@
 #ifndef GUI_H_
 #define GUI_H_
 
-#include "Camera.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 
 class GUI {
