@@ -17,15 +17,14 @@ void GUI::renderGUI() {
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
   if (ImGui::CollapsingHeader("Camera")) {
-    float fov = ECSManager::getInstance().getCamera().getFOV();
-    ImGui::SliderFloat("FOV", &fov, 0.0f, 120.0f);
-    ECSManager::getInstance().getCamera().setFOV(fov);
-    float nearFar[2];
-    nearFar[0] = ECSManager::getInstance().getCamera().getNear();
-    nearFar[1] = ECSManager::getInstance().getCamera().getFar();
-    ImGui::InputFloat2("FOV", nearFar);
-    ECSManager::getInstance().getCamera().setNear(nearFar[0]);
-    ECSManager::getInstance().getCamera().setFar(nearFar[1]);
+    auto cam = static_pointer_cast<CameraComponent>(
+        ECSManager::getInstance().getCamera());
+
+    ImGui::SliderFloat("FOV", &cam->m_fov, 0.0f, 120.0f);
+    float *nearFar[2];
+    nearFar[0] = &cam->m_near;
+    nearFar[1] = &cam->m_far;
+    ImGui::InputFloat2("FOV", nearFar[0]);
   }
 
   // if (ImGui::CollapsingHeader("Lights")) {
@@ -93,7 +92,10 @@ void GUI::renderGUI() {
       if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
         mCurrentGizmoMode = ImGuizmo::WORLD;
     }
-    Camera &cam = ECSManager::getInstance().getCamera();
+
+    auto cam = static_pointer_cast<CameraComponent>(
+        ECSManager::getInstance().getCamera());
+
     glm::vec3 euler = glm::eulerAngles(rot) * RAD2DEG;
     editTransform(cam, pos, euler, scale);
     rot = glm::quat(euler * DEG2RAD);
@@ -106,17 +108,17 @@ void GUI::renderGUI() {
   ImGui::Render();
 }
 
-void GUI::editTransform(Camera &camera, glm::vec3 &pos, glm::vec3 &rot,
-                        glm::vec3 &scale) {
+void GUI::editTransform(std::shared_ptr<CameraComponent> camera, glm::vec3 &pos,
+                        glm::vec3 &rot, glm::vec3 &scale) {
 
   glm::mat4 matrix = glm::identity<glm::mat4>();
   ImGuizmo::RecomposeMatrixFromComponents(
       glm::value_ptr(pos), glm::value_ptr(rot), glm::value_ptr(scale),
       glm::value_ptr(matrix));
-  ImGuizmo::SetRect(0, 0, camera.getWidth(), camera.getHeight());
+  ImGuizmo::SetRect(0, 0, camera->m_width, camera->m_height);
   ImGuizmo::SetOrthographic(false);
-  ImGuizmo::Manipulate(glm::value_ptr(camera.getViewMatrix()),
-                       glm::value_ptr(camera.getProjectionMatrix()),
+  ImGuizmo::Manipulate(glm::value_ptr(camera->m_viewMatrix),
+                       glm::value_ptr(camera->m_ProjectionMatrix),
                        mCurrentGizmoOperation, mCurrentGizmoMode,
                        glm::value_ptr(matrix), NULL, NULL);
 

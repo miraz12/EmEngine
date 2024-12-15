@@ -1,6 +1,8 @@
 #include "DebugPass.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include <ECS/Components/DebugComponent.hpp>
 #include <ECS/ECSManager.hpp>
+#include <ECS/Systems/CameraSystem.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
 
 DebugPass::DebugPass()
@@ -17,9 +19,14 @@ DebugPass::DebugPass()
 
 void DebugPass::Execute(ECSManager &eManager) {
   p_shaderProgram.use();
-  eManager.getCamera().bindProjViewMatrix(
-      p_shaderProgram.getUniformLocation("projMatrix"),
+
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
+
+  CameraSystem::bindProjViewMatrix(
+      cam, p_shaderProgram.getUniformLocation("projMatrix"),
       p_shaderProgram.getUniformLocation("viewMatrix"));
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_DEPTH_TEST);
 

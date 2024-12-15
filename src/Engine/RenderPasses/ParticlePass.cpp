@@ -1,4 +1,6 @@
 #include "ParticlePass.hpp"
+#include "ECS/Components/CameraComponent.hpp"
+#include "ECS/Systems/CameraSystem.hpp"
 #include "RenderUtil.hpp"
 #include <ECS/Components/ParticlesComponent.hpp>
 
@@ -23,8 +25,12 @@ ParticlePass::ParticlePass()
 
 void ParticlePass::Execute(ECSManager &eManager) {
   p_shaderProgram.use();
-  eManager.getCamera().bindProjViewMatrix(
-      p_shaderProgram.getUniformLocation("projMatrix"),
+
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
+
+  CameraSystem::bindProjViewMatrix(
+      cam, p_shaderProgram.getUniformLocation("projMatrix"),
       p_shaderProgram.getUniformLocation("viewMatrix"));
 
   p_fboManager.bindFBO("cubeFBO");

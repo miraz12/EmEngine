@@ -1,6 +1,7 @@
 #include "ECSManager.hpp"
 #include "Components/GraphicsComponent.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
@@ -20,6 +21,10 @@ void ECSManager::initializeSystems() {
   for (const auto &[name, system] : m_systems) {
     system->initialize(*this);
   }
+
+  Entity ent = createEntity();
+  ECSManager::getInstance().addComponents(
+      ent, std::make_shared<CameraComponent>(true));
 }
 
 void ECSManager::update(float dt) {
@@ -75,6 +80,19 @@ void ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir) {
   dLight->direction = dir;
   dLight->color = color;
   dLight->ambientIntensity = ambient;
+}
+
+std::shared_ptr<Component> ECSManager::getCamera() {
+  std::vector<Entity> view = this->view<CameraComponent>();
+
+  for (auto &e : view) {
+    std::shared_ptr<CameraComponent> c = getComponent<CameraComponent>(e);
+
+    if (c->mainCamera) {
+      return c;
+    }
+  }
+  return nullptr;
 }
 
 void ECSManager::setViewport(u32 w, u32 h) {
