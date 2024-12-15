@@ -1,4 +1,5 @@
 #include "PhysicsSystem.hpp"
+#include "CameraSystem.hpp"
 #include "GraphicsSystem.hpp"
 
 #include <ECS/Components/DebugComponent.hpp>
@@ -218,8 +219,11 @@ void PhysicsSystem::performPicking(i32 mouseX, i32 mouseY) {
 
   // Define the ray's start and end positions in world space
 
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
+
   std::tuple<glm::vec3, glm::vec3> camStartDir =
-      m_manager->getCamera().getRayTo(mouseX, mouseY);
+      CameraSystem::getRayTo(cam, mouseX, mouseY);
 
   glm::vec3 camPos = std::get<0>(camStartDir);
   glm::vec3 rayDir = std::get<1>(camStartDir);

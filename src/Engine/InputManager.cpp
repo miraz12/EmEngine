@@ -1,4 +1,5 @@
 #include "InputManager.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include <Camera.hpp>
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
@@ -24,7 +25,7 @@ void InputManager::update(float dt) {
   float camSpeed = 1.f;
   // float moveSpeed = 0.25f;
   ECSManager &ecsManager = ECSManager::getInstance();
-  Camera &cam = ecsManager.getCamera();
+  // Camera &cam = ecsManager.getCamera();
   // Parse input
   // if (m_keys.at(KEY::A)) {
   //   glm::vec3 camPos =
@@ -75,7 +76,9 @@ void InputManager::update(float dt) {
     direction.y = sin(glm::radians(m_pitch));
     direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     glm::vec3 cameraFront = glm::normalize(direction);
-    cam.setFront(cameraFront);
+    auto cam = static_pointer_cast<CameraComponent>(
+        ECSManager::getInstance().getCamera());
+    cam->m_front = cameraFront;
     if (pressed) {
       PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
       pressed = false;

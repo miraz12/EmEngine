@@ -1,4 +1,5 @@
 #include "LightPass.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 #include <ECS/Components/LightingComponent.hpp>
@@ -160,8 +161,10 @@ void LightPass::Execute(ECSManager &eManager) {
   glUniform1i(p_shaderProgram.getUniformLocation("nrOfPointLights"),
               numPLights);
 
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
   glUniform3fv(p_shaderProgram.getUniformLocation("camPos"), 1,
-               glm::value_ptr(eManager.getCamera().getPosition()));
+               glm::value_ptr(cam->m_position));
 
   glBindVertexArray(quadVAO);
   for (size_t i = 0; i < p_textures.size(); i++) {

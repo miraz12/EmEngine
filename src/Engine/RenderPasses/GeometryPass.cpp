@@ -1,9 +1,10 @@
 #include "GeometryPass.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
-
 #include <ECS/ECSManager.hpp>
+#include <ECS/Systems/CameraSystem.hpp>
 #include <Managers/FrameBufferManager.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 #include <RenderPasses/RenderPass.hpp>
@@ -63,8 +64,11 @@ void GeometryPass::Execute(ECSManager &eManager) {
 
   p_shaderProgram.use();
 
-  eManager.getCamera().bindProjViewMatrix(
-      p_shaderProgram.getUniformLocation("projMatrix"),
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
+
+  CameraSystem::bindProjViewMatrix(
+      cam, p_shaderProgram.getUniformLocation("projMatrix"),
       p_shaderProgram.getUniformLocation("viewMatrix"));
 
   std::vector<Entity> view = eManager.view<GraphicsComponent>();

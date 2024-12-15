@@ -2,6 +2,8 @@
 
 #include <ECS/ECSManager.hpp>
 
+#include "ECS/Components/CameraComponent.hpp"
+#include "ECS/Systems/CameraSystem.hpp"
 #include "FrameGraph.hpp"
 #include "RenderUtil.hpp"
 
@@ -104,8 +106,11 @@ void CubeMapPass::Execute(ECSManager &eManager) {
   glDepthFunc(GL_LEQUAL);
 
   p_shaderProgram.use();
-  eManager.getCamera().bindProjViewMatrix(
-      p_shaderProgram.getUniformLocation("projection"),
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
+
+  CameraSystem::bindProjViewMatrix(
+      cam, p_shaderProgram.getUniformLocation("projection"),
       p_shaderProgram.getUniformLocation("view"));
 
   glActiveTexture(GL_TEXTURE0);
