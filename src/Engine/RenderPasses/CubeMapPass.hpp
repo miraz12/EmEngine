@@ -2,7 +2,6 @@
 #define CUBEMAPPASS_H_
 
 #include "RenderPasses/RenderPass.hpp"
-#include <Camera.hpp>
 #include <Managers/TextureManager.hpp>
 
 class CubeMapPass final : public RenderPass {

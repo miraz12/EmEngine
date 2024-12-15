@@ -1,6 +1,5 @@
 #include "FrameGraph.hpp"
 #include "Managers/FrameBufferManager.hpp"
-#include <Camera.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <RenderPasses/BloomPass.hpp>
 #include <RenderPasses/CubeMapPass.hpp>

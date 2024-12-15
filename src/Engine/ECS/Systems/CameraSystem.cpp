@@ -1,14 +1,20 @@
 #include "CameraSystem.hpp"
+#include "ECS/Components/PositionComponent.hpp"
 #include "ECS/ECSManager.hpp"
 
-void CameraSystem::update(float dt) {
+void CameraSystem::update(float /* dt */) {
   std::vector<Entity> view = m_manager->view<CameraComponent>();
 
   for (auto &e : view) {
     std::shared_ptr<CameraComponent> c =
         m_manager->getComponent<CameraComponent>(e);
 
-    if (c->m_matrixNeedsUpdate) {
+    if (std::shared_ptr<PositionComponent> p =
+            m_manager->getComponent<PositionComponent>(e);
+        p) {
+      c->m_position = p->position + c->m_offset;
+      updateMatrices(c);
+    } else if (c->m_matrixNeedsUpdate) {
       updateMatrices(c);
     }
   }
@@ -68,4 +74,17 @@ CameraSystem::getRayTo(std::shared_ptr<CameraComponent> camera, i32 x, i32 y) {
   glm::vec3 dir = glm::normalize(glm::vec3(worldCoords));
 
   return {camera->m_position, dir};
+}
+
+void CameraSystem::tilt(std::shared_ptr<CameraComponent> camera, float angle) {
+  glm::vec3 right = glm::normalize(glm::cross(camera->m_front, camera->m_up));
+
+  glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle), right);
+
+  camera->m_front =
+      glm::normalize(glm::vec3(rotation * glm::vec4(camera->m_front, 0.0f)));
+  camera->m_up =
+      glm::normalize(glm::vec3(rotation * glm::vec4(camera->m_up, 0.0f)));
+
+  camera->m_matrixNeedsUpdate = true;
 }

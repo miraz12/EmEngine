@@ -1,7 +1,6 @@
 #ifndef ECSMANAGER_H_
 #define ECSMANAGER_H_
 
-#include "Camera.hpp"
 #include "Components/Component.hpp"
 #include "Systems/System.hpp"
 #include <SceneLoader.hpp>
@@ -161,7 +160,5 @@ private:
   Entity m_dirLightEntity;
   bool m_simulatePhysics{false};
   i32 m_debugView;
-
-  Camera m_camera;
 };
 #endif // LIGHTINGSYSTEM_H_

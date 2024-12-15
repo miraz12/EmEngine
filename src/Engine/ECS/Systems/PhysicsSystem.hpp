@@ -3,7 +3,6 @@
 
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "System.hpp"
-#include <Camera.hpp>
 #include <ECS/ECSManager.hpp>
 #include <Managers/FrameBufferManager.hpp>
 #include <Rendering/DebugDrawer.hpp>

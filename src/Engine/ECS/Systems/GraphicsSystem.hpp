@@ -3,7 +3,6 @@
 
 #include "System.hpp"
 
-#include <Camera.hpp>
 #include <Managers/FrameBufferManager.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 

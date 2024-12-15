@@ -1,6 +1,5 @@
 #include "InputManager.hpp"
 #include "ECS/Components/CameraComponent.hpp"
-#include <Camera.hpp>
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <ranges>
@@ -22,7 +21,7 @@ InputManager::InputManager() {
 }
 
 void InputManager::update(float dt) {
-  float camSpeed = 1.f;
+  // float camSpeed = 1.f;
   // float moveSpeed = 0.25f;
   ECSManager &ecsManager = ECSManager::getInstance();
   // Camera &cam = ecsManager.getCamera();

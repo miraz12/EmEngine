@@ -6,7 +6,9 @@
 #include <glm/glm.hpp>
 #include <tuple>
 
-class CameraSystem : public System {
+class CameraSystem : public System, public Singleton<CameraSystem> {
+  friend class Singleton<CameraSystem>;
+
 public:
   void update(float dt) override;
 
@@ -16,6 +18,7 @@ public:
   static void bindViewMatrix(std::shared_ptr<CameraComponent> camera, u32 view);
   static std::tuple<glm::vec3, glm::vec3>
   getRayTo(std::shared_ptr<CameraComponent> camera, i32 x, i32 y);
+  static void tilt(std::shared_ptr<CameraComponent> camera, float angle);
 
 private:
   static void updateMatrices(std::shared_ptr<CameraComponent> camera);

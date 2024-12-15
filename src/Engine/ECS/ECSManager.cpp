@@ -7,6 +7,7 @@
 #include "ECS/Components/PositionComponent.hpp"
 #include "Objects/GltfObject.hpp"
 #include "Systems/AnimationSystem.hpp"
+#include "Systems/CameraSystem.hpp"
 #include "Systems/GraphicsSystem.hpp"
 #include "Systems/ParticleSystem.hpp"
 #include "Systems/PhysicsSystem.hpp"
@@ -18,13 +19,10 @@ void ECSManager::initializeSystems() {
   m_systems["PARTICLES"] = &ParticleSystem::getInstance();
   m_systems["ANIMATION"] = &AnimationSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
+  m_systems["CAMERA"] = &CameraSystem::getInstance();
   for (const auto &[name, system] : m_systems) {
     system->initialize(*this);
   }
-
-  Entity ent = createEntity();
-  ECSManager::getInstance().addComponents(
-      ent, std::make_shared<CameraComponent>(true));
 }
 
 void ECSManager::update(float dt) {
@@ -96,7 +94,11 @@ std::shared_ptr<Component> ECSManager::getCamera() {
 }
 
 void ECSManager::setViewport(u32 w, u32 h) {
-  m_camera.setSize(w, h);
+  auto cam = static_pointer_cast<CameraComponent>(
+      ECSManager::getInstance().getCamera());
+  cam->m_width = w;
+  cam->m_height = h;
+
   static_cast<GraphicsSystem *>(m_systems["GRAPHICS"])->setViewport(w, h);
 };
 
@@ -159,6 +161,13 @@ void AddPhysicsComponent(int entity, float mass, int type) {
   ECSManager::getInstance().addComponents(
       entity, std::make_shared<PhysicsComponent>(entity, mass,
                                                  CollisionShapeType(type)));
+}
+
+void AddCameraComponent(int entity, bool main, float offset[3]) {
+  std::shared_ptr<CameraComponent> c = std::make_shared<CameraComponent>(
+      main, glm::vec3(offset[0], offset[1], offset[2]));
+  CameraSystem::tilt(c, -30.0f);
+  ECSManager::getInstance().addComponents(entity, c);
 }
 
 int CreateEntity(const char *name) {
