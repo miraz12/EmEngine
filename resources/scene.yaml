@@ -6,21 +6,21 @@
 #       scale: [1, 1, 1]
 #     - type: Gra
 #       primitive: Mesh
-#       file: gltf/Running/running.glb
+#       file: ~/Git/EmEngine/resources/Models/gltf/helmet/DamagedHelmet.glb
 #     - type: Phy
 #       mass: 80
 #       shape: 2
-- entity: particles
-  components:
-    - type: Pos
-      position: [2, 2, -5]
-      rotation: [0, -0, 0]
-      scale: [1, 1, 1]
-    - type: Par
-      velocity: [0, 5, 0]
-    - type: Phy
-      mass: 0
-      shape: 0
+# - entity: particles
+#   components:
+#     - type: Pos
+#       position: [2, 2, -5]
+#       rotation: [0, -0, 0]
+#       scale: [1, 1, 1]
+#     - type: Par
+#       velocity: [0, 5, 0]
+#     - type: Phy
+#       mass: 0
+#       shape: 0
 - entity: map
   components:
     - type: Pos
