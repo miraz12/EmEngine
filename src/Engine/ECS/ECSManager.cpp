@@ -144,6 +144,12 @@ extern "C"
       ->EntityOnGround(entity);
   }
 
+  void SetRotation(unsigned int entity, float angle)
+  {
+    auto p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    p->rotation = glm::eulerAngleY(angle);
+  }
+
   void SetVelocity(unsigned int entity, float x, float y, float z)
   {
     std::shared_ptr<PhysicsComponent> phy =
@@ -210,5 +216,17 @@ extern "C"
   int CreateEntity(const char* name)
   {
     return ECSManager::getInstance().createEntity(name);
+  }
+
+  void PauseAnimation(unsigned int entity)
+  {
+    auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    a->isPlaying = false;
+  }
+
+  void StartAnimation(unsigned int entity)
+  {
+    auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    a->isPlaying = true;
   }
 };

@@ -39,6 +39,7 @@
           libGL
           glfw
           libxml2
+          emscripten
         ];
       in
       {
@@ -59,14 +60,17 @@
               tree-sitter
               tree-sitter-grammars.tree-sitter-cpp
               tree-sitter-grammars.tree-sitter-c-sharp
+              linuxPackages.perf
+              hotspot
             ] ++ deps;
 
             NIX_LD_LIBRARY_PATH = lib.makeLibraryPath ([ stdenv.cc.cc ] ++ deps);
             NIX_LD = "${pkgs.stdenv.cc.libc_bin}/bin/ld.so";
+            EMSDK = "/home/shaggy/Git/emsdk";
 
             shellHook = ''
-              DOTNET_ROOT="${dotnetPkg}";
-              DRI_PRIME=1
+              DOTNET_ROOT="${dotnetPkg}"
+              DRI_PRIME=1;
             '';
           };
       }

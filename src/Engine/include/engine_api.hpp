@@ -11,6 +11,9 @@ extern "C"
     ECSManager::getInstance().loadScene(filename);
   }
 
+  void PauseAnimation(unsigned int entity);
+  void StartAnimation(unsigned int entity);
+  void SetRotation(unsigned int entity, float angle);
   void AddPositionComponent(int entity,
                             float pos[3],
                             float scale[3],
