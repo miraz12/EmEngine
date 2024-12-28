@@ -31,7 +31,7 @@ public:
   glm::mat4 m_ProjectionMatrix{ 1.0f };
   glm::vec3 m_position{ 0.0f };
   glm::vec3 m_offset{ 0.0f };
-  glm::vec3 m_front{ 0.0f, 0.0f, -1.0f };
+  glm::vec3 m_front{ 0.0f, 0.0f, 1.0f };
   glm::vec3 m_up{ 0.0f, 1.0f, 0.0f };
   float m_fov{ 45.0f };
   float m_width{ 800.0f };

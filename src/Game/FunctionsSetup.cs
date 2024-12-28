@@ -30,6 +30,9 @@ namespace FunctionsSetup
         [DllImport("Engine", EntryPoint = "EntityOnGround")]
         public static extern Boolean EntityOnGround(int entity);
 
+        [DllImport("Engine", EntryPoint = "SetRotation")]
+        public static extern void SetRotation(int entity, float angle);
+
         [DllImport("Engine", EntryPoint = "AddPositionComponent")]
         public static extern void AddPositionComponent(int entity,
                                                        [In] float[] position,
@@ -43,5 +46,9 @@ namespace FunctionsSetup
         public static extern void AddCameraComponent(int entity, bool model, [In] float[] offset);
         [DllImport("Engine", EntryPoint = "CreateEntity")]
         public static extern int CreateEntity(string name);
+        [DllImport("Engine", EntryPoint = "PauseAnimation")]
+        public static extern int PauseAnimation(int entity);
+        [DllImport("Engine", EntryPoint = "StartAnimation")]
+        public static extern int StartAnimation(int entity);
     }
 }

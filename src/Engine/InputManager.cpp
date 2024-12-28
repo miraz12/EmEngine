@@ -70,6 +70,9 @@ InputManager::update(float dt)
     ecsManager.setSimulatePhysics(ecsManager.getSimulatePhysics() ? false
                                                                   : true);
   }
+  if (ecsManager.getSimulatePhysics()) {
+    return;
+  }
 
   static bool pressed = true;
   if (m_keys.at(KEY::Mouse1)) {

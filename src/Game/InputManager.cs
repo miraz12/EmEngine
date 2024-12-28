@@ -50,16 +50,16 @@ namespace Input
                 switch ((KEY)key)
                 {
                     case KEY.W:
-                        forceDirection -= _game.player.forward;
-                        break;
-                    case KEY.A:
-                        forceDirection -= _game.player.right;
-                        break;
-                    case KEY.S:
                         forceDirection += _game.player.forward;
                         break;
-                    case KEY.D:
+                    case KEY.A:
                         forceDirection += _game.player.right;
+                        break;
+                    case KEY.S:
+                        forceDirection -= _game.player.forward;
+                        break;
+                    case KEY.D:
+                        forceDirection -= _game.player.right;
                         break;
                 }
             }
