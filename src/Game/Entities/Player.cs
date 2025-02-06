@@ -50,9 +50,9 @@ namespace Entities
             if (velocity.Length() > 0.1f)
             {
                 UpdateFacingDirection(dt);
-                NativeMethods.StartAnimation(entityId);
+                // NativeMethods.StartAnimation(entityId);
             } else {
-                NativeMethods.PauseAnimation(entityId);
+                // NativeMethods.PauseAnimation(entityId);
 
             }
 

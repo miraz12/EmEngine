@@ -13,10 +13,9 @@
     <!-- Specify library to link against -->
     <NativeLibrary Include="../../resources/lib/libEngine.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="../../resources/lib/Release/Engine.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
-    <NativeLibrary Include="../../resources/lib/Release/glfw3.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="user32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="gdi32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
-    <LinkerArg Include="-lstdc++ -lX11 -lglfw -lGL " Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
+    <LinkerArg Include="-lstdc++ -lX11 -lGL " Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
   </ItemGroup>
 
 

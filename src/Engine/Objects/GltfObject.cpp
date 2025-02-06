@@ -311,7 +311,7 @@ GltfObject::loadMeshes(tinygltf::Model& model)
                               accessor.componentType,
                               accessor.normalized,
                               byteStride,
-                              (void*)(sizeof(char) * (accessor.byteOffset)));
+                              reinterpret_cast<void*>(accessor.byteOffset));
         glEnableVertexAttribArray(loc);
 
         Primitive::AttribInfo attribInfo;

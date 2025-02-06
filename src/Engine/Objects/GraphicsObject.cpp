@@ -34,18 +34,31 @@ void
 GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
 {
 
-  std::vector<glm::mat4> joinMat;
+  std::vector<glm::mat4> jointMat;
   for (u32 j = 0; j < p_skins[node].joints.size(); j++) {
     i32 joint = p_skins[node].joints[j];
     std::string name = p_nodes[joint].name;
-    joinMat.push_back(getMatrix(joint) * p_skins[node].inverseBindMatrices[j]);
+    jointMat.push_back(getMatrix(joint) * p_skins[node].inverseBindMatrices[j]);
   }
 
-  if (!joinMat.empty()) {
-    glUniformMatrix4fv(sPrg.getUniformLocation("jointMatrices"),
-                       joinMat.size(),
-                       GL_FALSE,
-                       &joinMat[0][0][0]);
+  if (!jointMat.empty()) {
+
+    p_textureManager.bindTexture("jointMats");
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,                            // mipmap level
+                 GL_RGBA32F,                   // internal format
+                 4,                            // width (4 columns per matrix)
+                 jointMat.size(),              // height (number of matrices)
+                 0,                            // border
+                 GL_RGBA,                      // format
+                 GL_FLOAT,                     // type
+                 glm::value_ptr(jointMat[0])); // data
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   }
 }
 

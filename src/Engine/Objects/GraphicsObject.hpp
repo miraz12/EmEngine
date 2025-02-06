@@ -45,6 +45,8 @@ public:
   Material defaultMat;                       // Default material
   u32 p_numSkins{ 0 };                       // Number of skins
   std::unique_ptr<Skin[]> p_skins;           // Array of skins
+
+  TextureManager& p_textureManager{ TextureManager::getInstance() };
 };
 
 #endif // GRAPHICSOBJECT_H_
