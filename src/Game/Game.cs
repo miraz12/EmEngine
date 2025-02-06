@@ -30,8 +30,8 @@ public class Game
     {
         if (NativeMethods.Initialize())
         {
-            NativeMethods.LoadScene("resources/scene.yaml");
             player = new Player();
+            NativeMethods.LoadScene("resources/scene.yaml");
             NativeMethods.Start();
             stopwatch.Start(); // Start the stopwatch after initialization
         }

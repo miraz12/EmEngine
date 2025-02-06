@@ -37,7 +37,6 @@
           wayland-protocols
           libxkbcommon
           libGL
-          glfw
           libxml2
           emscripten
         ];
@@ -67,6 +66,7 @@
             NIX_LD_LIBRARY_PATH = lib.makeLibraryPath ([ stdenv.cc.cc ] ++ deps);
             NIX_LD = "${pkgs.stdenv.cc.libc_bin}/bin/ld.so";
             EMSDK = "/home/shaggy/Git/emsdk";
+            EM_CACHE = "/home/shaggy/.emscripten_cache";
 
             shellHook = ''
               DOTNET_ROOT="${dotnetPkg}"

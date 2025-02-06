@@ -43,6 +43,10 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setAttribBinding("JOINTS_0");
   p_shaderProgram.setAttribBinding("WEIGHTS_0");
 
+  u32 jointMats;
+  glGenTextures(1, &jointMats);
+  p_textureManager.setTexture("jointMats", jointMats);
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

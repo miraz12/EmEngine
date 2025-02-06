@@ -21,7 +21,8 @@ else()
     $<TARGET_OBJECTS:BulletCollision>
     $<TARGET_OBJECTS:BulletDynamics>
     $<TARGET_OBJECTS:LinearMath>
-    $<TARGET_OBJECTS:glad>)
+    $<TARGET_OBJECTS:glad>
+    $<TARGET_OBJECTS:glfw>)
 endif(DEFINED EMSCRIPTEN)
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

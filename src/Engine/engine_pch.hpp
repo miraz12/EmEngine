@@ -103,4 +103,14 @@ constexpr float PI = 3.14159f;
 #define DEG2RAD PI / 180.f
 #define RAD2DEG 180.f / PI
 
+static void
+checkGLError(const char* operation)
+{
+  GLenum error;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    std::cout << "GL error after " << operation << ": 0x" << std::hex << error
+              << std::dec << std::endl;
+  }
+}
+
 #endif // ENGINE_PCH_
