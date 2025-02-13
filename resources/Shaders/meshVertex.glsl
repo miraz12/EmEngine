@@ -12,7 +12,7 @@ uniform mat4 modelMatrix;
 uniform mat4 meshMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
-uniform float is_skinned;
+uniform bool is_skinned;
 
 uniform sampler2D jointMats;
 
@@ -30,8 +30,7 @@ mat4 getBoneMatrix(int boneIdx) {
 
 void main() {
   vec4 worldPos = vec4(POSITION, 1.0);
-  if(is_skinned >= 0.05f) {
-
+  if(is_skinned) {
     mat4 skinMat =
         WEIGHTS_0.x * getBoneMatrix(int(JOINTS_0.x)) +
         WEIGHTS_0.y * getBoneMatrix(int(JOINTS_0.y)) +

@@ -34,6 +34,7 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setUniformBinding("metallicFactor");
   p_shaderProgram.setUniformBinding("meshMatrix");
   p_shaderProgram.setUniformBinding("jointMatrices");
+  p_shaderProgram.setUniformBinding("jointMats");
   p_shaderProgram.setUniformBinding("is_skinned");
 
   p_shaderProgram.setAttribBinding("POSITION");
@@ -46,6 +47,12 @@ GeometryPass::GeometryPass()
   u32 jointMats;
   glGenTextures(1, &jointMats);
   p_textureManager.setTexture("jointMats", jointMats);
+
+  p_textureManager.bindTexture("jointMats");
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
