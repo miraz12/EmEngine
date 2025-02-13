@@ -43,7 +43,8 @@ GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
 
   if (!jointMat.empty()) {
 
-    p_textureManager.bindTexture("jointMats");
+    glUniform1i(sPrg.getUniformLocation("jointMats"), 5);
+    p_textureManager.bindActivateTexture("jointMats", 5);
     glTexImage2D(GL_TEXTURE_2D,
                  0,                            // mipmap level
                  GL_RGBA32F,                   // internal format
@@ -53,12 +54,6 @@ GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
                  GL_RGBA,                      // format
                  GL_FLOAT,                     // type
                  glm::value_ptr(jointMat[0])); // data
-
-    // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   }
 }
 
@@ -69,10 +64,10 @@ GraphicsObject::draw(const ShaderProgram& sPrg)
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
       if (p_nodes[i].skin >= 0) {
-        glUniform1f(sPrg.getUniformLocation("is_skinned"), 1.0f);
+        glUniform1i(sPrg.getUniformLocation("is_skinned"), 1);
         applySkinning(sPrg, p_nodes[i].skin);
       } else {
-        glUniform1f(sPrg.getUniformLocation("is_skinned"), 0.0f);
+        glUniform1i(sPrg.getUniformLocation("is_skinned"), 0);
       }
 
       Mesh& m = p_meshes[p_nodes[i].mesh];
@@ -92,13 +87,6 @@ GraphicsObject::drawGeom(const ShaderProgram&)
 {
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
-      // if (p_nodes[i].skin >= 0) {
-      //   glUniform1f(sPrg.getUniformLocation("is_skinned"), 1.0f);
-      //   applySkinning(sPrg, p_nodes[i].skin);
-      // } else {
-      //   glUniform1f(sPrg.getUniformLocation("is_skinned"), 0.0f);
-      // }
-
       Mesh& m = p_meshes[p_nodes[i].mesh];
       for (u32 i = 0; i < m.numPrims; i++) {
         m.m_primitives[i].draw();

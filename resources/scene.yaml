@@ -1,7 +1,19 @@
-# - entity: player
+- entity: helmet
+  components:
+    - type: Pos
+      position: [3, 3, 3]
+      rotation: [0, -0, 0]
+      scale: [1, 1, 1]
+    - type: Gra
+      primitive: Mesh
+      file: gltf/helmet/DamagedHelmet.glb
+    - type: Phy
+      mass: 80
+      shape: 2
+# - entity: helmet2
 #   components:
 #     - type: Pos
-#       position: [0, 0, 0]
+#       position: [-3, 3, 3]
 #       rotation: [0, -0, 0]
 #       scale: [1, 1, 1]
 #     - type: Gra
