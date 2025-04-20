@@ -1,77 +1,96 @@
 {
-  "version": 3,
+  "version": 10,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 19,
     "patch": 0
   },
+  "include": ["cmake/BasePresets.json"],
   "configurePresets": [
     {
       "name": "linux-release",
       "displayName": "Linux Release Build",
       "description": "Release build for Linux",
-      "hidden": false,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/../emengine_build/linux-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "inherits": ["base-linux", "base-release"]
     },
     {
       "name": "linux-debug",
       "displayName": "Linux Debug Build",
       "description": "Debug build for Linux",
-      "hidden": false,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/../emengine_build/linux-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": ["base-linux", "base-debug"]
     },
     {
       "name": "windows-release",
       "displayName": "Windows Release Build",
       "description": "Release build for Windows",
-      "hidden": false,
-      "binaryDir": "${sourceDir}/../emengine_build/windows-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CONFIGURATION_TYPES": "Release"
-      }
+      "inherits": ["base-windows", "base-release"]
     },
     {
       "name": "windows-debug",
       "displayName": "Windows Debug Build",
       "description": "Debug build for Windows",
-      "hidden": false,
-      "binaryDir": "${sourceDir}/../emengine_build/windows-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": ["base-windows", "base-debug"]
     },
     {
       "name": "emscripten-release",
       "displayName": "Emscripten Release Build",
       "description": "Release build for Web using Emscripten",
-      "hidden": false,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/emscripten-release",
+      "inherits": ["base-emscripten", "base-release"],
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake",
-        "CMAKE_BUILD_TYPE": "Release"
+        "EMSCRIPTEN_OPTIMIZATION_LEVEL": "-O3",
+        "CMAKE_EXE_LINKER_FLAGS": "-O3 -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']"
       }
     },
     {
       "name": "emscripten-debug",
       "displayName": "Emscripten Debug Build",
       "description": "Debug build for Web using Emscripten",
-      "hidden": false,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/emscripten-debug",
+      "inherits": ["base-emscripten", "base-debug"],
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake",
-        "CMAKE_BUILD_TYPE": "Debug"
+        "EMSCRIPTEN_OPTIMIZATION_LEVEL": "-O0",
+        "EMSCRIPTEN_DEBUG": "1",
+        "CMAKE_EXE_LINKER_FLAGS": "-O0 -g3 -gsource-map -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_RUNTIME_METHODS=['ccall','cwrap'] -sSAFE_HEAP=1"
       }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux-release",
+      "displayName": "Linux Release",
+      "inherits": "base-build",
+      "configurePreset": "linux-release"
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Linux Debug",
+      "inherits": "base-build",
+      "configurePreset": "linux-debug"
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows Release",
+      "inherits": "base-build",
+      "configurePreset": "windows-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows Debug",
+      "inherits": "base-build",
+      "configurePreset": "windows-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "emscripten-release",
+      "displayName": "Emscripten Release",
+      "inherits": "base-build",
+      "configurePreset": "emscripten-release"
+    },
+    {
+      "name": "emscripten-debug",
+      "displayName": "Emscripten Debug",
+      "inherits": "base-build",
+      "configurePreset": "emscripten-debug"
     }
   ]
 }
