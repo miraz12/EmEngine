@@ -47,7 +47,8 @@ target_compile_options(
     -Wall
     -Wextra
     -g3
-    -O0>
+    -O0
+    -fPIC>
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
     /MT;>>)
@@ -60,7 +61,8 @@ target_compile_options(
     -Wall
     -Wextra
     -O3
-    -Werror>
+    -Werror
+    -fPIC>
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
     /MT;>>)

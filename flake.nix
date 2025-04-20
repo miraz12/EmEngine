@@ -38,13 +38,13 @@
           libxkbcommon
           libGL
           libxml2
-          emscripten
+          # emscripten
         ];
       in
       {
         devShells.default =
           with pkgs;
-          mkShell.override { stdenv = llvmPackages_17.stdenv; } {
+          mkShell.override { stdenv = llvmPackages.stdenv; } {
             nativeBuildInputs = [
               cmake
               cmake-language-server
