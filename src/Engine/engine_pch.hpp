@@ -11,6 +11,8 @@
 #include <glad/glad.h>
 #endif
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 // STD
 #include <algorithm>
 #include <array>
