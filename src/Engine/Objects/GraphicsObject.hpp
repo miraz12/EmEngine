@@ -30,6 +30,8 @@ public:
   // Compute the world matrix of a node by recursively combining with parent
   // matrices
   glm::mat4 getMatrix(i32 node);
+  // Reset the matrix cache (call when node transforms change)
+  void resetMatrixCache();
 
   // Bullet Physics collision shape
   btCollisionShape* p_coll;
@@ -47,6 +49,10 @@ public:
   std::unique_ptr<Skin[]> p_skins;           // Array of skins
 
   TextureManager& p_textureManager{ TextureManager::getInstance() };
+
+private:
+  // Cache for computed matrices to avoid redundant calculations
+  mutable std::vector<std::pair<bool, glm::mat4>> m_matrixCache;
 };
 
 #endif // GRAPHICSOBJECT_H_

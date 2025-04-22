@@ -1,5 +1,50 @@
 #include "Animation.hpp"
 
+// Find the appropriate keyframe index for the given time
+// Uses the lastIndex as a hint to avoid searching from the beginning each time
+size_t
+AnimationSampler::findKeyframeIndex(float time) const
+{
+  // Check if we can use the cached index
+  if (lastIndex < inputs.size() - 1) {
+    if (time >= inputs[lastIndex] && time <= inputs[lastIndex + 1]) {
+      return lastIndex;
+    }
+
+    // Try the next index
+    if (lastIndex + 1 < inputs.size() - 1 && time >= inputs[lastIndex + 1] &&
+        time <= inputs[lastIndex + 2]) {
+      lastIndex++;
+      return lastIndex;
+    }
+  }
+
+  // Fall back to binary search
+  size_t left = 0;
+  size_t right = inputs.size() - 2;
+
+  while (left <= right) {
+    size_t mid = left + (right - left) / 2;
+
+    if (time >= inputs[mid] && time <= inputs[mid + 1]) {
+      lastIndex = mid;
+      return mid;
+    }
+
+    if (inputs[mid] > time) {
+      if (mid == 0)
+        break;
+      right = mid - 1;
+    } else {
+      left = mid + 1;
+    }
+  }
+
+  // Default to the first keyframe if no suitable range is found
+  lastIndex = 0;
+  return 0;
+}
+
 // Cube spline interpolation function used for translate/scale/rotate with cubic
 // spline animation samples Details on how this works can be found in the specs
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#appendix-c-spline-interpolation
@@ -39,9 +84,12 @@ AnimationSampler::translate(size_t index, float time)
 {
   switch (interpolation) {
     case AnimationSampler::InterpolationType::LINEAR: {
-      float u = std::max(0.0f, time - inputs[index]) /
-                (inputs[index + 1] - inputs[index]);
-      return glm::mix(outputsVec4[index], outputsVec4[index + 1], u);
+      float delta = inputs[index + 1] - inputs[index];
+      if (delta > 0.0f) {
+        float u = std::max(0.0f, time - inputs[index]) / delta;
+        return glm::mix(outputsVec4[index], outputsVec4[index + 1], u);
+      }
+      return outputsVec4[index];
     }
     case AnimationSampler::InterpolationType::STEP: {
       return outputsVec4[index];
@@ -49,6 +97,8 @@ AnimationSampler::translate(size_t index, float time)
     case AnimationSampler::InterpolationType::CUBICSPLINE: {
       return cubicSplineInterpolation(index, time, 3);
     }
+    default:
+      return outputsVec4[index];
   }
 }
 
@@ -59,9 +109,12 @@ AnimationSampler::scale(size_t index, float time)
 {
   switch (interpolation) {
     case AnimationSampler::InterpolationType::LINEAR: {
-      float u = std::max(0.0f, time - inputs[index]) /
-                (inputs[index + 1] - inputs[index]);
-      return glm::mix(outputsVec4[index], outputsVec4[index + 1], u);
+      float delta = inputs[index + 1] - inputs[index];
+      if (delta > 0.0f) {
+        float u = std::max(0.0f, time - inputs[index]) / delta;
+        return glm::mix(outputsVec4[index], outputsVec4[index + 1], u);
+      }
+      return outputsVec4[index];
     }
     case AnimationSampler::InterpolationType::STEP: {
       return outputsVec4[index];
@@ -69,6 +122,8 @@ AnimationSampler::scale(size_t index, float time)
     case AnimationSampler::InterpolationType::CUBICSPLINE: {
       return cubicSplineInterpolation(index, time, 3);
     }
+    default:
+      return outputsVec4[index];
   }
 }
 
@@ -79,36 +134,34 @@ AnimationSampler::rotate(size_t index, float time)
 {
   switch (interpolation) {
     case AnimationSampler::InterpolationType::LINEAR: {
-      float u = std::max(0.0f, time - inputs[index]) /
-                (inputs[index + 1] - inputs[index]);
-      glm::quat q1;
-      q1.x = outputsVec4[index].x;
-      q1.y = outputsVec4[index].y;
-      q1.z = outputsVec4[index].z;
-      q1.w = outputsVec4[index].w;
-      glm::quat q2;
-      q2.x = outputsVec4[index + 1].x;
-      q2.y = outputsVec4[index + 1].y;
-      q2.z = outputsVec4[index + 1].z;
-      q2.w = outputsVec4[index + 1].w;
-      return glm::normalize(glm::slerp(q1, q2, u));
+      float delta = inputs[index + 1] - inputs[index];
+      if (delta > 0.0f) {
+        float u = std::max(0.0f, time - inputs[index]) / delta;
+
+        // Direct access to vec4 components is more efficient
+        const glm::vec4& v1 = outputsVec4[index];
+        const glm::vec4& v2 = outputsVec4[index + 1];
+
+        glm::quat q1(v1.w, v1.x, v1.y, v1.z);
+        glm::quat q2(v2.w, v2.x, v2.y, v2.z);
+
+        return glm::normalize(glm::slerp(q1, q2, u));
+      }
+
+      const glm::vec4& v = outputsVec4[index];
+      return glm::quat(v.w, v.x, v.y, v.z);
     }
     case AnimationSampler::InterpolationType::STEP: {
-      glm::quat q1;
-      q1.x = outputsVec4[index].x;
-      q1.y = outputsVec4[index].y;
-      q1.z = outputsVec4[index].z;
-      q1.w = outputsVec4[index].w;
-      return q1;
+      const glm::vec4& v = outputsVec4[index];
+      return glm::quat(v.w, v.x, v.y, v.z);
     }
     case AnimationSampler::InterpolationType::CUBICSPLINE: {
       glm::vec4 rot = cubicSplineInterpolation(index, time, 4);
-      glm::quat q;
-      q.x = rot.x;
-      q.y = rot.y;
-      q.z = rot.z;
-      q.w = rot.w;
-      return q;
+      return glm::quat(rot.w, rot.x, rot.y, rot.z);
+    }
+    default: {
+      const glm::vec4& v = outputsVec4[index];
+      return glm::quat(v.w, v.x, v.y, v.z);
     }
   }
 }

@@ -1,14 +1,14 @@
 #ifndef ECSMANAGER_H_
 #define ECSMANAGER_H_
 
-#include "Components/Component.hpp"
 #include "ComponentPool.hpp"
+#include "Components/Component.hpp"
 #include "Systems/System.hpp"
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
+#include <bitset>
 #include <memory>
 #include <unordered_map>
-#include <bitset>
 
 using Signature = std::bitset<MAX_COMPONENTS>;
 
@@ -24,7 +24,7 @@ public:
 
   // resets ECS
   void reset();
-  
+
   // Destroys an entity and recycles its ID
   void destroyEntity(Entity entity);
 
@@ -41,20 +41,21 @@ public:
   {
     // Get the component type ID
     u32 index = getComponentTypeID<T>();
-    
+
     // Ensure we have enough component pools
     if (m_componentPools.size() <= index) {
       m_componentPools.resize(index + 1);
     }
-    
+
     // Create the component pool if it doesn't exist
     if (!m_componentPools[index]) {
       m_componentPools[index] = std::make_shared<ComponentPool<T>>();
     }
-    
+
     // Add the component to the pool
-    std::static_pointer_cast<ComponentPool<T>>(m_componentPools[index])->add(entity, component);
-    
+    std::static_pointer_cast<ComponentPool<T>>(m_componentPools[index])
+      ->add(entity, component);
+
     // Set the component bit for this entity
     m_entityComponentMasks[entity].set(index);
   }
@@ -70,7 +71,7 @@ public:
   {
     // Get the component type ID for T
     std::size_t idx = getComponentTypeID<T>();
-    
+
     // Check if the entity has a component of the specified type
     return m_entityComponentMasks[entity].test(idx);
   }
@@ -117,8 +118,10 @@ public:
     // Iterate only over active entities
     for (Entity entity : m_entities) {
       // Check if the entity has the required components
-      if ((m_entityComponentMasks[entity] & requiredComponents) == requiredComponents) {
-        // If the entity has the required components, add it to the matching entities vector
+      if ((m_entityComponentMasks[entity] & requiredComponents) ==
+          requiredComponents) {
+        // If the entity has the required components, add it to the matching
+        // entities vector
         matchingEntities.push_back(entity);
       }
     }
@@ -133,17 +136,18 @@ public:
     if (!hasComponent<T>(entity)) {
       return nullptr;
     }
-    
+
     // Get the component type ID
     std::size_t typeID = getComponentTypeID<T>();
-    
+
     // Make sure we have a valid component pool
     if (typeID >= m_componentPools.size() || !m_componentPools[typeID]) {
       return nullptr;
     }
-    
+
     // Get the component from the pool
-    return std::static_pointer_cast<ComponentPool<T>>(m_componentPools[typeID])->get(entity);
+    return std::static_pointer_cast<ComponentPool<T>>(m_componentPools[typeID])
+      ->get(entity);
   }
 
   // // Create point light
@@ -190,10 +194,10 @@ private:
 
   // Component pools - one pool per component type
   std::vector<std::shared_ptr<IComponentPool>> m_componentPools;
-  
+
   // Maps component types to their indices
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
-  
+
   // Tracks which components each entity has
   std::array<Signature, MAX_ENTITIES> m_entityComponentMasks;
 

@@ -42,10 +42,10 @@ ECSManager::createEntity(std::string name)
   Entity newEntity = (m_entityCount++);
   m_entities.push_back(newEntity);
   m_entityNames[newEntity] = name;
-  
+
   // Initialize the component mask for this entity
   m_entityComponentMasks[newEntity].reset();
-  
+
   return m_entities.back();
 }
 
@@ -142,7 +142,7 @@ ECSManager::reset()
   // Clear all entities
   m_entities.clear();
   m_entityNames.clear();
-  
+
   // Reset all component pools
   for (auto& pool : m_componentPools) {
     if (pool) {
@@ -151,12 +151,12 @@ ECSManager::reset()
       }
     }
   }
-  
+
   // Reset all component masks
   for (auto& mask : m_entityComponentMasks) {
     mask.reset();
   }
-  
+
   // Reset entity counter
   m_entityCount = 1;
 }
@@ -165,18 +165,19 @@ void
 ECSManager::destroyEntity(Entity entity)
 {
   // Remove the entity from the active entities list
-  m_entities.erase(std::remove(m_entities.begin(), m_entities.end(), entity), m_entities.end());
-  
+  m_entities.erase(std::remove(m_entities.begin(), m_entities.end(), entity),
+                   m_entities.end());
+
   // Clear all components for this entity
   m_entityComponentMasks[entity].reset();
-  
+
   // Notify all component pools that the entity was destroyed
   for (auto& pool : m_componentPools) {
     if (pool) {
       pool->entityDestroyed(entity);
     }
   }
-  
+
   // Remove the entity name
   m_entityNames.erase(entity);
 }
