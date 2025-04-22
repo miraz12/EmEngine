@@ -10,10 +10,6 @@
 #include <unordered_map>
 #include <bitset>
 
-// Moved to ComponentPool.hpp
-// constexpr std::size_t MAX_ENTITIES = 1000;
-constexpr std::size_t MAX_COMPONENTS = 32;
-
 using Signature = std::bitset<MAX_COMPONENTS>;
 
 class ECSManager : public Singleton<ECSManager>
@@ -28,6 +24,9 @@ public:
 
   // resets ECS
   void reset();
+  
+  // Destroys an entity and recycles its ID
+  void destroyEntity(Entity entity);
 
   void updateRenderingSystems(float dt);
 
@@ -105,7 +104,7 @@ public:
 
   // Create a view of entities with the given component types
   template<typename... T>
-  auto view()
+  std::vector<Entity> view()
   {
     // Create a bitset representing the required components
     Signature requiredComponents;
@@ -113,19 +112,17 @@ public:
 
     // Create a vector to store the matching entities
     std::vector<Entity> matchingEntities;
+    matchingEntities.reserve(m_entities.size() / 2); // Reserve reasonable space
 
-    // Iterate over all entities
-    for (Entity entity = 0; entity < m_entityCount; entity++) {
+    // Iterate only over active entities
+    for (Entity entity : m_entities) {
       // Check if the entity has the required components
-      Signature entityMask = m_entityComponentMasks[entity];
-      if ((entityMask & requiredComponents) == requiredComponents) {
-        // If the entity has the required components, add it to the matching
-        // entities vector
+      if ((m_entityComponentMasks[entity] & requiredComponents) == requiredComponents) {
+        // If the entity has the required components, add it to the matching entities vector
         matchingEntities.push_back(entity);
       }
     }
 
-    // Return the vector of matching entities
     return matchingEntities;
   }
 

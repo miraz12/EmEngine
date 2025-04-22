@@ -202,7 +202,8 @@ extern "C"
     std::shared_ptr<PhysicsComponent> phy =
       ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
     btVector3 vel = phy->body->getLinearVelocity();
-    phy->body->setLinearVelocity(btVector3(x, vel.getY(), z));
+    // Use y parameter if needed, otherwise keep existing Y velocity
+    phy->body->setLinearVelocity(btVector3(x, y != 0.0f ? y : vel.getY(), z));
   }
 
   void AddImpulse(unsigned int entity, float x, float y, float z)
