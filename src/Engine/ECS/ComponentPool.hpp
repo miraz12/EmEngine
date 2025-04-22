@@ -1,11 +1,11 @@
 #ifndef COMPONENTPOOL_H_
 #define COMPONENTPOOL_H_
 
+#include "Components/Component.hpp"
 #include <array>
 #include <cassert>
 #include <memory>
 #include <vector>
-#include "Components/Component.hpp"
 
 // A pool for a specific component type
 class IComponentPool

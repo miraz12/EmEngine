@@ -7,6 +7,9 @@ GraphicsObject::newNode(glm::mat4 model)
   p_nodes = std::make_unique<Node[]>(p_numNodes);
   p_nodes[0].mesh = 0;
   p_nodes[0].nodeMat = model;
+
+  // Initialize matrix cache
+  m_matrixCache.resize(p_numNodes, { false, glm::mat4(1.0f) });
 }
 
 glm::mat4
@@ -21,12 +24,37 @@ GraphicsObject::getLocalMat(i32 node)
 glm::mat4
 GraphicsObject::getMatrix(i32 node)
 {
-  // If the node has no parent, return its local matrix
+  // Ensure the cache is properly sized
+  if (m_matrixCache.size() < static_cast<size_t>(p_numNodes)) {
+    m_matrixCache.resize(p_numNodes, { false, glm::mat4(1.0f) });
+  }
+
+  // Check if the matrix is already cached
+  if (m_matrixCache[node].first) {
+    return m_matrixCache[node].second;
+  }
+
+  // Calculate the matrix
+  glm::mat4 result;
   if (p_nodes[node].parent == -1) {
-    return getLocalMat(node);
+    // If the node has no parent, use its local matrix
+    result = getLocalMat(node);
   } else {
     // Recursively combine the parent transformation with the local matrix
-    return getMatrix(p_nodes[node].parent) * getLocalMat(node);
+    result = getMatrix(p_nodes[node].parent) * getLocalMat(node);
+  }
+
+  // Cache the result
+  m_matrixCache[node] = { true, result };
+  return result;
+}
+
+void
+GraphicsObject::resetMatrixCache()
+{
+  // Mark all cached matrices as invalid
+  for (auto& entry : m_matrixCache) {
+    entry.first = false;
   }
 }
 

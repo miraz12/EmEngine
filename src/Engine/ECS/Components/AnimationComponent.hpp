@@ -11,6 +11,7 @@ public:
   float currentTime{ 0.0f };
   bool isPlaying{ true };
   u32 animationIndex{ 0 };
+  bool loggedNoAnimation{ false }; // Flag to avoid repeated logging
 };
 
 #endif // ANMATIONCOMPONENT_H_

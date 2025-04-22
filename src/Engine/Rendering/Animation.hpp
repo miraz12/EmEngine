@@ -15,6 +15,13 @@ struct AnimationSampler
   std::vector<float> inputs;
   std::vector<glm::vec4> outputsVec4;
   std::vector<float> outputs;
+
+  // Pre-calculated time indices to avoid binary search during animation
+  mutable size_t lastIndex = 0;
+
+  // Find the appropriate keyframe index for the given time
+  size_t findKeyframeIndex(float time) const;
+
   glm::vec3 translate(size_t index, float time);
   glm::vec3 scale(size_t index, float time);
   glm::quat rotate(size_t index, float time);
