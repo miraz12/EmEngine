@@ -2,11 +2,19 @@
 #define ECSMANAGER_H_
 
 #include "Components/Component.hpp"
+#include "ComponentPool.hpp"
 #include "Systems/System.hpp"
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
+#include <memory>
+#include <unordered_map>
+#include <bitset>
 
-constexpr std::size_t MAX_ENTITIES = 10;
+// Moved to ComponentPool.hpp
+// constexpr std::size_t MAX_ENTITIES = 1000;
+constexpr std::size_t MAX_COMPONENTS = 32;
+
+using Signature = std::bitset<MAX_COMPONENTS>;
 
 class ECSManager : public Singleton<ECSManager>
 {
@@ -32,9 +40,24 @@ public:
   template<typename T>
   void addComponent(Entity entity, std::shared_ptr<T> component)
   {
+    // Get the component type ID
     u32 index = getComponentTypeID<T>();
-    m_components[entity][index] = component;
-    m_entityComponentMasks[entity] |= (1 << index);
+    
+    // Ensure we have enough component pools
+    if (m_componentPools.size() <= index) {
+      m_componentPools.resize(index + 1);
+    }
+    
+    // Create the component pool if it doesn't exist
+    if (!m_componentPools[index]) {
+      m_componentPools[index] = std::make_shared<ComponentPool<T>>();
+    }
+    
+    // Add the component to the pool
+    std::static_pointer_cast<ComponentPool<T>>(m_componentPools[index])->add(entity, component);
+    
+    // Set the component bit for this entity
+    m_entityComponentMasks[entity].set(index);
   }
 
   template<typename... Args>
@@ -48,18 +71,9 @@ public:
   {
     // Get the component type ID for T
     std::size_t idx = getComponentTypeID<T>();
-
+    
     // Check if the entity has a component of the specified type
-
-    Signature entMask = m_entityComponentMasks[entity];
-    Signature compMask = (1UL << idx);
-    Signature resMask = (entMask & compMask);
-    if (resMask.all()) {
-      return true;
-    } else {
-      // Entity has no components
-      return false;
-    }
+    return m_entityComponentMasks[entity].test(idx);
   }
 
   template<typename T>
@@ -118,10 +132,21 @@ public:
   template<typename T>
   std::shared_ptr<T> getComponent(Entity entity)
   {
-    // Return the component at the specified entity's index in the array
-    assert(!hasComponent<T>(entity));
-    return std::dynamic_pointer_cast<T>(
-      m_components.at(entity).at(getComponentTypeID<T>()));
+    // Check if the entity has this component
+    if (!hasComponent<T>(entity)) {
+      return nullptr;
+    }
+    
+    // Get the component type ID
+    std::size_t typeID = getComponentTypeID<T>();
+    
+    // Make sure we have a valid component pool
+    if (typeID >= m_componentPools.size() || !m_componentPools[typeID]) {
+      return nullptr;
+    }
+    
+    // Get the component from the pool
+    return std::static_pointer_cast<ComponentPool<T>>(m_componentPools[typeID])->get(entity);
   }
 
   // // Create point light
@@ -166,10 +191,14 @@ private:
   std::map<Entity, std::string> m_entityNames;
   std::unordered_map<std::string, System*> m_systems;
 
-  std::unordered_map<Entity, std::vector<std::shared_ptr<Component>>>
-    m_components;
+  // Component pools - one pool per component type
+  std::vector<std::shared_ptr<IComponentPool>> m_componentPools;
+  
+  // Maps component types to their indices
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
-  std::unordered_map<Entity, Signature> m_entityComponentMasks;
+  
+  // Tracks which components each entity has
+  std::array<Signature, MAX_ENTITIES> m_entityComponentMasks;
 
   size_t m_entityCount{ 1 };
   size_t m_nextComponentTypeID{ 0 };
