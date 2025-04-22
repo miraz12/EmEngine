@@ -7,8 +7,6 @@
 #include <vector>
 #include "Components/Component.hpp"
 
-constexpr std::size_t MAX_ENTITIES = 1000;
-
 // A pool for a specific component type
 class IComponentPool
 {
