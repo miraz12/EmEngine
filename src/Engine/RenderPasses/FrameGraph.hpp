@@ -15,8 +15,8 @@ enum class PassId : size_t
   kParticle,
   kBloom,
   kFxaa,
-  kNumPasses,
-  kDebug
+  kDebug,
+  kNumPasses
 };
 
 class FrameGraph : public Singleton<FrameGraph>
