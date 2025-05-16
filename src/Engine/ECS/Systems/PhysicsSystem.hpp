@@ -26,7 +26,12 @@ public:
   void CreatePhysicsBody(Entity entity, PhysicsComponent& physicsComponent);
   bool EntityOnGround(Entity entity);
 
+  // Debug drawing options
   DebugDrawer m_dDraw;
+  bool m_debugDrawEnabled = true; // Toggle for debug drawing
+
+  // Toggle debug drawing on/off
+  void toggleDebugDrawing() { m_debugDrawEnabled = !m_debugDrawEnabled; }
 
 private:
   PhysicsSystem() = default;

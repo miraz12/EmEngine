@@ -9,6 +9,8 @@
 #include <emscripten.h>
 #else
 #include <glad/glad.h>
+#define GLM_FORCE_INTRINSICS
+#define GLM_FORCE_ALIGNED_GENTYPES
 #endif
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -23,6 +25,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <math.h>
 #include <memory>
 #include <ostream>
 #include <queue>
@@ -101,10 +104,9 @@ using Signature = std::bitset<MAX_COMPONENTS>;
 // #define int undefined
 
 // Defines
-constexpr float PI = 3.14159f;
 
-#define DEG2RAD PI / 180.f
-#define RAD2DEG 180.f / PI
+#define DEG2RAD (M_PI / 180.f)
+#define RAD2DEG (180.f / M_PI)
 
 static void
 checkGLError(const char* operation)
@@ -112,7 +114,7 @@ checkGLError(const char* operation)
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
     std::cout << "GL error after " << operation << ": 0x" << std::hex << error
-              << std::dec << std::endl;
+              << std::dec << '\n';
   }
 }
 

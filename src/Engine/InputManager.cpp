@@ -13,6 +13,7 @@ InputManager::InputManager()
   m_keys.insert({ KEY::D, false });
   m_keys.insert({ KEY::F, false });
   m_keys.insert({ KEY::O, false });
+  m_keys.insert({ KEY::T, false });
   m_keys.insert({ KEY::Space, false });
   m_keys.insert({ KEY::ArrowUp, false });
   m_keys.insert({ KEY::ArrowDown, false });
@@ -70,6 +71,15 @@ InputManager::update(float dt)
     ecsManager.setSimulatePhysics(ecsManager.getSimulatePhysics() ? false
                                                                   : true);
   }
+
+  // Toggle debug drawing when T is pressed
+  static bool tWasPressed = false;
+  if (m_keys.at(KEY::T) && !tWasPressed) {
+    PhysicsSystem::getInstance().toggleDebugDrawing();
+    tWasPressed = true;
+  } else if (!m_keys.at(KEY::T)) {
+    tWasPressed = false;
+  }
   if (ecsManager.getSimulatePhysics()) {
     return;
   }
@@ -114,6 +124,9 @@ InputManager::handleInput(i32 key, i32 action)
       break;
     case GLFW_KEY_O:
       handleAction(KEY::O, action);
+      break;
+    case GLFW_KEY_T:
+      handleAction(KEY::T, action);
       break;
     case GLFW_KEY_SPACE:
       handleAction(KEY::Space, action);

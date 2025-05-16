@@ -137,48 +137,79 @@ PhysicsSystem::initialize(ECSManager& ecsManager)
     m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
 
   m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
-  // m_dynamicsWorld->setDebugDrawer(&m_dDraw);
+
+  // Set debug drawer with ALL debug modes for maximum visibility
+  // m_dDraw.setDebugMode(btIDebugDraw::DBG_DrawWireframe); // Draw wireframes
+  m_dDraw.setDebugMode(btIDebugDraw::DBG_DrawAabb); // Draw wireframes
+  // btIDebugDraw::DBG_DrawAabb |      // Draw axis-aligned bounding boxes
+  // btIDebugDraw::DBG_DrawContactPoints | // Show contact points
+  // btIDebugDraw::DBG_DrawConstraints |   // Show constraints
+  // btIDebugDraw::DBG_DrawConstraintLimits | // Show constraint limits
+  // btIDebugDraw::DBG_DrawNormals |    // Show normals
+  // btIDebugDraw::DBG_FastWireframe);  // Faster wireframe drawing
+
+  m_dynamicsWorld->setDebugDrawer(&m_dDraw);
 
   ///-----initialization_end-----
 
-  // {
-  //   groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.),
-  //   btScalar(50.)));
+  // Create a ground plane for debugging - always visible
+  {
+    groundShape =
+      new btBoxShape(btVector3(btScalar(100.), btScalar(1.), btScalar(100.)));
 
-  //   btTransform groundTransform;
-  //   groundTransform.setIdentity();
-  //   groundTransform.setOrigin(btVector3(0, -52, 0));
+    btTransform groundTransform;
+    groundTransform.setIdentity();
+    groundTransform.setOrigin(btVector3(0, -1, 0));
 
-  //   btScalar mass(0.);
+    btScalar mass(0.); // static object with mass 0
 
-  //   // rigidbody is dynamic if and only if mass is non zero, otherwise static
-  //   bool isDynamic = (mass != 0.f);
+    btVector3 localInertia(0, 0, 0);
 
-  //   btVector3 localInertia(0, 0, 0);
-  //   if (isDynamic)
-  //     groundShape->calculateLocalInertia(mass, localInertia);
+    // using motionstate is optional, it provides interpolation capabilities
+    myMotionState = new btDefaultMotionState(groundTransform);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(
+      mass, myMotionState, groundShape, localInertia);
 
-  //   // using motionstate is optional, it provides interpolation capabilities,
-  //   and only synchronizes
-  //   // 'active' objects
-  //   myMotionState = new btDefaultMotionState(groundTransform);
-  //   btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState,
-  //   groundShape, localInertia);
+    m_body = new btRigidBody(rbInfo);
 
-  //   m_body = new btRigidBody(rbInfo);
+    // add the body to the dynamics world
+    m_dynamicsWorld->addRigidBody(m_body);
+  }
 
-  //   // add the body to the dynamics world
-  //   m_dynamicsWorld->addRigidBody(m_body);
-  // }
+  // Also add a dynamic cube for testing
+  {
+    // btCollisionShape* cubeShape = new btBoxShape(btVector3(1.0, 1.0, 1.0));
+
+    // btTransform startTransform;
+    // startTransform.setIdentity();
+    // startTransform.setOrigin(btVector3(0, 10, 0)); // Start above the ground
+
+    // btScalar mass(1.0); // Dynamic object
+    // btVector3 localInertia(0, 0, 0);
+    // cubeShape->calculateLocalInertia(mass, localInertia);
+
+    // btDefaultMotionState* motionState =
+    // new btDefaultMotionState(startTransform);
+    // btRigidBody::btRigidBodyConstructionInfo rbInfo(
+    //   mass, motionState, cubeShape, localInertia);
+
+    // btRigidBody* body = new btRigidBody(rbInfo);
+    // m_dynamicsWorld->addRigidBody(body);
+  }
 }
 
 void
 PhysicsSystem::update(float dt)
 {
-
+  // Always draw debug lines if debug drawing is enabled, regardless of
+  // simulation state
   if (m_manager->getSimulatePhysics()) {
     m_dynamicsWorld->stepSimulation(dt, 10);
-    // m_dynamicsWorld->debugDrawWorld();
+
+    if (m_debugDrawEnabled) {
+      m_dynamicsWorld->debugDrawWorld();
+    }
+
     std::vector<Entity> view =
       m_manager->view<PositionComponent, PhysicsComponent>();
     for (auto e : view) {

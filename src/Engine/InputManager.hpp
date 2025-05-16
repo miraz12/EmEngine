@@ -11,6 +11,7 @@ enum class KEY
   Space,
   F,
   O,
+  T,
   ArrowUp,
   ArrowDown,
   ArrowRight,
