@@ -1,6 +1,6 @@
 using System;
 using Input;
-using FunctionsSetup;
+using EmEngine.Bindings;
 using Entities;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -28,11 +28,11 @@ public class Game
 
     public void Initialize()
     {
-        if (NativeMethods.Initialize())
+        if (EngineApi.Initialize())
         {
-            NativeMethods.LoadScene("resources/scene.yaml");
+            EngineApi.LoadScene("resources/scene.yaml");
             player = new Player();
-            NativeMethods.Start();
+            EngineApi.Start();
             stopwatch.Start(); // Start the stopwatch after initialization
         }
     }
@@ -41,7 +41,7 @@ public class Game
     public static void Update()
     {
         Game.Instance.CalculateDeltaTime();       // Calculate delta time for the frame
-        NativeMethods.Update();                   // Update native methods (external code)
+        EngineApi.Update();                   // Update native methods (external code)
         Game.Instance.inputManager.Update();      // Update player input
         Game.Instance.player.Update(Game.Instance.deltaTime); // Update player with delta time
     }
