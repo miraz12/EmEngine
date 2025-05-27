@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Numerics;
-using FunctionsSetup;
+using EmEngine.Bindings;
 
 namespace Input
 {
@@ -39,7 +39,7 @@ namespace Input
         public void Update()
         {
             IntPtr vectorPointer;
-            int count = NativeMethods.GetPressed(out vectorPointer);
+            int count = EngineApi.GetPressed(out vectorPointer);
             List<int> pressedKeys = ConvertIntPtrToList(vectorPointer, count);
 
             // Default to no force in any direction
@@ -60,6 +60,9 @@ namespace Input
                         break;
                     case KEY.D:
                         forceDirection -= _game.player.right;
+                        break;
+                    case KEY.Space:
+                        _game.player.RequestJump();
                         break;
                 }
             }

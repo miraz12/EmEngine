@@ -3,6 +3,7 @@
 #include "DebugComponent.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
+#include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <Objects/Cube.hpp>
@@ -46,6 +47,7 @@ PhysicsComponent::PhysicsComponent(Entity en,
         shape = new btSphereShape(btScalar(1.));
         break;
       case CAPSULE:
+        // new btKinematicCharacterController();
         shape = new btCapsuleShape(btScalar(1.), btScalar(1.));
         break;
       case CONVEX_HULL:
@@ -78,11 +80,11 @@ PhysicsComponent::PhysicsComponent(Entity en,
     if (type == CAPSULE) {
       // Configure rigid body for character movement
       body->setAngularFactor(btVector3(0, 0, 0)); // No rotation
-      body->setFriction(0.8f);                    // Ground friction
-      body->setRestitution(0.0f);                 // No bouncing
-      body->setDamping(0.5f, 0.0f); // Linear damping for smooth deceleration
+      body->setFriction(0.1f);      // Very low friction for faster running
+      body->setRestitution(0.0f);   // No bouncing
+      body->setDamping(0.0f, 0.0f); // No damping for maximum speed
       body->setActivationState(DISABLE_DEACTIVATION);
-      // body->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+      body->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
     }
 
     body->setUserIndex(m_en);

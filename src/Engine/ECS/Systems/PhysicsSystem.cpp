@@ -34,13 +34,29 @@ PhysicsSystem::EntityOnGround(Entity entity)
   btTransform transform = phyComp->body->getWorldTransform();
   btVector3 start = transform.getOrigin();
 
-  // Get collision shape's height to cast from bottom
-  btVector3 extent =
-    static_cast<btBoxShape*>(phyComp->body->getCollisionShape())
-      ->getHalfExtentsWithoutMargin();
-  start.setY(start.y() - extent.y()); // Move to bottom of shape
+  // Handle different collision shape types
+  btVector3 extent(0, 0, 0);
+  btCollisionShape* shape = phyComp->body->getCollisionShape();
 
-  btVector3 end = start + btVector3(0, -1.06, 0);
+  // Check shape type and get appropriate dimensions
+  if (shape->getShapeType() == BOX_SHAPE_PROXYTYPE) {
+    extent = static_cast<btBoxShape*>(shape)->getHalfExtentsWithoutMargin();
+  } else if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE) {
+    btCapsuleShape* capsule = static_cast<btCapsuleShape*>(shape);
+    // For capsule, use height/2 + radius for bottom point
+    float halfHeight = capsule->getHalfHeight();
+    float radius = capsule->getRadius();
+    extent.setY(halfHeight + radius);
+  } else {
+    // For other shapes, use a small default offset
+    extent.setY(0.5f);
+  }
+
+  // Move to bottom of shape
+  start.setY(start.y() - extent.y());
+
+  // Cast ray a small distance below the character (0.1 units)
+  btVector3 end = start + btVector3(0, -0.1, 0);
 
   // Perform raycast
   btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);

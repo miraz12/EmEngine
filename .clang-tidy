@@ -28,5 +28,5 @@ CheckOptions:
   - { key: readability-identifier-naming.ClassMethodCase, value: camelBack  }
   - { key: readability-identifier-naming.VariableCase,  value: camelBack  }
   - { key: readability-identifier-naming.FunctionCase,  value: camelBack  }
-  - { key: readability-identifier-naming.PrivateMemberSuffix,  value: _   }
+  - { key: readability-identifier-naming.PrivateMemberPrefix,  value: m_   }
   - { key: readability-identifier-naming.ParameterCase, value: camelBack  }

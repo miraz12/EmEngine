@@ -69,8 +69,11 @@
             EM_CACHE = "/home/shaggy/.emscripten_cache";
 
             shellHook = ''
-              DOTNET_ROOT="${dotnetPkg}"
-              DRI_PRIME=1;
+              export DOTNET_ROOT="${dotnetPkg}"
+              export DRI_PRIME=1
+              export npm_config_prefix=$PWD/.npm-global
+              export PATH=$npm_config_prefix/bin:$PATH
+              export NODE_PATH=$npm_config_prefix/lib/node_modules
             '';
           };
       }
