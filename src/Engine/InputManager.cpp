@@ -20,6 +20,10 @@ InputManager::InputManager()
   m_keys.insert({ KEY::ArrowRight, false });
   m_keys.insert({ KEY::ArrowLeft, false });
   m_keys.insert({ KEY::Mouse1, false });
+  m_keys.insert({ KEY::Key1, false });
+  m_keys.insert({ KEY::Key2, false });
+  m_keys.insert({ KEY::Key3, false });
+  m_keys.insert({ KEY::Key4, false });
 }
 
 void
@@ -145,6 +149,18 @@ InputManager::handleInput(i32 key, i32 action)
       break;
     case GLFW_MOUSE_BUTTON_1:
       handleAction(KEY::Mouse1, action);
+      break;
+    case GLFW_KEY_1:
+      handleAction(KEY::Key1, action);
+      break;
+    case GLFW_KEY_2:
+      handleAction(KEY::Key2, action);
+      break;
+    case GLFW_KEY_3:
+      handleAction(KEY::Key3, action);
+      break;
+    case GLFW_KEY_4:
+      handleAction(KEY::Key4, action);
       break;
   }
 }

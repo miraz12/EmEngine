@@ -16,7 +16,11 @@ enum class KEY
   ArrowDown,
   ArrowRight,
   ArrowLeft,
-  Mouse1
+  Mouse1,
+  Key1,
+  Key2,
+  Key3,
+  Key4
 };
 
 class InputManager : public Singleton<InputManager>

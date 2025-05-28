@@ -40,6 +40,7 @@ extern "C"
   void AddImpulse(unsigned int entity, float x, float y, float z);
   void AddForce(unsigned int entity, float x, float y, float z);
   void SetAcceleration(unsigned int entity, float x, float y, float z);
+  bool EntityOnGround(unsigned int entity);
   void Start()
   {
 
