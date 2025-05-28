@@ -11,22 +11,45 @@ namespace Entities
         public Vector3 right = new Vector3(1, 0, 0);
         private Vector3 velocity = new Vector3(0, 0, 0);
         private Vector3 forceDirection = new Vector3(0, 0, 0);
-        // Force applied for movement - only used for minor adjustments now
-        private float maxForce = 100.0f;
-        // Damping factor (0-1) - simulates friction/air resistance
-        private float damping = 0.1f;
-        // Maximum movement speed in meters per second (sprint speed)
-        // Walking: ~1.4 m/s, Jogging: ~3.0 m/s, Running: ~5-8 m/s, Sprint: ~9-11 m/s
-        private float maxSpeed = 7.0f;
-        // Speed at which the player rotates to face movement direction
+        
+        // Force applied for movement (Newtons) - average human can produce ~400-600N horizontally
+        private float maxForce = 500.0f;
+        
+        // Movement speeds in m/s based on real human locomotion data:
+        // Walking: 1.2-1.4 m/s, Jogging: 2.5-3.5 m/s, Running: 4.5-6.0 m/s, Sprint: 8-12 m/s
+        private float walkSpeed = 1.4f;      // Comfortable walking pace
+        private float jogSpeed = 3.0f;       // Light jogging
+        private float runSpeed = 5.5f;       // Running pace
+        private float sprintSpeed = 9.0f;    // Sprint speed (Olympic average ~10.5 m/s)
+        
+        // Current movement mode
+        private enum MovementMode { Walk, Jog, Run, Sprint }
+        private MovementMode currentMode = MovementMode.Run;
+        
+        // Acceleration and deceleration (m/s²) - realistic human values
+        private float acceleration = 8.0f;   // Time to reach max speed ~0.7 seconds
+        private float deceleration = 12.0f;  // Stopping is faster than starting
+        private float airControl = 0.3f;     // Reduced control while airborne
+        
+        // Friction coefficients
+        private float groundFriction = 0.85f;  // Ground friction (concrete/asphalt)
+        private float airResistance = 0.02f;   // Air resistance at low speeds
+        
+        // Rotation
         private float rotationSpeed = 8.0f;
-        // Jump parameters
-        private float jumpVelocity = 7.0f;
+        
+        // === JUMP PHYSICS ===
+        // Jump height: 0.4m (average human vertical jump) requires ~2.8 m/s initial velocity
+        // Formula: v = sqrt(2 * g * h) where g = 9.81 m/s², h = 0.4m
+        private float jumpVelocity = 2.8f;    // Realistic vertical jump velocity
         private bool jumpRequested = false;
-        private bool canJump = true; // Should start as true
-        private float jumpCooldown = 0.2f;
+        private bool canJump = true;
+        private float jumpCooldown = 0.15f;   // Minimum time between jumps
         private float jumpTimer = 0.0f;
         private int entityId;
+        
+        // Debug tracking
+        private bool wasMoving = false;
 
         public Player()
         {
@@ -61,7 +84,7 @@ namespace Entities
             bool onGround = EngineApi.EntityOnGround(entityId);
             
             // Handle jump cooldown timer
-            if (!canJump && !onGround)
+            if (!canJump)
             {
                 jumpTimer += dt;
                 if (jumpTimer >= jumpCooldown)
@@ -79,67 +102,99 @@ namespace Entities
             }
             
             // Apply jump if requested and player is on ground
-            if (jumpRequested)
+            if (jumpRequested && onGround && canJump)
             {
-
-                if (onGround && canJump)
-                {
-                    velocity.Y = jumpVelocity;
-                    canJump = false;  // Prevent repeated jumps until landing or cooldown
-                    jumpTimer = 0.0f;
-                }
+                velocity.Y = jumpVelocity;
+                canJump = false;
+                jumpTimer = 0.0f;
             }
             
-            // Calculate the force vector based on input direction
-            // Use direct velocity control approach for more consistent speed
+            // === PHYSICS-BASED MOVEMENT ===
+            // Get current target speed based on movement mode
+            float targetSpeed = GetTargetSpeed();
             
-            // If we have input, set the velocity directly to max speed in that direction
+            // Debug: Print current movement info when moving
+            bool isMoving = forceDirection.Length() > 0.1f;
+            if (isMoving && !wasMoving)
+            {
+                System.Console.WriteLine($"Movement Mode: {currentMode} | Target Speed: {targetSpeed:F1} m/s");
+            }
+            wasMoving = isMoving;
+            
+            // Calculate horizontal velocity components
+            Vector3 horizontalVelocity = new Vector3(velocity.X, 0, velocity.Z);
+            float currentSpeed = horizontalVelocity.Length();
+            
             if (forceDirection.Length() > 0.1f)
             {
-                // Normalize the direction vector
-                Vector3 normalizedDirection = Vector3.Normalize(forceDirection);
+                // Normalize input direction
+                Vector3 inputDirection = Vector3.Normalize(forceDirection);
                 
-                // Get current Y velocity before overwriting
-                float currentYVelocity = velocity.Y;
+                // Calculate target velocity
+                Vector3 targetVelocity = inputDirection * targetSpeed;
                 
-                // Set velocity directly to max speed in the input direction
-                velocity = normalizedDirection * maxSpeed;
+                // Use appropriate acceleration based on ground contact
+                float currentAcceleration = onGround ? acceleration : acceleration * airControl;
                 
-                // Keep the original Y velocity component (for jumps/falls)
-                velocity.Y = currentYVelocity;
+                // Apply acceleration toward target velocity
+                Vector3 velocityDifference = targetVelocity - horizontalVelocity;
+                Vector3 accelerationVector = velocityDifference * currentAcceleration * dt;
+                
+                // Clamp acceleration to prevent overshooting
+                if (accelerationVector.Length() > velocityDifference.Length())
+                {
+                    accelerationVector = velocityDifference;
+                }
+                
+                // Apply acceleration
+                velocity.X += accelerationVector.X;
+                velocity.Z += accelerationVector.Z;
             }
             else
             {
-                // If no input, apply damping to slow down
-                float currentDamping = onGround ? damping : 0.98f;
-                
-                // Only apply horizontal damping in air
+                // No input - apply deceleration/friction
                 if (onGround)
                 {
-                    velocity.X *= currentDamping;
-                    velocity.Z *= currentDamping;
+                    // Ground friction
+                    float frictionForce = deceleration * groundFriction * dt;
+                    if (currentSpeed > 0)
+                    {
+                        Vector3 frictionDirection = -Vector3.Normalize(horizontalVelocity);
+                        Vector3 frictionVector = frictionDirection * Math.Min(frictionForce, currentSpeed);
+                        
+                        velocity.X += frictionVector.X;
+                        velocity.Z += frictionVector.Z;
+                    }
                 }
                 else
                 {
-                    velocity *= currentDamping;
+                    // Air resistance (much lighter)
+                    float airResistanceForce = currentSpeed * currentSpeed * airResistance * dt;
+                    if (currentSpeed > 0)
+                    {
+                        Vector3 resistanceDirection = -Vector3.Normalize(horizontalVelocity);
+                        Vector3 resistanceVector = resistanceDirection * Math.Min(airResistanceForce, currentSpeed);
+                        
+                        velocity.X += resistanceVector.X;
+                        velocity.Z += resistanceVector.Z;
+                    }
                 }
             }
             
-            // Calculate horizontal speed for other checks
-            float horizontalSpeed = (float)Math.Sqrt(velocity.X * velocity.X + velocity.Z * velocity.Z);
+            // Calculate final horizontal speed for animation
+            float finalHorizontalSpeed = (float)Math.Sqrt(velocity.X * velocity.X + velocity.Z * velocity.Z);
 
-            // Only animate and update facing direction if the player is moving on ground
-            if (horizontalSpeed > 0.1f)
+            // Update facing direction and animations
+            if (finalHorizontalSpeed > 0.1f)
             {
                 UpdateFacingDirection(dt);
                 
-                // Animation thresholds for running
-                // Always play animation when moving - this is a running character
-                if (horizontalSpeed > 1.0f && onGround)
+                // Animation based on speed thresholds
+                if (finalHorizontalSpeed > walkSpeed * 0.5f && onGround)
                 {
                     EngineApi.StartAnimation(entityId);
                 }
-                else if (horizontalSpeed < 0.5f)
+                else
                 {
                     EngineApi.PauseAnimation(entityId);
                 }
@@ -149,26 +204,21 @@ namespace Entities
                 EngineApi.PauseAnimation(entityId);
             }
 
-            // Calculate the desired yaw angle based on forward vector
+            // Update rotation based on movement direction
             float targetYaw = (float)Math.Atan2(forward.X, forward.Z);
-
-            // Update the rotation in the physics engine
             EngineApi.SetRotation(entityId, targetYaw);
 
-            // Set the velocity directly in bullet physics
+            // Apply velocity to physics engine
             EngineApi.SetVelocity(entityId, velocity.X, velocity.Y, velocity.Z);
             
-            // Also apply forces to help overcome any other physics constraints
-            // This provides an additional push in the movement direction
-            if (forceDirection.Length() > 0.1f)
+            // Apply additional force for more responsive movement
+            if (forceDirection.Length() > 0.1f && onGround)
             {
-                EngineApi.AddForce(entityId, 
-                                      forceDirection.X * maxForce * 2.0f,
-                                      0, 
-                                      forceDirection.Z * maxForce * 2.0f);
+                Vector3 forceVector = Vector3.Normalize(forceDirection) * maxForce;
+                EngineApi.AddForce(entityId, forceVector.X, 0, forceVector.Z);
             }
 
-            // Reset jump request and force direction for the next frame
+            // Reset inputs for next frame
             jumpRequested = false;
             forceDirection = Vector3.Zero;
         }
@@ -202,6 +252,40 @@ namespace Entities
         public Vector3 GetFacingDirection()
         {
             return forward;
+        }
+        
+        private float GetTargetSpeed()
+        {
+            return currentMode switch
+            {
+                MovementMode.Walk => walkSpeed,
+                MovementMode.Jog => jogSpeed,
+                MovementMode.Run => runSpeed,
+                MovementMode.Sprint => sprintSpeed,
+                _ => runSpeed
+            };
+        }
+        
+        public void SetMovementMode(int mode)
+        {
+            currentMode = mode switch
+            {
+                0 => MovementMode.Walk,
+                1 => MovementMode.Jog,
+                2 => MovementMode.Run,
+                3 => MovementMode.Sprint,
+                _ => MovementMode.Run
+            };
+        }
+        
+        public float GetCurrentSpeed()
+        {
+            return (float)Math.Sqrt(velocity.X * velocity.X + velocity.Z * velocity.Z);
+        }
+        
+        public string GetMovementModeString()
+        {
+            return currentMode.ToString();
         }
     }
 }
