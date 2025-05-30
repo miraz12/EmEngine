@@ -27,42 +27,54 @@ PhysicsSystem::EntityOnGround(Entity entity)
 {
   std::shared_ptr<PhysicsComponent> phyComp =
     ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-  if (!phyComp->body)
+  if (!phyComp->body) {
     return false;
-
-  // Get the bottom center of the object
-  btTransform transform = phyComp->body->getWorldTransform();
-  btVector3 start = transform.getOrigin();
-
-  // Handle different collision shape types
-  btVector3 extent(0, 0, 0);
-  btCollisionShape* shape = phyComp->body->getCollisionShape();
-
-  // Check shape type and get appropriate dimensions
-  if (shape->getShapeType() == BOX_SHAPE_PROXYTYPE) {
-    extent = static_cast<btBoxShape*>(shape)->getHalfExtentsWithoutMargin();
-  } else if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE) {
-    btCapsuleShape* capsule = static_cast<btCapsuleShape*>(shape);
-    // For capsule, use height/2 + radius for bottom point
-    float halfHeight = capsule->getHalfHeight();
-    float radius = capsule->getRadius();
-    extent.setY(halfHeight + radius);
-  } else {
-    // For other shapes, use a small default offset
-    extent.setY(0.5f);
   }
 
-  // Move to bottom of shape
-  start.setY(start.y() - extent.y());
+  btVector3 velocity = phyComp->body->getLinearVelocity();
+  bool hasDownwardContact = false;
 
-  // Cast ray a small distance below the character (0.1 units)
-  btVector3 end = start + btVector3(0, -0.1, 0);
+  // Get all contact manifolds for this body
+  int numManifolds = m_dynamicsWorld->getDispatcher()->getNumManifolds();
+  for (int i = 0; i < numManifolds; i++) {
+    btPersistentManifold* contactManifold =
+      m_dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
 
-  // Perform raycast
-  btCollisionWorld::ClosestRayResultCallback rayCallback(start, end);
-  m_dynamicsWorld->rayTest(start, end, rayCallback);
+    // Check if this manifold involves our player body
+    const btCollisionObject* obA = contactManifold->getBody0();
+    const btCollisionObject* obB = contactManifold->getBody1();
 
-  return rayCallback.hasHit();
+    if (obA == phyComp->body || obB == phyComp->body) {
+      // Check contact points
+      int numContacts = contactManifold->getNumContacts();
+      for (int j = 0; j < numContacts; j++) {
+        btManifoldPoint& pt = contactManifold->getContactPoint(j);
+
+        // Only consider contacts that are close enough (penetration depth)
+        if (pt.getDistance() < 0.1f) {
+
+          // Get the contact normal (pointing from A to B)
+          btVector3 normal = pt.m_normalWorldOnB;
+          if (obB == phyComp->body) {
+            normal = -normal; // Flip if our body is B
+          }
+
+          // Check if the normal points upward (ground contact)
+          // Normal should point roughly upward (Y > 0.7 for slopes up to ~45
+          // degrees)
+          if (normal.y() > 0.7f) {
+            hasDownwardContact = true;
+            break;
+          }
+        }
+      }
+      if (hasDownwardContact) {
+        break;
+      }
+    }
+  }
+
+  return hasDownwardContact;
 }
 
 void
@@ -110,7 +122,7 @@ PhysicsSystem::CreatePhysicsBody(Entity entity,
   startTransform.setOrigin(
     physicsComponent.dimensions); // Set initial position (if applicable)
 
-  btDefaultMotionState* motionState = new btDefaultMotionState(startTransform);
+  auto* motionState = new btDefaultMotionState(startTransform);
 
   btRigidBody::btRigidBodyConstructionInfo rbInfo(
     physicsComponent.mass, motionState, shape, localInertia);

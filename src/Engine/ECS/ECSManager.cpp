@@ -207,6 +207,25 @@ extern "C"
     phy->body->setLinearVelocity(btVector3(x, y != 0.0f ? y : vel.getY(), z));
   }
 
+  void SetHorizontalVelocity(unsigned int entity, float x, float z)
+  {
+    std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    btVector3 vel = phy->body->getLinearVelocity();
+    // Only change horizontal velocity, preserve Y velocity (gravity/jumping)
+    phy->body->setLinearVelocity(btVector3(x, vel.getY(), z));
+  }
+
+  void GetVelocity(unsigned int entity, float* velocity)
+  {
+    std::shared_ptr<PhysicsComponent> phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    btVector3 vel = phy->body->getLinearVelocity();
+    velocity[0] = vel.getX();
+    velocity[1] = vel.getY();
+    velocity[2] = vel.getZ();
+  }
+
   void AddImpulse(unsigned int entity, float x, float y, float z)
   {
     std::shared_ptr<PhysicsComponent> phy =

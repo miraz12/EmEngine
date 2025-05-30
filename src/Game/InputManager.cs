@@ -35,6 +35,7 @@ namespace Input
         private bool key2WasPressed = false;
         private bool key3WasPressed = false;
         private bool key4WasPressed = false;
+        private bool spaceWasPressed = false;
 
         public InputManager(Game game)
         {
@@ -66,6 +67,7 @@ namespace Input
             bool key2Pressed = false;
             bool key3Pressed = false;
             bool key4Pressed = false;
+            bool spacePressed = false;
 
             foreach (var key in pressedKeys)
             {
@@ -84,7 +86,7 @@ namespace Input
                         forceDirection -= _game.player.right;
                         break;
                     case KEY.Space:
-                        _game.player.RequestJump();
+                        spacePressed = true;
                         break;
                     case KEY.Key1:
                         key1Pressed = true;
@@ -99,6 +101,12 @@ namespace Input
                         key4Pressed = true;
                         break;
                 }
+            }
+            
+            // Handle jump (only on key press, not while held)
+            if (spacePressed && !spaceWasPressed)
+            {
+                _game.player.RequestJump();
             }
             
             // Handle movement mode changes (only on key press, not while held)
@@ -120,6 +128,7 @@ namespace Input
             }
             
             // Update previous key states
+            spaceWasPressed = spacePressed;
             key1WasPressed = key1Pressed;
             key2WasPressed = key2Pressed;
             key3WasPressed = key3Pressed;
