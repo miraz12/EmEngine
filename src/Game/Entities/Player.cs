@@ -39,14 +39,18 @@ namespace Entities
         private float rotationSpeed = 8.0f;
         
         // === JUMP PHYSICS ===
-        // Jump height: 0.4m (average human vertical jump) requires ~2.8 m/s initial velocity
-        // Formula: v = sqrt(2 * g * h) where g = 9.81 m/s², h = 0.4m
-        private float jumpVelocity = 2.8f;    // Realistic vertical jump velocity
+        // Jump height: 0.5m (athletic vertical jump) requires ~3.1 m/s initial velocity
+        // Formula: v = sqrt(2 * g * h) where g = 9.8 m/s², h = 0.5m
+        private float jumpVelocity = 3.1f;    // Realistic vertical jump velocity
         private bool jumpRequested = false;
         private bool canJump = true;
         private float jumpCooldown = 0.15f;   // Minimum time between jumps
         private float jumpTimer = 0.0f;
         private int entityId;
+        
+        // Strict ground checking for jumps
+        private bool wasOnGroundLastFrame = false;
+        private bool hasJumpedSinceGrounded = false; // Prevents multiple jumps per ground contact
         
         // Debug tracking
         private bool wasMoving = false;
@@ -65,7 +69,7 @@ namespace Entities
             EngineApi.AddGraphicsComponent(entityId, "gltf/Running/running.glb");
             
             // Add physics with a CAPSULE shape (type=2)
-            // Set mass to 70kg (average human mass)
+            // Set mass to 70kg
             EngineApi.AddPhysicsComponent(entityId, 70.0f, 2);
             
             // Position the camera to follow from behind and slightly above
@@ -80,6 +84,14 @@ namespace Entities
 
         public void Update(float dt)
         {
+            // Get current velocity from physics engine (includes gravity effects)
+            unsafe
+            {
+                float* velocityPtr = stackalloc float[3];
+                EngineApi.GetVelocity(entityId, (IntPtr)velocityPtr);
+                velocity = new Vector3(velocityPtr[0], velocityPtr[1], velocityPtr[2]);
+            }
+            
             // Check if player is on ground for better movement control
             bool onGround = EngineApi.EntityOnGround(entityId);
             
@@ -94,31 +106,45 @@ namespace Entities
                 }
             }
             
-            // Reset jump ability when landing
-            if (onGround && !canJump && velocity.Y <= 0)
+            // Reset jump flag when player lands after being airborne
+            if (onGround && !wasOnGroundLastFrame)
             {
+                // Player just landed - allow jumping again
+                hasJumpedSinceGrounded = false;
                 canJump = true;
                 jumpTimer = 0.0f;
             }
             
-            // Apply jump if requested and player is on ground
-            if (jumpRequested && onGround && canJump)
+            // STRICT GROUND-BASED JUMP CONTROL
+            // Only allow jumping if:
+            // 1. Currently on ground
+            // 2. Haven't jumped since last ground contact
+            // 3. Jump cooldown has passed
+            // 4. Y velocity is not positive (not already jumping up)
+            bool canJumpNow = onGround && 
+                              !hasJumpedSinceGrounded &&
+                              canJump && 
+                              velocity.Y <= 0.1f; // Small tolerance for ground contact
+            
+            // Apply jump if requested and all conditions are met
+            if (jumpRequested && canJumpNow)
             {
-                velocity.Y = jumpVelocity;
+                // Set Y velocity for jump, preserve current horizontal velocity
+                EngineApi.SetVelocity(entityId, velocity.X, jumpVelocity, velocity.Z);
                 canJump = false;
+                hasJumpedSinceGrounded = true; // Prevent another jump until landing
                 jumpTimer = 0.0f;
             }
+
+            // Update ground state for next frame
+            wasOnGroundLastFrame = onGround;
             
-            // === PHYSICS-BASED MOVEMENT ===
+            // === MOVEMENT ===
             // Get current target speed based on movement mode
             float targetSpeed = GetTargetSpeed();
             
-            // Debug: Print current movement info when moving
+            // Track movement state for animation
             bool isMoving = forceDirection.Length() > 0.1f;
-            if (isMoving && !wasMoving)
-            {
-                System.Console.WriteLine($"Movement Mode: {currentMode} | Target Speed: {targetSpeed:F1} m/s");
-            }
             wasMoving = isMoving;
             
             // Calculate horizontal velocity components
@@ -146,7 +172,7 @@ namespace Entities
                     accelerationVector = velocityDifference;
                 }
                 
-                // Apply acceleration
+                // Apply acceleration (only modify horizontal components)
                 velocity.X += accelerationVector.X;
                 velocity.Z += accelerationVector.Z;
             }
@@ -208,8 +234,8 @@ namespace Entities
             float targetYaw = (float)Math.Atan2(forward.X, forward.Z);
             EngineApi.SetRotation(entityId, targetYaw);
 
-            // Apply velocity to physics engine
-            EngineApi.SetVelocity(entityId, velocity.X, velocity.Y, velocity.Z);
+            // Apply only horizontal velocity to physics engine (preserve gravity on Y)
+            EngineApi.SetHorizontalVelocity(entityId, velocity.X, velocity.Z);
             
             // Apply additional force for more responsive movement
             if (forceDirection.Length() > 0.1f && onGround)
@@ -249,11 +275,6 @@ namespace Entities
             jumpRequested = true;
         }
 
-        public Vector3 GetFacingDirection()
-        {
-            return forward;
-        }
-        
         private float GetTargetSpeed()
         {
             return currentMode switch
@@ -276,16 +297,6 @@ namespace Entities
                 3 => MovementMode.Sprint,
                 _ => MovementMode.Run
             };
-        }
-        
-        public float GetCurrentSpeed()
-        {
-            return (float)Math.Sqrt(velocity.X * velocity.X + velocity.Z * velocity.Z);
-        }
-        
-        public string GetMovementModeString()
-        {
-            return currentMode.ToString();
         }
     }
 }

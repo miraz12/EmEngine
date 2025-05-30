@@ -37,6 +37,8 @@ extern "C"
     Core::getInstance().update();
   };
   void SetVelocity(unsigned int entity, float x, float y, float z);
+  void SetHorizontalVelocity(unsigned int entity, float x, float z);
+  void GetVelocity(unsigned int entity, float* velocity);
   void AddImpulse(unsigned int entity, float x, float y, float z);
   void AddForce(unsigned int entity, float x, float y, float z);
   void SetAcceleration(unsigned int entity, float x, float y, float z);
