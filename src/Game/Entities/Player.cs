@@ -66,7 +66,7 @@ namespace Entities
                                               new float[] { 0, 0, 0 });
                                               
             // Add the character model
-            EngineApi.AddGraphicsComponent(entityId, "gltf/Running/running.glb");
+            EngineApi.AddGraphicsComponent(entityId, "gltf/vampire/Untitled.glb");
             
             // Add physics with a CAPSULE shape (type=2)
             // Set mass to 70kg
@@ -76,8 +76,7 @@ namespace Entities
             EngineApi.AddCameraComponent(entityId, true, new float[] { 0, 8.0F, -10.0F });
             
             // Start with character at rest
-            EngineApi.PauseAnimation(entityId);
-            
+            EngineApi.SetAnimationIndex(entityId, 2);
             // Ensure canJump is true after initialization
             canJump = true;
         }
@@ -115,7 +114,6 @@ namespace Entities
                 jumpTimer = 0.0f;
             }
             
-            // STRICT GROUND-BASED JUMP CONTROL
             // Only allow jumping if:
             // 1. Currently on ground
             // 2. Haven't jumped since last ground contact
@@ -218,16 +216,23 @@ namespace Entities
                 // Animation based on speed thresholds
                 if (finalHorizontalSpeed > walkSpeed * 0.5f && onGround)
                 {
-                    EngineApi.StartAnimation(entityId);
+                    EngineApi.SetAnimationIndex(entityId, 1);
                 }
                 else
                 {
-                    EngineApi.PauseAnimation(entityId);
+                    EngineApi.SetAnimationIndex(entityId, 6);
                 }
             }
             else
             {
-                EngineApi.PauseAnimation(entityId);
+              if(onGround)
+              {
+                EngineApi.SetAnimationIndex(entityId, 2);
+              }
+              else
+              {
+                EngineApi.SetAnimationIndex(entityId, 6);
+              }
             }
 
             // Update rotation based on movement direction

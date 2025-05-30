@@ -297,4 +297,13 @@ extern "C"
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
     a->isPlaying = true;
   }
+
+  void SetAnimationIndex(unsigned int entity, unsigned int idx)
+  {
+    auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    if (a->animationIndex != idx) {
+      a->animationIndex = idx;
+      a->currentTime = 0;
+    }
+  }
 };
