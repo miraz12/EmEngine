@@ -39,14 +39,30 @@ ECSManager::update(float dt)
 Entity
 ECSManager::createEntity(std::string name)
 {
-  Entity newEntity = (m_entityCount++);
+  Entity newEntity;
+  
+  // First try to reuse an available entity ID
+  if (!m_availableEntityIds.empty()) {
+    newEntity = m_availableEntityIds.front();
+    m_availableEntityIds.pop();
+  } else {
+    // Check if we've hit the MAX_ENTITIES limit
+    if (m_entityCount >= MAX_ENTITIES) {
+      // Entity creation failed - return invalid entity ID
+      return 0;
+    }
+    
+    // Create new entity ID
+    newEntity = (m_entityCount++);
+  }
+  
   m_entities.push_back(newEntity);
   m_entityNames[newEntity] = name;
 
   // Initialize the component mask for this entity
   m_entityComponentMasks[newEntity].reset();
 
-  return m_entities.back();
+  return newEntity;
 }
 
 std::shared_ptr<PointLight>
@@ -159,14 +175,29 @@ ECSManager::reset()
 
   // Reset entity counter
   m_entityCount = 1;
+  
+  // Clear entity ID reuse queue
+  while (!m_availableEntityIds.empty()) {
+    m_availableEntityIds.pop();
+  }
 }
 
 void
 ECSManager::destroyEntity(Entity entity)
 {
+  // Validate entity exists
+  if (entity == 0 || entity >= MAX_ENTITIES) {
+    return; // Invalid entity ID
+  }
+  
+  // Check if entity actually exists in our active list
+  auto entityIt = std::find(m_entities.begin(), m_entities.end(), entity);
+  if (entityIt == m_entities.end()) {
+    return; // Entity doesn't exist
+  }
+
   // Remove the entity from the active entities list
-  m_entities.erase(std::remove(m_entities.begin(), m_entities.end(), entity),
-                   m_entities.end());
+  m_entities.erase(entityIt);
 
   // Clear all components for this entity
   m_entityComponentMasks[entity].reset();
@@ -180,6 +211,9 @@ ECSManager::destroyEntity(Entity entity)
 
   // Remove the entity name
   m_entityNames.erase(entity);
+  
+  // Add the entity ID back to the reuse pool
+  m_availableEntityIds.push(entity);
 }
 
 // Api stuff

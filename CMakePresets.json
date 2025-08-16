@@ -92,5 +92,13 @@
       "inherits": "base-build",
       "configurePreset": "emscripten-debug"
     }
+  ],
+ "testPresets": [
+    {
+      "name": "all",
+      "configurePreset": "linux-debug",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+    }
   ]
 }

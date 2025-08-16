@@ -8,6 +8,7 @@
 #include <Types/LightTypes.hpp>
 #include <bitset>
 #include <memory>
+#include <queue>
 #include <unordered_map>
 
 using Signature = std::bitset<MAX_COMPONENTS>;
@@ -208,5 +209,8 @@ private:
   Entity m_dirLightEntity;
   bool m_simulatePhysics{ false };
   i32 m_debugView;
+  
+  // Entity ID reuse system
+  std::queue<Entity> m_availableEntityIds;
 };
 #endif // LIGHTINGSYSTEM_H_

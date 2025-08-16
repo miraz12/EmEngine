@@ -19,5 +19,8 @@ add_subdirectory(src/Game)
 include_directories(${CMAKE_SYSROOT}/include)
 include_directories(${CMAKE_SYSROOT}/include/c++/v1)
 
-# if(NOT DEFINED EMSCRIPTEN) Enable testing enable_testing()
-# add_subdirectory(tests) endif()
+if(NOT DEFINED EMSCRIPTEN)
+  # Enable testing
+  enable_testing()
+  add_subdirectory(tests)
+endif()
