@@ -61,7 +61,8 @@
               tree-sitter-grammars.tree-sitter-c-sharp
               linuxPackages.perf
               hotspot
-            ] ++ deps;
+            ]
+            ++ deps;
 
             NIX_LD_LIBRARY_PATH = lib.makeLibraryPath ([ stdenv.cc.cc ] ++ deps);
             NIX_LD = "${pkgs.stdenv.cc.libc_bin}/bin/ld.so";
