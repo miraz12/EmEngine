@@ -8,7 +8,7 @@ extern "C"
 
   void LoadScene(const char* filename)
   {
-    ECSManager::getInstance().loadScene(filename);
+    SceneLoader::getInstance().init(filename);
   }
 
   void PauseAnimation(unsigned int entity);

@@ -119,7 +119,7 @@ SceneLoader::init(const char* file)
               float x = components[i]["position"][0].as<float>();
               float y = components[i]["position"][1].as<float>();
               float z = components[i]["position"][2].as<float>();
-              m_ecsMan->SetupPointLight(en,
+              m_ecsMan->setupPointLight(en,
                                         glm::vec3(r, g, b),
                                         constant,
                                         linear,
@@ -133,7 +133,7 @@ SceneLoader::init(const char* file)
               float x = components[i]["direction"][0].as<float>();
               float y = components[i]["direction"][1].as<float>();
               float z = components[i]["direction"][2].as<float>();
-              m_ecsMan->SetupDirectionalLight(
+              m_ecsMan->setupDirectionalLight(
                 en, glm::vec3(r, g, b), ambient, glm::vec3(x, y, z));
             }
           }

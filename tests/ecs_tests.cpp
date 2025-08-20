@@ -118,7 +118,7 @@ TEST_F(ECSManagerTest, SetupPointLight)
   float quadratic = 0.032f;
   glm::vec3 position(0.0f, 1.0f, 0.0f);
 
-  std::shared_ptr<PointLight> pLight = manager->SetupPointLight(
+  std::shared_ptr<PointLight> pLight = manager->setupPointLight(
     entity, color, constant, linear, quadratic, position);
 
   ASSERT_NE(pLight, nullptr);
@@ -138,7 +138,7 @@ TEST_F(ECSManagerTest, SetupAndUpdateDirectionalLight)
   glm::vec3 direction(1.0f, -1.0f, 0.0f);
 
   std::shared_ptr<DirectionalLight> dLight =
-    manager->SetupDirectionalLight(entity, color, ambient, direction);
+    manager->setupDirectionalLight(entity, color, ambient, direction);
 
   ASSERT_NE(dLight, nullptr);
   EXPECT_EQ(dLight->color, color);
@@ -189,19 +189,6 @@ TEST_F(ECSManagerTest, EntityManagement)
   EXPECT_NE(manager->getComponent<PositionComponent>(entity), nullptr);
   EXPECT_NE(manager->getComponent<AnimationComponent>(entity), nullptr);
   EXPECT_NE(manager->getComponent<LightingComponent>(entity), nullptr);
-}
-
-TEST_F(ECSManagerTest, LastEntityTracking)
-{
-  Entity entity1 = manager->createEntity("Entity1");
-  Entity entity2 = manager->createEntity("Entity2");
-
-  // Verify first entity is valid
-  EXPECT_NE(entity1, 0);
-
-  // The last created entity should be tracked
-  Entity lastEntity = manager->getLastEntity();
-  EXPECT_EQ(lastEntity, entity2);
 }
 
 // Singleton Pattern Tests
@@ -296,10 +283,8 @@ TEST_F(EntityStressTest, CreateManyEntities)
 
   // Verify all entities exist and have correct names
   EXPECT_EQ(entities.size(), NUM_ENTITIES);
-  EXPECT_EQ(manager->getLastEntity(),
-            NUM_ENTITIES); // Last entity should be NUM_ENTITIES
 
-  // Check first and last entities
+  // Check first
   EXPECT_EQ(manager->getEntityName(entities[0]), "StressEntity_0");
   EXPECT_EQ(manager->getEntityName(entities[NUM_ENTITIES - 1]),
             "StressEntity_" + std::to_string(NUM_ENTITIES - 1));

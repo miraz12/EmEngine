@@ -12,6 +12,8 @@
 #include "Systems/ParticleSystem.hpp"
 #include "Systems/PhysicsSystem.hpp"
 #include "Systems/PositionSystem.hpp"
+#include <algorithm>
+#include <utility>
 
 void
 ECSManager::initializeSystems()
@@ -40,7 +42,7 @@ Entity
 ECSManager::createEntity(std::string name)
 {
   Entity newEntity;
-  
+
   // First try to reuse an available entity ID
   if (!m_availableEntityIds.empty()) {
     newEntity = m_availableEntityIds.front();
@@ -51,13 +53,13 @@ ECSManager::createEntity(std::string name)
       // Entity creation failed - return invalid entity ID
       return 0;
     }
-    
+
     // Create new entity ID
     newEntity = (m_entityCount++);
   }
-  
+
   m_entities.push_back(newEntity);
-  m_entityNames[newEntity] = name;
+  m_entityNames[newEntity] = std::move(name);
 
   // Initialize the component mask for this entity
   m_entityComponentMasks[newEntity].reset();
@@ -66,7 +68,7 @@ ECSManager::createEntity(std::string name)
 }
 
 std::shared_ptr<PointLight>
-ECSManager::SetupPointLight(Entity en,
+ECSManager::setupPointLight(Entity entity,
                             glm::vec3 color,
                             float constant,
                             float linear,
@@ -79,19 +81,19 @@ ECSManager::SetupPointLight(Entity en,
   pLight->constant = constant;
   pLight->linear = linear;
   pLight->quadratic = quadratic;
-  addComponent(en,
+  addComponent(entity,
                std::make_shared<LightingComponent>(
                  pLight, LightingComponent::TYPE::POINT));
   return pLight;
 }
 
 std::shared_ptr<DirectionalLight>
-ECSManager::SetupDirectionalLight(Entity en,
+ECSManager::setupDirectionalLight(Entity entity,
                                   glm::vec3 color,
                                   float ambient,
                                   glm::vec3 dir)
 {
-  m_dirLightEntity = en;
+  m_dirLightEntity = entity;
   std::shared_ptr<DirectionalLight> dLight =
     std::make_shared<DirectionalLight>();
   dLight->direction = dir;
@@ -120,36 +122,27 @@ ECSManager::getCamera()
 {
   std::vector<Entity> view = this->view<CameraComponent>();
 
-  for (auto& e : view) {
-    std::shared_ptr<CameraComponent> c = getComponent<CameraComponent>(e);
+  for (auto& entity : view) {
+    std::shared_ptr<CameraComponent> camera =
+      getComponent<CameraComponent>(entity);
 
-    if (c->mainCamera) {
-      return c;
+    if (camera->mainCamera) {
+      return camera;
     }
   }
   return nullptr;
 }
 
 void
-ECSManager::setViewport(u32 w, u32 h)
+ECSManager::setViewport(u32 width, u32 height)
 {
   auto cam =
     static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
-  cam->m_width = w;
-  cam->m_height = h;
+  cam->m_width = width;
+  cam->m_height = height;
 
-  static_cast<GraphicsSystem*>(m_systems["GRAPHICS"])->setViewport(w, h);
-};
-
-void
-ECSManager::loadScene(const char* file)
-{
-  SceneLoader::getInstance().init(file);
-};
-void
-ECSManager::saveScene(const char* file)
-{
-  SceneLoader::getInstance().saveScene(file);
+  static_cast<GraphicsSystem*>(m_systems["GRAPHICS"])
+    ->setViewport(width, height);
 };
 
 void
@@ -175,7 +168,7 @@ ECSManager::reset()
 
   // Reset entity counter
   m_entityCount = 1;
-  
+
   // Clear entity ID reuse queue
   while (!m_availableEntityIds.empty()) {
     m_availableEntityIds.pop();
@@ -189,9 +182,9 @@ ECSManager::destroyEntity(Entity entity)
   if (entity == 0 || entity >= MAX_ENTITIES) {
     return; // Invalid entity ID
   }
-  
+
   // Check if entity actually exists in our active list
-  auto entityIt = std::find(m_entities.begin(), m_entities.end(), entity);
+  auto entityIt = std::ranges::find(m_entities, entity);
   if (entityIt == m_entities.end()) {
     return; // Entity doesn't exist
   }
@@ -211,7 +204,7 @@ ECSManager::destroyEntity(Entity entity)
 
   // Remove the entity name
   m_entityNames.erase(entity);
-  
+
   // Add the entity ID back to the reuse pool
   m_availableEntityIds.push(entity);
 }
