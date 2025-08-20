@@ -156,7 +156,7 @@ TEST_F(SceneManagementTest, LightSetup)
   float quadratic = 0.032f;
   glm::vec3 position(2.0f, 3.0f, 1.0f);
 
-  std::shared_ptr<PointLight> pointLight = manager->SetupPointLight(
+  std::shared_ptr<PointLight> pointLight = manager->setupPointLight(
     lightEntity, color, constant, linear, quadratic, position);
 
   ASSERT_NE(pointLight, nullptr);
@@ -181,7 +181,7 @@ TEST_F(SceneManagementTest, DirectionalLightSetup)
   glm::vec3 direction(-0.5f, -1.0f, -0.3f);
 
   std::shared_ptr<DirectionalLight> dirLight =
-    manager->SetupDirectionalLight(lightEntity, color, ambient, direction);
+    manager->setupDirectionalLight(lightEntity, color, ambient, direction);
 
   ASSERT_NE(dirLight, nullptr);
   EXPECT_EQ(dirLight->color, color);
@@ -203,7 +203,7 @@ TEST_F(SceneManagementTest, DirectionalLightUpdate)
   float initialAmbient = 0.3f;
   glm::vec3 initialDirection(0.0f, -1.0f, 0.0f);
 
-  std::shared_ptr<DirectionalLight> dirLight = manager->SetupDirectionalLight(
+  std::shared_ptr<DirectionalLight> dirLight = manager->setupDirectionalLight(
     lightEntity, initialColor, initialAmbient, initialDirection);
 
   // Update light properties
@@ -224,7 +224,7 @@ TEST_F(SceneManagementTest, MultipleLightTypes)
   Entity dirLightEntity = manager->createEntity("DirectionalLight");
 
   // Setup point light
-  auto pointLight = manager->SetupPointLight(pointLightEntity,
+  auto pointLight = manager->setupPointLight(pointLightEntity,
                                              glm::vec3(1.0f, 0.0f, 0.0f),
                                              1.0f,
                                              0.09f,
@@ -232,7 +232,7 @@ TEST_F(SceneManagementTest, MultipleLightTypes)
                                              glm::vec3(1.0f, 2.0f, 3.0f));
 
   // Setup directional light
-  auto dirLight = manager->SetupDirectionalLight(dirLightEntity,
+  auto dirLight = manager->setupDirectionalLight(dirLightEntity,
                                                  glm::vec3(0.0f, 1.0f, 0.0f),
                                                  0.2f,
                                                  glm::vec3(-1.0f, -1.0f, 0.0f));
@@ -321,13 +321,13 @@ TEST_F(SceneManagementTest, ComplexSceneSetup)
 
   // Lighting setup
   Entity mainLight = manager->createEntity("MainLight");
-  manager->SetupDirectionalLight(mainLight,
+  manager->setupDirectionalLight(mainLight,
                                  glm::vec3(1.0f, 0.95f, 0.8f),
                                  0.3f,
                                  glm::vec3(-0.3f, -0.8f, -0.5f));
 
   Entity accentLight = manager->createEntity("AccentLight");
-  manager->SetupPointLight(accentLight,
+  manager->setupPointLight(accentLight,
                            glm::vec3(0.8f, 0.4f, 1.0f),
                            1.0f,
                            0.045f,

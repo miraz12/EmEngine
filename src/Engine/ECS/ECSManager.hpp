@@ -34,9 +34,6 @@ public:
   // creates and returns a new entity
   Entity createEntity(std::string name = "no_name");
 
-  // TODO: Figure out something better than this
-  Entity getLastEntity() { return m_entityCount - 1; }
-
   template<typename T>
   void addComponent(Entity entity, std::shared_ptr<T> component)
   {
@@ -89,13 +86,12 @@ public:
     if (auto iter = m_componentTypeToIndex.find(type);
         iter != m_componentTypeToIndex.end()) {
       // T has already been registered, return it
-      return type;
     } else {
       // T has not been registered yet, assign it a new ID and return it
-      i32 next = m_nextComponentTypeID++;
+      u32 next = m_nextComponentTypeID++;
       m_componentTypeToIndex.insert({ type, next });
-      return type;
     }
+    return type;
   }
   template<typename T>
   std::size_t getComponentTypeID()
@@ -152,35 +148,35 @@ public:
   }
 
   // // Create point light
-  std::shared_ptr<PointLight> SetupPointLight(Entity en,
+  std::shared_ptr<PointLight> setupPointLight(Entity entity,
                                               glm::vec3 color,
                                               float constant,
                                               float linear,
                                               float quadratic,
                                               glm::vec3 pos);
   // // Create directional light
-  std::shared_ptr<DirectionalLight> SetupDirectionalLight(Entity en,
+  std::shared_ptr<DirectionalLight> setupDirectionalLight(Entity entity,
                                                           glm::vec3 color,
                                                           float ambient,
                                                           glm::vec3 dir);
   void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
 
   std::shared_ptr<Component> getCamera();
-  System& getSystem(std::string const& s) { return *m_systems[s]; }
+  System& getSystem(std::string const& system) { return *m_systems[system]; }
   Entity& getPickedEntity() { return m_pickedEntity; }
   bool& getEntitySelected() { return m_entitySelected; }
   std::vector<Entity>& getEntities() { return m_entities; };
-  std::string_view getEntityName(Entity en) { return m_entityNames[en]; };
+  std::string_view getEntityName(Entity entity)
+  {
+    return m_entityNames[entity];
+  };
   bool& getSimulatePhysics() { return m_simulatePhysics; };
   i32& getDebugView() { return m_debugView; };
 
-  void setViewport(u32 w, u32 h);
-  void setPickedEntity(Entity en) { m_pickedEntity = en; }
+  void setViewport(u32 width, u32 height);
+  void setPickedEntity(Entity entity) { m_pickedEntity = entity; }
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
   void setSimulatePhysics(bool sim) { m_simulatePhysics = sim; }
-
-  void loadScene(const char* file);
-  void saveScene(const char* file);
 
   glm::vec3 dDir;
 
@@ -209,7 +205,7 @@ private:
   Entity m_dirLightEntity;
   bool m_simulatePhysics{ false };
   i32 m_debugView;
-  
+
   // Entity ID reuse system
   std::queue<Entity> m_availableEntityIds;
 };
