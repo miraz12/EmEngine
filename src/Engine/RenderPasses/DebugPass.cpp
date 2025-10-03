@@ -1,3 +1,4 @@
+#ifndef EMSCRIPTEN
 #include "DebugPass.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 #include <ECS/Components/DebugComponent.hpp>
@@ -89,3 +90,4 @@ DebugPass::Execute(ECSManager& eManager)
   glDisable(GL_LINE_SMOOTH);
   glDisable(GL_BLEND);
 }
+#endif

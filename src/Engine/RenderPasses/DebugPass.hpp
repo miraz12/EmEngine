@@ -1,6 +1,6 @@
 #ifndef DEBUGPASS_H_
 #define DEBUGPASS_H_
-
+#ifndef EMSCRIPTEN
 #include "RenderPasses/RenderPass.hpp"
 
 class DebugPass final : public RenderPass
@@ -13,4 +13,5 @@ public:
   void Init(FrameGraph& /* fGraph */) override {};
 };
 
+#endif
 #endif // DEBUGPASS_H_

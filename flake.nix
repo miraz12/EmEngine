@@ -59,7 +59,7 @@
               tree-sitter
               tree-sitter-grammars.tree-sitter-cpp
               tree-sitter-grammars.tree-sitter-c-sharp
-              linuxPackages.perf
+              perf
               hotspot
             ]
             ++ deps;

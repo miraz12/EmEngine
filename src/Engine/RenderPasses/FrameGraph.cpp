@@ -31,8 +31,11 @@ FrameGraph::FrameGraph()
     std::make_unique<BloomPass>();
   m_renderPass[static_cast<size_t>(PassId::kFxaa)] =
     std::make_unique<FxaaPass>();
+
+#ifndef EMSCRIPTEN
   m_renderPass[static_cast<size_t>(PassId::kDebug)] =
     std::make_unique<DebugPass>();
+#endif
 
   for (auto& p : m_renderPass) {
     p->Init(*this);
@@ -50,16 +53,23 @@ FrameGraph::draw(ECSManager& eManager)
 
   // Execute all render passes except debug pass first
   for (size_t i = 0; i < m_renderPass.size(); i++) {
+
+#ifndef EMSCRIPTEN
     if (i != static_cast<size_t>(PassId::kDebug)) {
+#endif
       m_renderPass[i]->Execute(eManager);
+#ifndef EMSCRIPTEN
     }
+#endif
   }
 
-  // Execute debug pass last to ensure it's drawn on top
-  auto debugPassIndex = static_cast<size_t>(PassId::kDebug);
+#ifndef EMSCRIPTEN
+  //  Execute debug pass last to ensure it's drawn on top auto debugPassIndex =
+  static_cast<size_t>(PassId::kDebug);
   if (debugPassIndex < m_renderPass.size()) {
     m_renderPass[debugPassIndex]->Execute(eManager);
   }
+#endif
 }
 
 void
