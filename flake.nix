@@ -66,10 +66,12 @@
 
             NIX_LD_LIBRARY_PATH = lib.makeLibraryPath ([ stdenv.cc.cc ] ++ deps);
             NIX_LD = "${pkgs.stdenv.cc.libc_bin}/bin/ld.so";
-            EMSDK = "/home/shaggy/Git/emsdk";
-            EM_CACHE = "/home/shaggy/.emscripten_cache";
 
             shellHook = ''
+              export EMSDK="$PWD/exts/emsdk";
+              export EM_CACHE="/tmp/.emscripten_cache";
+              export EMSDK_PATH="$PWD/exts/emsdk";
+
               export DOTNET_ROOT="${dotnetPkg}"
               export DRI_PRIME=1
               export npm_config_prefix=$PWD/.npm-global

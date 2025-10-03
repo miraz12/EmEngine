@@ -18,14 +18,14 @@ jobs:
       - name: Configure CMake
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          emcmake cmake -B build/embuild -GNinja -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          nix develop -c cmake --preset emscripten-debug
 
       - name: Build
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          EM_CACHE=~/.emscripten_cache cmake --build build/embuild
+          nix develop -c cmake --build --preset emscripten-debug
 
       - name: Copy build
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          rsync -r --checksum  build/* /var/lib/www/engine.rlyeh.nu
+          rsync -r --checksum src/Game/bin/Release/net9.0/browser-wasm/native/* /var/lib/www/engine.rlyeh.nu

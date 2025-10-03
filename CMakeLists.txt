@@ -1,4 +1,34 @@
 cmake_minimum_required(VERSION 3.12)
+
+# Setup emsdk before project() is called
+set(EMSDK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/exts/emsdk")
+
+if(EMSCRIPTEN)
+    # Check if emsdk needs initialization
+    if(NOT EXISTS "${EMSDK_PATH}/upstream/emscripten")
+        message(STATUS "Installing emsdk...")
+        execute_process(
+            COMMAND ./emsdk install latest
+            WORKING_DIRECTORY ${EMSDK_PATH}
+            RESULT_VARIABLE EMSDK_INSTALL_RESULT
+        )
+
+        execute_process(
+            COMMAND ./emsdk activate latest
+            WORKING_DIRECTORY ${EMSDK_PATH}
+            RESULT_VARIABLE EMSDK_ACTIVATE_RESULT
+        )
+
+        if(NOT EMSDK_INSTALL_RESULT EQUAL 0 OR NOT EMSDK_ACTIVATE_RESULT EQUAL 0)
+            message(FATAL_ERROR "Failed to setup emsdk")
+        endif()
+    endif()
+
+    # Set the toolchain file
+    message(STATUS "Use emsdk...")
+    set(CMAKE_TOOLCHAIN_FILE "${EMSDK_PATH}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
+endif()
+
 project(emEngine)
 # Generate compile_commands.json for LSP
 if(LINUX)

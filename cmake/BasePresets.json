@@ -53,10 +53,11 @@
     {
       "name": "base-emscripten",
       "hidden": true,
-      "inherits": "base"
-      // "cacheVariables": {
-      //   "CMAKE_TOOLCHAIN_FILE": "${env:EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake"
-      // }
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "exts/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "EMSCRIPTEN":"ON"
+      }
     }
   ],
   "buildPresets": [
