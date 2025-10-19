@@ -6,12 +6,6 @@
 #include "Systems/System.hpp"
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
-#include <bitset>
-#include <memory>
-#include <queue>
-#include <unordered_map>
-
-using Signature = std::bitset<MAX_COMPONENTS>;
 
 class ECSManager : public Singleton<ECSManager>
 {

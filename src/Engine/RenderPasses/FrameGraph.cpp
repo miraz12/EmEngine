@@ -64,8 +64,8 @@ FrameGraph::draw(ECSManager& eManager)
   }
 
 #ifndef EMSCRIPTEN
-  //  Execute debug pass last to ensure it's drawn on top auto debugPassIndex =
-  static_cast<size_t>(PassId::kDebug);
+  //  Execute debug pass last to ensure it's drawn on top
+  auto debugPassIndex = static_cast<size_t>(PassId::kDebug);
   if (debugPassIndex < m_renderPass.size()) {
     m_renderPass[debugPassIndex]->Execute(eManager);
   }
