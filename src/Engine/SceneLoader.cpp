@@ -11,6 +11,7 @@
 #include "Objects/Heightmap.hpp"
 #include "Objects/Line.hpp"
 #include "Objects/Quad.hpp"
+#include "ResourceManager.hpp"
 #include <ECS/Components/DebugComponent.hpp>
 #include <ECS/ECSManager.hpp>
 
@@ -19,6 +20,7 @@ SceneLoader::init(const char* file)
 {
   YAML::Node config = YAML::LoadFile(file);
   m_ecsMan = &ECSManager::getInstance();
+  ResourceManager& resourceMgr = ResourceManager::getInstance();
   for (auto dict : config) {
     YAML::Node n = dict["entity"];
     if (n) {
@@ -30,11 +32,11 @@ SceneLoader::init(const char* file)
             std::shared_ptr<GraphicsComponent> graphComp;
             if (components[i]["primitive"].as<std::string>() == "Cube") {
               graphComp =
-                std::make_shared<GraphicsComponent>(std::shared_ptr<Cube>());
+                std::make_shared<GraphicsComponent>(resourceMgr.getCube());
               graphComp->type = GraphicsComponent::TYPE::CUBE;
             } else if (components[i]["primitive"].as<std::string>() == "Quad") {
               graphComp =
-                std::make_shared<GraphicsComponent>(std::shared_ptr<Quad>());
+                std::make_shared<GraphicsComponent>(resourceMgr.getQuad());
               graphComp->type = GraphicsComponent::TYPE::QUAD;
             } else if (components[i]["primitive"].as<std::string>() == "Line") {
               // TODO: Fix this when needed
@@ -46,10 +48,10 @@ SceneLoader::init(const char* file)
               // graphComp = std::make_shared<GraphicsComponent>(*new Point());
               graphComp->type = GraphicsComponent::TYPE::POINT;
             } else if (components[i]["primitive"].as<std::string>() == "Mesh") {
+              std::string modelPath =
+                "resources/Models/" + components[i]["file"].as<std::string>();
               graphComp = std::make_shared<GraphicsComponent>(
-                std::make_shared<GltfObject>(
-                  "resources/Models/" +
-                  components[i]["file"].as<std::string>()));
+                resourceMgr.getGltfModel(modelPath));
               graphComp->type = GraphicsComponent::TYPE::MESH;
               if (graphComp->m_grapObj->p_numAnimations > 0) {
                 std::shared_ptr<AnimationComponent> animComp =
@@ -58,10 +60,10 @@ SceneLoader::init(const char* file)
               }
             } else if (components[i]["primitive"].as<std::string>() ==
                        "Heightmap") {
-              std::string name =
+              std::string heightmapPath =
                 "resources/Textures/" + components[i]["file"].as<std::string>();
               graphComp = std::make_shared<GraphicsComponent>(
-                std::make_shared<Heightmap>(name));
+                resourceMgr.getHeightmap(heightmapPath));
               graphComp->type = GraphicsComponent::TYPE::HEIGHTMAP;
             }
             m_ecsMan->addComponents(en, graphComp);
