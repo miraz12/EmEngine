@@ -35,10 +35,13 @@
           xorg.libXext
           wayland
           wayland-protocols
+          wayland-scanner
           libxkbcommon
           libGL
           libxml2
-          # emscripten
+          pkg-config
+          libffi
+          emscripten
         ];
       in
       {
@@ -55,7 +58,7 @@
               gdb
               omnisharp-roslyn
               nodejs
-              lld
+              lldb
               tree-sitter
               tree-sitter-grammars.tree-sitter-cpp
               tree-sitter-grammars.tree-sitter-c-sharp
