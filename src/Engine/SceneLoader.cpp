@@ -13,131 +13,26 @@
 #include "Objects/Quad.hpp"
 #include "ResourceManager.hpp"
 #include <ECS/Components/DebugComponent.hpp>
-#include <ECS/ECSManager.hpp>
 
 void
 SceneLoader::init(const char* file)
 {
-  YAML::Node config = YAML::LoadFile(file);
-  m_ecsMan = &ECSManager::getInstance();
-  ResourceManager& resourceMgr = ResourceManager::getInstance();
-  for (auto dict : config) {
-    YAML::Node n = dict["entity"];
-    if (n) {
-      Entity en = m_ecsMan->createEntity(n.as<std::string>());
+  for (auto dict : YAML::LoadFile(file)) {
+    if (YAML::Node node = dict["entity"]; node) {
+      Entity entity =
+        ECSManager::getInstance().createEntity(node.as<std::string>());
       if (dict["components"]) {
-        YAML::Node components = dict["components"];
-        for (size_t i = 0; i < components.size(); i++) {
-          if (components[i]["type"].as<std::string>() == "Gra") {
-            std::shared_ptr<GraphicsComponent> graphComp;
-            if (components[i]["primitive"].as<std::string>() == "Cube") {
-              graphComp =
-                std::make_shared<GraphicsComponent>(resourceMgr.getCube());
-              graphComp->type = GraphicsComponent::TYPE::CUBE;
-            } else if (components[i]["primitive"].as<std::string>() == "Quad") {
-              graphComp =
-                std::make_shared<GraphicsComponent>(resourceMgr.getQuad());
-              graphComp->type = GraphicsComponent::TYPE::QUAD;
-            } else if (components[i]["primitive"].as<std::string>() == "Line") {
-              // TODO: Fix this when needed
-              // graphComp = std::make_shared<GraphicsComponent>(*new Line());
-              graphComp->type = GraphicsComponent::TYPE::LINE;
-            } else if (components[i]["primitive"].as<std::string>() ==
-                       "Point") {
-              // TODO: Fix this when needed
-              // graphComp = std::make_shared<GraphicsComponent>(*new Point());
-              graphComp->type = GraphicsComponent::TYPE::POINT;
-            } else if (components[i]["primitive"].as<std::string>() == "Mesh") {
-              std::string modelPath =
-                "resources/Models/" + components[i]["file"].as<std::string>();
-              graphComp = std::make_shared<GraphicsComponent>(
-                resourceMgr.getGltfModel(modelPath));
-              graphComp->type = GraphicsComponent::TYPE::MESH;
-              if (graphComp->m_grapObj->p_numAnimations > 0) {
-                std::shared_ptr<AnimationComponent> animComp =
-                  std::make_shared<AnimationComponent>();
-                m_ecsMan->addComponents(en, animComp);
-              }
-            } else if (components[i]["primitive"].as<std::string>() ==
-                       "Heightmap") {
-              std::string heightmapPath =
-                "resources/Textures/" + components[i]["file"].as<std::string>();
-              graphComp = std::make_shared<GraphicsComponent>(
-                resourceMgr.getHeightmap(heightmapPath));
-              graphComp->type = GraphicsComponent::TYPE::HEIGHTMAP;
-            }
-            m_ecsMan->addComponents(en, graphComp);
-
-          } else if (components[i]["type"].as<std::string>() == "Pos") {
-            std::shared_ptr<PositionComponent> posComp =
-              std::make_shared<PositionComponent>();
-            if (components[i]["position"]) {
-              float x = components[i]["position"][0].as<float>();
-              float y = components[i]["position"][1].as<float>();
-              float z = components[i]["position"][2].as<float>();
-              posComp->position = glm::vec3(x, y, z);
-            }
-            if (components[i]["scale"]) {
-              float x = components[i]["scale"][0].as<float>();
-              float y = components[i]["scale"][1].as<float>();
-              float z = components[i]["scale"][2].as<float>();
-              posComp->scale = glm::vec3(x, y, z);
-            }
-            if (components[i]["rotation"]) {
-              float x = components[i]["rotation"][0].as<float>();
-              float y = components[i]["rotation"][1].as<float>();
-              float z = components[i]["rotation"][2].as<float>();
-              posComp->rotation = glm::quat(glm::vec3(x, y, z));
-            }
-            m_ecsMan->addComponents(en, posComp);
-
-          } else if (components[i]["type"].as<std::string>() == "Phy") {
-            std::shared_ptr<PhysicsComponent> physComp;
-            if (components[i]["mass"]) {
-              physComp = std::make_shared<PhysicsComponent>(
-                en,
-                components[i]["mass"].as<float>(),
-                CollisionShapeType(components[i]["shape"].as<int>()));
-            } else {
-              physComp = std::make_shared<PhysicsComponent>(
-                en, 0.0f, CollisionShapeType(components[i]["shape"].as<int>()));
-            }
-            m_ecsMan->addComponents(en, physComp);
-          } else if (components[i]["type"].as<std::string>() == "Par") {
-            float xv = components[i]["velocity"][0].as<float>();
-            float yv = components[i]["velocity"][1].as<float>();
-            float zv = components[i]["velocity"][2].as<float>();
-            std::shared_ptr<ParticlesComponent> parComp =
-              std::make_shared<ParticlesComponent>(glm::vec3(xv, yv, zv));
-            m_ecsMan->addComponents(en, parComp);
-          } else if (components[i]["type"].as<std::string>() == "Lig") {
-            if (components[i]["lightType"].as<std::string>() == "point") {
-              float r = components[i]["color"][0].as<float>();
-              float g = components[i]["color"][1].as<float>();
-              float b = components[i]["color"][2].as<float>();
-              float constant = components[i]["constant"].as<float>();
-              float linear = components[i]["linear"].as<float>();
-              float quadratic = components[i]["quadratic"].as<float>();
-              float x = components[i]["position"][0].as<float>();
-              float y = components[i]["position"][1].as<float>();
-              float z = components[i]["position"][2].as<float>();
-              m_ecsMan->setupPointLight(en,
-                                        glm::vec3(r, g, b),
-                                        constant,
-                                        linear,
-                                        quadratic,
-                                        glm::vec3(x, y, z));
-            } else if (components[i]["lightType"].as<std::string>() == "dir") {
-              float r = components[i]["color"][0].as<float>();
-              float g = components[i]["color"][1].as<float>();
-              float b = components[i]["color"][2].as<float>();
-              float ambient = components[i]["ambient"].as<float>();
-              float x = components[i]["direction"][0].as<float>();
-              float y = components[i]["direction"][1].as<float>();
-              float z = components[i]["direction"][2].as<float>();
-              m_ecsMan->setupDirectionalLight(
-                en, glm::vec3(r, g, b), ambient, glm::vec3(x, y, z));
-            }
+        for (const auto& component : dict["components"]) {
+          if (component["type"].as<std::string>() == "Gra") {
+            addGraphicsComponent(entity, component);
+          } else if (component["type"].as<std::string>() == "Pos") {
+            addPositionComponent(entity, component);
+          } else if (component["type"].as<std::string>() == "Phy") {
+            addPhysicsComponent(entity, component);
+          } else if (component["type"].as<std::string>() == "Par") {
+            addParticlesComponent(entity, component);
+          } else if (component["type"].as<std::string>() == "Lig") {
+            addDirectionalLight(entity, component);
           }
         }
       }
@@ -149,17 +44,18 @@ void
 SceneLoader::saveScene(const char* file)
 {
   YAML::Emitter out;
-  std::vector<Entity> ents = m_ecsMan->getEntities();
+  auto& ecsMan = ECSManager::getInstance();
+  std::vector<Entity> ents = ecsMan.getEntities();
 
   out << YAML::BeginSeq;
   for (const Entity& en : ents) {
     out << YAML::BeginMap;
     out << YAML::Key << "entity" << YAML::Value
-        << m_ecsMan->getEntityName(en).data();
+        << ecsMan.getEntityName(en).data();
     out << YAML::Key << "components" << YAML::Value << YAML::BeginSeq;
 
     // Serialize each component of the entity
-    auto posComp = m_ecsMan->getComponent<PositionComponent>(en);
+    auto posComp = ecsMan.getComponent<PositionComponent>(en);
     if (posComp) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Pos";
@@ -174,10 +70,10 @@ SceneLoader::saveScene(const char* file)
           << YAML::EndSeq;
       out << YAML::EndMap;
     }
-    auto debComp = m_ecsMan->getComponent<DebugComponent>(en);
+    auto debComp = ecsMan.getComponent<DebugComponent>(en);
     if (debComp) {
     }
-    auto graComp = m_ecsMan->getComponent<GraphicsComponent>(en);
+    auto graComp = ecsMan.getComponent<GraphicsComponent>(en);
     if (graComp) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Gra";
@@ -214,7 +110,7 @@ SceneLoader::saveScene(const char* file)
       };
       out << YAML::EndMap;
     }
-    auto ligComp = m_ecsMan->getComponent<LightingComponent>(en);
+    auto ligComp = ecsMan.getComponent<LightingComponent>(en);
     if (ligComp) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Lig";
@@ -223,7 +119,7 @@ SceneLoader::saveScene(const char* file)
           throw;
           break;
         case LightingComponent::TYPE::POINT: {
-          auto point = static_cast<PointLight*>(&ligComp->getBaseLight());
+          auto* point = static_cast<PointLight*>(&ligComp->getBaseLight());
           out << YAML::Key << "lightType" << YAML::Value << "point";
           out << YAML::Key << "color" << YAML::Value << YAML::Flow
               << YAML::BeginSeq << point->color.r << point->color.g
@@ -237,7 +133,7 @@ SceneLoader::saveScene(const char* file)
           break;
         }
         case LightingComponent::TYPE::DIRECTIONAL:
-          auto dir = static_cast<DirectionalLight*>(&ligComp->getBaseLight());
+          auto* dir = static_cast<DirectionalLight*>(&ligComp->getBaseLight());
           out << YAML::Key << "lightType" << YAML::Value << "dir";
           out << YAML::Key << "color" << YAML::Value << YAML::Flow
               << YAML::BeginSeq << dir->color.r << dir->color.g << dir->color.b
@@ -250,7 +146,7 @@ SceneLoader::saveScene(const char* file)
       }
       out << YAML::EndMap;
     }
-    auto parComp = m_ecsMan->getComponent<ParticlesComponent>(en);
+    auto parComp = ecsMan.getComponent<ParticlesComponent>(en);
     if (parComp) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Par";
@@ -259,7 +155,7 @@ SceneLoader::saveScene(const char* file)
           << YAML::BeginSeq << vel.x << vel.y << vel.z << YAML::EndSeq;
       out << YAML::EndMap;
     }
-    auto phyComp = m_ecsMan->getComponent<PhysicsComponent>(en);
+    auto phyComp = ecsMan.getComponent<PhysicsComponent>(en);
     if (phyComp) {
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Phy";
@@ -276,4 +172,132 @@ SceneLoader::saveScene(const char* file)
 
   std::ofstream fout(file);
   fout << out.c_str();
+}
+
+void
+SceneLoader::addGraphicsComponent(Entity entity, const YAML::Node& component)
+{
+  auto& ecsMan = ECSManager::getInstance();
+  auto& resourceMgr = ResourceManager::getInstance();
+  std::shared_ptr<GraphicsComponent> graphComp;
+  if (component["primitive"].as<std::string>() == "Cube") {
+    graphComp = std::make_shared<GraphicsComponent>(resourceMgr.getCube());
+    graphComp->type = GraphicsComponent::TYPE::CUBE;
+  } else if (component["primitive"].as<std::string>() == "Quad") {
+    graphComp = std::make_shared<GraphicsComponent>(resourceMgr.getQuad());
+    graphComp->type = GraphicsComponent::TYPE::QUAD;
+  } else if (component["primitive"].as<std::string>() == "Line") {
+    // TODO: Fix this when needed
+    // graphComp = std::make_shared<GraphicsComponent>(*new Line());
+    graphComp->type = GraphicsComponent::TYPE::LINE;
+  } else if (component["primitive"].as<std::string>() == "Point") {
+    // TODO: Fix this when needed
+    // graphComp = std::make_shared<GraphicsComponent>(*new Point());
+    graphComp->type = GraphicsComponent::TYPE::POINT;
+  } else if (component["primitive"].as<std::string>() == "Mesh") {
+    std::string modelPath =
+      "resources/Models/" + component["file"].as<std::string>();
+    graphComp =
+      std::make_shared<GraphicsComponent>(resourceMgr.getGltfModel(modelPath));
+    graphComp->type = GraphicsComponent::TYPE::MESH;
+    if (graphComp->m_grapObj->p_numAnimations > 0) {
+      std::shared_ptr<AnimationComponent> animComp =
+        std::make_shared<AnimationComponent>();
+      ecsMan.addComponents(entity, animComp);
+    }
+  } else if (component["primitive"].as<std::string>() == "Heightmap") {
+    std::string heightmapPath =
+      "resources/Textures/" + component["file"].as<std::string>();
+    graphComp = std::make_shared<GraphicsComponent>(
+      resourceMgr.getHeightmap(heightmapPath));
+    graphComp->type = GraphicsComponent::TYPE::HEIGHTMAP;
+  }
+  ecsMan.addComponents(entity, graphComp);
+}
+
+void
+SceneLoader::addPositionComponent(Entity entity, const YAML::Node& component)
+{
+  auto& ecsMan = ECSManager::getInstance();
+  auto posComp = std::make_shared<PositionComponent>();
+  if (component["position"]) {
+    auto x = component["position"][0].as<float>();
+    auto y = component["position"][1].as<float>();
+    auto z = component["position"][2].as<float>();
+    posComp->position = glm::vec3(x, y, z);
+  }
+  if (component["scale"]) {
+    auto x = component["scale"][0].as<float>();
+    auto y = component["scale"][1].as<float>();
+    auto z = component["scale"][2].as<float>();
+    posComp->scale = glm::vec3(x, y, z);
+  }
+  if (component["rotation"]) {
+    auto x = component["rotation"][0].as<float>();
+    auto y = component["rotation"][1].as<float>();
+    auto z = component["rotation"][2].as<float>();
+    posComp->rotation = glm::quat(glm::vec3(x, y, z));
+  }
+  ecsMan.addComponents(entity, posComp);
+}
+
+void
+SceneLoader::addPhysicsComponent(Entity entity, const YAML::Node& component)
+{
+  auto& ecsMan = ECSManager::getInstance();
+  std::shared_ptr<PhysicsComponent> physComp;
+  if (component["mass"]) {
+    physComp = std::make_shared<PhysicsComponent>(
+      entity,
+      component["mass"].as<float>(),
+      CollisionShapeType(component["shape"].as<int>()));
+  } else {
+    physComp = std::make_shared<PhysicsComponent>(
+      entity, 0.0f, CollisionShapeType(component["shape"].as<int>()));
+  }
+  ecsMan.addComponents(entity, physComp);
+}
+
+void
+SceneLoader::addParticlesComponent(Entity entity, const YAML::Node& component)
+{
+  auto& ecsMan = ECSManager::getInstance();
+  auto xv = component["velocity"][0].as<float>();
+  auto yv = component["velocity"][1].as<float>();
+  auto zv = component["velocity"][2].as<float>();
+  std::shared_ptr<ParticlesComponent> parComp =
+    std::make_shared<ParticlesComponent>(glm::vec3(xv, yv, zv));
+  ecsMan.addComponents(entity, parComp);
+}
+void
+SceneLoader::addDirectionalLight(Entity entity, const YAML::Node& component)
+{
+  auto& ecsMan = ECSManager::getInstance();
+  if (component["lightType"].as<std::string>() == "point") {
+    auto r = component["color"][0].as<float>();
+    auto g = component["color"][1].as<float>();
+    auto b = component["color"][2].as<float>();
+    auto constant = component["constant"].as<float>();
+    auto linear = component["linear"].as<float>();
+    auto quadratic = component["quadratic"].as<float>();
+    auto x = component["position"][0].as<float>();
+    auto y = component["position"][1].as<float>();
+    auto z = component["position"][2].as<float>();
+    ecsMan.setupPointLight(entity,
+                           glm::vec3(r, g, b),
+                           constant,
+                           linear,
+                           quadratic,
+                           glm::vec3(x, y, z));
+  } else if (component["lightType"].as<std::string>() == "dir") {
+    auto r = component["color"][0].as<float>();
+    auto g = component["color"][1].as<float>();
+    auto b = component["color"][2].as<float>();
+    auto ambient = component["ambient"].as<float>();
+    auto x = component["direction"][0].as<float>();
+    auto y = component["direction"][1].as<float>();
+    auto z = component["direction"][2].as<float>();
+    ecsMan.setupDirectionalLight(
+      entity, glm::vec3(r, g, b), ambient, glm::vec3(x, y, z));
+  }
 }

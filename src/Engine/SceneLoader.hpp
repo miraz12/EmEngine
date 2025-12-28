@@ -15,7 +15,11 @@ private:
   SceneLoader() = default;
   ~SceneLoader() = default;
 
-  ECSManager* m_ecsMan;
+  void addGraphicsComponent(Entity entity, const YAML::Node& component);
+  void addPhysicsComponent(Entity entity, const YAML::Node& component);
+  void addPositionComponent(Entity entity, const YAML::Node& component);
+  void addParticlesComponent(Entity entity, const YAML::Node& component);
+  void addDirectionalLight(Entity entity, const YAML::Node& component);
 };
 
 #endif // SCENELOADER_H_
