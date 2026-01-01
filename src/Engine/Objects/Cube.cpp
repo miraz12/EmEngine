@@ -3,7 +3,7 @@
 Cube::Cube()
 {
   float vertices[] = { // clang-format off
-    // Front face
+    // Front face (facing +Z) - CCW from outside
     -0.5f, -0.5f,  0.5f,
      0.5f, -0.5f,  0.5f,
      0.5f,  0.5f,  0.5f,
@@ -11,39 +11,39 @@ Cube::Cube()
     -0.5f,  0.5f,  0.5f,
     -0.5f, -0.5f,  0.5f,
 
-    // Back face
-    -0.5f, -0.5f, -0.5f,
+    // Back face (facing -Z) - CCW from outside
      0.5f, -0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-    -0.5f,  0.5f, -0.5f,
     -0.5f, -0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
 
-    // Left face
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
+    // Left face (facing -X) - CCW from outside
     -0.5f, -0.5f, -0.5f,
     -0.5f, -0.5f,  0.5f,
     -0.5f,  0.5f,  0.5f,
-
-    // Right face
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-
-    // Top face
-    -0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
     -0.5f,  0.5f,  0.5f,
     -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
 
-    // Bottom face
+    // Right face (facing +X) - CCW from outside
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+
+    // Top face (facing +Y) - CCW from outside
+    -0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f,  0.5f,
+
+    // Bottom face (facing -Y) - CCW from outside
     -0.5f, -0.5f, -0.5f,
      0.5f, -0.5f, -0.5f,
      0.5f, -0.5f,  0.5f,

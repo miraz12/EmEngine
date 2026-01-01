@@ -34,14 +34,14 @@ public:
   btDefaultMotionState* myMotionState;
   std::size_t m_en;
 
-  btRigidBody* body;            // Bullet physics body
-  btCollisionShape* shape;      // Bullet collision shape
-  CollisionShapeType shapeType; // Type of collision shape
-  btScalar mass;                // Mass of the object
-  btVector3 dimensions;         // General dimensions (for box and sphere)
-  float capsuleRadius;          // Radius for capsule shape
-  float capsuleHeight;          // Height for capsule shape
-  btTriangleMesh* mesh;         // Optional mesh (for complex shapes)
+  btRigidBody* body{ nullptr };       // Bullet physics body
+  btCollisionShape* shape{ nullptr }; // Bullet collision shape
+  CollisionShapeType shapeType;       // Type of collision shape
+  btScalar mass;                      // Mass of the object
+  btVector3 dimensions;               // General dimensions (for box and sphere)
+  float capsuleRadius;                // Radius for capsule shape
+  float capsuleHeight;                // Height for capsule shape
+  btTriangleMesh* mesh{ nullptr };    // Optional mesh (for complex shapes)
 };
 
 #endif // PHYSICSCOMPONENT_H_

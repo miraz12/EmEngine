@@ -245,19 +245,30 @@ PhysicsSystem::update(float dt)
         m_manager->getComponent<PositionComponent>(e);
       std::shared_ptr<PhysicsComponent> phy =
         m_manager->getComponent<PhysicsComponent>(e);
-      btTransform btTrans;
-      btRigidBody* body = phy->getRigidBody();
-      if (body) {
-        body->getMotionState()->getWorldTransform(btTrans);
-        btTrans = body->getWorldTransform();
-        p->position = glm::vec3(btTrans.getOrigin().getX(),
-                                btTrans.getOrigin().getY(),
-                                btTrans.getOrigin().getZ());
-        p->rotation = glm::quat(btTrans.getRotation().w(),
-                                btTrans.getRotation().x(),
-                                btTrans.getRotation().y(),
-                                btTrans.getRotation().z());
+
+      if (!phy) {
+        continue;
       }
+
+      btRigidBody* body = phy->getRigidBody();
+      if (!body) {
+        continue;
+      }
+
+      btTransform btTrans;
+      if (body->getMotionState()) {
+        body->getMotionState()->getWorldTransform(btTrans);
+      } else {
+        btTrans = body->getWorldTransform();
+      }
+
+      p->position = glm::vec3(btTrans.getOrigin().getX(),
+                              btTrans.getOrigin().getY(),
+                              btTrans.getOrigin().getZ());
+      p->rotation = glm::quat(btTrans.getRotation().w(),
+                              btTrans.getRotation().x(),
+                              btTrans.getRotation().y(),
+                              btTrans.getRotation().z());
     }
   } else {
     std::vector<Entity> view =
@@ -314,11 +325,14 @@ PhysicsSystem::performPicking(i32 mouseX, i32 mouseY)
     // Entity en = m_manager->createEntity();
     // m_manager->addComponent(en, graphComp);
 
-    btRigidBody* body =
+    auto* body =
       (btRigidBody*)btRigidBody::upcast(rayCallback.m_collisionObject);
-    if (body) {
+    if (body && body->getUserIndex() > 0) {
       m_manager->setEntitySelected(true);
       m_manager->setPickedEntity(body->getUserIndex());
+    } else {
+      m_manager->setEntitySelected(false);
+      m_manager->setPickedEntity(0);
     }
   } else {
     m_manager->setEntitySelected(false);

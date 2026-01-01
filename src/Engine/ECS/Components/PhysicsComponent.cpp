@@ -13,14 +13,13 @@ using enum CollisionShapeType;
 PhysicsComponent::~PhysicsComponent()
 {
   delete shape;
-  delete body;
-  delete myMotionState;
 };
 
 PhysicsComponent::PhysicsComponent(Entity en,
                                    float mass,
                                    CollisionShapeType type)
   : m_en(en)
+  , shapeType(type)
   , mass(mass)
 {
 
@@ -30,9 +29,8 @@ PhysicsComponent::PhysicsComponent(Entity en,
   if (posComp) {
     initialPos =
       btVector3(posComp->position.x, posComp->position.y, posComp->position.z);
-    // HACK: Changed rotation axels to work with plane..
     initialScale =
-      btVector3(posComp->scale.x, posComp->scale.z, posComp->scale.y);
+      btVector3(posComp->scale.x, posComp->scale.y, posComp->scale.z);
     initialRotation = btQuaternion(posComp->rotation.x,
                                    posComp->rotation.y,
                                    posComp->rotation.z,
@@ -40,16 +38,17 @@ PhysicsComponent::PhysicsComponent(Entity en,
 
     switch (type) {
       case BOX:
-        shape =
-          new btBoxShape(btVector3(btScalar(1.), btScalar(1.), btScalar(1.)));
+        shape = new btBoxShape(initialScale * 0.5f);
         break;
       case SPHERE:
-        shape = new btSphereShape(btScalar(1.));
+        shape = new btSphereShape(initialScale.x() * 0.5f);
         break;
-      case CAPSULE:
-        // new btKinematicCharacterController();
-        shape = new btCapsuleShape(btScalar(1.), btScalar(1.));
+      case CAPSULE: {
+        float radius = initialScale.x() * 0.5f;
+        float height = initialScale.y() * 0.5f;
+        shape = new btCapsuleShape(radius, height);
         break;
+      }
       case CONVEX_HULL:
       case HEIGHTMAP:
         setupCollisionShapeFromGra();

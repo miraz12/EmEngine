@@ -332,10 +332,10 @@ class CSharpGenerator:
     def _generate_function(self, func: ExternFunction) -> List[str]:
         """Generate P/Invoke declaration for a single function."""
         lines = []
-        
+
         # Add source comment
         lines.append(f"        // Source: {os.path.basename(func.file_path)}:{func.line_number}")
-        
+
         # Build parameter list with marshaling attributes
         param_lines = []
         for param in func.params:
@@ -347,15 +347,19 @@ class CSharpGenerator:
                     param_line += f"{param.marshaling_attr} "
             param_line += f"{param.csharp_type} {param.name}"
             param_lines.append(param_line)
-            
+
         params_str = ", ".join(param_lines)
-        
+
         # Generate DllImport attribute with EntryPoint
         lines.append(f'        [DllImport("Engine", EntryPoint = "{func.name}")]')
-        
+
+        # Add return type marshaling for bool (C++ bool is 1 byte)
+        if func.return_type_csharp == 'bool':
+            lines.append(f'        [return: MarshalAs(UnmanagedType.I1)]')
+
         # Generate function signature
         lines.append(f"        public static extern {func.return_type_csharp} {func.name}({params_str});")
-        
+
         return lines
 
 

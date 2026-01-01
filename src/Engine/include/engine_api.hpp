@@ -2,6 +2,7 @@
 #define ENGINE_API_HPP_
 #include "Core.hpp"
 #include "ECS/ECSManager.hpp"
+#include "MapLoader.hpp"
 
 extern "C"
 {
@@ -9,6 +10,11 @@ extern "C"
   void LoadScene(const char* filename)
   {
     SceneLoader::getInstance().init(filename);
+  }
+
+  void LoadMap(const char* filename, float tileSize)
+  {
+    MapLoader::getInstance().loadMap(filename, tileSize);
   }
 
   void PauseAnimation(unsigned int entity);
@@ -22,8 +28,19 @@ extern "C"
   void AddPhysicsComponent(int entity, float mass, int type);
   void AddGraphicsComponent(int entity, const char* model);
   void AddCameraComponent(int entity, bool main, float offset[3]);
+  void SetMainCamera(int entity);
+  void SetCameraOrientation(int entity,
+                            float frontX,
+                            float frontY,
+                            float frontZ,
+                            float upX,
+                            float upY,
+                            float upZ);
   int CreateEntity(const char* name);
   int GetPressed(int* vec);
+  void GetMousePosition(float* x, float* y);
+  void GetMouseDelta(float* deltaX, float* deltaY);
+  bool GetSimulatePhysics();
   void Game_Update();
   bool Initialize()
   {

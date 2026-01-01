@@ -133,6 +133,27 @@ ECSManager::getCamera()
   return nullptr;
 }
 
+extern "C" void
+SetMainCamera(int entity)
+{
+  ECSManager& ecsManager = ECSManager::getInstance();
+  std::vector<Entity> view = ecsManager.view<CameraComponent>();
+
+  for (auto& e : view) {
+    std::shared_ptr<CameraComponent> cam =
+      ecsManager.getComponent<CameraComponent>(e);
+    if (cam) {
+      cam->mainCamera = false;
+    }
+  }
+
+  std::shared_ptr<CameraComponent> targetCam =
+    ecsManager.getComponent<CameraComponent>(entity);
+  if (targetCam) {
+    targetCam->mainCamera = true;
+  }
+}
+
 void
 ECSManager::setViewport(u32 width, u32 height)
 {
@@ -288,7 +309,8 @@ extern "C"
       std::make_shared<PositionComponent>();
     posComp->position = glm::vec3(pos[0], pos[1], pos[2]);
     posComp->scale = glm::vec3(scale[0], scale[1], scale[2]);
-    posComp->rotation = glm::vec3(rot[0], rot[1], rot[2]);
+    posComp->rotation =
+      glm::vec3(rot[0], rot[1], rot[2]); // TODO is this correct?
     ECSManager::getInstance().addComponents(entity, posComp);
   }
 
@@ -308,12 +330,29 @@ extern "C"
     ECSManager::getInstance().addComponents(entity, c);
   }
 
+  void SetCameraOrientation(int entity,
+                            float frontX,
+                            float frontY,
+                            float frontZ,
+                            float upX,
+                            float upY,
+                            float upZ)
+  {
+    std::shared_ptr<CameraComponent> cam =
+      ECSManager::getInstance().getComponent<CameraComponent>(entity);
+    if (cam) {
+      cam->m_front = glm::vec3(frontX, frontY, frontZ);
+      cam->m_up = glm::vec3(upX, upY, upZ);
+      cam->m_matrixNeedsUpdate = true;
+    }
+  }
+
   int CreateEntity(const char* name)
   {
     return ECSManager::getInstance().createEntity(name);
   }
 
-  void PauseAnimation(unsigned int entity)
+  void pauseAnimation(unsigned int entity)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
     a->isPlaying = false;
@@ -332,5 +371,10 @@ extern "C"
       a->animationIndex = idx;
       a->currentTime = 0;
     }
+  }
+
+  bool GetSimulatePhysics()
+  {
+    return ECSManager::getInstance().getSimulatePhysics();
   }
 };

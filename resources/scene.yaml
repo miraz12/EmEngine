@@ -10,18 +10,18 @@
     - type: Phy
       mass: 80
       shape: 2
-# - entity: helmet2
-#   components:
-#     - type: Pos
-#       position: [-3, 3, 3]
-#       rotation: [0, -0, 0]
-#       scale: [1, 1, 1]
-#     - type: Gra
-#       primitive: Mesh
-#       file: gltf/helmet/DamagedHelmet.glb
-#     - type: Phy
-#       mass: 80
-#       shape: 2
+- entity: helmet2
+  components:
+    - type: Pos
+      position: [-3, 3, 3]
+      rotation: [0, -0, 0]
+      scale: [1, 1, 1]
+    - type: Gra
+      primitive: Mesh
+      file: gltf/helmet/DamagedHelmet.glb
+    - type: Phy
+      mass: 80
+      shape: 2
 # - entity: particles
 #   components:
 #     - type: Pos
@@ -33,18 +33,18 @@
 #     - type: Phy
 #       mass: 0
 #       shape: 0
-- entity: map
-  components:
-    - type: Pos
-      position: [0, 0, 0]
-      rotation: [0, -0, 0]
-      scale: [1, 1, 1]
-    - type: Gra
-      primitive: Heightmap
-      file: Heightmap.png
-    - type: Phy
-      mass: 0
-      shape: 3
+# - entity: map
+#   components:
+#     - type: Pos
+#       position: [0, 0, 0]
+#       rotation: [0, -0, 0]
+#       scale: [1, 1, 1]
+#     - type: Gra
+#       primitive: Heightmap
+#       file: Heightmap.png
+#     - type: Phy
+#       mass: 0
+#       shape: 3
 - entity: dir1
   components:
     - type: Lig

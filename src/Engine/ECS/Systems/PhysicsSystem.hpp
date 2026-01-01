@@ -20,6 +20,10 @@ public:
   void setViewport(u32 /* w */, u32 /* h */){};
   // Add rigid body to physics sim
   void addRigidBody(btRigidBody* body) { m_dynamicsWorld->addRigidBody(body); };
+  void removeRigidBody(btRigidBody* body)
+  {
+    m_dynamicsWorld->removeRigidBody(body);
+  };
   // Function to perform raycasting and pick an object
   void performPicking(i32 mouseX, i32 mouseY);
   void setWindowSize(float x, float y);

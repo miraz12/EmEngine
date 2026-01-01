@@ -2,6 +2,7 @@
 #include "ECS/Components/CameraComponent.hpp"
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/PhysicsSystem.hpp>
+#include <algorithm>
 #include <ranges>
 
 InputManager::InputManager()
@@ -24,6 +25,9 @@ InputManager::InputManager()
   m_keys.insert({ KEY::Key2, false });
   m_keys.insert({ KEY::Key3, false });
   m_keys.insert({ KEY::Key4, false });
+  m_keys.insert({ KEY::LeftShift, false });
+  m_keys.insert({ KEY::Q, false });
+  m_keys.insert({ KEY::E, false });
 }
 
 void
@@ -88,16 +92,9 @@ InputManager::update(float dt)
     return;
   }
 
+  // Handle object picking when mouse is clicked
   static bool pressed = true;
   if (m_keys.at(KEY::Mouse1)) {
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-    direction.y = sin(glm::radians(m_pitch));
-    direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-    glm::vec3 cameraFront = glm::normalize(direction);
-    auto cam = static_pointer_cast<CameraComponent>(
-      ECSManager::getInstance().getCamera());
-    cam->m_front = cameraFront;
     if (pressed) {
       PhysicsSystem::getInstance().performPicking(m_mousePosX, m_mousePosY);
       pressed = false;
@@ -162,6 +159,17 @@ InputManager::handleInput(i32 key, i32 action)
     case GLFW_KEY_4:
       handleAction(KEY::Key4, action);
       break;
+    case GLFW_KEY_LEFT_SHIFT:
+      handleAction(KEY::LeftShift, action);
+      break;
+    case GLFW_KEY_Q:
+      handleAction(KEY::Q, action);
+      break;
+    case GLFW_KEY_E:
+      handleAction(KEY::E, action);
+      break;
+    default:
+      break;
   }
 }
 
@@ -176,28 +184,31 @@ InputManager::setMousePos(double x, double y)
 {
   m_mousePosX = x;
   m_mousePosY = y;
+
   if (!m_keys.at(KEY::Mouse1)) {
     lastX = x;
     lastY = y;
+    m_mouseDeltaX = 0.0;
+    m_mouseDeltaY = 0.0;
     return;
   }
 
-  double xoffset = x - lastX;
-  double yoffset = lastY - y;
+  // Calculate delta for this frame
+  m_mouseDeltaX = x - lastX;
+  m_mouseDeltaY = lastY - y; // Inverted Y
   lastX = x;
   lastY = y;
 
+  // Old camera control code (kept for reference, not used)
   float sensitivity = 0.1f;
-  xoffset *= sensitivity;
-  yoffset *= sensitivity;
+  double xoffset = m_mouseDeltaX * sensitivity;
+  double yoffset = m_mouseDeltaY * sensitivity;
 
   m_yaw += xoffset;
   m_pitch += yoffset;
 
-  if (m_pitch > 89.0f)
-    m_pitch = 89.0f;
-  if (m_pitch < -89.0f)
-    m_pitch = -89.0f;
+  m_pitch = std::min<double>(m_pitch, 89.0);
+  m_pitch = std::max<double>(m_pitch, -89.0);
 }
 
 extern "C" int
@@ -213,4 +224,22 @@ GetPressed(int** vec)
 
   *vec = reinterpret_cast<int*>(InputManager::getInstance().m_active.data());
   return InputManager::getInstance().m_active.size();
+}
+
+extern "C" void
+GetMousePosition(float* x, float* y)
+{
+  InputManager& inputMgr = InputManager::getInstance();
+  *x = static_cast<float>(inputMgr.getMouseX());
+  *y = static_cast<float>(inputMgr.getMouseY());
+}
+
+extern "C" void
+GetMouseDelta(float* deltaX, float* deltaY)
+{
+  InputManager& inputMgr = InputManager::getInstance();
+
+  // Return the deltas calculated in setMousePos
+  *deltaX = static_cast<float>(inputMgr.getMouseDeltaX());
+  *deltaY = static_cast<float>(inputMgr.getMouseDeltaY());
 }

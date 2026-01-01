@@ -26,6 +26,9 @@ namespace Input
         Key2,
         Key3,
         Key4,
+        LeftShift,
+        Q,
+        E,
     };
 
     public class InputManager
@@ -59,89 +62,142 @@ namespace Input
             int count = EngineApi.GetPressed(out vectorPointer);
             List<int> pressedKeys = ConvertIntPtrToList(vectorPointer, count);
 
-            // Default to no force in any direction
-            Vector3 forceDirection = Vector3.Zero;
-            
-            // Track which number keys are currently pressed
-            bool key1Pressed = false;
-            bool key2Pressed = false;
-            bool key3Pressed = false;
-            bool key4Pressed = false;
-            bool spacePressed = false;
-
-            foreach (var key in pressedKeys)
+            // Handle input based on camera mode
+            if (_game.useFreeCam)
             {
-                switch ((KEY)key)
+                // Check if mouse button is pressed for camera look
+                bool mouseButtonHeld = false;
+
+                // Free camera controls
+                foreach (var key in pressedKeys)
                 {
-                    case KEY.W:
-                        forceDirection += _game.player.forward;
-                        break;
-                    case KEY.A:
-                        forceDirection += _game.player.right;
-                        break;
-                    case KEY.S:
-                        forceDirection -= _game.player.forward;
-                        break;
-                    case KEY.D:
-                        forceDirection -= _game.player.right;
-                        break;
-                    case KEY.Space:
-                        spacePressed = true;
-                        break;
-                    case KEY.Key1:
-                        key1Pressed = true;
-                        break;
-                    case KEY.Key2:
-                        key2Pressed = true;
-                        break;
-                    case KEY.Key3:
-                        key3Pressed = true;
-                        break;
-                    case KEY.Key4:
-                        key4Pressed = true;
-                        break;
+                    switch ((KEY)key)
+                    {
+                        case KEY.Mouse1:
+                            mouseButtonHeld = true;
+                            break;
+                        case KEY.W:
+                            _game.freeCamera.MoveForward();
+                            break;
+                        case KEY.A:
+                            _game.freeCamera.MoveLeft();
+                            break;
+                        case KEY.S:
+                            _game.freeCamera.MoveBackward();
+                            break;
+                        case KEY.D:
+                            _game.freeCamera.MoveRight();
+                            break;
+                        case KEY.Space:
+                            _game.freeCamera.MoveUp();
+                            break;
+                        case KEY.LeftShift:
+                            _game.freeCamera.MoveDown();
+                            break;
+                        case KEY.Q:
+                            _game.freeCamera.SetFastMode(true);
+                            break;
+                    }
+                }
+
+                // Only handle mouse movement when mouse button is held
+                if (mouseButtonHeld)
+                {
+                    unsafe
+                    {
+                        float deltaX = 0, deltaY = 0;
+                        EngineApi.GetMouseDelta((IntPtr)(&deltaX), (IntPtr)(&deltaY));
+                        _game.freeCamera.HandleMouseMovement(deltaX, deltaY);
+                    }
                 }
             }
-            
-            // Handle jump (only on key press, not while held)
-            if (spacePressed && !spaceWasPressed)
+            else
             {
-                _game.player.RequestJump();
-            }
-            
-            // Handle movement mode changes (only on key press, not while held)
-            if (key1Pressed && !key1WasPressed)
-            {
-                _game.player.SetMovementMode(0); // Walk
-            }
-            if (key2Pressed && !key2WasPressed)
-            {
-                _game.player.SetMovementMode(1); // Jog
-            }
-            if (key3Pressed && !key3WasPressed)
-            {
-                _game.player.SetMovementMode(2); // Run
-            }
-            if (key4Pressed && !key4WasPressed)
-            {
-                _game.player.SetMovementMode(3); // Sprint
-            }
-            
-            // Update previous key states
-            spaceWasPressed = spacePressed;
-            key1WasPressed = key1Pressed;
-            key2WasPressed = key2Pressed;
-            key3WasPressed = key3Pressed;
-            key4WasPressed = key4Pressed;
+                // Player controls
+                // Default to no force in any direction
+                Vector3 forceDirection = Vector3.Zero;
 
-            // Normalize the direction if input is diagonal to maintain consistent force
-            if (forceDirection.Length() > 0)
-            {
-                forceDirection = Vector3.Normalize(forceDirection);
-            }
+                // Track which number keys are currently pressed
+                bool key1Pressed = false;
+                bool key2Pressed = false;
+                bool key3Pressed = false;
+                bool key4Pressed = false;
+                bool spacePressed = false;
 
-            // Set the direction of force to the player
-            _game.player.SetForceDirection(forceDirection);
+                foreach (var key in pressedKeys)
+                {
+                    switch ((KEY)key)
+                    {
+                        case KEY.W:
+                            forceDirection += _game.player.forward;
+                            break;
+                        case KEY.A:
+                            forceDirection += _game.player.right;
+                            break;
+                        case KEY.S:
+                            forceDirection -= _game.player.forward;
+                            break;
+                        case KEY.D:
+                            forceDirection -= _game.player.right;
+                            break;
+                        case KEY.Space:
+                            spacePressed = true;
+                            break;
+                        case KEY.Key1:
+                            key1Pressed = true;
+                            break;
+                        case KEY.Key2:
+                            key2Pressed = true;
+                            break;
+                        case KEY.Key3:
+                            key3Pressed = true;
+                            break;
+                        case KEY.Key4:
+                            key4Pressed = true;
+                            break;
+                    }
+                }
+
+                // Handle jump (only on key press, not while held)
+                if (spacePressed && !spaceWasPressed)
+                {
+                    _game.player.RequestJump();
+                }
+
+                // Handle movement mode changes (only on key press, not while held)
+                if (key1Pressed && !key1WasPressed)
+                {
+                    _game.player.SetMovementMode(0); // Walk
+                }
+                if (key2Pressed && !key2WasPressed)
+                {
+                    _game.player.SetMovementMode(1); // Jog
+                }
+                if (key3Pressed && !key3WasPressed)
+                {
+                    _game.player.SetMovementMode(2); // Run
+                }
+                if (key4Pressed && !key4WasPressed)
+                {
+                    _game.player.SetMovementMode(3); // Sprint
+                }
+
+                // Update previous key states
+                spaceWasPressed = spacePressed;
+                key1WasPressed = key1Pressed;
+                key2WasPressed = key2Pressed;
+                key3WasPressed = key3Pressed;
+                key4WasPressed = key4Pressed;
+
+                // Normalize the direction if input is diagonal to maintain consistent force
+                if (forceDirection.Length() > 0)
+                {
+                    forceDirection = Vector3.Normalize(forceDirection);
+                }
+
+                // Set the direction of force to the player
+                _game.player.SetForceDirection(forceDirection);
+            }
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Entities
             
             // Position the player slightly above ground to avoid initial collisions
             EngineApi.AddPositionComponent(entityId,
-                                              new float[] { 0, 1.0f, 0 },
+                                              new float[] { 0, 3.0f, 0 },
                                               new float[] { 1, 1, 1 },
                                               new float[] { 0, 0, 0 });
                                               
@@ -302,6 +302,11 @@ namespace Entities
                 3 => MovementMode.Sprint,
                 _ => MovementMode.Run
             };
+        }
+
+        public int GetEntityId()
+        {
+            return entityId;
         }
     }
 }
