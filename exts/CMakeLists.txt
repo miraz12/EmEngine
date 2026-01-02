@@ -97,10 +97,21 @@ set_target_properties(
              LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
              RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
+# FreeType
+add_subdirectory(freetype)
+set_target_properties(
+  freetype
+  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
+
+add_library(Freetype::Freetype ALIAS freetype)
+
 # RmlUi
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(RMLUI_SAMPLES OFF CACHE BOOL "" FORCE)
 set(RMLUI_FONT_ENGINE "freetype" CACHE STRING "" FORCE)
+set(RMLUI_BACKEND GLFW_GL3 CACHE BOOL "" FORCE)
 set(RMLUI_SHELL ON CACHE BOOL "" FORCE)
 
 add_subdirectory(RmlUi)
@@ -127,19 +138,19 @@ target_include_directories(exts INTERFACE header_only)
 
 target_link_libraries(
   exts
-  INTERFACE glfw
-            ${OPENGL_LIBRARIES}
-            glm
-            imgui
-            BulletDynamics
-            BulletCollision
-            LinearMath
-            yaml-cpp
-            imguizmo
-            rmlui_core
-            rmlui_debugger
-            rmlui_backend_GLFW_GL3
-          )
+    INTERFACE 
+        glfw
+        ${OPENGL_LIBRARIES}
+        glm
+        imgui
+        BulletDynamics
+        BulletCollision
+        LinearMath
+        yaml-cpp
+        imguizmo
+        RmlUi::RmlUi
+        rmlui_backend_GLFW_GL3
+      )
 
 if(NOT DEFINED EMSCRIPTEN)
   target_link_libraries(exts INTERFACE glad)

@@ -22,3 +22,6 @@
 [submodule "exts/RmlUi"]
 	path = exts/RmlUi
 	url = https://github.com/mikke89/RmlUi.git
+[submodule "exts/freetype"]
+	path = exts/freetype
+	url = https://github.com/freetype/freetype.git

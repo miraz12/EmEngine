@@ -1,4 +1,5 @@
 #include "GameStateManager.hpp"
+#include "ECS/ECSManager.hpp"
 #include "UIManager.hpp"
 #include <iostream>
 
@@ -171,6 +172,7 @@ void
 GameStateManager::setupPlayingUI()
 {
   std::cout << "[GameStateManager] Setting up Playing UI\n";
+  ECSManager::getInstance().setSimulatePhysics(true);
 }
 
 void
