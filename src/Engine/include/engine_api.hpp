@@ -2,7 +2,9 @@
 #define ENGINE_API_HPP_
 #include "Core.hpp"
 #include "ECS/ECSManager.hpp"
+#include "GameStateManager.hpp"
 #include "MapLoader.hpp"
+#include "UIManager.hpp"
 
 extern "C"
 {
@@ -61,6 +63,89 @@ extern "C"
   void AddForce(unsigned int entity, float x, float y, float z);
   void SetAcceleration(unsigned int entity, float x, float y, float z);
   bool EntityOnGround(unsigned int entity);
+
+  // UI API functions
+  bool UI_LoadDocument(const char* path, const char* name)
+  {
+    return UIManager::getInstance().loadDocument(path, name);
+  }
+
+  void UI_ShowDocument(const char* name)
+  {
+    UIManager::getInstance().showDocument(name);
+  }
+
+  void UI_HideDocument(const char* name)
+  {
+    UIManager::getInstance().hideDocument(name);
+  }
+
+  void UI_UnloadDocument(const char* name)
+  {
+    UIManager::getInstance().unloadDocument(name);
+  }
+
+  bool UI_IsDocumentVisible(const char* name)
+  {
+    return UIManager::getInstance().isDocumentVisible(name);
+  }
+
+  // Game State API functions
+  void GameState_StartGame()
+  {
+    GameStateManager::getInstance().startGame();
+  }
+
+  void GameState_PauseGame()
+  {
+    GameStateManager::getInstance().pauseGame();
+  }
+
+  void GameState_ResumeGame()
+  {
+    GameStateManager::getInstance().resumeGame();
+  }
+
+  void GameState_ReturnToMainMenu()
+  {
+    GameStateManager::getInstance().returnToMainMenu();
+  }
+
+  void GameState_GameOver()
+  {
+    GameStateManager::getInstance().gameOver();
+  }
+
+  int GameState_GetCurrentState()
+  {
+    return static_cast<int>(GameStateManager::getInstance().getCurrentState());
+  }
+
+  bool GameState_IsPlaying()
+  {
+    return GameStateManager::getInstance().isPlaying();
+  }
+
+  bool GameState_IsPaused()
+  {
+    return GameStateManager::getInstance().isPaused();
+  }
+
+  // Callback type for state change events
+  using StateChangeCallback = void (*)();
+
+  void GameState_OnEnterPlaying(StateChangeCallback callback)
+  {
+    GameStateManager::getInstance().onEnterState(GameState::Playing,
+                                                 [callback]() { callback(); });
+  }
+
+  void GameState_OnExitPlaying(StateChangeCallback callback)
+  {
+    GameStateManager::getInstance().onExitState(GameState::Playing,
+                                                [callback]() { callback(); });
+  }
+
   void Start()
   {
 

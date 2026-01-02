@@ -23,13 +23,22 @@ if(NOT EMSCRIPTEN)
       COMMENT "Publishing .NET Native AOT project")
   endif(WIN32)
   if(LINUX)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release/net9.0/linux-x64/native/Game
+      COMMAND dotnet publish Game.csproj -r linux-x64 -c Release --packages .nuget/
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS Engine
+              GenerateBindings
+              ${CMAKE_SOURCE_DIR}/resources/lib/libEngine.a
+              ${CMAKE_SOURCE_DIR}/resources/lib/librmlui.a
+              ${CMAKE_SOURCE_DIR}/resources/lib/librmlui_debugger.a
+      COMMENT "Publishing .NET Native AOT project"
+      VERBATIM
+    )
     add_custom_target(
       PublishDotNet ALL
-      COMMAND rm bin -r | dotnet publish Game.csproj -r linux-x64 -c Release
-              --packages .nuget/
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS Engine GenerateBindings
-      COMMENT "Publishing .NET Native AOT project")
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release/net9.0/linux-x64/native/Game
+    )
   endif(LINUX)
 else()
   add_custom_target(

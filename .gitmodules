@@ -19,3 +19,6 @@
 [submodule "exts/googletest"]
 	path = exts/googletest
 	url = https://github.com/google/googletest.git
+[submodule "exts/RmlUi"]
+	path = exts/RmlUi
+	url = https://github.com/mikke89/RmlUi.git

@@ -1,7 +1,9 @@
 #ifndef CORE_H_
 #define CORE_H_
 #include <ECS/ECSManager.hpp>
+#include <GameStateManager.hpp>
 #include <Gui.hpp>
+#include <UIManager.hpp>
 
 class Core : public Singleton<Core>
 {
@@ -18,6 +20,8 @@ public:
 
 private:
   ECSManager* m_ECSManager;
+  UIManager* m_UIManager;
+  GameStateManager* m_gameStateManager;
   float m_dt;
   float m_prevTime;
   float m_currentTime;

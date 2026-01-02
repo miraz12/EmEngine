@@ -1,0 +1,18 @@
+<rml>
+<head>
+    <title>Main Menu</title>
+    <link type="text/rcss" href="main_menu.rcss"/>
+</head>
+<body>
+    <div id="menu-container">
+        <div id="title">
+            <h1>EmEngine</h1>
+        </div>
+        <div id="menu-buttons">
+            <button id="btn-play" class="menu-button">Play</button>
+            <button id="btn-settings" class="menu-button">Settings</button>
+            <button id="btn-quit" class="menu-button">Quit</button>
+        </div>
+    </div>
+</body>
+</rml>

@@ -97,6 +97,31 @@ set_target_properties(
              LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
              RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
+# RmlUi
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(RMLUI_SAMPLES OFF CACHE BOOL "" FORCE)
+set(RMLUI_FONT_ENGINE "freetype" CACHE STRING "" FORCE)
+set(RMLUI_SHELL ON CACHE BOOL "" FORCE)
+
+add_subdirectory(RmlUi)
+set_target_properties(
+  rmlui_core
+  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
+set_target_properties(
+  rmlui_debugger
+  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
+
+# Configure RmlUi backend to use GLAD and disable MSAA
+target_compile_definitions(
+  rmlui_backend_GLFW_GL3
+    INTERFACE "RMLUI_GL3_CUSTOM_LOADER=<glad/glad.h>"
+              "RMLUI_NUM_MSAA_SAMPLES=0")
+target_include_directories(rmlui_backend_GLFW_GL3 INTERFACE glad/include RmlUi)
+
 # Header only
 target_include_directories(exts INTERFACE header_only)
 
@@ -110,7 +135,11 @@ target_link_libraries(
             BulletCollision
             LinearMath
             yaml-cpp
-            imguizmo)
+            imguizmo
+            rmlui_core
+            rmlui_debugger
+            rmlui_backend_GLFW_GL3
+          )
 
 if(NOT DEFINED EMSCRIPTEN)
   target_link_libraries(exts INTERFACE glad)

@@ -64,6 +64,7 @@
               tree-sitter-grammars.tree-sitter-c-sharp
               perf
               hotspot
+              freetype
             ]
             ++ deps;
 

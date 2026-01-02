@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
@@ -12,12 +11,12 @@
     <DirectPInvoke Include="Engine" />
     <!-- Specify library to link against -->
     <NativeLibrary Include="../../resources/lib/libEngine.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="../../resources/lib/librmlui.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="../../resources/lib/librmlui_debugger.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="../../resources/lib/Release/Engine.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="user32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="gdi32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
-    <LinkerArg Include="-lstdc++ -lX11 -lGL " Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
+    <LinkerArg Include="-lstdc++ -lX11 -lGL -lfreetype" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
   </ItemGroup>
-
-
 </Project>
 

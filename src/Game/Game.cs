@@ -33,17 +33,36 @@ public class Game
     {
         if (EngineApi.Initialize())
         {
-            EngineApi.LoadMap("resources/map.txt", 2.0f);
-
+            // Initialize game objects (but don't start yet - wait for user to click Play)
+            // GameStateManager will load and show the main menu
             freeCamera = new FreeCameraController();
             player = new Player();
 
-            EngineApi.SetMainCamera(freeCamera.GetEntityId());
-            lastPhysicsState = false;
+            // Register callback for when Playing state is entered
+            unsafe
+            {
+                delegate* unmanaged<void> callback = &OnEnterPlaying;
+                EngineApi.GameState_OnEnterPlaying((IntPtr)callback);
+            }
 
             EngineApi.Start();
             stopwatch.Start();
         }
+    }
+
+    [UnmanagedCallersOnly]
+    private static void OnEnterPlaying()
+    {
+        Game.Instance.StartGame();
+    }
+
+    public void StartGame()
+    {
+        // Called when entering Playing state (user clicked Play from main menu)
+        Console.WriteLine("[Game] Starting game...");
+        EngineApi.LoadMap("resources/map.txt", 2.0f);
+        EngineApi.SetMainCamera(freeCamera.GetEntityId());
+        lastPhysicsState = false;
     }
 
     [UnmanagedCallersOnly(EntryPoint = "Game_Update")]
@@ -52,31 +71,35 @@ public class Game
         Game.Instance.CalculateDeltaTime();
         EngineApi.Update();
 
-        bool physicsEnabled = EngineApi.GetSimulatePhysics();
-        Game.Instance.useFreeCam = !physicsEnabled;
-
-        if (physicsEnabled != Game.Instance.lastPhysicsState)
+        // Only update game logic when in Playing state
+        if (EngineApi.GameState_IsPlaying())
         {
-            if (physicsEnabled)
+            bool physicsEnabled = EngineApi.GetSimulatePhysics();
+            Game.Instance.useFreeCam = !physicsEnabled;
+
+            if (physicsEnabled != Game.Instance.lastPhysicsState)
             {
-                EngineApi.SetMainCamera(Game.Instance.player.GetEntityId());
+                if (physicsEnabled)
+                {
+                    EngineApi.SetMainCamera(Game.Instance.player.GetEntityId());
+                }
+                else
+                {
+                    EngineApi.SetMainCamera(Game.Instance.freeCamera.GetEntityId());
+                }
+                Game.Instance.lastPhysicsState = physicsEnabled;
+            }
+
+            Game.Instance.inputManager.Update();
+
+            if (Game.Instance.useFreeCam)
+            {
+                Game.Instance.freeCamera.Update(Game.Instance.deltaTime);
             }
             else
             {
-                EngineApi.SetMainCamera(Game.Instance.freeCamera.GetEntityId());
+                Game.Instance.player.Update(Game.Instance.deltaTime);
             }
-            Game.Instance.lastPhysicsState = physicsEnabled;
-        }
-
-        Game.Instance.inputManager.Update();
-
-        if (Game.Instance.useFreeCam)
-        {
-            Game.Instance.freeCamera.Update(Game.Instance.deltaTime);
-        }
-        else
-        {
-            Game.Instance.player.Update(Game.Instance.deltaTime);
         }
     }
 
