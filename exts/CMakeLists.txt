@@ -28,6 +28,9 @@ if(NOT DEFINED EMSCRIPTEN)
                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
+else()
+  add_library(glfw INTERFACE)
+  target_include_directories(glfw INTERFACE ${CMAKE_SYSROOT}/include)
 endif()
 
 # GLAD
