@@ -14,18 +14,12 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        dotnetPkg = (
-          with pkgs.dotnetCorePackages;
-          combinePackages [
-            sdk_9_0
-          ]
-        );
         deps = with pkgs; [
           zlib
           zlib.dev
           openssl
           icu
-          dotnetPkg
+          dotnetCorePackages.dotnet_9.sdk
           xorg.libX11
           xorg.libXrandr
           xorg.libXinerama
@@ -74,7 +68,7 @@
               export EM_CACHE="/tmp/.emscripten_cache";
               export EMSDK_PATH="$PWD/exts/emsdk";
 
-              export DOTNET_ROOT="${dotnetPkg}"
+              export DOTNET_ROOT="${dotnetCorePackages.dotnet_9.sdk}"
               export DRI_PRIME=1
               export npm_config_prefix=$PWD/.npm-global
               export PATH=$npm_config_prefix/bin:$PATH
