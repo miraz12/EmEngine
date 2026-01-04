@@ -18,12 +18,12 @@ jobs:
       - name: Configure CMake
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          nix develop -c cmake --preset emscripten-debug
+          nix develop -c cmake --preset emscripten-release
 
       - name: Build
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          nix develop -c cmake --build --preset emscripten-debug
+          nix develop -c cmake --build --preset emscripten-release
 
       - name: Copy build
         run: |

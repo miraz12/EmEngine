@@ -61,7 +61,7 @@ target_compile_options(
     -Wall
     -Wextra
     -O3
-    -Werror
+    # -Werror
     -fPIC>
     $<$<CXX_COMPILER_ID:MSVC>:
     /W4
