@@ -19,8 +19,8 @@
     <NativeLibrary Include="../../resources/lib/libimguizmo.a"/>
     <NativeLibrary Include="../../resources/lib/librmlui.a"/>
     <NativeLibrary Include="../../resources/lib/librmlui_debugger.a"/>
-    <NativeLibrary Include="../../resources/lib/libfreetyped.a"/>
     <LinkerArg Include="--bind -sFULL_ES2 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources  -sFORCE_FILESYSTEM"/>
+    <NativeLibrary Include="../../resources/lib/libfreetype.a"/>
   </ItemGroup>
 
 </Project>

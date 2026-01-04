@@ -95,7 +95,8 @@ Cube::Cube()
   newPrim->attributes["POSITION"] = posAttrib;
 
   // Normal attribute (location 1)
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+  glVertexAttribPointer(
+    1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
   Primitive::AttribInfo normAttrib;
   normAttrib.vbo = 0;
@@ -107,7 +108,8 @@ Cube::Cube()
   newPrim->attributes["NORMAL"] = normAttrib;
 
   // Texture coordinate attribute (location 3)
-  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+  glVertexAttribPointer(
+    3, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
   glEnableVertexAttribArray(3);
   Primitive::AttribInfo texAttrib;
   texAttrib.vbo = 0;

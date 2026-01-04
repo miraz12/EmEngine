@@ -68,7 +68,8 @@ TextureManager::bindTexture(std::string name)
     std::cerr << "Warning: Texture '" << name
               << "' not found, creating default black texture" << std::endl;
     unsigned char blackPixel[4] = { 0, 0, 0, 255 };
-    u32 texId = loadTexture(name, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1, blackPixel);
+    u32 texId =
+      loadTexture(name, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 1, 1, blackPixel);
     glBindTexture(GL_TEXTURE_2D, texId);
     return texId;
   }

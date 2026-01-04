@@ -41,9 +41,16 @@ if(NOT EMSCRIPTEN)
     )
   endif(LINUX)
 else()
+  # Use CMAKE_BUILD_TYPE to determine the .NET configuration
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(DOTNET_CONFIG "Debug")
+  else()
+    set(DOTNET_CONFIG "Release")
+  endif()
+
   add_custom_target(
     PublishDotNet ALL
-    COMMAND dotnet publish Game_wasm.csproj -c Release -r browser-wasm
+    COMMAND dotnet publish Game_wasm.csproj -c ${DOTNET_CONFIG} -r browser-wasm
             --packages .nuget/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS Engine GenerateBindings

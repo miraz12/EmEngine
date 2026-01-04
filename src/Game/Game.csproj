@@ -13,7 +13,7 @@
     <NativeLibrary Include="../../resources/lib/libEngine.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="../../resources/lib/librmlui.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="../../resources/lib/librmlui_debugger.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
-    <NativeLibrary Include="../../resources/lib/libfreetyped.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
+    <NativeLibrary Include="../../resources/lib/libfreetype.a" Condition="!$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="../../resources/lib/Release/Engine.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="user32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     <NativeLibrary Include="gdi32.lib" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
