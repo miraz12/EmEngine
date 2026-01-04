@@ -27,21 +27,11 @@ Material::bind(const ShaderProgram& sPrg)
   std::array<GLint, 5> tex = { 0, 1, 2, 3, 4 };
   glUniform1iv(sPrg.getUniformLocation("textures"), 5, tex.data());
 
-  if ((m_material & (1 << 0)) > 0) {
-    m_textureMan.bindActivateTexture(m_baseColorTexture, 0);
-  }
-  if ((m_material & (1 << 1)) > 0) {
-    m_textureMan.bindActivateTexture(m_metallicRoughnessTexture, 1);
-  }
-  if ((m_material & (1 << 2)) > 0) {
-    m_textureMan.bindActivateTexture(m_emissiveTexture, 2);
-  }
-  if ((m_material & (1 << 3)) > 0) {
-    m_textureMan.bindActivateTexture(m_occlusionTexture, 3);
-  }
-  if ((m_material & (1 << 4)) > 0) {
-    m_textureMan.bindActivateTexture(m_normalTexture, 4);
-  }
+  m_textureMan.bindActivateTexture(m_baseColorTexture, 0);
+  m_textureMan.bindActivateTexture(m_metallicRoughnessTexture, 1);
+  m_textureMan.bindActivateTexture(m_emissiveTexture, 2);
+  m_textureMan.bindActivateTexture(m_occlusionTexture, 3);
+  m_textureMan.bindActivateTexture(m_normalTexture, 4);
 
   if (m_doubleSided) {
     glDisable(GL_CULL_FACE);

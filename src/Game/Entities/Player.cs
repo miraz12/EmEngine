@@ -66,7 +66,7 @@ namespace Entities
                                               new float[] { 0, 0, 0 });
                                               
             // Add the character model
-            EngineApi.AddGraphicsComponent(entityId, "gltf/helmet/DamagedHelmet.gltf");
+            EngineApi.AddGraphicsComponent(entityId, "gltf/vampire/Untitled.glb");
             
             // Add physics with a CAPSULE shape (type=2)
             // Set mass to 70kg

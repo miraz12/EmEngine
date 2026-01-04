@@ -189,11 +189,17 @@ SceneLoader::addGraphicsComponent(Entity entity, const YAML::Node& component)
   } else if (component["primitive"].as<std::string>() == "Line") {
     // TODO: Fix this when needed
     // graphComp = std::make_shared<GraphicsComponent>(*new Line());
-    graphComp->type = GraphicsComponent::TYPE::LINE;
+    // graphComp->type = GraphicsComponent::TYPE::LINE;
+    std::cerr << "Warning: Line primitive not yet implemented, skipping"
+              << std::endl;
+    return;
   } else if (component["primitive"].as<std::string>() == "Point") {
     // TODO: Fix this when needed
     // graphComp = std::make_shared<GraphicsComponent>(*new Point());
-    graphComp->type = GraphicsComponent::TYPE::POINT;
+    // graphComp->type = GraphicsComponent::TYPE::POINT;
+    std::cerr << "Warning: Point primitive not yet implemented, skipping"
+              << std::endl;
+    return;
   } else if (component["primitive"].as<std::string>() == "Mesh") {
     std::string modelPath =
       "resources/Models/" + component["file"].as<std::string>();
@@ -211,6 +217,10 @@ SceneLoader::addGraphicsComponent(Entity entity, const YAML::Node& component)
     graphComp = std::make_shared<GraphicsComponent>(
       resourceMgr.getHeightmap(heightmapPath));
     graphComp->type = GraphicsComponent::TYPE::HEIGHTMAP;
+  } else {
+    std::cerr << "Error: Unknown primitive type: "
+              << component["primitive"].as<std::string>() << std::endl;
+    return;
   }
   ecsMan.addComponents(entity, graphComp);
 }
