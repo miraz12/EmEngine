@@ -51,8 +51,17 @@ public:
   TextureManager& p_textureManager{ TextureManager::getInstance() };
 
 private:
-  // Cache for computed matrices to avoid redundant calculations
+  // Cache for computed matrices
   mutable std::vector<std::pair<bool, glm::mat4>> m_matrixCache;
+
+  // Skinning cache
+  struct SkinningCache
+  {
+    bool valid = false;                   // Is cache valid?
+    std::vector<glm::mat4> jointMatrices; // Cached joint matrices
+    GLuint textureId = 0;                 // Reusable texture object
+  };
+  mutable std::vector<SkinningCache> m_skinningCache;
 };
 
 #endif // GRAPHICSOBJECT_H_

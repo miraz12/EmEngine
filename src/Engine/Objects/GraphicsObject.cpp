@@ -56,32 +56,66 @@ GraphicsObject::resetMatrixCache()
   for (auto& entry : m_matrixCache) {
     entry.first = false;
   }
+
+  // Invalidate skinning cache when transforms change
+  for (auto& cache : m_skinningCache) {
+    cache.valid = false;
+  }
 }
 
 void
 GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
 {
-
-  std::vector<glm::mat4> jointMat;
-  for (u32 j = 0; j < p_skins[node].joints.size(); j++) {
-    i32 joint = p_skins[node].joints[j];
-    std::string name = p_nodes[joint].name;
-    jointMat.push_back(getMatrix(joint) * p_skins[node].inverseBindMatrices[j]);
+  if (m_skinningCache.size() < static_cast<size_t>(p_numSkins)) {
+    m_skinningCache.resize(p_numSkins);
   }
 
-  if (!jointMat.empty()) {
+  SkinningCache& cache = m_skinningCache[node];
 
+  // Recompute joint matrices only if cache is invalid
+  if (!cache.valid) {
+    cache.jointMatrices.clear();
+    cache.jointMatrices.reserve(p_skins[node].joints.size());
+
+    for (u32 j = 0; j < p_skins[node].joints.size(); j++) {
+      i32 joint = p_skins[node].joints[j];
+      cache.jointMatrices.push_back(getMatrix(joint) *
+                                    p_skins[node].inverseBindMatrices[j]);
+    }
+
+    cache.valid = true;
+  }
+
+  // Upload joint matrices to GPU texture
+  if (!cache.jointMatrices.empty()) {
     glUniform1i(sPrg.getUniformLocation("jointMats"), 5);
     p_textureManager.bindActivateTexture("jointMats", 5);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,                            // mipmap level
-                 GL_RGBA32F,                   // internal format
-                 4,                            // width (4 columns per matrix)
-                 jointMat.size(),              // height (number of matrices)
-                 0,                            // border
-                 GL_RGBA,                      // format
-                 GL_FLOAT,                     // type
-                 glm::value_ptr(jointMat[0])); // data
+
+    // Create texture on first use, then reuse with glTexSubImage2D
+    if (cache.textureId == 0) {
+      // First time: allocate texture storage
+      glTexImage2D(GL_TEXTURE_2D,
+                   0,                          // mipmap level
+                   GL_RGBA32F,                 // internal format
+                   4,                          // width (4 columns per matrix)
+                   cache.jointMatrices.size(), // height (number of matrices)
+                   0,                          // border
+                   GL_RGBA,                    // format
+                   GL_FLOAT,                   // type
+                   glm::value_ptr(cache.jointMatrices[0])); // data
+      cache.textureId = 1; // Mark as initialized
+    } else {
+      // Subsequent frames: update existing texture (faster)
+      glTexSubImage2D(GL_TEXTURE_2D,
+                      0,                                       // mipmap level
+                      0,                                       // x offset
+                      0,                                       // y offset
+                      4,                                       // width
+                      cache.jointMatrices.size(),              // height
+                      GL_RGBA,                                 // format
+                      GL_FLOAT,                                // type
+                      glm::value_ptr(cache.jointMatrices[0])); // data
+    }
   }
 }
 
