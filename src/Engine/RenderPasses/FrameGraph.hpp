@@ -15,7 +15,7 @@ enum class PassId : size_t
   kParticle,
   kBloom,
   kFxaa,
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   kDebug,
 #endif
   kNumPasses

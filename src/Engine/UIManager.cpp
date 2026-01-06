@@ -114,9 +114,11 @@ UIManager::render()
     return;
   }
 
+#ifndef NDEBUG
   // Clear any existing OpenGL errors before UI rendering
   while (glGetError() != GL_NO_ERROR) {
   }
+#endif
 
   // Save OpenGL state
   GLboolean blendEnabled = glIsEnabled(GL_BLEND);
@@ -136,10 +138,12 @@ UIManager::render()
   m_context->Render();
   renderer->EndFrame();
 
+#ifndef NDEBUG
   // Clear any OpenGL errors from RmlUi's advanced features
   // (framebuffer operations that fail gracefully)
   while (glGetError() != GL_NO_ERROR) {
   }
+#endif
 
   // Restore OpenGL state
   if (!blendEnabled) {
