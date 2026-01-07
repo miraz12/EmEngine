@@ -27,7 +27,7 @@ TextureManager::loadTexture(u32 internalFormat,
   return texId;
 }
 u32
-TextureManager::loadTexture(std::string name,
+TextureManager::loadTexture(const std::string& name,
                             u32 internalFormat,
                             GLenum format,
                             GLenum type,
@@ -53,14 +53,14 @@ TextureManager::loadTexture(std::string name,
 }
 
 void
-TextureManager::setTexture(std::string name, u32 texId, u32 type)
+TextureManager::setTexture(const std::string& name, u32 texId, u32 type)
 {
   deleteTexture(name);
-  texIds.insert({ name, Texture{ texId, type } });
+  texIds.insert({ name, Texture{ .id = texId, .type = type } });
 }
 
 u32
-TextureManager::bindTexture(std::string name)
+TextureManager::bindTexture(const std::string& name)
 {
   auto it = texIds.find(name);
   if (it == texIds.end()) {
@@ -79,14 +79,14 @@ TextureManager::bindTexture(std::string name)
 }
 
 u32
-TextureManager::bindActivateTexture(std::string name, u32 pos)
+TextureManager::bindActivateTexture(const std::string& name, u32 pos)
 {
   glActiveTexture(GL_TEXTURE0 + pos);
   return bindTexture(name);
 }
 
 void
-TextureManager::deleteTexture(std::string name)
+TextureManager::deleteTexture(const std::string& name)
 {
   auto iter = texIds.find(name);
   if (iter != texIds.end()) {
