@@ -114,50 +114,11 @@ UIManager::render()
     return;
   }
 
-#ifndef NDEBUG
-  // Clear any existing OpenGL errors before UI rendering
-  while (glGetError() != GL_NO_ERROR) {
-  }
-#endif
-
-  // Save OpenGL state
-  GLboolean blendEnabled = glIsEnabled(GL_BLEND);
-  GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
-  GLboolean cullFaceEnabled = glIsEnabled(GL_CULL_FACE);
-  GLboolean scissorTestEnabled = glIsEnabled(GL_SCISSOR_TEST);
-
-  // Set up state for UI rendering
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
-
   // Get the renderer and call GL3-specific begin/end frame
   auto* renderer = static_cast<RenderInterface_GL3*>(m_renderInterface.get());
   renderer->BeginFrame();
   m_context->Render();
   renderer->EndFrame();
-
-#ifndef NDEBUG
-  // Clear any OpenGL errors from RmlUi's advanced features
-  // (framebuffer operations that fail gracefully)
-  while (glGetError() != GL_NO_ERROR) {
-  }
-#endif
-
-  // Restore OpenGL state
-  if (!blendEnabled) {
-    glDisable(GL_BLEND);
-  }
-  if (depthTestEnabled) {
-    glEnable(GL_DEPTH_TEST);
-  }
-  if (cullFaceEnabled) {
-    glEnable(GL_CULL_FACE);
-  }
-  if (!scissorTestEnabled) {
-    glDisable(GL_SCISSOR_TEST);
-  }
 }
 
 bool
