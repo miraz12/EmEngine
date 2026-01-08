@@ -147,6 +147,11 @@ public:
   Rml::Context* getContext() { return m_context; }
 
   /**
+   * @brief Unset the RmlUi context, settings the context to nullptr
+   */
+  void unsetContext() { m_context = nullptr; }
+
+  /**
    * @brief Register a click callback for a UI element
    * @param documentName Name of the document containing the element
    * @param elementId ID of the element to attach callback to
@@ -166,8 +171,8 @@ private:
   class UIEventListener : public Rml::EventListener
   {
   public:
-    UIEventListener(ClickCallback callback)
-      : m_callback(callback)
+    explicit UIEventListener(ClickCallback callback)
+      : m_callback(std::move(callback))
     {
     }
 

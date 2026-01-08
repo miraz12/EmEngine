@@ -122,7 +122,6 @@ GameStateManager::exitState(GameState state)
       }
       break;
     case GameState::Playing:
-      // No UI to hide in playing state
       break;
     case GameState::Paused:
       if (m_uiManager->isDocumentVisible("pause_menu")) {
@@ -173,6 +172,9 @@ GameStateManager::setupPlayingUI()
 {
   std::cout << "[GameStateManager] Setting up Playing UI\n";
   ECSManager::getInstance().setSimulatePhysics(true);
+
+  // Disable updating of UI
+  m_uiManager->unsetContext();
 }
 
 void
