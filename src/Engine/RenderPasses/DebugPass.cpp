@@ -27,12 +27,6 @@ DebugPass::Execute(ECSManager& eManager)
 {
   // No startup logging needed
 
-  auto& physicsSystem = PhysicsSystem::getInstance();
-
-  // ALWAYS render debug visuals - override PhysicsSystem enabled flag
-  // This ensures we'll see something regardless of other settings
-  physicsSystem.m_debugDrawEnabled = true;
-
   // Debug rendering should go to the default framebuffer (screen)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -61,8 +55,7 @@ DebugPass::Execute(ECSManager& eManager)
   p_shaderProgram.use();
 
   // Get camera component
-  auto camera =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  auto camera = static_pointer_cast<CameraComponent>(eManager.getCamera());
 
   // Get matrices from the camera for correct 3D rendering
   glm::mat4 viewMatrix = camera->m_viewMatrix;
@@ -73,14 +66,9 @@ DebugPass::Execute(ECSManager& eManager)
   // Disable depth testing for overlay
   glDisable(GL_DEPTH_TEST);
 
-  // Get reference to debug drawer
-  auto& drawer = PhysicsSystem::getInstance().m_dDraw;
-
-  // Just render the physics debug lines collected by forceDebugDraw()
-
   // Now render the physics debug lines with proper 3D transformation
   // Pass our shader program to the DebugDrawer
-  PhysicsSystem::getInstance().m_dDraw.renderAndFlush(
+  PhysicsSystem::getInstance().getDebugDrawer().renderAndFlush(
     viewMatrix, projMatrix, &p_shaderProgram);
 
   // Restore the previous OpenGL state

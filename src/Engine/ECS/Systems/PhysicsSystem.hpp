@@ -30,12 +30,7 @@ public:
   void CreatePhysicsBody(Entity entity, PhysicsComponent& physicsComponent);
   bool EntityOnGround(Entity entity);
 
-  // Debug drawing options
-  DebugDrawer m_dDraw;
-  bool m_debugDrawEnabled = true; // Toggle for debug drawing
-
-  // Toggle debug drawing on/off
-  void toggleDebugDrawing() { m_debugDrawEnabled = !m_debugDrawEnabled; }
+  DebugDrawer& getDebugDrawer() { return m_dDraw; };
 
 private:
   PhysicsSystem() = default;
@@ -49,5 +44,6 @@ private:
   btDefaultMotionState* myMotionState;
   btCollisionShape* groundShape;
   float m_winWidth, m_winHeigth;
+  DebugDrawer m_dDraw;
 };
 #endif // PHYSICSSYSTEM_H_

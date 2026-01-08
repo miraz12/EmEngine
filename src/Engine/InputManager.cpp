@@ -36,60 +36,9 @@ InputManager::update(float dt)
   // float camSpeed = 1.f;
   // float moveSpeed = 0.25f;
   ECSManager& ecsManager = ECSManager::getInstance();
-  // Camera &cam = ecsManager.getCamera();
-  // Parse input
-  // if (m_keys.at(KEY::A)) {
-  //   glm::vec3 camPos =
-  //       cam.getPosition() -
-  //       glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed *
-  //       dt;
-  //   if (!glm::all(glm::isnan(camPos))) {
-  //     cam.setPosition(camPos);
-  //   }
-  // }
-  // if (m_keys.at(KEY::D)) {
-  //   glm::vec3 camPos =
-  //       cam.getPosition() +
-  //       glm::normalize(glm::cross(cam.getFront(), cam.getUp())) * camSpeed *
-  //       dt;
-  //   if (!glm::all(glm::isnan(camPos))) {
-  //     cam.setPosition(camPos);
-  //   }
-  // }
-  // if (m_keys.at(KEY::W)) {
-  //   glm::vec3 camPos = cam.getPosition() + cam.getFront() * camSpeed * dt;
-  //   if (!glm::all(glm::isnan(camPos))) {
-  //     cam.setPosition(camPos);
-  //   }
-  // }
-  // if (m_keys.at(KEY::S)) {
-  //   glm::vec3 camPos = cam.getPosition() - cam.getFront() * camSpeed * dt;
-  //   if (!glm::all(glm::isnan(camPos))) {
-  //     cam.setPosition(camPos);
-  //   }
-  // }
-  // if (m_keys.at(KEY::Space)) {
-  //   glm::vec3 camPos = cam.getPosition() + glm::vec3(0, 1, 0) * camSpeed *
-  //   dt; if (!glm::all(glm::isnan(camPos))) {
-  //     cam.setPosition(camPos);
-  //   }
-  // }
-
   if (m_keys.at(KEY::O)) {
     ecsManager.setSimulatePhysics(ecsManager.getSimulatePhysics() ? false
                                                                   : true);
-  }
-
-  // Toggle debug drawing when T is pressed
-  static bool tWasPressed = false;
-  if (m_keys.at(KEY::T) && !tWasPressed) {
-    PhysicsSystem::getInstance().toggleDebugDrawing();
-    tWasPressed = true;
-  } else if (!m_keys.at(KEY::T)) {
-    tWasPressed = false;
-  }
-  if (ecsManager.getSimulatePhysics()) {
-    return;
   }
 
   // Handle object picking when mouse is clicked

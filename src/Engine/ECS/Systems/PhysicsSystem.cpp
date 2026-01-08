@@ -168,6 +168,8 @@ PhysicsSystem::initialize(ECSManager& ecsManager)
 
   // Set debug drawer with ALL debug modes for maximum visibility
   // m_dDraw.setDebugMode(btIDebugDraw::DBG_DrawWireframe); // Draw wireframes
+
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   m_dDraw.setDebugMode(btIDebugDraw::DBG_DrawAabb); // Draw wireframes
   // btIDebugDraw::DBG_DrawAabb |      // Draw axis-aligned bounding boxes
   // btIDebugDraw::DBG_DrawContactPoints | // Show contact points
@@ -177,6 +179,7 @@ PhysicsSystem::initialize(ECSManager& ecsManager)
   // btIDebugDraw::DBG_FastWireframe);  // Faster wireframe drawing
 
   m_dynamicsWorld->setDebugDrawer(&m_dDraw);
+#endif
 
   ///-----initialization_end-----
 
@@ -234,9 +237,9 @@ PhysicsSystem::update(float dt)
   if (m_manager->getSimulatePhysics()) {
     m_dynamicsWorld->stepSimulation(dt, 10);
 
-    if (m_debugDrawEnabled) {
-      m_dynamicsWorld->debugDrawWorld();
-    }
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+    m_dynamicsWorld->debugDrawWorld();
+#endif
 
     std::vector<Entity> view =
       m_manager->view<PositionComponent, PhysicsComponent>();
