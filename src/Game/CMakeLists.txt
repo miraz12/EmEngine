@@ -32,6 +32,10 @@ if(NOT EMSCRIPTEN)
               ${CMAKE_SOURCE_DIR}/resources/lib/libEngine.a
               ${CMAKE_SOURCE_DIR}/resources/lib/librmlui.a
               ${CMAKE_SOURCE_DIR}/resources/lib/librmlui_debugger.a
+              ${CMAKE_CURRENT_SOURCE_DIR}/Game.cs
+              ${CMAKE_CURRENT_SOURCE_DIR}/FreeCameraController.cs
+              ${CMAKE_CURRENT_SOURCE_DIR}/InputManager.cs
+              ${CMAKE_CURRENT_SOURCE_DIR}/Entities/Player.cs
       COMMENT "Publishing .NET Native AOT project"
       VERBATIM
     )
