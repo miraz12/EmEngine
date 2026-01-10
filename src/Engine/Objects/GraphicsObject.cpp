@@ -144,14 +144,22 @@ GraphicsObject::draw(const ShaderProgram& sPrg)
     }
   }
 }
+
 void
-GraphicsObject::drawGeom(const ShaderProgram&)
+GraphicsObject::drawGeom(const ShaderProgram& sPrg)
 {
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
+      if (p_nodes[i].skin >= 0) {
+        glUniform1i(sPrg.getUniformLocation("is_skinned"), 1);
+        applySkinning(sPrg, p_nodes[i].skin);
+      } else {
+        glUniform1i(sPrg.getUniformLocation("is_skinned"), 0);
+      }
+
       Mesh& m = p_meshes[p_nodes[i].mesh];
-      for (u32 i = 0; i < m.numPrims; i++) {
-        m.m_primitives[i].draw();
+      for (u32 j = 0; j < m.numPrims; j++) {
+        m.m_primitives[j].draw();
       }
     }
   }

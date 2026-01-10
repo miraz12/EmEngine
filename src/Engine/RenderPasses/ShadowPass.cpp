@@ -16,8 +16,22 @@ ShadowPass::ShadowPass()
   p_shaderProgram.setUniformBinding("modelMatrix");
   p_shaderProgram.setUniformBinding("lightSpaceMatrix");
   p_shaderProgram.setUniformBinding("meshMatrix");
+  p_shaderProgram.setUniformBinding("is_skinned");
+  p_shaderProgram.setUniformBinding("jointMats");
 
   p_shaderProgram.setAttribBinding("POSITION");
+  p_shaderProgram.setAttribBinding("JOINTS_0");
+  p_shaderProgram.setAttribBinding("WEIGHTS_0");
+
+  u32 jointMats;
+  glGenTextures(1, &jointMats);
+  p_textureManager.setTexture("jointMats", jointMats);
+
+  p_textureManager.bindTexture("jointMats");
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   u32 depthMapFbo;
   glGenFramebuffers(1, &depthMapFbo);
@@ -108,6 +122,7 @@ ShadowPass::Execute(ECSManager& eManager)
 
     std::shared_ptr<GraphicsComponent> g =
       eManager.getComponent<GraphicsComponent>(e);
+
     g->m_grapObj->drawGeom(p_shaderProgram);
   }
 

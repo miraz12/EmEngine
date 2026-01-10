@@ -57,6 +57,8 @@ Window::start()
   std::cout << "[window] Start" << std::endl;
   // glfwSetErrorCallback(glfw_error);
 
+  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+
   if (glfwInit()) {
 #ifdef _DEBUG_
     std::cout << "DEBUG MODE" << std::endl;

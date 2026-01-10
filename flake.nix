@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     utils.url = "github:numtide/flake-utils";
   };
 
@@ -55,8 +55,11 @@
               tree-sitter
               tree-sitter-grammars.tree-sitter-cpp
               tree-sitter-grammars.tree-sitter-c-sharp
+              tree-sitter-grammars.tree-sitter-glsl
               perf
               hotspot
+              glslang
+              glslls
             ]
             ++ deps;
 
