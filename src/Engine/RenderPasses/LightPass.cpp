@@ -85,20 +85,6 @@ LightPass::Execute(ECSManager& eManager)
   glUniform1i(p_shaderProgram.getUniformLocation("debugView"),
               eManager.getDebugView());
 
-  glm::mat4 lightProjection;
-  glm::mat4 lightView;
-  glm::mat4 lightSpaceMatrix;
-  float shadowBox = 9.0f;
-  lightProjection =
-    glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
-  glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
-  lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-  lightSpaceMatrix = lightProjection * lightView;
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
-                     1,
-                     GL_FALSE,
-                     glm::value_ptr(lightSpaceMatrix));
-
   std::vector<Entity> view = eManager.view<LightingComponent>();
   i32 numPLights = 0;
   for (auto e : view) {
@@ -106,63 +92,90 @@ LightPass::Execute(ECSManager& eManager)
       eManager.getComponent<LightingComponent>(e);
 
     LightingComponent::TYPE t = g->getType();
-    if (t == LightingComponent::TYPE::DIRECTIONAL) {
-      DirectionalLight& light =
-        static_cast<DirectionalLight&>(g->getBaseLight());
-      glUniform3fv(
-        p_shaderProgram.getUniformLocation("directionalLight.direction"),
-        1,
-        glm::value_ptr(light.direction));
+    switch (g->getType()) {
+      case LightingComponent::TYPE::DIRECTIONAL: {
+        auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
 
-      glUniform3fv(p_shaderProgram.getUniformLocation("directionalLight.color"),
-                   1,
-                   glm::value_ptr(light.color));
+        glm::mat4 lightProjection;
+        glm::mat4 lightView;
+        glm::mat4 lightSpaceMatrix;
+        float shadowBox = 25.0f;  // 50x50 unit coverage (covers 32x22 map with margin)
+        lightProjection =
+          glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 50.0f);
+        glm::vec3 lightInvDir = -glm::normalize(light.direction) * 20.0f;
+        // Static frustum centered at world origin
+        lightView =
+          glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        lightSpaceMatrix = lightProjection * lightView;
+        glUniformMatrix4fv(
+          p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
+          1,
+          GL_FALSE,
+          glm::value_ptr(lightSpaceMatrix));
 
-      glUniform1f(
-        p_shaderProgram.getUniformLocation("directionalLight.ambientIntensity"),
-        light.ambientIntensity);
+        glUniform3fv(
+          p_shaderProgram.getUniformLocation("directionalLight.direction"),
+          1,
+          glm::value_ptr(light.direction));
 
-    } else if (t == LightingComponent::TYPE::POINT) {
-      PointLight& light = static_cast<PointLight&>(g->getBaseLight());
-      glUniform3fv(
-        p_shaderProgram.getUniformLocation(
-          "pointLights[" + std::to_string(numPLights) + "].position"),
-        1,
-        glm::value_ptr(light.position));
+        glUniform3fv(
+          p_shaderProgram.getUniformLocation("directionalLight.color"),
+          1,
+          glm::value_ptr(light.color));
 
-      glUniform3fv(p_shaderProgram.getUniformLocation(
-                     "pointLights[" + std::to_string(numPLights) + "].color"),
-                   1,
-                   glm::value_ptr(light.color));
+        glUniform1f(p_shaderProgram.getUniformLocation(
+                      "directionalLight.ambientIntensity"),
+                    light.ambientIntensity);
 
-      glUniform1f(p_shaderProgram.getUniformLocation(
-                    "pointLights[" + std::to_string(numPLights) + "].constant"),
-                  light.constant);
+        break;
+      }
+      case LightingComponent::TYPE::POINT: {
 
-      glUniform1f(p_shaderProgram.getUniformLocation(
-                    "pointLights[" + std::to_string(numPLights) + "].linear"),
-                  light.linear);
+        PointLight& light = static_cast<PointLight&>(g->getBaseLight());
+        glUniform3fv(
+          p_shaderProgram.getUniformLocation(
+            "pointLights[" + std::to_string(numPLights) + "].position"),
+          1,
+          glm::value_ptr(light.position));
 
-      glUniform1f(
-        p_shaderProgram.getUniformLocation(
-          "pointLights[" + std::to_string(numPLights) + "].quadratic"),
-        light.quadratic);
-      const float constant =
-        1.0f; // note that we don't send this to the shader, we assume it is
-              // always 1.0 (in our case)
-      float maxBrightness =
-        std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
-      float radius =
-        (-light.linear +
-         std::sqrt(light.linear * light.linear -
-                   4 * light.quadratic *
-                     (constant - (256.0f / 5.0f) * maxBrightness))) /
-        (2.0f * light.quadratic);
-      glUniform1f(p_shaderProgram.getUniformLocation(
-                    "pointLights[" + std::to_string(numPLights) + "].radius"),
-                  radius);
+        glUniform3fv(p_shaderProgram.getUniformLocation(
+                       "pointLights[" + std::to_string(numPLights) + "].color"),
+                     1,
+                     glm::value_ptr(light.color));
 
-      numPLights++;
+        glUniform1f(
+          p_shaderProgram.getUniformLocation(
+            "pointLights[" + std::to_string(numPLights) + "].constant"),
+          light.constant);
+
+        glUniform1f(p_shaderProgram.getUniformLocation(
+                      "pointLights[" + std::to_string(numPLights) + "].linear"),
+                    light.linear);
+
+        glUniform1f(
+          p_shaderProgram.getUniformLocation(
+            "pointLights[" + std::to_string(numPLights) + "].quadratic"),
+          light.quadratic);
+        const float constant =
+          1.0f; // note that we don't send this to the shader, we assume it is
+                // always 1.0 (in our case)
+        float maxBrightness =
+          std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
+        float radius =
+          (-light.linear +
+           std::sqrt(light.linear * light.linear -
+                     4 * light.quadratic *
+                       (constant - (256.0f / 5.0f) * maxBrightness))) /
+          (2.0f * light.quadratic);
+        glUniform1f(p_shaderProgram.getUniformLocation(
+                      "pointLights[" + std::to_string(numPLights) + "].radius"),
+                    radius);
+
+        numPLights++;
+        break;
+      }
+      default:
+        break;
     }
   }
 

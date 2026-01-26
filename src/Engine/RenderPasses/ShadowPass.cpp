@@ -1,5 +1,6 @@
 #include "ShadowPass.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
+#include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "glm/geometric.hpp"
 
@@ -45,7 +46,7 @@ ShadowPass::ShadowPass()
   p_textureManager.bindTexture("depthMap");
   glTexImage2D(GL_TEXTURE_2D,
                0,
-               GL_DEPTH_COMPONENT16,
+               GL_DEPTH_COMPONENT24,
                p_width,
                p_height,
                0,
@@ -82,30 +83,53 @@ void
 ShadowPass::Execute(ECSManager& eManager)
 {
   p_fboManager.bindFBO("depthMapFbo");
+  glViewport(0, 0, p_width, p_height);
   glEnable(GL_DEPTH_TEST);
-  glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+  glDepthFunc(GL_LESS);
+  glDepthMask(GL_TRUE);
+  glClearDepthf(1.0f);
   glClear(GL_DEPTH_BUFFER_BIT);
-  glCullFace(GL_FRONT);
+  // Use back-face culling (normal rendering) for shadow map
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
   p_shaderProgram.use();
 
-  // TODO Don't do this every frame
-  glm::mat4 lightProjection;
-  glm::mat4 lightView;
-  glm::mat4 lightSpaceMatrix;
-  float shadowBox = 9.0f;
-  lightProjection =
-    glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 30.0f);
-  glm::vec3 lightInvDir = -glm::normalize(eManager.dDir) * 20.0f;
-  lightView = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-  lightSpaceMatrix = lightProjection * lightView;
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
-                     1,
-                     GL_FALSE,
-                     glm::value_ptr(lightSpaceMatrix));
+  std::vector<Entity> view = eManager.view<LightingComponent>();
+  for (auto e : view) {
+    std::shared_ptr<LightingComponent> g =
+      eManager.getComponent<LightingComponent>(e);
 
-  std::vector<Entity> view = eManager.view<GraphicsComponent>();
-  for (auto& e : view) {
+    switch (g->getType()) {
+      case LightingComponent::TYPE::DIRECTIONAL: {
+        auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
+
+        glm::mat4 lightProjection;
+        glm::mat4 lightView;
+        glm::mat4 lightSpaceMatrix;
+        float shadowBox =
+          25.0f; // 50x50 unit coverage (covers 32x22 map with margin)
+        lightProjection =
+          glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 50.0f);
+        glm::vec3 lightInvDir = -glm::normalize(light.direction) * 20.0f;
+        // Static frustum centered at world origin
+        lightView =
+          glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        lightSpaceMatrix = lightProjection * lightView;
+        glUniformMatrix4fv(
+          p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
+          1,
+          GL_FALSE,
+          glm::value_ptr(lightSpaceMatrix));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  std::vector<Entity> gView = eManager.view<GraphicsComponent>();
+  for (auto& e : gView) {
     std::shared_ptr<PositionComponent> p =
       eManager.getComponent<PositionComponent>(e);
     if (p) {
@@ -141,7 +165,7 @@ ShadowPass::setViewport(u32 w, u32 h)
   p_textureManager.bindTexture("depthMap");
   glTexImage2D(GL_TEXTURE_2D,
                0,
-               GL_DEPTH_COMPONENT16,
+               GL_DEPTH_COMPONENT24,
                p_width,
                p_height,
                0,

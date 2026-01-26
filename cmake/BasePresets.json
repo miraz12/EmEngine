@@ -27,6 +27,14 @@
       }
     },
     {
+      "name": "base-relwithdebinfo",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
       "name": "base-linux",
       "hidden": true,
       "inherits": "base",
@@ -35,7 +43,8 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic",
         "CMAKE_CXX_FLAGS_DEBUG": "-g -O0",
-        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG -march=native",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
       }
     },

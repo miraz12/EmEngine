@@ -85,12 +85,17 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+
+    // Return no shadow if outside shadow map bounds
+    if(projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0)
+        return 0.0;
+
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
     float closestDepth = texture(depthMap, projCoords.xy).r;
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
-    // calculate bias (based on depth map resolution and slope)
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    // Small constant depth bias (normal offset handles grazing angles)
+    float bias = 0.001;
     // check whether current frag pos is in shadow
     // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     // PCF
@@ -177,7 +182,14 @@ void main() {
     float ao = texture(gPositionAo, texCoords).a;
     float metallic = texture(gNormalMetal, texCoords).a;
     float roughness = texture(gAlbedoSpecRough, texCoords).a;
-    vec4 lightPos = lightSpaceMatrix * vec4(texture(gPositionAo, texCoords).rgb, 1.0);
+
+    // Normal offset shadow: offset position along normal to reduce shadow acne
+    // Offset more at grazing angles where shadow acne is worse
+    vec3 lightDir = normalize(-directionalLight.direction);
+    float NdotL = dot(normal, lightDir);
+    float normalOffsetScale = 0.04 * (1.0 - abs(NdotL));
+    vec3 offsetPos = fragPos + normal * normalOffsetScale;
+    vec4 lightPos = lightSpaceMatrix * vec4(offsetPos, 1.0);
 
     vec3 viewDir = normalize(camPos - fragPos);
     vec3 reflection = reflect(-viewDir, normal); 
@@ -210,9 +222,14 @@ void main() {
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(normal, viewDir), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    //TODO: Does shadows and directional lights work like this in PBR??
+    // Calculate shadows and apply to both direct and ambient lighting
+    // Apply full shadows to directional light, partial shadows to ambient/IBL for visibility
     float shadows = ShadowCalculation(lightPos, normal, directionalLight.direction);
-    vec3 ambient = (kD * diffuse + specular) * (1.0 - shadows)  * ao;
+    float shadowFactor = 1.0 - shadows;
+    Lo = Lo * shadowFactor;  // Full shadows on directional light
+    // Apply softer shadows to ambient (50% strength) so they remain visible
+    float ambientShadowFactor = 1.0 - (shadows * 0.5);
+    vec3 ambient = (kD * diffuse + specular) * ambientShadowFactor * ao;
 
     vec3 color = ambient + Lo;
 

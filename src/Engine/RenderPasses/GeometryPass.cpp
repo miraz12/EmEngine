@@ -74,7 +74,10 @@ void
 GeometryPass::Execute(ECSManager& eManager)
 {
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
+  glViewport(0, 0, p_width, p_height);
   glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  glDepthMask(GL_TRUE);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -157,7 +160,7 @@ GeometryPass::setViewport(u32 w, u32 h)
   glRenderbufferStorage(
     GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
   glFramebufferRenderbuffer(
-    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
   // finally check if framebuffer is complete
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     std::cout << "Framebuffer not complete!" << std::endl;

@@ -57,7 +57,10 @@ Window::start()
   std::cout << "[window] Start" << std::endl;
   // glfwSetErrorCallback(glfw_error);
 
+#ifndef EMSCRIPTEN
+  // For renderdoc to work on my laptop
   glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+#endif
 
   if (glfwInit()) {
 #ifdef _DEBUG_

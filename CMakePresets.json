@@ -20,6 +20,12 @@
       "inherits": ["base-linux", "base-debug"]
     },
     {
+      "name": "linux-relwithdebinfo",
+      "displayName": "Linux RelWithDebInfo Build",
+      "description": "Release build with debug symbols for profiling",
+      "inherits": ["base-linux", "base-relwithdebinfo"]
+    },
+    {
       "name": "windows-release",
       "displayName": "Windows Release Build",
       "description": "Release build for Windows",
@@ -65,6 +71,12 @@
       "displayName": "Linux Debug",
       "inherits": "base-build",
       "configurePreset": "linux-debug"
+    },
+    {
+      "name": "linux-relwithdebinfo",
+      "displayName": "Linux RelWithDebInfo",
+      "inherits": "base-build",
+      "configurePreset": "linux-relwithdebinfo"
     },
     {
       "name": "windows-release",

@@ -21,6 +21,14 @@ MapLoader::loadMap(const std::string& filename, float tileSize)
 
   // Generate entities from the map data
   generateMapEntities();
+
+  // Create default directional light for shadows
+  Entity lightEntity = m_ecsMan->createEntity("MapDirectionalLight");
+  m_ecsMan->setupDirectionalLight(
+    lightEntity,
+    glm::vec3(1.0f, 1.0f, 1.0f),       // white light
+    0.2f,                               // ambient intensity
+    glm::vec3(-0.3f, -1.0f, -0.3f));   // direction (downward + slight angle)
 }
 
 void

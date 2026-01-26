@@ -60,8 +60,8 @@ public class Game
     {
         // Called when entering Playing state (user clicked Play from main menu)
         Console.WriteLine("[Game] Starting game...");
-        // EngineApi.LoadMap("resources/map.txt", 2.0f);
-        EngineApi.LoadScene("resources/scene.yaml");
+        EngineApi.LoadMap("resources/map.txt", 2.0f);
+        // EngineApi.LoadScene("resources/scene.yaml");
         EngineApi.SetMainCamera(freeCamera.GetEntityId());
         lastPhysicsState = false;
     }
