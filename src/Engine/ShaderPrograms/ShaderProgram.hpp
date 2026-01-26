@@ -17,8 +17,8 @@ public:
 
   void setUniformBinding(const std::string& uni);
   void setAttribBinding(const std::string& attr);
-  u32 getUniformLocation(const std::string& uniformName) const;
-  u32 getAttribLocation(const std::string& attribName) const;
+  GLint getUniformLocation(const std::string& uniformName) const;
+  GLint getAttribLocation(const std::string& attribName) const;
   u32 getId() const { return m_shaderProgram; }
   void loadShaders(std::string_view vertexShaderPath,
                    std::string_view fragmentShaderPath);
@@ -26,8 +26,8 @@ public:
 
 private:
   u32 m_shaderProgram;
-  std::unordered_map<std::string, u32> m_uniformBindings;
-  std::unordered_map<std::string, i32> m_attribBindings;
+  std::unordered_map<std::string, GLint> m_uniformBindings;
+  std::unordered_map<std::string, GLint> m_attribBindings;
 
   void readFile(std::string_view filePath, std::string* result);
 };

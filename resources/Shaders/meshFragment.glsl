@@ -6,7 +6,6 @@ in vec2 pTexCoords;
 in vec3 pNormal;
 in vec3 pTangent;
 
-// If uniforms change, also update SimpleShaderProgram to match
 uniform sampler2D textures[5];
 
 

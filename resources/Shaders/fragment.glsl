@@ -1,8 +1,8 @@
 #version 300 es
 precision highp float;
 
-out vec4 fragColor;
+out vec4 FragColor;
 
 void main() {
-    fragColor = vec4(1.0, 0.0, 0.0, 1.0);  // Set the output color to red
+    FragColor = vec4(1.0, 0.0, 0.0, 1.0);  // Set the output color to red
 }

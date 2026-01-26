@@ -5,9 +5,9 @@ precision highp float;
 in vec3 fragColor;
 
 // Output color
-out vec4 outputColor;
+out vec4 FragColor;
 
 void main() {
     // Just use the color passed from the vertex shader
-    outputColor = vec4(fragColor, 1.0);
+    FragColor = vec4(fragColor, 1.0);
 }

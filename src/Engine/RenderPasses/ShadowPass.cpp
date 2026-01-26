@@ -1,8 +1,9 @@
 #include "ShadowPass.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
-#include "glm/geometric.hpp"
+#include "LightingUtil.hpp"
 
 #include "ECS/ECSManager.hpp"
 #include "RenderPasses/RenderPass.hpp"
@@ -95,6 +96,9 @@ ShadowPass::Execute(ECSManager& eManager)
 
   p_shaderProgram.use();
 
+  auto cam =
+    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+
   std::vector<Entity> view = eManager.view<LightingComponent>();
   for (auto e : view) {
     std::shared_ptr<LightingComponent> g =
@@ -103,19 +107,9 @@ ShadowPass::Execute(ECSManager& eManager)
     switch (g->getType()) {
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
-
-        glm::mat4 lightProjection;
-        glm::mat4 lightView;
-        glm::mat4 lightSpaceMatrix;
-        float shadowBox =
-          25.0f; // 50x50 unit coverage (covers 32x22 map with margin)
-        lightProjection =
-          glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 50.0f);
-        glm::vec3 lightInvDir = -glm::normalize(light.direction) * 20.0f;
-        // Static frustum centered at world origin
-        lightView =
-          glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-        lightSpaceMatrix = lightProjection * lightView;
+        glm::mat4 lightSpaceMatrix =
+          LightingUtil::calculateLightSpaceMatrix(light.direction,
+                                                  cam->m_position);
         glUniformMatrix4fv(
           p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
           1,
@@ -151,7 +145,6 @@ ShadowPass::Execute(ECSManager& eManager)
   }
 
   glCullFace(GL_BACK);
-  m_dirty = false;
 }
 
 void
@@ -160,7 +153,6 @@ ShadowPass::setViewport(u32 w, u32 h)
   p_width = w;
   p_height = h;
 
-  m_dirty = true;
   p_fboManager.bindFBO("depthMapFbo");
   p_textureManager.bindTexture("depthMap");
   glTexImage2D(GL_TEXTURE_2D,

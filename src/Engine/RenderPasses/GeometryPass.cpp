@@ -33,7 +33,6 @@ GeometryPass::GeometryPass()
   p_shaderProgram.setUniformBinding("roughnessFactor");
   p_shaderProgram.setUniformBinding("metallicFactor");
   p_shaderProgram.setUniformBinding("meshMatrix");
-  p_shaderProgram.setUniformBinding("jointMatrices");
   p_shaderProgram.setUniformBinding("jointMats");
   p_shaderProgram.setUniformBinding("is_skinned");
 

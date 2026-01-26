@@ -5,7 +5,6 @@ in vec3 pPosition;
 in vec2 pTexCoords;
 in vec3 pNormal;
 
-// If uniforms change, also update SimpleShaderProgram to match
 // 0 = Base color
 // 1 = Metal/Roughness
 // 2 = Emissive

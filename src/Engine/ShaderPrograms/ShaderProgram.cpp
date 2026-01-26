@@ -89,7 +89,7 @@ ShaderProgram::use() const
   glUseProgram(m_shaderProgram);
 }
 
-u32
+GLint
 ShaderProgram::getUniformLocation(const std::string& uniformName) const
 {
   if (const auto& iter = m_uniformBindings.find(uniformName);
@@ -97,10 +97,10 @@ ShaderProgram::getUniformLocation(const std::string& uniformName) const
     return iter->second;
   }
   std::cout << "No uniform with name " << uniformName << "\n";
-  return 0;
+  return -1;
 }
 
-u32
+GLint
 ShaderProgram::getAttribLocation(const std::string& attribName) const
 {
   if (const auto& iter = m_attribBindings.find(attribName);
@@ -108,7 +108,7 @@ ShaderProgram::getAttribLocation(const std::string& attribName) const
     return iter->second;
   }
   std::cout << "No attribute with name " << attribName << "\n";
-  return 0;
+  return -1;
 }
 
 void

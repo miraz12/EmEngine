@@ -1,7 +1,6 @@
 #include "LightPass.hpp"
 #include "ECS/Components/CameraComponent.hpp"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
+#include "LightingUtil.hpp"
 #include <ECS/Components/LightingComponent.hpp>
 #include <Managers/TextureManager.hpp>
 
@@ -85,28 +84,21 @@ LightPass::Execute(ECSManager& eManager)
   glUniform1i(p_shaderProgram.getUniformLocation("debugView"),
               eManager.getDebugView());
 
+  auto cam =
+    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+
   std::vector<Entity> view = eManager.view<LightingComponent>();
   i32 numPLights = 0;
   for (auto e : view) {
     std::shared_ptr<LightingComponent> g =
       eManager.getComponent<LightingComponent>(e);
 
-    LightingComponent::TYPE t = g->getType();
     switch (g->getType()) {
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
-
-        glm::mat4 lightProjection;
-        glm::mat4 lightView;
-        glm::mat4 lightSpaceMatrix;
-        float shadowBox = 25.0f;  // 50x50 unit coverage (covers 32x22 map with margin)
-        lightProjection =
-          glm::ortho(-shadowBox, shadowBox, -shadowBox, shadowBox, 1.0f, 50.0f);
-        glm::vec3 lightInvDir = -glm::normalize(light.direction) * 20.0f;
-        // Static frustum centered at world origin
-        lightView =
-          glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-        lightSpaceMatrix = lightProjection * lightView;
+        glm::mat4 lightSpaceMatrix =
+          LightingUtil::calculateLightSpaceMatrix(light.direction,
+                                                  cam->m_position);
         glUniformMatrix4fv(
           p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
           1,
@@ -182,8 +174,6 @@ LightPass::Execute(ECSManager& eManager)
   glUniform1i(p_shaderProgram.getUniformLocation("nrOfPointLights"),
               numPLights);
 
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
   glUniform3fv(p_shaderProgram.getUniformLocation("camPos"),
                1,
                glm::value_ptr(cam->m_position));
