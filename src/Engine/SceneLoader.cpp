@@ -141,7 +141,7 @@ SceneLoader::saveScene(const char* file)
           out << YAML::Key << "direction" << YAML::Value << YAML::Flow
               << YAML::BeginSeq << dir->direction.x << dir->direction.y
               << dir->direction.z << YAML::EndSeq;
-          out << YAML::Key << "ambient" << YAML::Value << dir->ambientIntensity;
+          out << YAML::Key << "ambient" << YAML::Value << dir->intensity;
           break;
       }
       out << YAML::EndMap;

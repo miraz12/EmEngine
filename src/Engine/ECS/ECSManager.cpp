@@ -90,7 +90,7 @@ ECSManager::setupPointLight(Entity entity,
 std::shared_ptr<DirectionalLight>
 ECSManager::setupDirectionalLight(Entity entity,
                                   glm::vec3 color,
-                                  float ambient,
+                                  float intensity,
                                   glm::vec3 dir)
 {
   m_dirLightEntity = entity;
@@ -98,7 +98,7 @@ ECSManager::setupDirectionalLight(Entity entity,
     std::make_shared<DirectionalLight>();
   dLight->direction = dir;
   dLight->color = color;
-  dLight->ambientIntensity = ambient;
+  dLight->intensity = intensity;
   addComponent(m_dirLightEntity,
                std::make_shared<LightingComponent>(
                  dLight, LightingComponent::TYPE::DIRECTIONAL));
@@ -106,7 +106,7 @@ ECSManager::setupDirectionalLight(Entity entity,
 }
 
 void
-ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir)
+ECSManager::updateDirLight(glm::vec3 color, float intensity, glm::vec3 dir)
 {
 
   std::shared_ptr<LightingComponent> lComp =
@@ -114,7 +114,7 @@ ECSManager::updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir)
   auto* dLight = static_cast<DirectionalLight*>(&lComp->getBaseLight());
   dLight->direction = dir;
   dLight->color = color;
-  dLight->ambientIntensity = ambient;
+  dLight->intensity = intensity;
 }
 
 std::shared_ptr<Component>

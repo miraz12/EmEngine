@@ -14,7 +14,7 @@ struct PointLight {
 struct DirectionalLight {
     vec3 color;
     vec3 direction;
-    float ambientIntensity;
+    float intensity;
 };
 
 uniform int debugView;
@@ -94,37 +94,30 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
     float closestDepth = texture(depthMap, projCoords.xy).r;
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
-    // Small constant depth bias (normal offset handles grazing angles)
-    float bias = 0.001;
-    // check whether current frag pos is in shadow
-    // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-    // PCF
+    // Adaptive bias based on surface angle to light
+    float bias = max(0.005 * (1.0 - dot(normal, -lightDir)), 0.002);
+
+    // PCF (Percentage Closer Filtering) for soft shadow edges
     float shadow = 0.0;
-    ivec2 textureSize = textureSize(depthMap, 0);
-    vec2 texelSize = vec2(1.0 / float(textureSize.x), 1.0 / float(textureSize.y));
+    vec2 texelSize = 1.0 / vec2(textureSize(depthMap, 0));
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
             float pcfDepth = texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r;
-            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
         }
     }
     shadow /= 9.0;
 
-    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-    if(projCoords.z > 1.0)
-        shadow = 0.0;
-
     return shadow;
 }
 
-vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec4 lightPos, vec3 albedo) {
+vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec3 albedo) {
     // calculate per-light radiance
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
-    float attenuation = light.ambientIntensity;
-    vec3 radiance     = light.color * attenuation;
+    vec3 radiance = light.color * light.intensity;
 
     // cook-torrance brdf
     float NDF = DistributionGGX(normal, H, roughness);
@@ -139,9 +132,12 @@ vec3 CalcDirectionalLightPBR(DirectionalLight light, vec3 fragPos, vec3 viewDir,
     float denominator = max(4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0), 0.00001);
     vec3 specular     = numerator / denominator;
 
-    // add to outgoing radiance Lo
+    // Direct shadow calculation without normal offset (for debugging)
     float NdotL = max(dot(normal, L), 0.0);
-    return (kD * albedo / PI + specular) * radiance * NdotL; 
+    vec4 lightPos = lightSpaceMatrix * vec4(fragPos, 1.0);
+    float shadowFactor = 1.0 - ShadowCalculation(lightPos, normal, light.direction);
+
+    return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor;
 }
 
 vec3 CalcPointLightPBR(PointLight light, vec3 fragPos, vec3 viewDir, vec3 normal, float roughness, float metallic, vec3 specularColor, vec3 albedo) {
@@ -183,21 +179,13 @@ void main() {
     float metallic = texture(gNormalMetal, texCoords).a;
     float roughness = texture(gAlbedoSpecRough, texCoords).a;
 
-    // Normal offset shadow: offset position along normal to reduce shadow acne
-    // Offset more at grazing angles where shadow acne is worse
-    vec3 lightDir = normalize(-directionalLight.direction);
-    float NdotL = dot(normal, lightDir);
-    float normalOffsetScale = 0.04 * (1.0 - abs(NdotL));
-    vec3 offsetPos = fragPos + normal * normalOffsetScale;
-    vec4 lightPos = lightSpaceMatrix * vec4(offsetPos, 1.0);
-
     vec3 viewDir = normalize(camPos - fragPos);
     vec3 reflection = reflect(-viewDir, normal); 
 
     vec3 specularColor = mix(vec3(0.04), albedo, metallic);
 
     // reflectance equation
-    vec3 Lo = CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, lightPos, albedo);
+    vec3 Lo = CalcDirectionalLightPBR(directionalLight, fragPos, viewDir, normal, roughness, metallic, specularColor, albedo);
 
     for (int i = 0; i < nrOfPointLights; i++) {
         // calculate distance between light source and current fragment
@@ -222,14 +210,7 @@ void main() {
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(normal, viewDir), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    // Calculate shadows and apply to both direct and ambient lighting
-    // Apply full shadows to directional light, partial shadows to ambient/IBL for visibility
-    float shadows = ShadowCalculation(lightPos, normal, directionalLight.direction);
-    float shadowFactor = 1.0 - shadows;
-    Lo = Lo * shadowFactor;  // Full shadows on directional light
-    // Apply softer shadows to ambient (50% strength) so they remain visible
-    float ambientShadowFactor = 1.0 - (shadows * 0.5);
-    vec3 ambient = (kD * diffuse + specular) * ambientShadowFactor * ao;
+    vec3 ambient = (kD * diffuse + specular) * ao;
 
     vec3 color = ambient + Lo;
 

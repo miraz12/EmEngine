@@ -151,9 +151,9 @@ public:
   // // Create directional light
   std::shared_ptr<DirectionalLight> setupDirectionalLight(Entity entity,
                                                           glm::vec3 color,
-                                                          float ambient,
+                                                          float intensity,
                                                           glm::vec3 dir);
-  void updateDirLight(glm::vec3 color, float ambient, glm::vec3 dir);
+  void updateDirLight(glm::vec3 color, float intensity, glm::vec3 dir);
 
   std::shared_ptr<Component> getCamera();
   System& getSystem(std::string const& system) { return *m_systems[system]; }

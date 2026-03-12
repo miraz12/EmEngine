@@ -107,9 +107,8 @@ ShadowPass::Execute(ECSManager& eManager)
     switch (g->getType()) {
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
-        glm::mat4 lightSpaceMatrix =
-          LightingUtil::calculateLightSpaceMatrix(light.direction,
-                                                  cam->m_position);
+        glm::mat4 lightSpaceMatrix = LightingUtil::calculateLightSpaceMatrix(
+          light.direction, cam->m_position);
         glUniformMatrix4fv(
           p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
           1,

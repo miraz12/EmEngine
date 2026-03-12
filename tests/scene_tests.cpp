@@ -185,7 +185,7 @@ TEST_F(SceneManagementTest, DirectionalLightSetup)
 
   ASSERT_NE(dirLight, nullptr);
   EXPECT_EQ(dirLight->color, color);
-  EXPECT_FLOAT_EQ(dirLight->ambientIntensity, ambient);
+  EXPECT_FLOAT_EQ(dirLight->intensity, ambient);
   EXPECT_EQ(dirLight->direction, direction);
 
   // Verify the lighting component was added to the entity
@@ -214,7 +214,7 @@ TEST_F(SceneManagementTest, DirectionalLightUpdate)
   manager->updateDirLight(newColor, newAmbient, newDirection);
 
   EXPECT_EQ(dirLight->color, newColor);
-  EXPECT_FLOAT_EQ(dirLight->ambientIntensity, newAmbient);
+  EXPECT_FLOAT_EQ(dirLight->intensity, newAmbient);
   EXPECT_EQ(dirLight->direction, newDirection);
 }
 

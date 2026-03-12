@@ -125,7 +125,7 @@ TEST_F(LightingComponentTest, DirectionalLightComponent)
   auto dirLight = std::make_shared<DirectionalLight>();
   dirLight->color = glm::vec3(1.0f, 1.0f, 0.8f);
   dirLight->direction = glm::vec3(-0.5f, -1.0f, -0.3f);
-  dirLight->ambientIntensity = 0.3f;
+  dirLight->intensity = 0.3f;
 
   auto component = std::make_shared<LightingComponent>(
     dirLight, LightingComponent::TYPE::DIRECTIONAL);

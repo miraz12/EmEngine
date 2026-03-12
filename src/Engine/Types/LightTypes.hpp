@@ -8,7 +8,7 @@ struct BaseLight
 struct DirectionalLight : public BaseLight
 {
   glm::vec3 direction = glm::vec3(0.0);
-  float ambientIntensity = 0.0f;
+  float intensity = 1.0f;
 };
 struct PointLight : public BaseLight
 {

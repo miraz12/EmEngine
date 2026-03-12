@@ -20,7 +20,7 @@ LightPass::LightPass()
   p_shaderProgram.setUniformBinding("camPos");
   p_shaderProgram.setUniformBinding("directionalLight.direction");
   p_shaderProgram.setUniformBinding("directionalLight.color");
-  p_shaderProgram.setUniformBinding("directionalLight.ambientIntensity");
+  p_shaderProgram.setUniformBinding("directionalLight.intensity");
   p_shaderProgram.setUniformBinding("lightSpaceMatrix");
   p_shaderProgram.setUniformBinding("depthMap");
   p_shaderProgram.setUniformBinding("irradianceMap");
@@ -96,9 +96,8 @@ LightPass::Execute(ECSManager& eManager)
     switch (g->getType()) {
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
-        glm::mat4 lightSpaceMatrix =
-          LightingUtil::calculateLightSpaceMatrix(light.direction,
-                                                  cam->m_position);
+        glm::mat4 lightSpaceMatrix = LightingUtil::calculateLightSpaceMatrix(
+          light.direction, cam->m_position);
         glUniformMatrix4fv(
           p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
           1,
@@ -115,9 +114,9 @@ LightPass::Execute(ECSManager& eManager)
           1,
           glm::value_ptr(light.color));
 
-        glUniform1f(p_shaderProgram.getUniformLocation(
-                      "directionalLight.ambientIntensity"),
-                    light.ambientIntensity);
+        glUniform1f(
+          p_shaderProgram.getUniformLocation("directionalLight.intensity"),
+          light.intensity);
 
         break;
       }

@@ -142,7 +142,7 @@ TEST_F(ECSManagerTest, SetupAndUpdateDirectionalLight)
 
   ASSERT_NE(dLight, nullptr);
   EXPECT_EQ(dLight->color, color);
-  EXPECT_EQ(dLight->ambientIntensity, ambient);
+  EXPECT_EQ(dLight->intensity, ambient);
   EXPECT_EQ(dLight->direction, direction);
 
   // Update directional light
@@ -153,7 +153,7 @@ TEST_F(ECSManagerTest, SetupAndUpdateDirectionalLight)
   manager->updateDirLight(newColor, newAmbient, newDirection);
 
   EXPECT_EQ(dLight->color, newColor);
-  EXPECT_EQ(dLight->ambientIntensity, newAmbient);
+  EXPECT_EQ(dLight->intensity, newAmbient);
   EXPECT_EQ(dLight->direction, newDirection);
 }
 
