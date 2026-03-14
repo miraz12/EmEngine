@@ -5,8 +5,8 @@
 #include <ECS/Components/ParticlesComponent.hpp>
 
 ParticlePass::ParticlePass()
-  : RenderPass("resources/Shaders/particleVertex.glsl",
-               "resources/Shaders/particleFragment.glsl")
+  : RenderPass("resources/Shaders/particle.vert",
+               "resources/Shaders/particle.frag")
 {
   p_shaderProgram.setAttribBinding("POSITION");
   p_shaderProgram.setUniformBinding("viewMatrix");

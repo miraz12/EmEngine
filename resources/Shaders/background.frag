@@ -9,4 +9,11 @@ uniform samplerCube environmentMap;
 void main() {
     vec3 envColor = texture(environmentMap, WorldPos).rgb;
     FragColor = vec4(envColor, 1.0);
+
+    // Extract bright areas for bloom
+    float brightness = dot(envColor, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        FragColorBright = vec4(envColor, 1.0);
+    else
+        FragColorBright = vec4(0.0, 0.0, 0.0, 1.0);
 }

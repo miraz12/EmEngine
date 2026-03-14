@@ -2,7 +2,7 @@
 precision highp float;
 
 out vec4 FragColor;
-in vec2 texCoord;
+in vec2 texCoords;
 
 uniform sampler2D scene;
 uniform vec2 resolution;
@@ -15,11 +15,11 @@ const float FXAA_REDUCE_MIN = 1.0 / 128.0;
 void main() {
     vec2 texOffset = 1.0 / resolution;
 
-    vec3 rgbNW = texture(scene, texCoord + vec2(-1.0, -1.0) * texOffset).xyz;
-    vec3 rgbNE = texture(scene, texCoord + vec2(1.0, -1.0) * texOffset).xyz;
-    vec3 rgbSW = texture(scene, texCoord + vec2(-1.0, 1.0) * texOffset).xyz;
-    vec3 rgbSE = texture(scene, texCoord + vec2(1.0, 1.0) * texOffset).xyz;
-    vec3 rgbM = texture(scene, texCoord).xyz;
+    vec3 rgbNW = texture(scene, texCoords + vec2(-1.0, -1.0) * texOffset).xyz;
+    vec3 rgbNE = texture(scene, texCoords + vec2(1.0, -1.0) * texOffset).xyz;
+    vec3 rgbSW = texture(scene, texCoords + vec2(-1.0, 1.0) * texOffset).xyz;
+    vec3 rgbSE = texture(scene, texCoords + vec2(1.0, 1.0) * texOffset).xyz;
+    vec3 rgbM = texture(scene, texCoords).xyz;
 
     vec3 luma = vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(rgbNW, luma);
@@ -42,12 +42,12 @@ void main() {
                   dir * rcpDirMin)) * texOffset;
 
     vec3 rgbA = 0.5 * (
-        texture(scene, texCoord + dir * (1.0 / 3.0 - 0.5)).xyz +
-        texture(scene, texCoord + dir * (2.0 / 3.0 - 0.5)).xyz);
+        texture(scene, texCoords + dir * (1.0 / 3.0 - 0.5)).xyz +
+        texture(scene, texCoords + dir * (2.0 / 3.0 - 0.5)).xyz);
 
     vec3 rgbB = rgbA * 0.5 + 0.25 * (
-        texture(scene, texCoord + dir * -0.5).xyz +
-        texture(scene, texCoord + dir * 0.5).xyz);
+        texture(scene, texCoords + dir * -0.5).xyz +
+        texture(scene, texCoords + dir * 0.5).xyz);
 
     float lumaB = dot(rgbB, luma);
 

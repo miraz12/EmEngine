@@ -11,8 +11,7 @@
 #include <ShaderPrograms/ShaderProgram.hpp>
 
 GeometryPass::GeometryPass()
-  : RenderPass("resources/Shaders/meshVertex.glsl",
-               "resources/Shaders/pbrMeshFragment.glsl")
+  : RenderPass("resources/Shaders/mesh.vert", "resources/Shaders/pbrMesh.frag")
 {
   glGenFramebuffers(1, &gBuffer);
   glGenRenderbuffers(1, &rboDepth);

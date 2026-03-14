@@ -5,14 +5,13 @@
 #include <iostream>
 
 BloomPass::BloomPass()
-  : RenderPass("resources/Shaders/vertex2D.glsl",
-               "resources/Shaders/bloomUpFragment.glsl")
-  , m_extractBright("resources/Shaders/vertex2D.glsl",
-                    "resources/Shaders/extractBrightFragment.glsl")
-  , m_downShader("resources/Shaders/vertex2D.glsl",
-                 "resources/Shaders/bloomDownFragment.glsl")
-  , m_bloomCombine("resources/Shaders/vertex2D.glsl",
-                   "resources/Shaders/bloomCombineFragment.glsl")
+  : RenderPass("resources/Shaders/quad.vert", "resources/Shaders/bloomUp.frag")
+  , m_extractBright("resources/Shaders/quad.vert",
+                    "resources/Shaders/extractBright.frag")
+  , m_downShader("resources/Shaders/quad.vert",
+                 "resources/Shaders/bloomDown.frag")
+  , m_bloomCombine("resources/Shaders/quad.vert",
+                   "resources/Shaders/bloomCombine.frag")
 {
 
   u32 fbos[3];

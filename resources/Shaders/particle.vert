@@ -3,6 +3,7 @@ precision highp float;
 
 layout (location = 0) in vec3 POSITION;
 layout (location = 1) in vec2 TEXCOORD_0;
+
 out vec2 texCoords;
 
 out vec4 particleColor;

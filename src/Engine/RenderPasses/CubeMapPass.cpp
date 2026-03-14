@@ -8,17 +8,16 @@
 #include "RenderUtil.hpp"
 
 CubeMapPass::CubeMapPass()
-  : RenderPass("resources/Shaders/backgroundVertex.glsl",
-               "resources/Shaders/backgroundFragment.glsl")
+  : RenderPass("resources/Shaders/background.vert",
+               "resources/Shaders/background.frag")
   , m_equirectangularToCubemapShader(
-      "resources/Shaders/cubeMapVertex.glsl",
-      "resources/Shaders/equirectangularToCubemapFragment.glsl")
-  , m_irradianceShader("resources/Shaders/cubeMapVertex.glsl",
-                       "resources/Shaders/irradianceFragment.glsl")
-  , m_prefilterShader("resources/Shaders/cubeMapVertex.glsl",
-                      "resources/Shaders/prefilterFragment.glsl")
-  , m_brdfShader("resources/Shaders/quadVertex.glsl",
-                 "resources/Shaders/brdfFragment.glsl")
+      "resources/Shaders/cubeMap.vert",
+      "resources/Shaders/equirectangularToCubemap.frag")
+  , m_irradianceShader("resources/Shaders/cubeMap.vert",
+                       "resources/Shaders/irradiance.frag")
+  , m_prefilterShader("resources/Shaders/cubeMap.vert",
+                      "resources/Shaders/prefilter.frag")
+  , m_brdfShader("resources/Shaders/quad.vert", "resources/Shaders/brdf.frag")
 {
 
   stbi_set_flip_vertically_on_load(true);

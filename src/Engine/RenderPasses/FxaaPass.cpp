@@ -2,8 +2,7 @@
 #include <RenderPasses/RenderUtil.hpp>
 
 FxaaPass::FxaaPass()
-  : RenderPass("resources/Shaders/vertex2D.glsl",
-               "resources/Shaders/FxaaFragment.glsl")
+  : RenderPass("resources/Shaders/quad.vert", "resources/Shaders/Fxaa.frag")
 {
   p_shaderProgram.setAttribBinding("POSITION");
   p_shaderProgram.setAttribBinding("TEXCOORD_0");

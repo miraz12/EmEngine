@@ -10,8 +10,7 @@
 #include <RenderPasses/FrameGraph.hpp>
 
 ShadowPass::ShadowPass()
-  : RenderPass("resources/Shaders/shadowVertex.glsl",
-               "resources/Shaders/shadowFragment.glsl")
+  : RenderPass("resources/Shaders/shadow.vert", "resources/Shaders/shadow.frag")
 {
 
   p_shaderProgram.use();

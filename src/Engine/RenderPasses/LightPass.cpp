@@ -7,8 +7,8 @@
 #include <ECS/ECSManager.hpp>
 
 LightPass::LightPass()
-  : RenderPass("resources/Shaders/lightVertex.glsl",
-               "resources/Shaders/pbrLightFragment.glsl")
+  : RenderPass("resources/Shaders/light.vert",
+               "resources/Shaders/pbrLight.frag")
 {
 
   p_shaderProgram.setUniformBinding("debugView");

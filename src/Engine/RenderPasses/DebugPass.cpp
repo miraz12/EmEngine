@@ -7,8 +7,8 @@
 #include <ECS/Systems/PhysicsSystem.hpp>
 
 DebugPass::DebugPass()
-  : RenderPass("resources/Shaders/debugLineVertex.glsl",
-               "resources/Shaders/debugLineFragment.glsl")
+  : RenderPass("resources/Shaders/debugLine.vert",
+               "resources/Shaders/debugLine.frag")
 {
   // Set up for 3D debug rendering
 
