@@ -71,6 +71,9 @@ GeometryPass::Init(FrameGraph& fGraph)
 void
 GeometryPass::Execute(ECSManager& eManager)
 {
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
+#endif
   glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
   glViewport(0, 0, p_width, p_height);
   glEnable(GL_DEPTH_TEST);
@@ -112,6 +115,9 @@ GeometryPass::Execute(ECSManager& eManager)
     g->m_grapObj->draw(p_shaderProgram);
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPopDebugGroup();
+#endif
 }
 
 void

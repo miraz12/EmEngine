@@ -71,7 +71,9 @@ BloomPass::BloomPass()
 void
 BloomPass::Execute(ECSManager& /* eManager */)
 {
-
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Bloom Pass");
+#endif
   p_fboManager.bindFBO("brightFBO");
   m_extractBright.use();
   p_textureManager.bindActivateTexture("cubeFrame", 0);
@@ -148,6 +150,9 @@ BloomPass::Execute(ECSManager& /* eManager */)
   glBindTexture(GL_TEXTURE_2D, m_mipChain.front().texture);
 
   Util::renderQuad();
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPopDebugGroup();
+#endif
 }
 
 void

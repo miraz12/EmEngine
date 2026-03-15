@@ -91,8 +91,9 @@ CubeMapPass::Init(FrameGraph& fGraph)
 void
 CubeMapPass::Execute(ECSManager& eManager)
 {
-  // render skybox (render as last to prevent overdraw)
-
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Background Pass");
+#endif
   glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
   glBlitFramebuffer(0,
@@ -143,6 +144,10 @@ CubeMapPass::Execute(ECSManager& eManager)
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_BLEND);
+
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPopDebugGroup();
+#endif
 }
 
 void

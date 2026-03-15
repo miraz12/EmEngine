@@ -10,10 +10,10 @@ inline glm::mat4
 calculateLightSpaceMatrix(const glm::vec3& lightDirection,
                           const glm::vec3& cameraPosition)
 {
-  constexpr float shadowBox = 25.0f;     // 50x50 unit coverage
-  constexpr float lightDistance = 30.0f; // Distance from frustum center
+  constexpr float shadowBox = 50.0f;     // 100x100 unit coverage
+  constexpr float lightDistance = 50.0f; // Distance from frustum center
   constexpr float nearPlane = 0.1f;
-  constexpr float farPlane = 60.0f;
+  constexpr float farPlane = 150.0f;
 
   glm::mat4 lightProjection = glm::ortho(
     -shadowBox, shadowBox, -shadowBox, shadowBox, nearPlane, farPlane);
@@ -21,8 +21,8 @@ calculateLightSpaceMatrix(const glm::vec3& lightDirection,
   // Normalize light direction to ensure consistent behavior
   glm::vec3 normLightDir = glm::normalize(lightDirection);
 
-  // Static frustum centered at world origin for debugging
-  glm::vec3 frustumCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+  // Center the shadow map frustum on the camera to ensure proper coverage
+  glm::vec3 frustumCenter = cameraPosition;
 
   // Position light along the negative light direction (opposite to where light
   // points)

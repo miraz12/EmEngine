@@ -82,6 +82,9 @@ ShadowPass::Init(FrameGraph& fGraph)
 void
 ShadowPass::Execute(ECSManager& eManager)
 {
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Shadow Pass");
+#endif
   p_fboManager.bindFBO("depthMapFbo");
   glViewport(0, 0, p_width, p_height);
   glEnable(GL_DEPTH_TEST);
@@ -143,6 +146,10 @@ ShadowPass::Execute(ECSManager& eManager)
   }
 
   glCullFace(GL_BACK);
+
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPopDebugGroup();
+#endif
 }
 
 void

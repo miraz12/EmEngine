@@ -75,6 +75,9 @@ LightPass::LightPass()
 void
 LightPass::Execute(ECSManager& eManager)
 {
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lightning Pass");
+#endif
   p_fboManager.bindFBO("lightFBO");
   glDisable(GL_DEPTH_TEST);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -182,6 +185,9 @@ LightPass::Execute(ECSManager& eManager)
     p_textureManager.bindActivateTexture(p_textures[i], i);
   }
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  glPopDebugGroup();
+#endif
 }
 
 void
