@@ -7,7 +7,9 @@ elseif(WIN32)
 endif()
 
 if(NOT DEFINED EMSCRIPTEN)
-
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib" CACHE PATH "" FORCE)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib" CACHE PATH "" FORCE)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib" CACHE PATH "" FORCE)
   find_package(OpenGL REQUIRED)
 
   set(GLFW_BUILD_DOCS
@@ -22,13 +24,11 @@ if(NOT DEFINED EMSCRIPTEN)
   add_subdirectory(glfw)
   # GLFW
   target_include_directories(exts SYSTEM INTERFACE glfw/include)
-  set_target_properties(
-    glfw
-    PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-               LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-               RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
 else()
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib/wasm" CACHE PATH "" FORCE)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib/wasm" CACHE PATH "" FORCE)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib/wasm" CACHE PATH "" FORCE)
   add_library(glfw INTERFACE)
   target_include_directories(glfw INTERFACE ${CMAKE_SYSROOT}/include)
 endif()
@@ -94,19 +94,9 @@ add_library(
   ImGuizmo/ImSequencer.h
   ImGuizmo/ImZoomSlider.h)
 target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
-set_target_properties(
-  imguizmo
-  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
 # FreeType
 add_subdirectory(freetype)
-set_target_properties(
-  freetype
-  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
 add_library(Freetype::Freetype ALIAS freetype)
 
@@ -118,16 +108,6 @@ set(RMLUI_BACKEND GLFW_GL3 CACHE BOOL "" FORCE)
 set(RMLUI_SHELL ON CACHE BOOL "" FORCE)
 
 add_subdirectory(RmlUi)
-set_target_properties(
-  rmlui_core
-  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
-set_target_properties(
-  rmlui_debugger
-  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
 
 # Configure RmlUi backend to use GLAD and disable MSAA
 target_compile_definitions(

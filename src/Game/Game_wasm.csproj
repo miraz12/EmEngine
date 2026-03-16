@@ -15,11 +15,12 @@
     <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*" />
     <PackageReference Include="runtime.$(NETCoreSdkPortableRuntimeIdentifier).Microsoft.DotNet.ILCompiler.LLVM" Version="10.0.0-*" />
     <DirectPInvoke Include="Engine" />
-    <NativeLibrary Include="../../resources/lib/libEngine.a"/>
-    <NativeLibrary Include="../../resources/lib/libimguizmo.a"/>
-    <NativeLibrary Include="../../resources/lib/librmlui.a"/>
-    <NativeLibrary Include="../../resources/lib/librmlui_debugger.a"/>
-    <NativeLibrary Include="../../resources/lib/libfreetyped.a"/>
+    <NativeLibrary Include="../../resources/lib/wasm/libEngine.a"/>
+    <NativeLibrary Include="../../resources/lib/wasm/libimguizmo.a"/>
+    <NativeLibrary Include="../../resources/lib/wasm/librmlui.a"/>
+    <NativeLibrary Include="../../resources/lib/wasm/librmlui_debugger.a"/>
+    <NativeLibrary Include="../../resources/lib/wasm/libfreetyped.a" Condition="'$(Configuration)' == 'Debug'"/>
+    <NativeLibrary Include="../../resources/lib/wasm/libfreetype.a" Condition="'$(Configuration)' == 'Release'"/>
     <LinkerArg Include="--bind -sFULL_ES2 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources  -sFORCE_FILESYSTEM"/>
   </ItemGroup>
 

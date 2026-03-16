@@ -11,6 +11,14 @@ if(DEFINED EMSCRIPTEN)
     ${ENGINE_FILES} $<TARGET_OBJECTS:yaml-cpp> $<TARGET_OBJECTS:imgui>
     $<TARGET_OBJECTS:BulletCollision> $<TARGET_OBJECTS:BulletDynamics>
     $<TARGET_OBJECTS:LinearMath>)
+
+  set_target_properties(
+    Engine
+    PROPERTIES
+      ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib/wasm"
+      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib/wasm"
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib/wasm"
+  )
 else()
   add_library(
     Engine STATIC
@@ -23,14 +31,18 @@ else()
     $<TARGET_OBJECTS:LinearMath>
     $<TARGET_OBJECTS:glad>
     $<TARGET_OBJECTS:glfw>)
+
+   set_target_properties(
+     Engine
+     PROPERTIES
+       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
+   )
 endif(DEFINED EMSCRIPTEN)
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set_target_properties(
-  Engine
-  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib"
-             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib")
+
 
 target_link_libraries(Engine PUBLIC exts)
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
