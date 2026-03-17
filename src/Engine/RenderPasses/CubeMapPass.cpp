@@ -20,6 +20,10 @@ CubeMapPass::CubeMapPass()
   , m_brdfShader("resources/Shaders/quad.vert", "resources/Shaders/brdf.frag")
 {
 
+#if !defined(EMSCRIPTEN)
+  glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+#endif
+
   stbi_set_flip_vertically_on_load(true);
   i32 width;
   i32 height;

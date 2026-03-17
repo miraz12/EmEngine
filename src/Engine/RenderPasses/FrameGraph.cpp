@@ -52,24 +52,9 @@ FrameGraph::draw(ECSManager& eManager)
   glViewport(0, 0, m_width, m_height);
 
   // Execute all render passes except debug pass first
-  for (size_t i = 0; i < m_renderPass.size(); i++) {
-
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-    if (i != static_cast<size_t>(PassId::kDebug)) {
-#endif
-      m_renderPass[i]->Execute(eManager);
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-    }
-#endif
+  for (const auto& renderPas : m_renderPass) {
+    renderPas->Execute(eManager);
   }
-
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  //  Execute debug pass last to ensure it's drawn on top
-  auto debugPassIndex = static_cast<size_t>(PassId::kDebug);
-  if (debugPassIndex < m_renderPass.size()) {
-    m_renderPass[debugPassIndex]->Execute(eManager);
-  }
-#endif
 }
 
 void
