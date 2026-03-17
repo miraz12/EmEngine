@@ -185,6 +185,13 @@ LightPass::Execute(ECSManager& eManager)
     p_textureManager.bindActivateTexture(p_textures[i], i);
   }
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+  // Clean up GL state
+  glBindVertexArray(0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   glPopDebugGroup();
 #endif

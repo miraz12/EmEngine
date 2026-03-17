@@ -141,9 +141,15 @@ CubeMapPass::Execute(ECSManager& eManager)
   glActiveTexture(GL_TEXTURE0);
   p_textureManager.bindTexture("envCubemap");
   Util::renderCube();
+
+  // Clean up GL state
   glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_BLEND);
+  glDepthFunc(GL_LESS);
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   glPopDebugGroup();

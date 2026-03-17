@@ -145,7 +145,8 @@ ShadowPass::Execute(ECSManager& eManager)
     g->m_grapObj->drawGeom(p_shaderProgram);
   }
 
-  glCullFace(GL_BACK);
+  // Clean up GL state
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   glPopDebugGroup();
