@@ -377,6 +377,9 @@ def main():
     parser.add_argument("--output-file",
                        default="EngineBindings.cs",
                        help="Output file name")
+    parser.add_argument("--verbose",
+                       default=False,
+                       help="Verbose printing")
     
     args = parser.parse_args()
     
@@ -387,21 +390,23 @@ def main():
     # Convert relative paths to absolute
     source_dirs = [str(project_root / src_dir) for src_dir in args.source_dirs]
     output_dir = project_root / args.output_dir
-    
-    print("EmEngine Binding Generator")
-    print(f"Scanning directories: {source_dirs}")
-    print(f"Output: {output_dir / args.output_file}")
-    print()
+    if args.verbose:
+        print("EmEngine Binding Generator")
+        print(f"Scanning directories: {source_dirs}")
+        print(f"Output: {output_dir / args.output_file}")
+        print()
     
     # Parse C++ files
     parser = CppParser()
     print("Parsing C++ files...")
     functions = parser.parse_files(source_dirs)
     
-    print(f"Found {len(functions)} extern C functions:")
-    for func in sorted(functions, key=lambda f: f.name):
-        print(f"  - {func.name} ({os.path.basename(func.file_path)}:{func.line_number})")
-    print()
+
+    if args.verbose:
+        print(f"Found {len(functions)} extern C functions:")
+        for func in sorted(functions, key=lambda f: f.name):
+                print(f"  - {func.name} ({os.path.basename(func.file_path)}:{func.line_number})")
+        print()
     
     # Generate C# code
     generator = CSharpGenerator(args.namespace)
