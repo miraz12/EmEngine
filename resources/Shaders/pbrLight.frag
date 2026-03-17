@@ -1,7 +1,9 @@
 #version 300 es
 precision highp float;
+precision highp sampler2DArrayShadow;
 
 #define NR_POINT_LIGHTS 10
+#define NUM_CASCADES 4
 
 struct PointLight
 {
@@ -20,7 +22,7 @@ struct DirectionalLight
 };
 
 uniform int debugView;
-uniform sampler2D depthMap; // shadow map
+uniform sampler2DArrayShadow depthMapArray; // CSM shadow map array
 uniform sampler2D gPositionAo;
 uniform sampler2D gNormalMetal;
 uniform sampler2D gAlbedoSpecRough;
@@ -30,10 +32,18 @@ uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
 uniform vec3 camPos;
+uniform mat4 viewMatrix;
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform int nrOfPointLights;
-uniform mat4 lightSpaceMatrix;
+
+// Cascade data from UBO (binding point 0)
+layout(std140) uniform CascadeData
+{
+  mat4 lightSpaceMatrices[NUM_CASCADES];
+  vec4 cascadeSplits; // x, y, z used for 4 cascades
+  ivec4 config;       // x: numCascades, y: shadowMapSize
+};
 
 in vec2 texCoords;
 out vec4 FragColor;
@@ -91,38 +101,87 @@ fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
                 pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+// Sample shadow from a specific cascade
 float
-ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
+SampleCascadeShadow(vec3 fragPos,
+                    vec3 normal,
+                    vec3 lightDir,
+                    int cascadeIndex)
 {
-  // perform perspective divide
+  // Transform to light space for selected cascade
+  vec4 fragPosLightSpace =
+    lightSpaceMatrices[cascadeIndex] * vec4(fragPos, 1.0);
   vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-  // transform to [0,1] range
   projCoords = projCoords * 0.5 + 0.5;
 
-  // Return no shadow if outside shadow map bounds
+  // Out of bounds check - return 1.0 (fully lit) if outside shadow map coverage
   if (projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 ||
-      projCoords.y > 1.0)
-    return 0.0;
+      projCoords.y > 1.0 || projCoords.z > 1.0) {
+    return 1.0;
+  }
 
-  // get closest depth value from light's perspective (using [0,1] range
-  // fragPosLight as coords)
-  float closestDepth = texture(depthMap, projCoords.xy).r;
-  // get depth of current fragment from light's perspective
-  float currentDepth = projCoords.z;
-  // Adaptive bias based on surface angle to light
+  // Adaptive bias
   float bias = max(0.005 * (1.0 - dot(normal, -lightDir)), 0.002);
+  float currentDepth = projCoords.z - bias;
 
-  // PCF (Percentage Closer Filtering) for soft shadow edges
+  // PCF with hardware shadow sampling
   float shadow = 0.0;
-  vec2 texelSize = 1.0 / vec2(textureSize(depthMap, 0));
+  vec2 texelSize = 1.0 / vec2(float(config.y)); // shadowMapSize
+
   for (int x = -1; x <= 1; ++x) {
     for (int y = -1; y <= 1; ++y) {
-      float pcfDepth =
-        texture(depthMap, projCoords.xy + vec2(x, y) * texelSize).r;
-      shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+      vec2 offset = vec2(x, y) * texelSize;
+      // Hardware PCF via shadow2DArray (compare happens in hardware)
+      shadow += texture(depthMapArray,
+                        vec4(projCoords.xy + offset,
+                             float(cascadeIndex),
+                             currentDepth));
     }
   }
   shadow /= 9.0;
+
+  return shadow;
+}
+
+float
+ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
+{
+  // Calculate view-space depth for cascade selection
+  vec4 viewPos = viewMatrix * vec4(fragPos, 1.0);
+  float viewDepth = abs(viewPos.z);
+
+  // Select cascade based on view depth
+  int cascadeIndex = 0;
+  if (viewDepth > cascadeSplits.z) {
+    cascadeIndex = 3;
+  } else if (viewDepth > cascadeSplits.y) {
+    cascadeIndex = 2;
+  } else if (viewDepth > cascadeSplits.x) {
+    cascadeIndex = 1;
+  }
+
+  // Sample shadow from selected cascade
+  float shadow = SampleCascadeShadow(fragPos, normal, lightDir, cascadeIndex);
+
+  // Cascade blending (10% overlap region)
+  if (cascadeIndex < 3) {
+    float currentSplit = (cascadeIndex == 0)   ? 0.0
+                         : (cascadeIndex == 1) ? cascadeSplits.x
+                         : (cascadeIndex == 2) ? cascadeSplits.y
+                                               : cascadeSplits.z;
+    float nextSplit = (cascadeIndex == 0)   ? cascadeSplits.x
+                      : (cascadeIndex == 1) ? cascadeSplits.y
+                      : (cascadeIndex == 2) ? cascadeSplits.z
+                                            : cascadeSplits.w;
+    float blendRange = (nextSplit - currentSplit) * 0.1; // 10% blend zone
+    float blendFactor = smoothstep(nextSplit - blendRange, nextSplit, viewDepth);
+
+    if (blendFactor > 0.001) {
+      float shadowNext =
+        SampleCascadeShadow(fragPos, normal, lightDir, cascadeIndex + 1);
+      shadow = mix(shadow, shadowNext, blendFactor);
+    }
+  }
 
   return shadow;
 }
@@ -156,11 +215,9 @@ CalcDirectionalLightPBR(DirectionalLight light,
     4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0), 0.00001);
   vec3 specular = numerator / denominator;
 
-  // Direct shadow calculation without normal offset (for debugging)
+  // Calculate shadow with CSM
   float NdotL = max(dot(normal, L), 0.0);
-  vec4 lightPos = lightSpaceMatrix * vec4(fragPos, 1.0);
-  float shadowFactor =
-    1.0 - ShadowCalculation(lightPos, normal, light.direction);
+  float shadowFactor = ShadowCalculation(fragPos, normal, light.direction);
 
   return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor;
 }
@@ -281,5 +338,20 @@ main()
     FragColor = vec4(vec3(metallic), 1.0);
   } else if (debugView == 6) {
     FragColor = vec4(vec3(roughness), 1.0);
+  } else if (debugView == 7) {
+    // Cascade visualization
+    vec4 viewPos = viewMatrix * vec4(fragPos, 1.0);
+    float viewDepth = abs(viewPos.z);
+
+    vec3 cascadeColor = vec3(1.0, 0.0, 0.0); // Red = cascade 0
+    if (viewDepth > cascadeSplits.z) {
+      cascadeColor = vec3(0.0, 1.0, 1.0); // Cyan = cascade 3
+    } else if (viewDepth > cascadeSplits.y) {
+      cascadeColor = vec3(0.0, 0.0, 1.0); // Blue = cascade 2
+    } else if (viewDepth > cascadeSplits.x) {
+      cascadeColor = vec3(0.0, 1.0, 0.0); // Green = cascade 1
+    }
+
+    FragColor = vec4(cascadeColor, 1.0);
   }
 }

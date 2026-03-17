@@ -18,16 +18,20 @@ LightPass::LightPass()
   p_shaderProgram.setUniformBinding("gEmissive");
   p_shaderProgram.setUniformBinding("nrOfPointLights");
   p_shaderProgram.setUniformBinding("camPos");
+  p_shaderProgram.setUniformBinding("viewMatrix");
   p_shaderProgram.setUniformBinding("directionalLight.direction");
   p_shaderProgram.setUniformBinding("directionalLight.color");
   p_shaderProgram.setUniformBinding("directionalLight.intensity");
-  p_shaderProgram.setUniformBinding("lightSpaceMatrix");
-  p_shaderProgram.setUniformBinding("depthMap");
+  p_shaderProgram.setUniformBinding("depthMapArray");
   p_shaderProgram.setUniformBinding("irradianceMap");
   p_shaderProgram.setUniformBinding("prefilterMap");
   p_shaderProgram.setUniformBinding("brdfLUT");
 
   p_shaderProgram.use();
+
+  // Bind UBO block for cascade data (binding point 0)
+  u32 blockIndex = glGetUniformBlockIndex(p_shaderProgram.getId(), "CascadeData");
+  glUniformBlockBinding(p_shaderProgram.getId(), blockIndex, 0);
 
   glGenFramebuffers(1, &m_lightBuffer);
   glGenRenderbuffers(1, &m_rbo);
@@ -99,13 +103,6 @@ LightPass::Execute(ECSManager& eManager)
     switch (g->getType()) {
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
-        glm::mat4 lightSpaceMatrix = LightingUtil::calculateLightSpaceMatrix(
-          light.direction, cam->m_position);
-        glUniformMatrix4fv(
-          p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
-          1,
-          GL_FALSE,
-          glm::value_ptr(lightSpaceMatrix));
 
         glUniform3fv(
           p_shaderProgram.getUniformLocation("directionalLight.direction"),
@@ -179,6 +176,11 @@ LightPass::Execute(ECSManager& eManager)
   glUniform3fv(p_shaderProgram.getUniformLocation("camPos"),
                1,
                glm::value_ptr(cam->m_position));
+
+  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("viewMatrix"),
+                     1,
+                     GL_FALSE,
+                     glm::value_ptr(cam->m_viewMatrix));
 
   glBindVertexArray(quadVAO);
   for (size_t i = 0; i < p_textures.size(); i++) {

@@ -48,16 +48,19 @@ GUI::renderGUI()
     //                  ImVec2(0, 80.f));
 
     const std::vector<std::string> debugNamesInputs = {
-      "none",     "Base color", "Normal",   "Occlusion",
-      "Emissive", "Metallic",   "Roughness"
+      "none",     "Base color", "Normal",    "Occlusion",
+      "Emissive", "Metallic",   "Roughness", "Shadows"
     };
     std::vector<const char*> charitems;
     charitems.reserve(debugNamesInputs.size());
     for (size_t i = 0; i < debugNamesInputs.size(); i++) {
       charitems.push_back(debugNamesInputs[i].c_str());
     }
-    ImGui::Combo(
-      "views", &ECSManager::getInstance().getDebugView(), &charitems[0], 7, 7);
+    ImGui::Combo("views",
+                 &ECSManager::getInstance().getDebugView(),
+                 &charitems[0],
+                 debugNamesInputs.size(),
+                 debugNamesInputs.size());
   }
 
   Entity en = ECSManager::getInstance().getPickedEntity();

@@ -34,32 +34,45 @@ ShadowPass::ShadowPass()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+  // Create UBO for cascade data
+  glGenBuffers(1, &m_cascadeUBO);
+  glBindBuffer(GL_UNIFORM_BUFFER, m_cascadeUBO);
+  // Allocate space for cascade UBO (4 mat4 + 1 vec4 + 1 ivec4 = 288 bytes)
+  glBufferData(GL_UNIFORM_BUFFER, 288, nullptr, GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_cascadeUBO);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
   u32 depthMapFbo;
   glGenFramebuffers(1, &depthMapFbo);
   p_fboManager.setFBO("depthMapFbo", depthMapFbo);
 
-  u32 depthMap;
-  glGenTextures(1, &depthMap);
-  p_textureManager.setTexture("depthMap", depthMap);
+  u32 depthMapArray;
+  glGenTextures(1, &depthMapArray);
+  p_textureManager.setTexture("depthMapArray", depthMapArray);
 
   p_fboManager.bindFBO("depthMapFbo");
-  p_textureManager.bindTexture("depthMap");
-  glTexImage2D(GL_TEXTURE_2D,
+  glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
+  glTexImage3D(GL_TEXTURE_2D_ARRAY,
                0,
                GL_DEPTH_COMPONENT24,
-               p_width,
-               p_height,
+               SHADOW_MAP_SIZE,
+               SHADOW_MAP_SIZE,
+               NUM_CASCADES,
                0,
                GL_DEPTH_COMPONENT,
                GL_UNSIGNED_INT,
-               0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+               nullptr);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE,
+                  GL_COMPARE_REF_TO_TEXTURE);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+  // Attach first cascade layer for initial setup (will be rebound per cascade)
+  glFramebufferTextureLayer(
+    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMapArray, 0, 0);
   GLuint buffer = GL_NONE; // Emscripten strangeness
   glDrawBuffers(1, &buffer);
   glReadBuffer(GL_NONE);
@@ -76,73 +89,113 @@ void
 ShadowPass::Init(FrameGraph& fGraph)
 {
   fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture(
-    "depthMap");
+    "depthMapArray");
 }
 
 void
 ShadowPass::Execute(ECSManager& eManager)
 {
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Shadow Pass");
+  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Shadow Pass CSM");
 #endif
+
+  // Get camera for cascade calculation
+  auto cam =
+    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+
+  // Get directional light
+  glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
+  std::vector<Entity> lightView = eManager.view<LightingComponent>();
+  for (auto lightEntity : lightView) {
+    std::shared_ptr<LightingComponent> lightComp =
+      eManager.getComponent<LightingComponent>(lightEntity);
+
+    if (lightComp->getType() == LightingComponent::TYPE::DIRECTIONAL) {
+      auto& light = static_cast<DirectionalLight&>(lightComp->getBaseLight());
+      lightDirection = light.direction;
+      break;
+    }
+  }
+
+  // Calculate cascade splits and matrices
+  m_cascadeConfig.calculateSplitDistances(cam->m_near, cam->m_far, 0.5f);
+  m_cascadeConfig.calculateCascadeMatrices(
+    lightDirection, cam->m_position, cam->m_viewMatrix, cam->m_ProjectionMatrix);
+
+  // Update UBO with cascade data
+  struct CascadeUBO
+  {
+    glm::mat4 lightSpaceMatrices[NUM_CASCADES];
+    glm::vec4 cascadeSplits;
+    glm::ivec4 config;
+  } uboData;
+
+  std::copy(std::begin(m_cascadeConfig.lightSpaceMatrices),
+            std::end(m_cascadeConfig.lightSpaceMatrices),
+            std::begin(uboData.lightSpaceMatrices));
+
+  uboData.cascadeSplits = glm::vec4(m_cascadeConfig.cascadeSplits[0],
+                                      m_cascadeConfig.cascadeSplits[1],
+                                      m_cascadeConfig.cascadeSplits[2],
+                                      m_cascadeConfig.cascadeSplits[3]);
+  uboData.config = glm::ivec4(NUM_CASCADES, SHADOW_MAP_SIZE, 0, 0);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, m_cascadeUBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CascadeUBO), &uboData);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+  // Setup render state
   p_fboManager.bindFBO("depthMapFbo");
-  glViewport(0, 0, p_width, p_height);
+  glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   glDepthMask(GL_TRUE);
-  glClearDepthf(1.0f);
-  glClear(GL_DEPTH_BUFFER_BIT);
-  // Use back-face culling (normal rendering) for shadow map
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
   p_shaderProgram.use();
 
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  u32 depthMapArray = p_textureManager.bindTexture("depthMapArray");
 
-  std::vector<Entity> view = eManager.view<LightingComponent>();
-  for (auto e : view) {
-    std::shared_ptr<LightingComponent> g =
-      eManager.getComponent<LightingComponent>(e);
+  // Render each cascade
+  for (u32 cascade = 0; cascade < NUM_CASCADES; ++cascade) {
+    // Attach this cascade's layer to the framebuffer
+    glFramebufferTextureLayer(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMapArray, 0, cascade);
 
-    switch (g->getType()) {
-      case LightingComponent::TYPE::DIRECTIONAL: {
-        auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
-        glm::mat4 lightSpaceMatrix = LightingUtil::calculateLightSpaceMatrix(
-          light.direction, cam->m_position);
-        glUniformMatrix4fv(
-          p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
-          1,
-          GL_FALSE,
-          glm::value_ptr(lightSpaceMatrix));
-        break;
+    glClearDepthf(1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // Set light space matrix for this cascade
+    glUniformMatrix4fv(
+      p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
+      1,
+      GL_FALSE,
+      glm::value_ptr(m_cascadeConfig.lightSpaceMatrices[cascade]));
+
+    // Render all shadow-casting geometry
+    std::vector<Entity> gView = eManager.view<GraphicsComponent>();
+    for (auto& entity : gView) {
+      std::shared_ptr<PositionComponent> posComp =
+        eManager.getComponent<PositionComponent>(entity);
+
+      if (posComp) {
+        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
+                           1,
+                           GL_FALSE,
+                           glm::value_ptr(posComp->model));
+      } else {
+        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
+                           1,
+                           GL_FALSE,
+                           glm::value_ptr(glm::identity<glm::mat4>()));
       }
-      default:
-        break;
+
+      std::shared_ptr<GraphicsComponent> grapComp =
+        eManager.getComponent<GraphicsComponent>(entity);
+
+      grapComp->m_grapObj->drawGeom(p_shaderProgram);
     }
-  }
-
-  std::vector<Entity> gView = eManager.view<GraphicsComponent>();
-  for (auto& e : gView) {
-    std::shared_ptr<PositionComponent> p =
-      eManager.getComponent<PositionComponent>(e);
-    if (p) {
-      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(p->model));
-    } else {
-      glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(glm::identity<glm::mat4>()));
-    }
-
-    std::shared_ptr<GraphicsComponent> g =
-      eManager.getComponent<GraphicsComponent>(e);
-
-    g->m_grapObj->drawGeom(p_shaderProgram);
   }
 
   // Clean up GL state
@@ -159,17 +212,20 @@ ShadowPass::setViewport(u32 w, u32 h)
   p_width = w;
   p_height = h;
 
+  // Note: Shadow map resolution is fixed at SHADOW_MAP_SIZE, not viewport size
   p_fboManager.bindFBO("depthMapFbo");
-  p_textureManager.bindTexture("depthMap");
-  glTexImage2D(GL_TEXTURE_2D,
+  u32 depthMapArray = p_textureManager.bindTexture("depthMapArray");
+  glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
+  glTexImage3D(GL_TEXTURE_2D_ARRAY,
                0,
                GL_DEPTH_COMPONENT24,
-               p_width,
-               p_height,
+               SHADOW_MAP_SIZE,
+               SHADOW_MAP_SIZE,
+               NUM_CASCADES,
                0,
                GL_DEPTH_COMPONENT,
                GL_UNSIGNED_INT,
-               0);
+               nullptr);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
