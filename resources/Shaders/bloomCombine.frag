@@ -1,4 +1,8 @@
 #version 300 es
+// =============================================================================
+// Shader: bloomCombine.frag
+// Purpose: Blend bloom with scene, apply tonemapping and gamma correction
+// =============================================================================
 precision highp float;
 
 out vec4 FragColor;
@@ -9,17 +13,22 @@ uniform sampler2D scene;
 uniform sampler2D bloomBlur;
 uniform float exposure;
 
-void main() {
-    // to bloom or not to bloom
-    vec3 result = vec3(0.0);
-    vec3 hdrColor = texture(scene, texCoords).rgb;
-    vec3 bloomColor = texture(bloomBlur, texCoords).rgb;
-    result = mix(hdrColor, bloomColor, 0.04f);
-    // tone mapping
-    result = vec3(1.0) - exp(-result * exposure);
-    // gamma correction
-    const float gamma = 2.2;
-    result = pow(result, vec3(1.0 / gamma));
+void
+main()
+{
+  vec3 hdrColor = texture(scene, texCoords).rgb;
+  vec3 bloomColor = texture(bloomBlur, texCoords).rgb;
 
-    FragColor = vec4(result, 1.0);
+  // Blend bloom with scene
+  vec3 result = mix(hdrColor, bloomColor, 0.04);
+
+  // Apply exposure and tonemapping
+  result *= exposure;
+  result = vec3(1.0) - exp(-result);
+
+  // Gamma correction
+  const float gamma = 2.2;
+  result = pow(result, vec3(1.0 / gamma));
+
+  FragColor = vec4(result, 1.0);
 }

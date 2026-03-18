@@ -1,13 +1,16 @@
 #version 300 es
+// =============================================================================
+// Shader: debugLine.frag
+// Purpose: Render unlit colored debug lines
+// =============================================================================
 precision highp float;
 
-// Input from vertex shader
 in vec3 fragColor;
 
-// Output color
 out vec4 FragColor;
 
-void main() {
-    // Just use the color passed from the vertex shader
-    FragColor = vec4(fragColor, 1.0);
+void
+main()
+{
+  FragColor = vec4(fragColor, 1.0);
 }

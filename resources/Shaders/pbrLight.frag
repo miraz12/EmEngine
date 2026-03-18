@@ -1,19 +1,29 @@
 #version 300 es
+// =============================================================================
+// Shader: pbrLight.frag
+// Purpose: Physically-based rendering with Cook-Torrance BRDF, cascaded shadow
+// mapping, and image-based lighting
+// =============================================================================
 precision highp float;
 precision highp sampler2DArrayShadow;
 
 #define NR_POINT_LIGHTS 10
 #define NUM_CASCADES 4
 
+// ============================================================
+// LIGHT STRUCTURES
+// ============================================================
+
 struct PointLight
 {
   vec3 color;
   vec3 position;
-  float constant;
-  float linear;
-  float quadratic;
-  float radius;
+  float constant;  // Attenuation constant (unused - using inverse square)
+  float linear;    // Attenuation linear (unused - using inverse square)
+  float quadratic; // Attenuation quadratic (unused - using inverse square)
+  float radius;    // Culling radius
 };
+
 struct DirectionalLight
 {
   vec3 color;
@@ -21,16 +31,30 @@ struct DirectionalLight
   float intensity;
 };
 
-uniform int debugView;
-uniform sampler2DArrayShadow depthMapArray; // CSM shadow map array
-uniform sampler2D gPositionAo;
-uniform sampler2D gNormalMetal;
-uniform sampler2D gAlbedoSpecRough;
-uniform sampler2D gEmissive;
-uniform samplerCube irradianceMap;
-uniform samplerCube prefilterMap;
-uniform sampler2D brdfLUT;
+// ============================================================
+// UNIFORMS
+// ============================================================
 
+// Debug visualization mode (0=normal, 1=albedo, 2=normal, 3=AO, 4=emissive,
+// 5=metallic, 6=roughness, 7=cascades)
+uniform int debugView;
+
+// G-Buffer inputs (from Geometry Pass)
+uniform sampler2D gPositionAo;      // RGB: world position, A: ambient occlusion
+uniform sampler2D gNormalMetal;     // RGB: world normal, A: metallic
+uniform sampler2D gAlbedoSpecRough; // RGB: albedo, A: roughness
+uniform sampler2D gEmissive;        // RGB: emissive color, A: unused
+
+// Shadow mapping
+uniform sampler2DArrayShadow depthMapArray; // CSM shadow map array (4 cascades)
+
+// Image-Based Lighting (IBL) maps
+uniform samplerCube irradianceMap; // Diffuse irradiance cubemap
+uniform samplerCube
+  prefilterMap; // Specular pre-filtered environment map (5 mip levels)
+uniform sampler2D brdfLUT; // BRDF integration lookup table
+
+// Scene data
 uniform vec3 camPos;
 uniform mat4 viewMatrix;
 uniform DirectionalLight directionalLight;
@@ -49,7 +73,16 @@ in vec2 texCoords;
 out vec4 FragColor;
 
 const float PI = 3.14159265359;
+const float EPSILON = 0.0001;
 
+// ============================================================
+// SECTION: Cook-Torrance BRDF Components
+// ============================================================
+
+// Trowbridge-Reitz GGX normal distribution function
+// Describes the distribution of microfacet normals for specular highlights
+// Params: normal (surface), H (half-vector), roughness [0=smooth, 1=rough]
+// Returns: NDF value controlling specular highlight shape
 float
 DistributionGGX(vec3 normal, vec3 H, float roughness)
 {
@@ -65,6 +98,11 @@ DistributionGGX(vec3 normal, vec3 H, float roughness)
   return nom / denom;
 }
 
+// Schlick-GGX geometry function for direct lighting
+// Models self-shadowing/masking of microfacets
+// Uses k=(r+1)²/8 for direct lighting (differs from IBL version)
+// Params: NdotV (N·V dot product), roughness
+// Returns: Geometry occlusion factor [0-1]
 float
 GeometrySchlickGGX(float NdotV, float roughness)
 {
@@ -77,6 +115,10 @@ GeometrySchlickGGX(float NdotV, float roughness)
   return nom / denom;
 }
 
+// Smith's geometry function combining view and light directions
+// G = G₁(v) × G₁(l) where G₁ uses Schlick-GGX
+// Params: normal, viewDir, L (light direction), roughness
+// Returns: Combined geometry occlusion factor
 float
 GeometrySmith(vec3 normal, vec3 viewDir, vec3 L, float roughness)
 {
@@ -88,12 +130,22 @@ GeometrySmith(vec3 normal, vec3 viewDir, vec3 L, float roughness)
   return ggx1 * ggx2;
 }
 
+// Fresnel-Schlick approximation
+// Describes how light reflects at different angles (Fresnel effect)
+// Uses Schlick's approximation: F₀ + (1-F₀)(1-cos θ)⁵
+// Params: cosTheta (H·V), specularColor (F₀ reflectance at normal incidence)
+// Returns: Fresnel reflectance [0-1 per channel]
 vec3
 fresnelSchlick(float cosTheta, vec3 specularColor)
 {
   return specularColor + (1.0 - specularColor) * pow(1.0 - cosTheta, 5.0);
 }
 
+// Fresnel-Schlick with roughness for IBL
+// Modified Fresnel that accounts for surface roughness
+// Rougher surfaces have less pronounced Fresnel effect
+// Params: cosTheta (N·V), F₀, roughness
+// Returns: Roughness-modulated Fresnel reflectance
 vec3
 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
@@ -101,12 +153,16 @@ fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
                 pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-// Sample shadow from a specific cascade
+// ============================================================
+// SECTION: Cascaded Shadow Mapping (CSM)
+// ============================================================
+
+// Sample shadow from a specific CSM cascade with PCF filtering
+// Uses 3×3 PCF (Percentage-Closer Filtering) with hardware shadow comparison
+// Params: fragPos (world position), normal, lightDir, cascadeIndex [0-3]
+// Returns: Shadow factor [0=fully shadowed, 1=fully lit]
 float
-SampleCascadeShadow(vec3 fragPos,
-                    vec3 normal,
-                    vec3 lightDir,
-                    int cascadeIndex)
+SampleCascadeShadow(vec3 fragPos, vec3 normal, vec3 lightDir, int cascadeIndex)
 {
   // Transform to light space for selected cascade
   vec4 fragPosLightSpace =
@@ -132,10 +188,9 @@ SampleCascadeShadow(vec3 fragPos,
     for (int y = -1; y <= 1; ++y) {
       vec2 offset = vec2(x, y) * texelSize;
       // Hardware PCF via shadow2DArray (compare happens in hardware)
-      shadow += texture(depthMapArray,
-                        vec4(projCoords.xy + offset,
-                             float(cascadeIndex),
-                             currentDepth));
+      shadow += texture(
+        depthMapArray,
+        vec4(projCoords.xy + offset, float(cascadeIndex), currentDepth));
     }
   }
   shadow /= 9.0;
@@ -143,6 +198,11 @@ SampleCascadeShadow(vec3 fragPos,
   return shadow;
 }
 
+// Main shadow calculation with cascade selection and blending
+// Selects appropriate cascade based on view-space depth
+// Blends between cascades in 10% overlap regions for smooth transitions
+// Params: fragPos (world position), normal, lightDir
+// Returns: Final shadow factor with cascade blending
 float
 ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
 {
@@ -163,7 +223,7 @@ ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
   // Sample shadow from selected cascade
   float shadow = SampleCascadeShadow(fragPos, normal, lightDir, cascadeIndex);
 
-  // Cascade blending (10% overlap region)
+  // Cascade blending
   if (cascadeIndex < 3) {
     float currentSplit = (cascadeIndex == 0)   ? 0.0
                          : (cascadeIndex == 1) ? cascadeSplits.x
@@ -173,8 +233,9 @@ ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
                       : (cascadeIndex == 1) ? cascadeSplits.y
                       : (cascadeIndex == 2) ? cascadeSplits.z
                                             : cascadeSplits.w;
-    float blendRange = (nextSplit - currentSplit) * 0.1; // 10% blend zone
-    float blendFactor = smoothstep(nextSplit - blendRange, nextSplit, viewDepth);
+    float blendRange = (nextSplit - currentSplit) * 0.1;
+    float blendFactor =
+      smoothstep(nextSplit - blendRange, nextSplit, viewDepth);
 
     if (blendFactor > 0.001) {
       float shadowNext =
@@ -186,6 +247,15 @@ ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
   return shadow;
 }
 
+// ============================================================
+// SECTION: PBR Lighting Calculations
+// ============================================================
+
+// Calculate PBR lighting contribution from directional light
+// Applies Cook-Torrance BRDF with CSM shadows
+// Formula: (kD·albedo/π + specular)·radiance·(N·L)·shadow
+// Params: light, fragPos, viewDir, normal, roughness, metallic, specularColor,
+// albedo Returns: RGB lighting contribution
 vec3
 CalcDirectionalLightPBR(DirectionalLight light,
                         vec3 fragPos,
@@ -222,6 +292,11 @@ CalcDirectionalLightPBR(DirectionalLight light,
   return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor;
 }
 
+// Calculate PBR lighting contribution from point light
+// Applies Cook-Torrance BRDF with inverse-square attenuation
+// No shadows for point lights (only directional light has CSM)
+// Params: light, fragPos, viewDir, normal, roughness, metallic, specularColor,
+// albedo Returns: RGB lighting contribution
 vec3
 CalcPointLightPBR(PointLight light,
                   vec3 fragPos,
@@ -262,18 +337,25 @@ CalcPointLightPBR(PointLight light,
 void
 main()
 {
-  vec3 fragPos = texture(gPositionAo, texCoords).rgb;
-  vec3 normal = texture(gNormalMetal, texCoords).rgb;
-  // vec3 albedo = texture(gAlbedoSpecRough, texCoords).rgb;
-  vec3 albedo = pow(texture(gAlbedoSpecRough, texCoords).rgb, vec3(2.2));
+  // Cache G-buffer samples (single vec4 read instead of separate RGB and A
+  // reads)
+  vec4 positionAo = texture(gPositionAo, texCoords);
+  vec4 normalMetal = texture(gNormalMetal, texCoords);
+  vec4 albedoSpecRough = texture(gAlbedoSpecRough, texCoords);
+
+  vec3 fragPos = positionAo.rgb;
+  vec3 normal = normalMetal.rgb;
+  vec3 albedo = pow(albedoSpecRough.rgb, vec3(2.2)); // sRGB to linear
   vec3 emissive = texture(gEmissive, texCoords).rgb;
-  float ao = texture(gPositionAo, texCoords).a;
-  float metallic = texture(gNormalMetal, texCoords).a;
-  float roughness = texture(gAlbedoSpecRough, texCoords).a;
+  float ao = positionAo.a;
+  float metallic = normalMetal.a;
+  float roughness = albedoSpecRough.a;
 
   vec3 viewDir = normalize(camPos - fragPos);
   vec3 reflection = reflect(-viewDir, normal);
 
+  // Cache commonly used values
+  float NdotV = max(dot(normal, viewDir), 0.0);
   vec3 specularColor = mix(vec3(0.04), albedo, metallic);
 
   // reflectance equation
@@ -302,8 +384,7 @@ main()
   }
 
   // ambient lighting (we now use IBL as the ambient term)
-  vec3 F = fresnelSchlickRoughness(
-    max(dot(normal, viewDir), 0.0), specularColor, roughness);
+  vec3 F = fresnelSchlickRoughness(NdotV, specularColor, roughness);
   vec3 kS = F;
   vec3 kD = 1.0 - kS;
   kD *= 1.0 - metallic;
@@ -316,8 +397,7 @@ main()
   const float MAX_REFLECTION_LOD = 4.0;
   vec3 prefilteredColor =
     textureLod(prefilterMap, reflection, roughness * MAX_REFLECTION_LOD).rgb;
-  vec2 brdf =
-    texture(brdfLUT, vec2(max(dot(normal, viewDir), 0.0), roughness)).rg;
+  vec2 brdf = texture(brdfLUT, vec2(NdotV, roughness)).rg;
   vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
   vec3 ambient = (kD * diffuse + specular) * ao;

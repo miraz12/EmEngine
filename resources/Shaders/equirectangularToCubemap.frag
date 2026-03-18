@@ -1,4 +1,9 @@
 #version 300 es
+// =============================================================================
+// Shader: equirectangularToCubemap.frag
+// Purpose: Convert equirectangular HDR panorama to cubemap format
+// Method: Inverse spherical mapping (Cartesian → spherical → UV)
+// =============================================================================
 precision highp float;
 
 out vec4 FragColor;
@@ -7,18 +12,24 @@ in vec3 worldPos;
 uniform sampler2D equirectangularMap;
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
-vec2 SampleSphericalMap(vec3 v)
+
+vec2
+SampleSphericalMap(vec3 v)
 {
-    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
-    uv *= invAtan;
-    uv += 0.5;
-    return uv;
+  vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
+  uv *= invAtan;
+  uv += 0.5;
+  return uv;
 }
 
-void main()
+// =============================================================================
+// MAIN
+// =============================================================================
+void
+main()
 {
-    vec2 uv = SampleSphericalMap(normalize(worldPos));
-    vec3 color = texture(equirectangularMap, uv).rgb;
+  vec2 uv = SampleSphericalMap(normalize(worldPos));
+  vec3 color = texture(equirectangularMap, uv).rgb;
 
-    FragColor = vec4(color, 1.0);
+  FragColor = vec4(color, 1.0);
 }
