@@ -176,8 +176,9 @@ SampleCascadeShadow(vec3 fragPos, vec3 normal, vec3 lightDir, int cascadeIndex)
     return 1.0;
   }
 
-  // Adaptive bias
-  float bias = max(0.005 * (1.0 - dot(normal, -lightDir)), 0.002);
+  // Adaptive bias - scale with cascade index to account for precision differences
+  float cascadeBiasScale = 1.0 + float(cascadeIndex) * 0.5;
+  float bias = max(0.005 * (1.0 - dot(normal, -lightDir)), 0.002) * cascadeBiasScale;
   float currentDepth = projCoords.z - bias;
 
   // PCF with hardware shadow sampling
@@ -223,7 +224,7 @@ ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
   // Sample shadow from selected cascade
   float shadow = SampleCascadeShadow(fragPos, normal, lightDir, cascadeIndex);
 
-  // Cascade blending
+  // Cascade blending - take minimum to avoid brightening artifacts
   if (cascadeIndex < 3) {
     float currentSplit = (cascadeIndex == 0)   ? 0.0
                          : (cascadeIndex == 1) ? cascadeSplits.x
@@ -233,14 +234,15 @@ ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
                       : (cascadeIndex == 1) ? cascadeSplits.y
                       : (cascadeIndex == 2) ? cascadeSplits.z
                                             : cascadeSplits.w;
-    float blendRange = (nextSplit - currentSplit) * 0.1;
+    float blendRange = (nextSplit - currentSplit) * 0.05;
     float blendFactor =
       smoothstep(nextSplit - blendRange, nextSplit, viewDepth);
 
     if (blendFactor > 0.001) {
       float shadowNext =
         SampleCascadeShadow(fragPos, normal, lightDir, cascadeIndex + 1);
-      shadow = mix(shadow, shadowNext, blendFactor);
+      // Take minimum of the two cascades to prevent bright seams
+      shadow = min(shadow, shadowNext);
     }
   }
 
