@@ -2,7 +2,6 @@
 #define FRAMEGRAPH_H_
 
 #include <RenderPasses/RenderPass.hpp>
-#include <ShaderPrograms/QuadShaderProgram.hpp>
 #include <array>
 
 // Moving a pass enum to the right of kNumPasses will dactivate it.

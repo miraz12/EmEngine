@@ -6,7 +6,6 @@
 #include <ECS/ECSManager.hpp>
 #include <Managers/FrameBufferManager.hpp>
 #include <Rendering/DebugDrawer.hpp>
-#include <ShaderPrograms/QuadShaderProgram.hpp>
 
 class PhysicsSystem
   : public System
