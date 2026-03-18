@@ -13,22 +13,22 @@ ShadowPass::ShadowPass()
   : RenderPass("resources/Shaders/shadow.vert", "resources/Shaders/shadow.frag")
 {
 
-  p_shaderProgram.use();
-  p_shaderProgram.setUniformBinding("modelMatrix");
-  p_shaderProgram.setUniformBinding("lightSpaceMatrix");
-  p_shaderProgram.setUniformBinding("meshMatrix");
-  p_shaderProgram.setUniformBinding("is_skinned");
-  p_shaderProgram.setUniformBinding("jointMats");
+  m_shaderProgram.use();
+  m_shaderProgram.setUniformBinding("modelMatrix");
+  m_shaderProgram.setUniformBinding("lightSpaceMatrix");
+  m_shaderProgram.setUniformBinding("meshMatrix");
+  m_shaderProgram.setUniformBinding("is_skinned");
+  m_shaderProgram.setUniformBinding("jointMats");
 
-  p_shaderProgram.setAttribBinding("POSITION");
-  p_shaderProgram.setAttribBinding("JOINTS_0");
-  p_shaderProgram.setAttribBinding("WEIGHTS_0");
+  m_shaderProgram.setAttribBinding("POSITION");
+  m_shaderProgram.setAttribBinding("JOINTS_0");
+  m_shaderProgram.setAttribBinding("WEIGHTS_0");
 
   u32 jointMats;
   glGenTextures(1, &jointMats);
-  p_textureManager.setTexture("jointMats", jointMats);
+  m_textureManager.setTexture("jointMats", jointMats);
 
-  p_textureManager.bindTexture("jointMats");
+  m_textureManager.bindTexture("jointMats");
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -44,13 +44,13 @@ ShadowPass::ShadowPass()
 
   u32 depthMapFbo;
   glGenFramebuffers(1, &depthMapFbo);
-  p_fboManager.setFBO("depthMapFbo", depthMapFbo);
+  m_fboManager.setFBO("depthMapFbo", depthMapFbo);
 
   u32 depthMapArray;
   glGenTextures(1, &depthMapArray);
-  p_textureManager.setTexture("depthMapArray", depthMapArray);
+  m_textureManager.setTexture("depthMapArray", depthMapArray);
 
-  p_fboManager.bindFBO("depthMapFbo");
+  m_fboManager.bindFBO("depthMapFbo");
   glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
   glTexImage3D(GL_TEXTURE_2D_ARRAY,
                0,
@@ -82,14 +82,13 @@ ShadowPass::ShadowPass()
     printf("FB error, status: 0x%x\n", Status);
   }
 
-  setViewport(p_width, p_height);
+  setViewport(m_width, m_height);
 }
 
 void
 ShadowPass::Init(FrameGraph& fGraph)
 {
-  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture(
-    "depthMapArray");
+  fGraph.getPass(PassId::kLight)->addTexture("depthMapArray");
 }
 
 void
@@ -145,7 +144,7 @@ ShadowPass::Execute(ECSManager& eManager)
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   // Setup render state
-  p_fboManager.bindFBO("depthMapFbo");
+  m_fboManager.bindFBO("depthMapFbo");
   glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -153,9 +152,9 @@ ShadowPass::Execute(ECSManager& eManager)
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
-  p_shaderProgram.use();
+  m_shaderProgram.use();
 
-  u32 depthMapArray = p_textureManager.bindTexture("depthMapArray");
+  u32 depthMapArray = m_textureManager.bindTexture("depthMapArray");
 
   // Render each cascade
   for (u32 cascade = 0; cascade < NUM_CASCADES; ++cascade) {
@@ -168,7 +167,7 @@ ShadowPass::Execute(ECSManager& eManager)
 
     // Set light space matrix for this cascade
     glUniformMatrix4fv(
-      p_shaderProgram.getUniformLocation("lightSpaceMatrix"),
+      m_shaderProgram.getUniformLocation("lightSpaceMatrix"),
       1,
       GL_FALSE,
       glm::value_ptr(m_cascadeConfig.lightSpaceMatrices[cascade]));
@@ -180,12 +179,12 @@ ShadowPass::Execute(ECSManager& eManager)
         eManager.getComponent<PositionComponent>(entity);
 
       if (posComp) {
-        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
+        glUniformMatrix4fv(m_shaderProgram.getUniformLocation("modelMatrix"),
                            1,
                            GL_FALSE,
                            glm::value_ptr(posComp->model));
       } else {
-        glUniformMatrix4fv(p_shaderProgram.getUniformLocation("modelMatrix"),
+        glUniformMatrix4fv(m_shaderProgram.getUniformLocation("modelMatrix"),
                            1,
                            GL_FALSE,
                            glm::value_ptr(glm::identity<glm::mat4>()));
@@ -194,7 +193,7 @@ ShadowPass::Execute(ECSManager& eManager)
       std::shared_ptr<GraphicsComponent> grapComp =
         eManager.getComponent<GraphicsComponent>(entity);
 
-      grapComp->m_grapObj->drawGeom(p_shaderProgram);
+      grapComp->m_grapObj->drawGeom(m_shaderProgram);
     }
   }
 
@@ -209,12 +208,12 @@ ShadowPass::Execute(ECSManager& eManager)
 void
 ShadowPass::setViewport(u32 w, u32 h)
 {
-  p_width = w;
-  p_height = h;
+  m_width = w;
+  m_height = h;
 
   // Note: Shadow map resolution is fixed at SHADOW_MAP_SIZE, not viewport size
-  p_fboManager.bindFBO("depthMapFbo");
-  u32 depthMapArray = p_textureManager.bindTexture("depthMapArray");
+  m_fboManager.bindFBO("depthMapFbo");
+  u32 depthMapArray = m_textureManager.bindTexture("depthMapArray");
   glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
   glTexImage3D(GL_TEXTURE_2D_ARRAY,
                0,

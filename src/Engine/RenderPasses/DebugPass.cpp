@@ -13,13 +13,13 @@ DebugPass::DebugPass()
   // Set up for 3D debug rendering
 
   // Configure attribute bindings
-  p_shaderProgram.setAttribBinding("POSITION"); // location 0
-  p_shaderProgram.setAttribBinding("COLOR");    // location 1
+  m_shaderProgram.setAttribBinding("POSITION"); // location 0
+  m_shaderProgram.setAttribBinding("COLOR");    // location 1
 
   // Set up matrix uniforms
-  p_shaderProgram.setUniformBinding("modelMatrix");
-  p_shaderProgram.setUniformBinding("viewMatrix");
-  p_shaderProgram.setUniformBinding("projMatrix");
+  m_shaderProgram.setUniformBinding("modelMatrix");
+  m_shaderProgram.setUniformBinding("viewMatrix");
+  m_shaderProgram.setUniformBinding("projMatrix");
 }
 
 void
@@ -52,7 +52,7 @@ DebugPass::Execute(ECSManager& eManager)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Use the debug shader
-  p_shaderProgram.use();
+  m_shaderProgram.use();
 
   // Get camera component
   auto camera = static_pointer_cast<CameraComponent>(eManager.getCamera());
@@ -69,7 +69,7 @@ DebugPass::Execute(ECSManager& eManager)
   // Now render the physics debug lines with proper 3D transformation
   // Pass our shader program to the DebugDrawer
   PhysicsSystem::getInstance().getDebugDrawer().renderAndFlush(
-    viewMatrix, projMatrix, &p_shaderProgram);
+    viewMatrix, projMatrix, &m_shaderProgram);
 
   // Restore the previous OpenGL state
   glDepthMask(depthMaskEnabled);

@@ -24,6 +24,14 @@ private:
   ShaderProgram m_extractBright;
   ShaderProgram m_downShader;
   ShaderProgram m_bloomCombine;
+
+  // Cached uniform locations for performance
+  GLint m_upFilterRadiusLoc{ -1 };
+  GLint m_downSrcResolutionLoc{ -1 };
+  GLint m_downMipLevelLoc{ -1 };
+  GLint m_combineExposureLoc{ -1 };
+  GLint m_combineSceneLoc{ -1 };
+  GLint m_combineBloomBlurLoc{ -1 };
 };
 
 #endif // BLOOMPASS_H_

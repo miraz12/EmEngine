@@ -35,7 +35,7 @@ CubeMapPass::CubeMapPass()
                            &nrComponents,
                            0);
 
-  u32 hdrTexture;
+  u32 hdrTexture = 0;
   if (data) {
     glGenTextures(1, &hdrTexture);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
@@ -45,36 +45,39 @@ CubeMapPass::CubeMapPass()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    p_textureManager.setTexture("hdrTexture", hdrTexture);
+    m_textureManager.setTexture("hdrTexture", hdrTexture);
 
     stbi_image_free(data);
   } else {
-    std::cout << "Failed to load HDR image." << std::endl;
+    std::cout << "Failed to load HDR image.\n";
   }
   stbi_set_flip_vertically_on_load(false);
 
   glGenFramebuffers(1, &m_captureFBO);
-  p_fboManager.setFBO("iblCaptureFBO", m_captureFBO);
+  m_fboManager.setFBO("iblCaptureFBO", m_captureFBO);
   glGenRenderbuffers(1, &m_captureRBO);
   glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
   glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
   glFramebufferRenderbuffer(
     GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_captureRBO);
 
-  generateCubeMap();
-  generateIrradianceMap();
-  generatePrefilterMap();
+  // Only generate IBL maps if HDR texture loaded successfully
+  if (hdrTexture != 0) {
+    generateCubeMap();
+    generateIrradianceMap();
+    generatePrefilterMap();
+  }
   generateBRDF();
 
-  p_shaderProgram.setUniformBinding("projection");
-  p_shaderProgram.setUniformBinding("view");
-  p_shaderProgram.setUniformBinding("FragColor");
-  p_shaderProgram.setUniformBinding("FragColorBright");
+  m_shaderProgram.setUniformBinding("projection");
+  m_shaderProgram.setUniformBinding("view");
+  m_shaderProgram.setUniformBinding("FragColor");
+  m_shaderProgram.setUniformBinding("FragColorBright");
 
   glGenFramebuffers(1, &m_cubeBuffer);
   glGenRenderbuffers(1, &m_rbo);
-  p_fboManager.setFBO("cubeFBO", m_cubeBuffer);
-  glViewport(0, 0, p_width, p_height);
+  m_fboManager.setFBO("cubeFBO", m_cubeBuffer);
+  glViewport(0, 0, m_width, m_height);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -84,12 +87,9 @@ CubeMapPass::CubeMapPass()
 void
 CubeMapPass::Init(FrameGraph& fGraph)
 {
-  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture(
-    "irradianceMap");
-  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture(
-    "prefilterMap");
-  fGraph.m_renderPass[static_cast<size_t>(PassId::kLight)]->addTexture(
-    "brdfLUT");
+  fGraph.getPass(PassId::kLight)->addTexture("irradianceMap");
+  fGraph.getPass(PassId::kLight)->addTexture("prefilterMap");
+  fGraph.getPass(PassId::kLight)->addTexture("brdfLUT");
 }
 
 void
@@ -98,31 +98,31 @@ CubeMapPass::Execute(ECSManager& eManager)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Background Pass");
 #endif
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fboManager.getFBO("gBuffer"));
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboManager.getFBO("gBuffer"));
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fboManager.getFBO("cubeFBO"));
   glBlitFramebuffer(0,
                     0,
-                    p_width,
-                    p_height,
+                    m_width,
+                    m_height,
                     0,
                     0,
-                    p_width,
-                    p_height,
+                    m_width,
+                    m_height,
                     GL_DEPTH_BUFFER_BIT,
                     GL_NEAREST);
 
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, p_fboManager.getFBO("lightFBO"));
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboManager.getFBO("lightFBO"));
   glBlitFramebuffer(0,
                     0,
-                    p_width,
-                    p_height,
+                    m_width,
+                    m_height,
                     0,
                     0,
-                    p_width,
-                    p_height,
+                    m_width,
+                    m_height,
                     GL_COLOR_BUFFER_BIT,
                     GL_NEAREST);
-  glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("cubeFBO"));
 
   glEnable(GL_BLEND);
   glBlendFuncSeparate(
@@ -133,17 +133,17 @@ CubeMapPass::Execute(ECSManager& eManager)
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
 
-  p_shaderProgram.use();
+  m_shaderProgram.use();
   auto cam =
     static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
 
   CameraSystem::bindProjViewMatrix(
     cam,
-    p_shaderProgram.getUniformLocation("projection"),
-    p_shaderProgram.getUniformLocation("view"));
+    m_shaderProgram.getUniformLocation("projection"),
+    m_shaderProgram.getUniformLocation("view"));
 
   glActiveTexture(GL_TEXTURE0);
-  p_textureManager.bindTexture("envCubemap");
+  m_textureManager.bindTexture("envCubemap");
   Util::renderCube();
 
   // Clean up GL state
@@ -163,13 +163,13 @@ CubeMapPass::Execute(ECSManager& eManager)
 void
 CubeMapPass::setViewport(u32 w, u32 h)
 {
-  p_width = w;
-  p_height = h;
+  m_width = w;
+  m_height = h;
 
-  glBindFramebuffer(GL_FRAMEBUFFER, p_fboManager.getFBO("cubeFBO"));
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("cubeFBO"));
 
-  u32 cubeFrame = p_textureManager.loadTexture(
-    "cubeFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  u32 cubeFrame = m_textureManager.loadTexture(
+    "cubeFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
   glFramebufferTexture2D(
     GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cubeFrame, 0);
 
@@ -177,7 +177,7 @@ CubeMapPass::setViewport(u32 w, u32 h)
   glDrawBuffers(1, attachments);
   glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
   glRenderbufferStorage(
-    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
+    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
   glFramebufferRenderbuffer(
     GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
   // finally check if framebuffer is complete
@@ -192,7 +192,7 @@ void
 CubeMapPass::generateCubeMap()
 {
   glGenTextures(1, &m_envCubemap);
-  p_textureManager.setTexture("envCubemap", m_envCubemap, GL_TEXTURE_CUBE_MAP);
+  m_textureManager.setTexture("envCubemap", m_envCubemap, GL_TEXTURE_CUBE_MAP);
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
   for (u32 i = 0; i < 6; ++i) {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -231,7 +231,7 @@ CubeMapPass::generateCubeMap()
     glm::value_ptr(m_captureProjection));
 
   glActiveTexture(GL_TEXTURE0);
-  p_textureManager.bindTexture("hdrTexture");
+  m_textureManager.bindTexture("hdrTexture");
 
   glViewport(
     0,
@@ -265,7 +265,7 @@ CubeMapPass::generateIrradianceMap()
 {
   u32 irradianceMap;
   glGenTextures(1, &irradianceMap);
-  p_textureManager.setTexture(
+  m_textureManager.setTexture(
     "irradianceMap", irradianceMap, GL_TEXTURE_CUBE_MAP);
   glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
   for (u32 i = 0; i < 6; ++i) {
@@ -331,7 +331,7 @@ CubeMapPass::generatePrefilterMap()
 {
   u32 prefilterMap;
   glGenTextures(1, &prefilterMap);
-  p_textureManager.setTexture(
+  m_textureManager.setTexture(
     "prefilterMap", prefilterMap, GL_TEXTURE_CUBE_MAP);
   glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
   for (u32 i = 0; i < 6; ++i) {
@@ -407,7 +407,7 @@ CubeMapPass::generateBRDF()
 {
   u32 brdfLUTTexture;
   glGenTextures(1, &brdfLUTTexture);
-  p_textureManager.setTexture("brdfLUT", brdfLUTTexture);
+  m_textureManager.setTexture("brdfLUT", brdfLUTTexture);
 
   // pre-allocate enough memory for the LUT texture.
   glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);

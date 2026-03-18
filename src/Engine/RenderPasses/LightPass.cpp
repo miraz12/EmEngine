@@ -11,48 +11,75 @@ LightPass::LightPass()
                "resources/Shaders/pbrLight.frag")
 {
 
-  p_shaderProgram.setUniformBinding("debugView");
-  p_shaderProgram.setUniformBinding("gPositionAo");
-  p_shaderProgram.setUniformBinding("gNormalMetal");
-  p_shaderProgram.setUniformBinding("gAlbedoSpecRough");
-  p_shaderProgram.setUniformBinding("gEmissive");
-  p_shaderProgram.setUniformBinding("nrOfPointLights");
-  p_shaderProgram.setUniformBinding("camPos");
-  p_shaderProgram.setUniformBinding("viewMatrix");
-  p_shaderProgram.setUniformBinding("directionalLight.direction");
-  p_shaderProgram.setUniformBinding("directionalLight.color");
-  p_shaderProgram.setUniformBinding("directionalLight.intensity");
-  p_shaderProgram.setUniformBinding("depthMapArray");
-  p_shaderProgram.setUniformBinding("irradianceMap");
-  p_shaderProgram.setUniformBinding("prefilterMap");
-  p_shaderProgram.setUniformBinding("brdfLUT");
+  m_shaderProgram.setUniformBinding("debugView");
+  m_shaderProgram.setUniformBinding("gPositionAo");
+  m_shaderProgram.setUniformBinding("gNormalMetal");
+  m_shaderProgram.setUniformBinding("gAlbedoSpecRough");
+  m_shaderProgram.setUniformBinding("gEmissive");
+  m_shaderProgram.setUniformBinding("nrOfPointLights");
+  m_shaderProgram.setUniformBinding("camPos");
+  m_shaderProgram.setUniformBinding("viewMatrix");
+  m_shaderProgram.setUniformBinding("directionalLight.direction");
+  m_shaderProgram.setUniformBinding("directionalLight.color");
+  m_shaderProgram.setUniformBinding("directionalLight.intensity");
+  m_shaderProgram.setUniformBinding("depthMapArray");
+  m_shaderProgram.setUniformBinding("irradianceMap");
+  m_shaderProgram.setUniformBinding("prefilterMap");
+  m_shaderProgram.setUniformBinding("brdfLUT");
 
-  p_shaderProgram.use();
+  m_shaderProgram.use();
 
   // Bind UBO block for cascade data (binding point 0)
-  u32 blockIndex = glGetUniformBlockIndex(p_shaderProgram.getId(), "CascadeData");
-  glUniformBlockBinding(p_shaderProgram.getId(), blockIndex, 0);
+  u32 blockIndex = glGetUniformBlockIndex(m_shaderProgram.getId(), "CascadeData");
+  glUniformBlockBinding(m_shaderProgram.getId(), blockIndex, 0);
 
   glGenFramebuffers(1, &m_lightBuffer);
   glGenRenderbuffers(1, &m_rbo);
-  p_fboManager.setFBO("lightFBO", m_lightBuffer);
-  setViewport(p_width, p_height);
+  m_fboManager.setFBO("lightFBO", m_lightBuffer);
+  setViewport(m_width, m_height);
 
-  for (u32 i = 0; i < 10; i++) {
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+  for (u32 i = 0; i < MAX_POINT_LIGHTS; i++) {
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].position");
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].color");
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].diffuseIntensity");
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].constant");
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].linear");
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].quadratic");
-    p_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
+    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
                                       "].radius");
+  }
+
+  // Cache uniform locations for performance
+  m_debugViewLoc = m_shaderProgram.getUniformLocation("debugView");
+  m_nrOfPointLightsLoc = m_shaderProgram.getUniformLocation("nrOfPointLights");
+  m_camPosLoc = m_shaderProgram.getUniformLocation("camPos");
+  m_viewMatrixLoc = m_shaderProgram.getUniformLocation("viewMatrix");
+  m_dirLightDirectionLoc =
+    m_shaderProgram.getUniformLocation("directionalLight.direction");
+  m_dirLightColorLoc =
+    m_shaderProgram.getUniformLocation("directionalLight.color");
+  m_dirLightIntensityLoc =
+    m_shaderProgram.getUniformLocation("directionalLight.intensity");
+
+  for (u32 i = 0; i < MAX_POINT_LIGHTS; i++) {
+    m_pointLightPositionLocs[i] = m_shaderProgram.getUniformLocation(
+      "pointLights[" + std::to_string(i) + "].position");
+    m_pointLightColorLocs[i] = m_shaderProgram.getUniformLocation(
+      "pointLights[" + std::to_string(i) + "].color");
+    m_pointLightConstantLocs[i] = m_shaderProgram.getUniformLocation(
+      "pointLights[" + std::to_string(i) + "].constant");
+    m_pointLightLinearLocs[i] = m_shaderProgram.getUniformLocation(
+      "pointLights[" + std::to_string(i) + "].linear");
+    m_pointLightQuadraticLocs[i] = m_shaderProgram.getUniformLocation(
+      "pointLights[" + std::to_string(i) + "].quadratic");
+    m_pointLightRadiusLocs[i] = m_shaderProgram.getUniformLocation(
+      "pointLights[" + std::to_string(i) + "].radius");
   }
 
   u32 quadVBO;
@@ -82,14 +109,13 @@ LightPass::Execute(ECSManager& eManager)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lightning Pass");
 #endif
-  p_fboManager.bindFBO("lightFBO");
+  m_fboManager.bindFBO("lightFBO");
   glDisable(GL_DEPTH_TEST);
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  p_shaderProgram.use();
-  glUniform1i(p_shaderProgram.getUniformLocation("debugView"),
-              eManager.getDebugView());
+  m_shaderProgram.use();
+  glUniform1i(m_debugViewLoc, eManager.getDebugView());
 
   auto cam =
     static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
@@ -104,49 +130,23 @@ LightPass::Execute(ECSManager& eManager)
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
 
-        glUniform3fv(
-          p_shaderProgram.getUniformLocation("directionalLight.direction"),
-          1,
-          glm::value_ptr(light.direction));
-
-        glUniform3fv(
-          p_shaderProgram.getUniformLocation("directionalLight.color"),
-          1,
-          glm::value_ptr(light.color));
-
-        glUniform1f(
-          p_shaderProgram.getUniformLocation("directionalLight.intensity"),
-          light.intensity);
+        glUniform3fv(m_dirLightDirectionLoc, 1, glm::value_ptr(light.direction));
+        glUniform3fv(m_dirLightColorLoc, 1, glm::value_ptr(light.color));
+        glUniform1f(m_dirLightIntensityLoc, light.intensity);
 
         break;
       }
       case LightingComponent::TYPE::POINT: {
 
         PointLight& light = static_cast<PointLight&>(g->getBaseLight());
-        glUniform3fv(
-          p_shaderProgram.getUniformLocation(
-            "pointLights[" + std::to_string(numPLights) + "].position"),
-          1,
-          glm::value_ptr(light.position));
-
-        glUniform3fv(p_shaderProgram.getUniformLocation(
-                       "pointLights[" + std::to_string(numPLights) + "].color"),
-                     1,
+        glUniform3fv(m_pointLightPositionLocs[numPLights], 1,
+                     glm::value_ptr(light.position));
+        glUniform3fv(m_pointLightColorLocs[numPLights], 1,
                      glm::value_ptr(light.color));
+        glUniform1f(m_pointLightConstantLocs[numPLights], light.constant);
+        glUniform1f(m_pointLightLinearLocs[numPLights], light.linear);
+        glUniform1f(m_pointLightQuadraticLocs[numPLights], light.quadratic);
 
-        glUniform1f(
-          p_shaderProgram.getUniformLocation(
-            "pointLights[" + std::to_string(numPLights) + "].constant"),
-          light.constant);
-
-        glUniform1f(p_shaderProgram.getUniformLocation(
-                      "pointLights[" + std::to_string(numPLights) + "].linear"),
-                    light.linear);
-
-        glUniform1f(
-          p_shaderProgram.getUniformLocation(
-            "pointLights[" + std::to_string(numPLights) + "].quadratic"),
-          light.quadratic);
         const float constant =
           1.0f; // note that we don't send this to the shader, we assume it is
                 // always 1.0 (in our case)
@@ -158,9 +158,7 @@ LightPass::Execute(ECSManager& eManager)
                      4 * light.quadratic *
                        (constant - (256.0f / 5.0f) * maxBrightness))) /
           (2.0f * light.quadratic);
-        glUniform1f(p_shaderProgram.getUniformLocation(
-                      "pointLights[" + std::to_string(numPLights) + "].radius"),
-                    radius);
+        glUniform1f(m_pointLightRadiusLocs[numPLights], radius);
 
         numPLights++;
         break;
@@ -170,21 +168,14 @@ LightPass::Execute(ECSManager& eManager)
     }
   }
 
-  glUniform1i(p_shaderProgram.getUniformLocation("nrOfPointLights"),
-              numPLights);
-
-  glUniform3fv(p_shaderProgram.getUniformLocation("camPos"),
-               1,
-               glm::value_ptr(cam->m_position));
-
-  glUniformMatrix4fv(p_shaderProgram.getUniformLocation("viewMatrix"),
-                     1,
-                     GL_FALSE,
+  glUniform1i(m_nrOfPointLightsLoc, numPLights);
+  glUniform3fv(m_camPosLoc, 1, glm::value_ptr(cam->m_position));
+  glUniformMatrix4fv(m_viewMatrixLoc, 1, GL_FALSE,
                      glm::value_ptr(cam->m_viewMatrix));
 
   glBindVertexArray(quadVAO);
-  for (size_t i = 0; i < p_textures.size(); i++) {
-    p_textureManager.bindActivateTexture(p_textures[i], i);
+  for (size_t i = 0; i < m_textures.size(); i++) {
+    m_textureManager.bindActivateTexture(m_textures[i], i);
   }
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -202,14 +193,14 @@ LightPass::Execute(ECSManager& eManager)
 void
 LightPass::setViewport(u32 w, u32 h)
 {
-  p_width = w;
-  p_height = h;
+  m_width = w;
+  m_height = h;
 
-  p_fboManager.bindFBO("lightFBO");
+  m_fboManager.bindFBO("lightFBO");
 
   // - position color buffer
-  u32 lightFrame = p_textureManager.loadTexture(
-    "lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, p_width, p_height, 0);
+  u32 lightFrame = m_textureManager.loadTexture(
+    "lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
   glFramebufferTexture2D(
     GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightFrame, 0);
 
@@ -217,7 +208,7 @@ LightPass::setViewport(u32 w, u32 h)
   glDrawBuffers(1, attachments);
   glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
   glRenderbufferStorage(
-    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, p_width, p_height);
+    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
   glFramebufferRenderbuffer(
     GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
   // finally check if framebuffer is complete

@@ -16,21 +16,21 @@ BloomPass::BloomPass()
 
   u32 fbos[3];
   glGenFramebuffers(3, fbos);
-  p_fboManager.setFBO("brightFBO", fbos[0]);
-  p_fboManager.setFBO("bloomFBO", fbos[1]);
-  p_fboManager.setFBO("bloomFinalFBO", fbos[2]);
+  m_fboManager.setFBO("brightFBO", fbos[0]);
+  m_fboManager.setFBO("bloomFBO", fbos[1]);
+  m_fboManager.setFBO("bloomFinalFBO", fbos[2]);
 
   u32 frameBright;
   glGenTextures(1, &frameBright);
-  p_textureManager.setTexture("frameBright", frameBright, GL_TEXTURE_2D);
+  m_textureManager.setTexture("frameBright", frameBright, GL_TEXTURE_2D);
 
   u32 frameBloomFinal;
   glGenTextures(1, &frameBloomFinal);
-  p_textureManager.setTexture(
+  m_textureManager.setTexture(
     "frameBloomFinal", frameBloomFinal, GL_TEXTURE_2D);
 
-  glm::vec2 currentMipSize(p_width, p_height);
-  glm::ivec2 currentMipSizeInt(p_width, p_height);
+  glm::vec2 currentMipSize(m_width, m_height);
+  glm::ivec2 currentMipSizeInt(m_width, m_height);
   for (u32 i = 0; i < 5; i++) {
     mipLevel mip;
     currentMipSize *= 0.5f;
@@ -42,12 +42,12 @@ BloomPass::BloomPass()
     m_mipChain.emplace_back(mip);
   }
 
-  setViewport(p_width, p_height);
+  setViewport(m_width, m_height);
 
-  p_shaderProgram.setAttribBinding("POSITION");
-  p_shaderProgram.setAttribBinding("TEXCOORD_0");
-  p_shaderProgram.setUniformBinding("srcResolution");
-  p_shaderProgram.setUniformBinding("filterRadius");
+  m_shaderProgram.setAttribBinding("POSITION");
+  m_shaderProgram.setAttribBinding("TEXCOORD_0");
+  m_shaderProgram.setUniformBinding("srcResolution");
+  m_shaderProgram.setUniformBinding("filterRadius");
 
   m_extractBright.setAttribBinding("POSITION");
   m_extractBright.setAttribBinding("TEXCOORD_0");
@@ -65,6 +65,14 @@ BloomPass::BloomPass()
   m_bloomCombine.setUniformBinding("bloomBlur");
   m_bloomCombine.setUniformBinding("exposure");
 
+  // Cache uniform locations for performance
+  m_upFilterRadiusLoc = m_shaderProgram.getUniformLocation("filterRadius");
+  m_downSrcResolutionLoc = m_downShader.getUniformLocation("srcResolution");
+  m_downMipLevelLoc = m_downShader.getUniformLocation("mipLevel");
+  m_combineExposureLoc = m_bloomCombine.getUniformLocation("exposure");
+  m_combineSceneLoc = m_bloomCombine.getUniformLocation("scene");
+  m_combineBloomBlurLoc = m_bloomCombine.getUniformLocation("bloomBlur");
+
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -74,23 +82,22 @@ BloomPass::Execute(ECSManager& /* eManager */)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Bloom Pass");
 #endif
-  p_fboManager.bindFBO("brightFBO");
+  m_fboManager.bindFBO("brightFBO");
   m_extractBright.use();
-  p_textureManager.bindActivateTexture("cubeFrame", 0);
+  m_textureManager.bindActivateTexture("cubeFrame", 0);
   Util::renderQuad();
 
-  p_fboManager.bindFBO("bloomFBO");
+  m_fboManager.bindFBO("bloomFBO");
   m_downShader.use();
   // Disable blending
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
 
-  glUniform2f(
-    m_downShader.getUniformLocation("srcResolution"), p_width, p_height);
-  glUniform1i(m_downShader.getUniformLocation("mipLevel"), 0);
+  glUniform2f(m_downSrcResolutionLoc, m_width, m_height);
+  glUniform1i(m_downMipLevelLoc, 0);
 
   // Bind srcTexture (HDR color buffer) as initial texture input
-  p_textureManager.bindActivateTexture("frameBright", 0);
+  m_textureManager.bindActivateTexture("frameBright", 0);
 
   // Progressively downsample through the mip chain
   for (u32 i = 0; i < (u32)m_mipChain.size(); i++) {
@@ -102,18 +109,17 @@ BloomPass::Execute(ECSManager& /* eManager */)
     Util::renderQuad();
 
     // Set current mip resolution as srcResolution for next iteration
-    glUniform2f(
-      m_downShader.getUniformLocation("srcResolution"), mip.size.x, mip.size.y);
+    glUniform2f(m_downSrcResolutionLoc, mip.size.x, mip.size.y);
     // Set current mip as texture input for next iteration
     glBindTexture(GL_TEXTURE_2D, mip.texture);
     // Disable Karis average for consequent downsamples
     if (i == 0) {
-      glUniform1i(m_downShader.getUniformLocation("mipLevel"), 1);
+      glUniform1i(m_downMipLevelLoc, 1);
     }
   }
 
-  p_shaderProgram.use();
-  glUniform1f(p_shaderProgram.getUniformLocation("filterRadius"), 0.005f);
+  m_shaderProgram.use();
+  glUniform1f(m_upFilterRadiusLoc, 0.005f);
 
   // Enable additive blending
   glEnable(GL_BLEND);
@@ -138,14 +144,14 @@ BloomPass::Execute(ECSManager& /* eManager */)
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_BLEND);
 
-  p_fboManager.bindFBO("bloomFinalFBO");
-  glViewport(0, 0, p_width, p_height);
+  m_fboManager.bindFBO("bloomFinalFBO");
+  glViewport(0, 0, m_width, m_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   m_bloomCombine.use();
-  glUniform1f(m_bloomCombine.getUniformLocation("exposure"), 1.0f);
-  glUniform1i(m_bloomCombine.getUniformLocation("scene"), 0);
-  glUniform1i(m_bloomCombine.getUniformLocation("bloomBlur"), 1);
-  p_textureManager.bindActivateTexture("cubeFrame", 0);
+  glUniform1f(m_combineExposureLoc, 1.0f);
+  glUniform1i(m_combineSceneLoc, 0);
+  glUniform1i(m_combineBloomBlurLoc, 1);
+  m_textureManager.bindActivateTexture("cubeFrame", 0);
   glActiveTexture(GL_TEXTURE0 + 1);
   glBindTexture(GL_TEXTURE_2D, m_mipChain.front().texture);
 
@@ -158,16 +164,16 @@ BloomPass::Execute(ECSManager& /* eManager */)
 void
 BloomPass::setViewport(u32 w, u32 h)
 {
-  p_width = w;
-  p_height = h;
+  m_width = w;
+  m_height = h;
 
-  p_fboManager.bindFBO("brightFBO");
-  u32 frameBright = p_textureManager.bindTexture("frameBright");
+  m_fboManager.bindFBO("brightFBO");
+  u32 frameBright = m_textureManager.bindTexture("frameBright");
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA16F,
-               p_width,
-               p_height,
+               m_width,
+               m_height,
                0,
                GL_RGBA,
                GL_FLOAT,
@@ -190,7 +196,7 @@ BloomPass::setViewport(u32 w, u32 h)
     std::cout << "Framebuffer not complete!" << std::endl;
   }
 
-  p_fboManager.bindFBO("bloomFBO");
+  m_fboManager.bindFBO("bloomFBO");
   for (u32 i = 0; i < 5; i++) {
     mipLevel mip = m_mipChain[i];
 
@@ -224,13 +230,13 @@ BloomPass::setViewport(u32 w, u32 h)
     assert(false);
   }
 
-  p_fboManager.bindFBO("bloomFinalFBO");
-  u32 frameBloomFinal = p_textureManager.bindTexture("frameBloomFinal");
+  m_fboManager.bindFBO("bloomFinalFBO");
+  u32 frameBloomFinal = m_textureManager.bindTexture("frameBloomFinal");
   glTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA16F,
-               p_width,
-               p_height,
+               m_width,
+               m_height,
                0,
                GL_RGBA,
                GL_FLOAT,

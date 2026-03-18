@@ -9,6 +9,14 @@
 
 namespace LightingUtil {
 
+// Common constants for lighting calculations
+namespace {
+constexpr float LIGHT_DIR_VERTICAL_THRESHOLD = 0.99f;
+constexpr float CASCADE_Z_EXTENSION_BEHIND = 50.0f;
+constexpr float CASCADE_Z_EXTENSION_AHEAD = 10.0f;
+constexpr float LIGHT_POSITION_OFFSET = 50.0f;
+}
+
 inline glm::mat4
 calculateLightSpaceMatrix(const glm::vec3& lightDirection,
                           const glm::vec3& cameraPosition)
@@ -33,8 +41,8 @@ calculateLightSpaceMatrix(const glm::vec3& lightDirection,
 
   // Choose an up vector that's not parallel to the light direction
   // If light is pointing mostly up/down, use Z-axis as up, otherwise use Y-axis
-  glm::vec3 up = (glm::abs(normLightDir.y) > 0.99f) ? glm::vec3(0, 0, 1)
-                                                    : glm::vec3(0, 1, 0);
+  glm::vec3 up = (glm::abs(normLightDir.y) > LIGHT_DIR_VERTICAL_THRESHOLD) ? glm::vec3(0, 0, 1)
+                                                                            : glm::vec3(0, 1, 0);
 
   glm::mat4 lightView = glm::lookAt(lightPos, frustumCenter, up);
 
@@ -111,10 +119,10 @@ struct CascadeConfig
       center /= 8.0f;
 
       // Create light view matrix looking at frustum center
-      glm::vec3 up = (std::abs(lightDir.y) > 0.99f) ? glm::vec3(0.0f, 0.0f, 1.0f)
-                                                     : glm::vec3(0.0f, 1.0f, 0.0f);
+      glm::vec3 up = (std::abs(lightDir.y) > LIGHT_DIR_VERTICAL_THRESHOLD) ? glm::vec3(0.0f, 0.0f, 1.0f)
+                                                                            : glm::vec3(0.0f, 1.0f, 0.0f);
       glm::mat4 lightView =
-        glm::lookAt(center - lightDir * 50.0f, center, up);
+        glm::lookAt(center - lightDir * LIGHT_POSITION_OFFSET, center, up);
 
       // Transform frustum corners to light space to get tight bounds
       glm::vec3 lightMin(FLT_MAX);
@@ -127,8 +135,8 @@ struct CascadeConfig
       }
 
       // Extend Z range to capture occluders behind the frustum
-      lightMin.z -= 50.0f;
-      lightMax.z += 10.0f;
+      lightMin.z -= CASCADE_Z_EXTENSION_BEHIND;
+      lightMax.z += CASCADE_Z_EXTENSION_AHEAD;
 
       // Texel snapping for shadow stability (prevents swimming)
       float worldUnitsPerTexel =

@@ -3,6 +3,14 @@
 
 namespace Util {
 
+// Quad vertex layout constants
+namespace {
+constexpr u32 QUAD_POSITION_COMPONENTS = 3;
+constexpr u32 QUAD_TEXCOORD_COMPONENTS = 2;
+constexpr u32 QUAD_STRIDE = (QUAD_POSITION_COMPONENTS + QUAD_TEXCOORD_COMPONENTS) * sizeof(float);
+constexpr u32 QUAD_TEXCOORD_OFFSET = QUAD_POSITION_COMPONENTS * sizeof(float);
+}
+
 inline void
 renderQuad()
 {
@@ -26,13 +34,24 @@ renderQuad()
     glBufferData(
       GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, QUAD_POSITION_COMPONENTS, GL_FLOAT, GL_FALSE, QUAD_STRIDE, nullptr);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(
-      1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+      1, QUAD_TEXCOORD_COMPONENTS, GL_FLOAT, GL_FALSE, QUAD_STRIDE, reinterpret_cast<void*>(QUAD_TEXCOORD_OFFSET));
   }
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+// Cube vertex layout constants
+namespace {
+constexpr u32 CUBE_POSITION_COMPONENTS = 3;
+constexpr u32 CUBE_NORMAL_COMPONENTS = 3;
+constexpr u32 CUBE_TEXCOORD_COMPONENTS = 2;
+constexpr u32 CUBE_STRIDE = (CUBE_POSITION_COMPONENTS + CUBE_NORMAL_COMPONENTS + CUBE_TEXCOORD_COMPONENTS) * sizeof(float);
+constexpr u32 CUBE_NORMAL_OFFSET = CUBE_POSITION_COMPONENTS * sizeof(float);
+constexpr u32 CUBE_TEXCOORD_OFFSET = (CUBE_POSITION_COMPONENTS + CUBE_NORMAL_COMPONENTS) * sizeof(float);
+constexpr u32 CUBE_VERTEX_COUNT = 36;
 }
 
 inline void
@@ -94,17 +113,17 @@ renderCube()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindVertexArray(cubeVAO);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, CUBE_POSITION_COMPONENTS, GL_FLOAT, GL_FALSE, CUBE_STRIDE, nullptr);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(
-      1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+      1, CUBE_NORMAL_COMPONENTS, GL_FLOAT, GL_FALSE, CUBE_STRIDE, reinterpret_cast<void*>(CUBE_NORMAL_OFFSET));
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(
-      2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+      2, CUBE_TEXCOORD_COMPONENTS, GL_FLOAT, GL_FALSE, CUBE_STRIDE, reinterpret_cast<void*>(CUBE_TEXCOORD_OFFSET));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
   glBindVertexArray(cubeVAO);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
+  glDrawArrays(GL_TRIANGLES, 0, CUBE_VERTEX_COUNT);
 }
 
 } // namespace Util

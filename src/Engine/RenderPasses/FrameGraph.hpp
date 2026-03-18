@@ -4,7 +4,7 @@
 #include <RenderPasses/RenderPass.hpp>
 #include <array>
 
-// Moving a pass enum to the right of kNumPasses will dactivate it.
+// Moving a pass enum to the right of kNumPasses will deactivate it.
 enum class PassId : size_t
 {
   kShadow,
@@ -31,11 +31,17 @@ public:
   void draw(ECSManager& eManager);
   void setViewport(u32 w, u32 h);
 
+  RenderPass* getPass(PassId id) {
+    return m_renderPass[static_cast<size_t>(id)].get();
+  }
+  const RenderPass* getPass(PassId id) const {
+    return m_renderPass[static_cast<size_t>(id)].get();
+  }
+
+private:
   std::array<std::unique_ptr<RenderPass>,
              static_cast<size_t>(PassId::kNumPasses)>
     m_renderPass;
-
-private:
   u32 m_width{ 800 };
   u32 m_height{ 800 };
 };
