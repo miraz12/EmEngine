@@ -90,7 +90,7 @@ void main() {
     }
 
     if (alphaMode < 2){
-        float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 17.0;
+        float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))][int(floor(mod(gl_FragCoord.y, 4.0)))] / 16.0;
         if (alphaMode == 1) {
           if (texture(textures[0], pTexCoords).a < alphaCutoff) {
             discard;

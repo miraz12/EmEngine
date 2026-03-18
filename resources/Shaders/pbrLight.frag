@@ -212,7 +212,7 @@ CalcDirectionalLightPBR(DirectionalLight light,
 
   vec3 numerator = NDF * G * F;
   float denominator = max(
-    4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0), 0.00001);
+    4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0), 0.0001);
   vec3 specular = numerator / denominator;
 
   // Calculate shadow with CSM
