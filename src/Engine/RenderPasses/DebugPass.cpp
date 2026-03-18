@@ -45,7 +45,7 @@ DebugPass::Execute(ECSManager& eManager)
 
   // Make sure we can see lines clearly
   glEnable(GL_LINE_SMOOTH);
-  glLineWidth(3.0f);
+  glLineWidth(1.0f);
 
   // Enable blending for line transparency if needed
   glEnable(GL_BLEND);

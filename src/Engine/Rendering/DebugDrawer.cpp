@@ -182,7 +182,7 @@ DebugDrawer::renderAndFlush(const glm::mat4& viewMatrix,
       glEnableVertexAttribArray(1);
 
       // Increase line width for better visibility
-      glLineWidth(7.0f);
+      glLineWidth(1.0f);
 
       // Draw all lines in a single call
       glDrawArrays(GL_LINES, 0, vertexData.size() / 6);

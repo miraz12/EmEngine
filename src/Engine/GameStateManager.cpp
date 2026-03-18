@@ -172,6 +172,7 @@ GameStateManager::setupPlayingUI()
 {
   std::cout << "[GameStateManager] Setting up Playing UI\n";
   ECSManager::getInstance().setSimulatePhysics(true);
+  ECSManager::getInstance().setRenderGraphics(true);
 
   // Disable updating of UI
   m_uiManager->unsetContext();

@@ -40,7 +40,6 @@ FrameGraph::FrameGraph()
   for (auto& p : m_renderPass) {
     p->Init(*this);
   }
-
   setViewport(m_width, m_height);
 }
 

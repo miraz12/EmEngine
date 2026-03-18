@@ -48,7 +48,7 @@ ShadowPass::ShadowPass()
 
   u32 depthMapArray;
   glGenTextures(1, &depthMapArray);
-  m_textureManager.setTexture("depthMapArray", depthMapArray);
+  m_textureManager.setTexture("depthMapArray", depthMapArray, GL_TEXTURE_2D_ARRAY);
 
   m_fboManager.bindFBO("depthMapFbo");
   glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
@@ -66,8 +66,8 @@ ShadowPass::ShadowPass()
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE,
-                  GL_COMPARE_REF_TO_TEXTURE);
+  glTexParameteri(
+    GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
   // Attach first cascade layer for initial setup (will be rebound per cascade)
@@ -81,8 +81,6 @@ ShadowPass::ShadowPass()
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     printf("FB error, status: 0x%x\n", Status);
   }
-
-  setViewport(m_width, m_height);
 }
 
 void

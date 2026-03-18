@@ -165,12 +165,14 @@ public:
     return m_entityNames[entity];
   };
   bool& getSimulatePhysics() { return m_simulatePhysics; };
+  bool& getRenderGraphics() { return m_renderGraphics; };
   i32& getDebugView() { return m_debugView; };
 
   void setViewport(u32 width, u32 height);
   void setPickedEntity(Entity entity) { m_pickedEntity = entity; }
   void setEntitySelected(bool sel) { m_entitySelected = sel; }
   void setSimulatePhysics(bool sim) { m_simulatePhysics = sim; }
+  void setRenderGraphics(bool sim) { m_renderGraphics = sim; }
 
   glm::vec3 dDir;
 
@@ -198,6 +200,7 @@ private:
   bool m_entitySelected{ false };
   Entity m_dirLightEntity;
   bool m_simulatePhysics{ false };
+  bool m_renderGraphics{ false };
   i32 m_debugView;
 
   // Entity ID reuse system

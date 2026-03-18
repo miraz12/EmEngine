@@ -20,7 +20,9 @@ GraphicsSystem::~GraphicsSystem()
 void
 GraphicsSystem::update(float /*dt*/)
 {
-  m_fGraph.draw(*m_manager);
+  if (m_manager->getRenderGraphics()) {
+    m_fGraph.draw(*m_manager);
+  }
 }
 
 void
