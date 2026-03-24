@@ -1,8 +1,79 @@
 #include "DebugDrawer.hpp"
 
+#include <Graphics/RenderResources.hpp>
+
 DebugDrawer::DebugDrawer()
 {
   lines.reserve(1000);
+}
+
+DebugDrawer::~DebugDrawer()
+{
+  shutdown();
+}
+
+void
+DebugDrawer::initialize()
+{
+#ifndef EMSCRIPTEN
+  if (m_initialized) {
+    return;
+  }
+
+  auto& device = gfx::GraphicsDevice::getInstance();
+
+  // Create persistent VBO with initial capacity
+  gfx::BufferCreateInfo vboInfo{};
+  vboInfo.size = kInitialCapacity;
+  vboInfo.usage = gfx::BufferUsage::Vertex;
+  vboInfo.initialData = nullptr; // Will be filled each frame
+  m_vbo = device.createBuffer(vboInfo);
+  m_vboCapacity = kInitialCapacity;
+
+  // Create VAO with vertex layout: position (vec3) + color (vec3)
+  constexpr u32 kStride = 6 * sizeof(float);
+
+  std::array<gfx::VertexBinding, 1> bindings = { { { 0, kStride, false } } };
+  std::array<gfx::VertexAttribute, 2> attributes = { {
+    { 0, 0, 0, gfx::PixelFormat::RGB32F }, // POSITION at location 0
+    { 1, 0, 3 * sizeof(float), gfx::PixelFormat::RGB32F } // COLOR at location 1
+  } };
+
+  gfx::VertexArrayCreateInfo vaoInfo{};
+  vaoInfo.vertexBindings = bindings;
+  vaoInfo.vertexAttributes = attributes;
+  vaoInfo.topology = gfx::PrimitiveTopology::Lines;
+  vaoInfo.vertexCount = 0; // Will be set per frame
+  vaoInfo.debugName = "DebugDrawer";
+
+  m_vao = device.createVertexArray(vaoInfo);
+
+  m_initialized = true;
+#endif
+}
+
+void
+DebugDrawer::shutdown()
+{
+#ifndef EMSCRIPTEN
+  if (!m_initialized) {
+    return;
+  }
+
+  auto& device = gfx::GraphicsDevice::getInstance();
+
+  if (device.isValid(m_vao)) {
+    device.destroyVertexArray(m_vao);
+    m_vao = {};
+  }
+  if (device.isValid(m_vbo)) {
+    device.destroyBuffer(m_vbo);
+    m_vbo = {};
+  }
+
+  m_vboCapacity = 0;
+  m_initialized = false;
+#endif
 }
 
 #ifdef EMSCRIPTEN
@@ -22,8 +93,6 @@ DebugDrawer::drawLine(const btVector3& from,
   // Only add the line if it's valid and we haven't exceeded the maximum
   if (!std::isnan(from.x()) && !std::isnan(from.y()) && !std::isnan(from.z()) &&
       !std::isnan(to.x()) && !std::isnan(to.y()) && !std::isnan(to.z())) {
-
-    // No logging needed
 
     DebugDrawer::Line l;
     l.from = from;
@@ -58,145 +127,117 @@ DebugDrawer::draw3dText(const btVector3& /* location */,
 }
 
 void
-DebugDrawer::renderAndFlush(const glm::mat4& viewMatrix,
-                            const glm::mat4& projMatrix,
-                            ShaderProgram* externalShader)
+DebugDrawer::renderAndFlush(gfx::ShaderId shader)
 {
 #ifndef EMSCRIPTEN
   const size_t numLines = lines.size();
 
-  if (numLines > 0) {
-    // Process debug lines
-
-    // Render only physics debug lines in 3D mode
-    glEnable(GL_DEPTH_TEST);
-
-    // Save the current program to restore it later
-    GLint previousProgram;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
-
-    // Set up the shader program
-    if (externalShader) {
-      // Use the external shader provided by DebugPass
-      externalShader->use();
-
-      // Set the model matrix to identity
-      glm::mat4 identity(1.0f);
-
-      // Set the matrices in the external shader
-      glUniformMatrix4fv(externalShader->getUniformLocation("modelMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(identity));
-      glUniformMatrix4fv(externalShader->getUniformLocation("viewMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(viewMatrix));
-      glUniformMatrix4fv(externalShader->getUniformLocation("projMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(projMatrix));
-    } else {
-      // Fallback to default OpenGL rendering if no shader is provided
-      // (this should not normally happen)
-
-      // Most basic rendering setup
-      glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(glm::value_ptr(projMatrix));
-      glMatrixMode(GL_MODELVIEW);
-      glLoadMatrixf(glm::value_ptr(viewMatrix));
-    }
-
-    // Create arrays for our vertex data
-    std::vector<float> vertexData;
-    vertexData.reserve(numLines * 2 * 6);
-
-    // Fill the buffers with data from all lines
-    for (size_t i = 0; i < numLines; i++) {
-      const Line& line = lines[i];
-
-      // Skip any invalid lines
-      if (std::isnan(line.from.x()) || std::isnan(line.to.x())) {
-        continue;
-      }
-
-      // First vertex (from)
-      vertexData.push_back(line.from.x());
-      vertexData.push_back(line.from.y());
-      vertexData.push_back(line.from.z());
-      vertexData.push_back(line.color.x());
-      vertexData.push_back(line.color.y());
-      vertexData.push_back(line.color.z());
-
-      // Second vertex (to)
-      vertexData.push_back(line.to.x());
-      vertexData.push_back(line.to.y());
-      vertexData.push_back(line.to.z());
-      vertexData.push_back(line.color.x());
-      vertexData.push_back(line.color.y());
-      vertexData.push_back(line.color.z());
-    }
-
-    // Skip rendering if we have no valid vertex data beyond the overlay
-    if (!vertexData.empty()) {
-      // Render the collected lines
-
-      // For maximum visibility, we disable depth testing first
-      glDisable(GL_DEPTH_TEST);
-
-      // Make sure we're drawing to the default framebuffer (screen)
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-      // Ensure blending is enabled for transparency
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-      // Create and set up buffers
-      GLuint VAO, VBO;
-      glGenVertexArrays(1, &VAO);
-      glGenBuffers(1, &VBO);
-
-      // Bind the VAO
-      glBindVertexArray(VAO);
-
-      // Upload interleaved vertex/color data
-      glBindBuffer(GL_ARRAY_BUFFER, VBO);
-      glBufferData(GL_ARRAY_BUFFER,
-                   vertexData.size() * sizeof(float),
-                   vertexData.data(),
-                   GL_STATIC_DRAW);
-
-      // Set up attribute pointers for the interleaved data
-      // Position attribute (3 floats)
-      glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-      glEnableVertexAttribArray(0);
-
-      // Color attribute (3 floats, offset after position)
-      glVertexAttribPointer(1,
-                            3,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            6 * sizeof(float),
-                            (void*)(3 * sizeof(float)));
-      glEnableVertexAttribArray(1);
-
-      // Increase line width for better visibility
-      glLineWidth(1.0f);
-
-      // Draw all lines in a single call
-      glDrawArrays(GL_LINES, 0, vertexData.size() / 6);
-
-      // Clean up
-      glDeleteBuffers(1, &VBO);
-      glDeleteVertexArrays(1, &VAO);
-
-      // Restore previous shader program
-      glUseProgram(previousProgram);
-    }
-
-    // Clear the lines vector
-    lines.clear();
+  if (numLines == 0) {
+    return;
   }
+
+  // Lazy initialization if not done yet
+  if (!m_initialized) {
+    initialize();
+  }
+
+  auto& device = gfx::GraphicsDevice::getInstance();
+  auto& resources = gfx::RenderResources::getInstance();
+
+  // Render only physics debug lines in 3D mode
+  resources.setDepthTest(true);
+
+  // Set up the shader program
+  if (shader.isValid()) {
+    // Use the external shader provided by DebugPass
+    device.bindShaderProgram(shader);
+
+    // Set the model matrix to identity (viewMatrix/projMatrix come from
+    // CameraData UBO)
+    glm::mat4 identity(1.0f);
+    i32 modelMatrixLoc = device.getUniformLocation(shader, "modelMatrix");
+    device.setUniformMat4(modelMatrixLoc, identity);
+    // Note: viewMatrix and projMatrix now come from CameraData UBO,
+    // which should already be updated by the main render passes
+  }
+  // Note: Legacy fixed-function fallback removed - shader is required
+
+  // Create arrays for our vertex data
+  std::vector<float> vertexData;
+  vertexData.reserve(numLines * 2 * 6);
+
+  // Fill the buffers with data from all lines
+  for (size_t i = 0; i < numLines; i++) {
+    const Line& line = lines[i];
+
+    // Skip any invalid lines
+    if (std::isnan(line.from.x()) || std::isnan(line.to.x())) {
+      continue;
+    }
+
+    // First vertex (from)
+    vertexData.push_back(line.from.x());
+    vertexData.push_back(line.from.y());
+    vertexData.push_back(line.from.z());
+    vertexData.push_back(line.color.x());
+    vertexData.push_back(line.color.y());
+    vertexData.push_back(line.color.z());
+
+    // Second vertex (to)
+    vertexData.push_back(line.to.x());
+    vertexData.push_back(line.to.y());
+    vertexData.push_back(line.to.z());
+    vertexData.push_back(line.color.x());
+    vertexData.push_back(line.color.y());
+    vertexData.push_back(line.color.z());
+  }
+
+  // Skip rendering if we have no valid vertex data
+  if (vertexData.empty()) {
+    lines.clear();
+    return;
+  }
+
+  // For maximum visibility, we disable depth testing
+  resources.setDepthTest(false);
+
+  // Make sure we're drawing to the default framebuffer (screen)
+  resources.bindDefaultFramebuffer();
+
+  // Ensure blending is enabled for transparency
+  resources.setBlendEnabled(true);
+  resources.setBlendFunc(gfx::BlendFactor::SrcAlpha,
+                         gfx::BlendFactor::OneMinusSrcAlpha);
+
+  // Calculate required buffer size
+  u64 requiredSize = vertexData.size() * sizeof(float);
+
+  // Resize buffer if needed (double capacity to reduce reallocations)
+  if (requiredSize > m_vboCapacity) {
+    device.destroyBuffer(m_vbo);
+
+    u64 newCapacity = std::max(requiredSize, m_vboCapacity * 2);
+
+    gfx::BufferCreateInfo vboInfo{};
+    vboInfo.size = newCapacity;
+    vboInfo.usage = gfx::BufferUsage::Vertex;
+    vboInfo.initialData = nullptr;
+    m_vbo = device.createBuffer(vboInfo);
+    m_vboCapacity = newCapacity;
+  }
+
+  // Upload vertex data to VBO (orphaning pattern for async safety)
+  device.updateBuffer(m_vbo, 0, vertexData.data(), requiredSize);
+
+  // Set line width
+  resources.setLineWidth(1.0f);
+
+  // Draw using the abstracted API
+  u32 vertexCount = static_cast<u32>(vertexData.size() / 6);
+  device.drawVertexArrayDynamic(
+    m_vao, m_vbo, gfx::PrimitiveTopology::Lines, vertexCount);
+
+  // Clear the lines vector for next frame
+  lines.clear();
 #endif
 }

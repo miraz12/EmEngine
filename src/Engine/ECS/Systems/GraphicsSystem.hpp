@@ -3,7 +3,6 @@
 
 #include "System.hpp"
 
-#include <Managers/FrameBufferManager.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 
 class GraphicsSystem final
@@ -19,7 +18,6 @@ public:
 private:
   GraphicsSystem();
   ~GraphicsSystem() override;
-  FrameBufferManager& m_fboManager;
   FrameGraph& m_fGraph;
 };
 #endif // GRAPHICSSYSTEM_H_

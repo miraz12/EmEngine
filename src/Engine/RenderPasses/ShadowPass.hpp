@@ -18,8 +18,16 @@ private:
   static constexpr u32 SHADOW_MAP_SIZE =
     LightingUtil::CascadeConfig::SHADOW_MAP_SIZE;
 
-  u32 m_cascadeUBO{0};
+  // Note: cascadeUBO is now managed by RenderResources
   LightingUtil::CascadeConfig m_cascadeConfig;
+
+  // Cached uniform locations for CommandBuffer use
+  i32 m_lightSpaceMatrixLoc{ -1 };
+  i32 m_modelMatrixLoc{ -1 };
+  i32 m_isSkinnedLoc{ -1 };
+
+  // Pipeline for CommandBuffer rendering
+  gfx::PipelineId m_pipeline{};
 };
 
 #endif // SHADOWPASS_H_

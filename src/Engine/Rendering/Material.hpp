@@ -1,17 +1,21 @@
 #ifndef MATERIAL_H_
 #define MATERIAL_H_
 
-#include <Managers/TextureManager.hpp>
-#include <ShaderPrograms/ShaderProgram.hpp>
+#include <Graphics/Handle.hpp>
+
+namespace gfx {
+class CommandBuffer;
+}
 
 class Material
 {
 public:
-  Material();
+  Material() = default;
   ~Material() = default;
-  void bind(const ShaderProgram& sPrg);
-
-  TextureManager& m_textureMan;
+  void bind(gfx::ShaderId shader);
+  /// Record material binding commands (textures, UBO, render state) into
+  /// CommandBuffer
+  void recordBind(gfx::CommandBuffer& cmd, gfx::SamplerId sampler);
   i32 m_material{ 0 };
   glm::vec3 m_emissiveFactor = glm::vec3(0.0f);
   glm::vec3 m_baseColorFactor = glm::vec3(1.0f);

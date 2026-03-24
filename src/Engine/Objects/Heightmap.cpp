@@ -1,4 +1,5 @@
 #include "Heightmap.hpp"
+#include <Graphics/RenderResources.hpp>
 
 Heightmap::Heightmap(std::string filename)
   : m_filename(filename)
@@ -50,7 +51,7 @@ Heightmap::Heightmap(std::string filename)
     i32 numDegens = 2 * (numStrips - 1);
     i32 verticesPerStrip = 2 * width;
 
-    // Generate iindicesndices
+    // Generate indices
     m_indices.reserve((verticesPerStrip * numStrips) + numDegens);
     for (i32 z = 0; z < height - 1; ++z) {
       if (z > 0) {
@@ -75,45 +76,35 @@ Heightmap::Heightmap(std::string filename)
     p_meshes[0].numPrims = 1;
     p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
     Primitive* newPrim = &p_meshes[0].m_primitives[0];
-    u32 vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
-    newPrim->m_vao = vao;
-    newPrim->m_mode = GL_TRIANGLE_STRIP;
+    // Use abstracted geometry creation
+    auto& resources = gfx::RenderResources::getInstance();
 
-    newPrim->m_count = m_indices.size();
-    newPrim->m_type = GL_UNSIGNED_INT;
+    std::array<gfx::VertexBinding, 1> bindings = {
+      { { 0, 3 * sizeof(float), false } }
+    };
+    std::array<gfx::VertexAttribute, 1> attributes = { {
+      { 0, 0, 0, gfx::PixelFormat::RGB32F } // POSITION at location 0
+    } };
+
+    auto result =
+      resources.createGeometry(m_vertices.data(),
+                               m_vertices.size() * sizeof(glm::vec3),
+                               m_indices.data(),
+                               m_indices.size() * sizeof(u32),
+                               bindings,
+                               attributes,
+                               gfx::PrimitiveTopology::TriangleStrip,
+                               static_cast<u32>(m_vertices.size()),
+                               "Heightmap");
+
+    newPrim->m_vaoId = result.vao;
+    newPrim->m_vboId = result.vbo;
+    newPrim->m_eboId = result.ebo;
+    newPrim->m_topology = gfx::PrimitiveTopology::TriangleStrip;
+    newPrim->m_indexType = gfx::IndexType::U32;
+    newPrim->m_count = static_cast<u32>(m_indices.size());
     newPrim->m_offset = 0;
-
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 sizeof(u32) * m_indices.size(),
-                 m_indices.data(),
-                 GL_STATIC_DRAW);
-    newPrim->m_ebo = ebo;
-    newPrim->m_drawType = 1;
-
-    u32 vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER,
-                 sizeof(float) * m_vertices.size() * 3,
-                 m_vertices.data(),
-                 GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
-    glEnableVertexAttribArray(0);
-    Primitive::AttribInfo attribInfo;
-    attribInfo.vbo = 0;
-    attribInfo.type = 3;
-    attribInfo.componentType = GL_FLOAT;
-    attribInfo.normalized = GL_FALSE;
-    attribInfo.byteStride = 3 * sizeof(float);
-    attribInfo.byteOffset = 0;
-    newPrim->attributes["POSITION"] = attribInfo;
   }
 
   stbi_image_free(imageData);

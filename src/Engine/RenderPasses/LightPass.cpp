@@ -1,124 +1,112 @@
 #include "LightPass.hpp"
-#include "ECS/Components/CameraComponent.hpp"
-#include "LightingUtil.hpp"
 #include <ECS/Components/LightingComponent.hpp>
-#include <Managers/TextureManager.hpp>
-
 #include <ECS/ECSManager.hpp>
+#include <Graphics/GraphicsDevice.hpp>
+#include <Graphics/Resources/Pipeline.hpp>
+#include <Graphics/UBOStructs.hpp>
+#include <array>
 
 LightPass::LightPass()
-  : RenderPass("resources/Shaders/light.vert",
+  : RenderPass("LightPass",
+               "resources/Shaders/light.vert",
                "resources/Shaders/pbrLight.frag")
 {
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
 
-  m_shaderProgram.setUniformBinding("debugView");
-  m_shaderProgram.setUniformBinding("gPositionAo");
-  m_shaderProgram.setUniformBinding("gNormalMetal");
-  m_shaderProgram.setUniformBinding("gAlbedoSpecRough");
-  m_shaderProgram.setUniformBinding("gEmissive");
-  m_shaderProgram.setUniformBinding("nrOfPointLights");
-  m_shaderProgram.setUniformBinding("camPos");
-  m_shaderProgram.setUniformBinding("viewMatrix");
-  m_shaderProgram.setUniformBinding("directionalLight.direction");
-  m_shaderProgram.setUniformBinding("directionalLight.color");
-  m_shaderProgram.setUniformBinding("directionalLight.intensity");
-  m_shaderProgram.setUniformBinding("depthMapArray");
-  m_shaderProgram.setUniformBinding("irradianceMap");
-  m_shaderProgram.setUniformBinding("prefilterMap");
-  m_shaderProgram.setUniformBinding("brdfLUT");
+  useShader();
+  gfx::ShaderId shader = getShaderId();
 
-  m_shaderProgram.use();
+  // Bind UBO blocks
+  resources.bindShaderUniformBlock(
+    shader, "CascadeData", gfx::UBOBinding::CascadeData);
+  resources.bindShaderUniformBlock(
+    shader, "CameraData", gfx::UBOBinding::Camera);
+  resources.bindShaderUniformBlock(
+    shader, "LightingData", gfx::UBOBinding::Lighting);
 
-  // Bind UBO block for cascade data (binding point 0)
-  u32 blockIndex = glGetUniformBlockIndex(m_shaderProgram.getId(), "CascadeData");
-  glUniformBlockBinding(m_shaderProgram.getId(), blockIndex, 0);
+  // Set sampler uniform locations to match texture binding order.
+  // Textures are populated by addTexture() calls from other passes' Init()
+  // methods: CubeMapPass::Init: irradianceMap(0), prefilterMap(1), brdfLUT(2)
+  // ShadowPass::Init: depthMapArray(3)
+  // GeometryPass::Init: gPositionAo(4), gNormalMetal(5), gAlbedoSpecRough(6),
+  // gEmissive(7)
+  //
+  // Each sampler uniform must be set to the texture unit it will be bound to.
+  device.setUniformInt(device.getUniformLocation(shader, "irradianceMap"), 0);
+  device.setUniformInt(device.getUniformLocation(shader, "prefilterMap"), 1);
+  device.setUniformInt(device.getUniformLocation(shader, "brdfLUT"), 2);
+  device.setUniformInt(device.getUniformLocation(shader, "depthMapArray"), 3);
+  device.setUniformInt(device.getUniformLocation(shader, "gPositionAo"), 4);
+  device.setUniformInt(device.getUniformLocation(shader, "gNormalMetal"), 5);
+  device.setUniformInt(device.getUniformLocation(shader, "gAlbedoSpecRough"),
+                       6);
+  device.setUniformInt(device.getUniformLocation(shader, "gEmissive"), 7);
 
-  glGenFramebuffers(1, &m_lightBuffer);
-  glGenRenderbuffers(1, &m_rbo);
-  m_fboManager.setFBO("lightFBO", m_lightBuffer);
-  setViewport(m_width, m_height);
+  // Create FBO through new RenderResources system (bare FBO, attachments
+  // managed in setViewport)
+  resources.createBareFramebuffer("lightFBO");
 
-  for (u32 i = 0; i < MAX_POINT_LIGHTS; i++) {
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].position");
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].color");
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].diffuseIntensity");
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].constant");
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].linear");
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].quadratic");
-    m_shaderProgram.setUniformBinding("pointLights[" + std::to_string(i) +
-                                      "].radius");
-  }
+  // Create renderbuffer for depth through new RenderResources system
+  gfx::RenderbufferCreateInfo rboInfo{};
+  rboInfo.width = m_width;
+  rboInfo.height = m_height;
+  rboInfo.format = gfx::PixelFormat::Depth24Stencil8;
+  rboInfo.debugName = "lightFBODepth";
+  resources.createRenderbuffer("lightFBODepth", rboInfo);
 
-  // Cache uniform locations for performance
-  m_debugViewLoc = m_shaderProgram.getUniformLocation("debugView");
-  m_nrOfPointLightsLoc = m_shaderProgram.getUniformLocation("nrOfPointLights");
-  m_camPosLoc = m_shaderProgram.getUniformLocation("camPos");
-  m_viewMatrixLoc = m_shaderProgram.getUniformLocation("viewMatrix");
-  m_dirLightDirectionLoc =
-    m_shaderProgram.getUniformLocation("directionalLight.direction");
-  m_dirLightColorLoc =
-    m_shaderProgram.getUniformLocation("directionalLight.color");
-  m_dirLightIntensityLoc =
-    m_shaderProgram.getUniformLocation("directionalLight.intensity");
+  // Create lightFrame texture through new RenderResources system
+  // This is read by CubeMapPass
+  gfx::TextureCreateInfo lightFrameInfo{};
+  lightFrameInfo.width = m_width;
+  lightFrameInfo.height = m_height;
+  lightFrameInfo.format = gfx::PixelFormat::RGBA16F;
+  lightFrameInfo.mipLevels = 1;
+  lightFrameInfo.debugName = "lightFrame";
+  resources.createTexture2D("lightFrame", lightFrameInfo);
 
-  for (u32 i = 0; i < MAX_POINT_LIGHTS; i++) {
-    m_pointLightPositionLocs[i] = m_shaderProgram.getUniformLocation(
-      "pointLights[" + std::to_string(i) + "].position");
-    m_pointLightColorLocs[i] = m_shaderProgram.getUniformLocation(
-      "pointLights[" + std::to_string(i) + "].color");
-    m_pointLightConstantLocs[i] = m_shaderProgram.getUniformLocation(
-      "pointLights[" + std::to_string(i) + "].constant");
-    m_pointLightLinearLocs[i] = m_shaderProgram.getUniformLocation(
-      "pointLights[" + std::to_string(i) + "].linear");
-    m_pointLightQuadraticLocs[i] = m_shaderProgram.getUniformLocation(
-      "pointLights[" + std::to_string(i) + "].quadratic");
-    m_pointLightRadiusLocs[i] = m_shaderProgram.getUniformLocation(
-      "pointLights[" + std::to_string(i) + "].radius");
-  }
+  m_useNewResources = true;
 
-  u32 quadVBO;
-  float quadVertices[] = {
-    // positions        // texture Coords
-    -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-    1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+  // Create pipeline (for future CommandBuffer use)
+  // Quad layout: vec3 position (loc 0), vec2 texcoord (loc 1)
+  static constexpr u32 kQuadStride = 5 * sizeof(float);
+  std::array<gfx::VertexBinding, 1> bindings = {
+    { { .binding = 0, .stride = kQuadStride, .perInstance = false } }
+  };
+  std::array<gfx::VertexAttribute, 2> attributes = {
+    { { .location = 0,
+        .binding = 0,
+        .offset = 0,
+        .format = gfx::PixelFormat::RGB32F },
+      { .location = 1,
+        .binding = 0,
+        .offset = 3 * sizeof(float),
+        .format = gfx::PixelFormat::RG32F } }
   };
 
-  glGenVertexArrays(1, &quadVAO);
-  glGenBuffers(1, &quadVBO);
-  glBindVertexArray(quadVAO);
+  gfx::PipelineCreateInfo pipeInfo{};
+  pipeInfo.shaderProgram = getShaderId();
+  pipeInfo.vertexBindings = bindings;
+  pipeInfo.vertexAttributes = attributes;
+  pipeInfo.topology = gfx::PrimitiveTopology::TriangleStrip;
+  pipeInfo.depthStencil.depthTestEnable = false;
+  pipeInfo.depthStencil.depthWriteEnable = false;
+  pipeInfo.blend.attachments[0].blendEnable = false;
+  pipeInfo.rasterizer.cullMode = gfx::CullMode::None;
+  pipeInfo.debugName = "LightPassPipeline";
+  m_pipeline = resources.createPipeline("LightPassPipeline", pipeInfo);
 
-  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBufferData(
-    GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(
-    1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+  setViewport(m_width, m_height);
 }
 
 void
 LightPass::Execute(ECSManager& eManager)
 {
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Lightning Pass");
-#endif
-  m_fboManager.bindFBO("lightFBO");
-  glDisable(GL_DEPTH_TEST);
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
 
-  m_shaderProgram.use();
-  glUniform1i(m_debugViewLoc, eManager.getDebugView());
-
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  // Populate LightingUBO from ECS light components
+  gfx::LightingUBO& lightingUBO = resources.getLightingUBO();
 
   std::vector<Entity> view = eManager.view<LightingComponent>();
   i32 numPLights = 0;
@@ -130,26 +118,20 @@ LightPass::Execute(ECSManager& eManager)
       case LightingComponent::TYPE::DIRECTIONAL: {
         auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
 
-        glUniform3fv(m_dirLightDirectionLoc, 1, glm::value_ptr(light.direction));
-        glUniform3fv(m_dirLightColorLoc, 1, glm::value_ptr(light.color));
-        glUniform1f(m_dirLightIntensityLoc, light.intensity);
+        lightingUBO.dirLightDirection = glm::vec4(light.direction, 0.0f);
+        lightingUBO.dirLightColor = glm::vec4(light.color, light.intensity);
 
         break;
       }
       case LightingComponent::TYPE::POINT: {
+        if (numPLights >= static_cast<i32>(MAX_POINT_LIGHTS)) {
+          break;
+        }
 
         PointLight& light = static_cast<PointLight&>(g->getBaseLight());
-        glUniform3fv(m_pointLightPositionLocs[numPLights], 1,
-                     glm::value_ptr(light.position));
-        glUniform3fv(m_pointLightColorLocs[numPLights], 1,
-                     glm::value_ptr(light.color));
-        glUniform1f(m_pointLightConstantLocs[numPLights], light.constant);
-        glUniform1f(m_pointLightLinearLocs[numPLights], light.linear);
-        glUniform1f(m_pointLightQuadraticLocs[numPLights], light.quadratic);
 
-        const float constant =
-          1.0f; // note that we don't send this to the shader, we assume it is
-                // always 1.0 (in our case)
+        // Calculate radius for culling
+        const float constant = 1.0f;
         float maxBrightness =
           std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
         float radius =
@@ -158,7 +140,14 @@ LightPass::Execute(ECSManager& eManager)
                      4 * light.quadratic *
                        (constant - (256.0f / 5.0f) * maxBrightness))) /
           (2.0f * light.quadratic);
-        glUniform1f(m_pointLightRadiusLocs[numPLights], radius);
+
+        // Populate UBO point light data
+        lightingUBO.pointLights[numPLights].positionRadius =
+          glm::vec4(light.position, radius);
+        lightingUBO.pointLights[numPLights].colorIntensity =
+          glm::vec4(light.color, 0.0f);
+        lightingUBO.pointLights[numPLights].attenuation =
+          glm::vec4(light.constant, light.linear, light.quadratic, 0.0f);
 
         numPLights++;
         break;
@@ -168,26 +157,83 @@ LightPass::Execute(ECSManager& eManager)
     }
   }
 
-  glUniform1i(m_nrOfPointLightsLoc, numPLights);
-  glUniform3fv(m_camPosLoc, 1, glm::value_ptr(cam->m_position));
-  glUniformMatrix4fv(m_viewMatrixLoc, 1, GL_FALSE,
-                     glm::value_ptr(cam->m_viewMatrix));
+  // Set light config (numPointLights, debugView)
+  lightingUBO.lightConfig =
+    glm::ivec4(numPLights, eManager.getDebugView(), 0, 0);
 
-  glBindVertexArray(quadVAO);
-  for (size_t i = 0; i < m_textures.size(); i++) {
-    m_textureManager.bindActivateTexture(m_textures[i], i);
+  // Upload UBO to GPU before CommandBuffer recording
+  resources.flushLightingUBO();
+
+  // Get command buffer for this pass
+  gfx::CommandBuffer* cmd = getCommandBuffer();
+  if (cmd == nullptr) {
+    return;
   }
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-  // Clean up GL state
-  glBindVertexArray(0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
 
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPopDebugGroup();
+  cmd->pushDebugGroup("Light Pass");
 #endif
+
+  // Begin render pass with lightFBO
+  gfx::RenderPassBeginInfo passInfo{};
+  passInfo.framebuffer = resources.getFramebuffer("lightFBO");
+  passInfo.clearColors[0] = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
+  passInfo.clearDepth = 1.0f;
+  passInfo.clearStencil = 0;
+  passInfo.colorAttachmentCount = 1;
+  passInfo.clearColor = true;
+  passInfo.clearDepthStencil = false;
+  cmd->beginRenderPass(passInfo);
+
+  // Bind pipeline (includes shader, depth test disabled, no blending)
+  cmd->bindPipeline(m_pipeline);
+
+  // Set viewport
+  gfx::Viewport viewport{};
+  viewport.x = 0;
+  viewport.y = 0;
+  viewport.width = static_cast<float>(m_width);
+  viewport.height = static_cast<float>(m_height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  cmd->setViewport(viewport);
+
+  // Bind vertex buffer for fullscreen quad
+  cmd->bindVertexBuffer(0, resources.getQuadVertexBuffer(), 0);
+
+  // Bind all input textures with appropriate samplers
+  gfx::SamplerId linearClampSampler = resources.getLinearClampSampler();
+  gfx::SamplerId linearMipmapClampSampler =
+    resources.getLinearMipmapClampSampler();
+  gfx::SamplerId shadowSampler = resources.getShadowSampler();
+
+  for (size_t idx = 0; idx < m_textures.size(); idx++) {
+    gfx::TextureId tex = resources.getTexture(m_textures[idx]);
+    // Select appropriate sampler:
+    // - Shadow sampler for depthMapArray (has comparison mode enabled)
+    // - Mipmap sampler for IBL cubemaps that use textureLod() in shader
+    // - Linear clamp for everything else
+    gfx::SamplerId sampler = linearClampSampler;
+    if (m_textures[idx] == "depthMapArray") {
+      sampler = shadowSampler;
+    } else if (m_textures[idx] == "irradianceMap" ||
+               m_textures[idx] == "prefilterMap") {
+      sampler = linearMipmapClampSampler;
+    }
+    cmd->bindTexture(static_cast<u32>(idx), tex, sampler);
+  }
+
+  // Draw fullscreen quad
+  cmd->draw(gfx::RenderResources::kQuadVertexCount, 1, 0, 0);
+
+  cmd->endRenderPass();
+
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  cmd->popDebugGroup();
+#endif
+
+  // Submit the command buffer
+  device.submit(m_cmdBuffer);
 }
 
 void
@@ -196,25 +242,27 @@ LightPass::setViewport(u32 w, u32 h)
   m_width = w;
   m_height = h;
 
-  m_fboManager.bindFBO("lightFBO");
+  auto& resources = gfx::RenderResources::getInstance();
 
-  // - position color buffer
-  u32 lightFrame = m_textureManager.loadTexture(
-    "lightFrame", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightFrame, 0);
-
-  u32 attachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, attachments);
-  glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
-  glRenderbufferStorage(
-    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
-  glFramebufferRenderbuffer(
-    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
-  // finally check if framebuffer is complete
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "Framebuffer not complete!" << std::endl;
+  // Recreate lightFrame texture and renderbuffer with new size
+  if (m_useNewResources) {
+    resources.recreateTexture2D("lightFrame", m_width, m_height);
+    resources.resizeRenderbuffer("lightFBODepth", m_width, m_height);
   }
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // Attach lightFrame texture to FBO
+  resources.setFramebufferAttachment("lightFBO", 0, "lightFrame");
+
+  // Set draw buffers
+  std::array<u32, 1> drawBuffers = { 0 };
+  resources.setDrawBuffers("lightFBO", drawBuffers);
+
+  // Attach depth renderbuffer
+  resources.setFramebufferRenderbuffer(
+    "lightFBO", gfx::RenderbufferAttachment::Depth, "lightFBODepth");
+
+  // Check framebuffer completeness
+  if (!resources.isFramebufferComplete("lightFBO")) {
+    std::cout << "Framebuffer not complete!\n";
+  }
 }

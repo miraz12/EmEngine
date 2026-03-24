@@ -10,9 +10,16 @@ layout(location = 1) in vec3 COLOR;
 
 out vec3 fragColor;
 
+// Camera UBO (binding point 1)
+layout(std140) uniform CameraData
+{
+  mat4 viewMatrix;
+  mat4 projMatrix;
+  mat4 viewProjMatrix;
+  vec4 cameraPosition; // xyz = position, w = unused
+};
+
 uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projMatrix;
 
 void
 main()

@@ -1,4 +1,5 @@
 #include "Point.hpp"
+#include <Graphics/RenderResources.hpp>
 
 Point::Point(float x, float y, float z)
 {
@@ -11,33 +12,30 @@ Point::Point(float x, float y, float z)
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
   Primitive* newPrim = &p_meshes[0].m_primitives[0];
-  u32 vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
 
-  newPrim->m_vao = vao;
-  newPrim->m_mode = GL_POINTS;
+  // Use abstracted geometry creation
+  auto& resources = gfx::RenderResources::getInstance();
 
+  std::array<gfx::VertexBinding, 1> bindings = {
+    { { 0, 3 * sizeof(float), false } }
+  };
+  std::array<gfx::VertexAttribute, 1> attributes = { {
+    { 0, 0, 0, gfx::PixelFormat::RGB32F } // POSITION at location 0
+  } };
+
+  auto result = resources.createGeometry(m_vertices.data(),
+                                         m_vertices.size() * sizeof(float),
+                                         nullptr,
+                                         0,
+                                         bindings,
+                                         attributes,
+                                         gfx::PrimitiveTopology::Points,
+                                         1,
+                                         "Point");
+
+  newPrim->m_vaoId = result.vao;
+  newPrim->m_vboId = result.vbo;
+  newPrim->m_topology = gfx::PrimitiveTopology::Points;
   newPrim->m_count = 1;
-  newPrim->m_type = GL_UNSIGNED_INT;
   newPrim->m_offset = 0;
-
-  u32 vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(
-    GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices.data(), GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(0);
-  Primitive::AttribInfo attribInfo;
-  attribInfo.vbo = 0;
-  attribInfo.type = 3;
-  attribInfo.componentType = GL_FLOAT;
-  attribInfo.normalized = GL_FALSE;
-  attribInfo.byteStride = 0;
-  attribInfo.byteOffset = 0;
-  newPrim->attributes["POSITION"] = attribInfo;
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

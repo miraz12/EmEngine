@@ -8,8 +8,15 @@ precision highp float;
 out vec4 FragColor;
 in vec2 texCoords;
 
+// Sampler remains as regular uniform (cannot be in UBO)
 uniform sampler2D scene;
-uniform vec2 resolution;
+
+// PostProcess UBO (binding point 5)
+layout(std140) uniform PostProcessData
+{
+  vec4 resolution;      // xy = resolution, z = exposure, w = filterRadius
+  ivec4 postConfig;     // x = mipLevel, y = sceneSampler, z = bloomSampler, w = unused
+};
 
 // =============================================================================
 // FXAA QUALITY SETTINGS
@@ -24,7 +31,7 @@ const float FXAA_REDUCE_MIN = 1.0 / 128.0;
 void
 main()
 {
-  vec2 texOffset = 1.0 / resolution;
+  vec2 texOffset = 1.0 / resolution.xy;
 
   // Sample 5-tap cross pattern
   vec3 rgbNW = texture(scene, texCoords + vec2(-1.0, -1.0) * texOffset).xyz;

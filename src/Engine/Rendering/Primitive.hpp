@@ -1,36 +1,30 @@
 #ifndef PRIMITIVE_H_
 #define PRIMITIVE_H_
 
+#include <Graphics/GraphicsDevice.hpp>
+
+namespace gfx {
+class CommandBuffer;
+}
+
 class Primitive
 {
 public:
   void draw();
-
-  struct AttribInfo
-  {
-    u32 vbo;
-    size_t byteOffset;
-    size_t byteStride;
-    bool normalized;
-    i32 componentType;
-    size_t count;
-    i32 type;
-  };
+  /// Record draw command into the given CommandBuffer
+  void recordDraw(gfx::CommandBuffer& cmd);
 
   i32 m_material{ -1 };
 
-  u32 m_vbo;
+  // Graphics handles (abstracted)
+  gfx::VertexArrayId m_vaoId{};
+  gfx::BufferId m_vboId{};
+  gfx::BufferId m_eboId{};
+  gfx::PrimitiveTopology m_topology{ gfx::PrimitiveTopology::Triangles };
+  gfx::IndexType m_indexType{ gfx::IndexType::U32 };
 
-  u32 m_drawType{ 0 }; // Either 0 = drawArrays or 1
-
-  u32 m_ebo;
-  u32 m_count;
-  u32 m_type;
-  u32 m_offset;
-
-  u32 m_vao;
-  u32 m_mode;
-  std::map<std::string, AttribInfo> attributes;
+  u32 m_count{ 0 };
+  u32 m_offset{ 0 };
 };
 
 #endif // PRIMITIVE_H_

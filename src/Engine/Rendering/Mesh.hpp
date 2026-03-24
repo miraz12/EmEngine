@@ -2,7 +2,6 @@
 #define MESHOBJ_H_
 
 #include "Primitive.hpp"
-#include <ShaderPrograms/ShaderProgram.hpp>
 
 class Mesh
 {

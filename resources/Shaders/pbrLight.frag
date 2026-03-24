@@ -11,33 +11,8 @@ precision highp sampler2DArrayShadow;
 #define NUM_CASCADES 4
 
 // ============================================================
-// LIGHT STRUCTURES
-// ============================================================
-
-struct PointLight
-{
-  vec3 color;
-  vec3 position;
-  float constant;  // Attenuation constant (unused - using inverse square)
-  float linear;    // Attenuation linear (unused - using inverse square)
-  float quadratic; // Attenuation quadratic (unused - using inverse square)
-  float radius;    // Culling radius
-};
-
-struct DirectionalLight
-{
-  vec3 color;
-  vec3 direction;
-  float intensity;
-};
-
-// ============================================================
 // UNIFORMS
 // ============================================================
-
-// Debug visualization mode (0=normal, 1=albedo, 2=normal, 3=AO, 4=emissive,
-// 5=metallic, 6=roughness, 7=cascades)
-uniform int debugView;
 
 // G-Buffer inputs (from Geometry Pass)
 uniform sampler2D gPositionAo;      // RGB: world position, A: ambient occlusion
@@ -50,23 +25,45 @@ uniform sampler2DArrayShadow depthMapArray; // CSM shadow map array (4 cascades)
 
 // Image-Based Lighting (IBL) maps
 uniform samplerCube irradianceMap; // Diffuse irradiance cubemap
-uniform samplerCube
-  prefilterMap; // Specular pre-filtered environment map (5 mip levels)
+uniform samplerCube prefilterMap; // Specular pre-filtered environment map (5 mip levels)
 uniform sampler2D brdfLUT; // BRDF integration lookup table
 
-// Scene data
-uniform vec3 camPos;
-uniform mat4 viewMatrix;
-uniform DirectionalLight directionalLight;
-uniform PointLight pointLights[NR_POINT_LIGHTS];
-uniform int nrOfPointLights;
+// ============================================================
+// UNIFORM BUFFER OBJECTS
+// ============================================================
 
-// Cascade data from UBO (binding point 0)
+// Camera UBO (binding point 1)
+layout(std140) uniform CameraData
+{
+  mat4 viewMatrix;
+  mat4 projMatrix;
+  mat4 viewProjMatrix;
+  vec4 cameraPosition; // xyz = camPos, w = unused
+};
+
+// Cascade data UBO (binding point 0)
 layout(std140) uniform CascadeData
 {
   mat4 lightSpaceMatrices[NUM_CASCADES];
   vec4 cascadeSplits; // x, y, z used for 4 cascades
   ivec4 config;       // x: numCascades, y: shadowMapSize
+};
+
+// Point light data structure (matches C++ PointLightData, 48 bytes)
+struct PointLightData
+{
+  vec4 positionRadius;   // xyz = position, w = radius
+  vec4 colorIntensity;   // xyz = color, w = unused
+  vec4 attenuation;      // x = constant, y = linear, z = quadratic, w = unused
+};
+
+// Lighting UBO (binding point 2)
+layout(std140) uniform LightingData
+{
+  vec4 dirLightDirection;              // xyz = direction, w = unused
+  vec4 dirLightColor;                  // xyz = color, w = intensity
+  PointLightData pointLights[NR_POINT_LIGHTS]; // 480 bytes (10 * 48)
+  ivec4 lightConfig;                   // x = numPointLights, y = debugView, zw = unused
 };
 
 in vec2 texCoords;
@@ -172,7 +169,7 @@ SampleCascadeShadow(vec3 fragPos, vec3 normal, vec3 lightDir, int cascadeIndex)
 
   // Out of bounds check - return 1.0 (fully lit) if outside shadow map coverage
   if (projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 ||
-      projCoords.y > 1.0 || projCoords.z > 1.0) {
+      projCoords.y > 1.0 || projCoords.z < 0.0 || projCoords.z > 1.0) {
     return 1.0;
   }
 
@@ -256,11 +253,11 @@ ShadowCalculation(vec3 fragPos, vec3 normal, vec3 lightDir)
 // Calculate PBR lighting contribution from directional light
 // Applies Cook-Torrance BRDF with CSM shadows
 // Formula: (kD·albedo/π + specular)·radiance·(N·L)·shadow
-// Params: light, fragPos, viewDir, normal, roughness, metallic, specularColor,
-// albedo Returns: RGB lighting contribution
+// Uses global dirLightDirection/dirLightColor from LightingData UBO
+// Params: fragPos, viewDir, normal, roughness, metallic, specularColor, albedo
+// Returns: RGB lighting contribution
 vec3
-CalcDirectionalLightPBR(DirectionalLight light,
-                        vec3 fragPos,
+CalcDirectionalLightPBR(vec3 fragPos,
                         vec3 viewDir,
                         vec3 normal,
                         float roughness,
@@ -269,9 +266,9 @@ CalcDirectionalLightPBR(DirectionalLight light,
                         vec3 albedo)
 {
   // calculate per-light radiance
-  vec3 L = normalize(-light.direction);
+  vec3 L = normalize(-dirLightDirection.xyz);
   vec3 H = normalize(viewDir + L);
-  vec3 radiance = light.color * light.intensity;
+  vec3 radiance = dirLightColor.xyz * dirLightColor.w; // w = intensity
 
   // cook-torrance brdf
   float NDF = DistributionGGX(normal, H, roughness);
@@ -289,7 +286,7 @@ CalcDirectionalLightPBR(DirectionalLight light,
 
   // Calculate shadow with CSM
   float NdotL = max(dot(normal, L), 0.0);
-  float shadowFactor = ShadowCalculation(fragPos, normal, light.direction);
+  float shadowFactor = ShadowCalculation(fragPos, normal, dirLightDirection.xyz);
 
   return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor;
 }
@@ -297,10 +294,11 @@ CalcDirectionalLightPBR(DirectionalLight light,
 // Calculate PBR lighting contribution from point light
 // Applies Cook-Torrance BRDF with inverse-square attenuation
 // No shadows for point lights (only directional light has CSM)
-// Params: light, fragPos, viewDir, normal, roughness, metallic, specularColor,
-// albedo Returns: RGB lighting contribution
+// Params: light (PointLightData from UBO), fragPos, viewDir, normal, roughness,
+// metallic, specularColor, albedo
+// Returns: RGB lighting contribution
 vec3
-CalcPointLightPBR(PointLight light,
+CalcPointLightPBR(PointLightData light,
                   vec3 fragPos,
                   vec3 viewDir,
                   vec3 normal,
@@ -309,13 +307,13 @@ CalcPointLightPBR(PointLight light,
                   vec3 specularColor,
                   vec3 albedo)
 {
-
   // calculate per-light radiance
-  vec3 L = normalize(light.position - fragPos);
+  vec3 lightPos = light.positionRadius.xyz;
+  vec3 L = normalize(lightPos - fragPos);
   vec3 H = normalize(viewDir + L);
-  float distance = length(light.position - fragPos);
+  float distance = length(lightPos - fragPos);
   float attenuation = 1.0 / (distance * distance);
-  vec3 radiance = light.color * attenuation;
+  vec3 radiance = light.colorIntensity.xyz * attenuation;
 
   // cook-torrance brdf
   float NDF = DistributionGGX(normal, H, roughness);
@@ -347,13 +345,24 @@ main()
 
   vec3 fragPos = positionAo.rgb;
   vec3 normal = normalMetal.rgb;
+
+  // Skip pixels with no geometry (zero normal = uninitialized G-buffer pixel)
+  // This prevents cubemap IBL from bleeding through where nothing was rendered
+  float normalLen = length(normal);
+  if (normalLen < 0.001) {
+    FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+    return;
+  }
+  // Normalize in case of slight denormalization
+  normal = normal / normalLen;
+
   vec3 albedo = pow(albedoSpecRough.rgb, vec3(2.2)); // sRGB to linear
   vec3 emissive = texture(gEmissive, texCoords).rgb;
   float ao = positionAo.a;
   float metallic = normalMetal.a;
   float roughness = albedoSpecRough.a;
 
-  vec3 viewDir = normalize(camPos - fragPos);
+  vec3 viewDir = normalize(cameraPosition.xyz - fragPos);
   vec3 reflection = reflect(-viewDir, normal);
 
   // Cache commonly used values
@@ -361,8 +370,7 @@ main()
   vec3 specularColor = mix(vec3(0.04), albedo, metallic);
 
   // reflectance equation
-  vec3 Lo = CalcDirectionalLightPBR(directionalLight,
-                                    fragPos,
+  vec3 Lo = CalcDirectionalLightPBR(fragPos,
                                     viewDir,
                                     normal,
                                     roughness,
@@ -370,10 +378,11 @@ main()
                                     specularColor,
                                     albedo);
 
-  for (int i = 0; i < nrOfPointLights; i++) {
+  int numPointLights = lightConfig.x;
+  for (int i = 0; i < numPointLights; i++) {
     // calculate distance between light source and current fragment
-    float distance = length(pointLights[i].position - fragPos);
-    if (distance < pointLights[i].radius) {
+    float distance = length(pointLights[i].positionRadius.xyz - fragPos);
+    if (distance < pointLights[i].positionRadius.w) { // w = radius
       Lo += CalcPointLightPBR(pointLights[i],
                               fragPos,
                               viewDir,
@@ -406,6 +415,7 @@ main()
 
   vec3 color = ambient + Lo;
 
+  int debugView = lightConfig.y;
   if (debugView == 0) {
     FragColor = vec4(vec3(color) + emissive, 1.0);
   } else if (debugView == 1) {

@@ -1,9 +1,12 @@
 #ifndef FXAAPASS_H_
 #define FXAAPASS_H_
 
-#include <ECS/ECSManager.hpp>
 #include <RenderPasses/RenderPass.hpp>
 
+/// FXAA (Fast Approximate Anti-Aliasing) post-processing pass.
+///
+/// Input: "frameBloomFinal" texture from BloomPass
+/// Output: Default framebuffer (screen)
 class FxaaPass final : public RenderPass
 {
 public:
@@ -14,9 +17,7 @@ public:
   void Init(FrameGraph& /* fGraph */) override {};
 
 private:
-  // Cached uniform locations for performance
-  GLint m_sceneLoc{ -1 };
-  GLint m_resolutionLoc{ -1 };
+  gfx::PipelineId m_pipeline;
 };
 
 #endif // FXAAPASS_H_

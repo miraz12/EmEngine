@@ -7,8 +7,7 @@
 #include <RenderPasses/FrameGraph.hpp>
 
 GraphicsSystem::GraphicsSystem()
-  : m_fboManager(FrameBufferManager::getInstance())
-  , m_fGraph(*new FrameGraph())
+  : m_fGraph(*new FrameGraph())
 {
 }
 

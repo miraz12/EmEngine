@@ -1,4 +1,5 @@
 #include "Quad.hpp"
+#include <Graphics/RenderResources.hpp>
 
 Quad::Quad()
 {
@@ -10,40 +11,36 @@ Quad::Quad()
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
   Primitive* newPrim = &p_meshes[0].m_primitives[0];
-  u32 vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
 
-  newPrim->m_vao = vao;
-  newPrim->m_mode = GL_TRIANGLES;
+  // Use abstracted geometry creation
+  auto& resources = gfx::RenderResources::getInstance();
 
+  // Quad layout: 9 floats per vertex (position xyz, color rgb, texcoord uv +
+  // unknown)
+  std::array<gfx::VertexBinding, 1> bindings = {
+    { { 0, 9 * sizeof(float), false } }
+  };
+  std::array<gfx::VertexAttribute, 1> attributes = { {
+    { 0, 0, 0, gfx::PixelFormat::RGB32F } // POSITION at location 0
+  } };
+
+  auto result = resources.createGeometry(m_vertices,
+                                         sizeof(m_vertices),
+                                         m_indices,
+                                         sizeof(m_indices),
+                                         bindings,
+                                         attributes,
+                                         gfx::PrimitiveTopology::Triangles,
+                                         4,
+                                         "Quad");
+
+  newPrim->m_vaoId = result.vao;
+  newPrim->m_vboId = result.vbo;
+  newPrim->m_eboId = result.ebo;
+  newPrim->m_topology = gfx::PrimitiveTopology::Triangles;
+  newPrim->m_indexType = gfx::IndexType::U32;
   newPrim->m_count = 6;
-  newPrim->m_type = GL_UNSIGNED_INT;
   newPrim->m_offset = 0;
-
-  GLuint ebo;
-  glGenBuffers(1, &ebo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(
-    GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
-  newPrim->m_ebo = ebo;
-  newPrim->m_drawType = 1;
-
-  u32 vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
-  glEnableVertexAttribArray(0);
-  Primitive::AttribInfo attribInfo;
-  attribInfo.vbo = 0;
-  attribInfo.type = 3;
-  attribInfo.componentType = GL_FLOAT;
-  attribInfo.normalized = GL_FALSE;
-  attribInfo.byteStride = 9 * sizeof(float);
-  attribInfo.byteOffset = 0;
-  newPrim->attributes["POSITION"] = attribInfo;
 
   p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
 }

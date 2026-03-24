@@ -2,6 +2,7 @@
 #define BLOOMPASS_H_
 
 #include "RenderPasses/RenderPass.hpp"
+#include <Graphics/RenderResources.hpp>
 
 class BloomPass final : public RenderPass
 {
@@ -17,21 +18,27 @@ private:
   {
     glm::vec2 size;
     glm::ivec2 intSize;
-    u32 texture;
+    std::string textureName; // Name registered with RenderResources
   };
 
   std::vector<mipLevel> m_mipChain;
-  ShaderProgram m_extractBright;
-  ShaderProgram m_downShader;
-  ShaderProgram m_bloomCombine;
 
-  // Cached uniform locations for performance
-  GLint m_upFilterRadiusLoc{ -1 };
-  GLint m_downSrcResolutionLoc{ -1 };
-  GLint m_downMipLevelLoc{ -1 };
-  GLint m_combineExposureLoc{ -1 };
+  // Shader names (loaded via RenderResources)
+  std::string m_extractBrightName{ "ExtractBright" };
+  std::string m_downShaderName{ "BloomDown" };
+  std::string m_bloomCombineName{ "BloomCombine" };
+
+  // Cached uniform locations for sampler bindings (cannot be in UBO)
+  // Note: resolution, exposure, filterRadius, mipLevel now come from
+  // PostProcessData UBO
   GLint m_combineSceneLoc{ -1 };
   GLint m_combineBloomBlurLoc{ -1 };
+
+  // Pipelines for CommandBuffer rendering
+  gfx::PipelineId m_extractBrightPipeline;
+  gfx::PipelineId m_downPipeline;
+  gfx::PipelineId m_upPipeline;
+  gfx::PipelineId m_combinePipeline;
 };
 
 #endif // BLOOMPASS_H_

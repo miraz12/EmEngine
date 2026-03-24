@@ -1,5 +1,9 @@
 #include "GraphicsObject.hpp"
 
+#include <Graphics/CommandBuffer.hpp>
+#include <Graphics/GraphicsDevice.hpp>
+#include <Graphics/RenderResources.hpp>
+
 void
 GraphicsObject::newNode(glm::mat4 model)
 {
@@ -64,7 +68,7 @@ GraphicsObject::resetMatrixCache()
 }
 
 void
-GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
+GraphicsObject::applySkinning(gfx::ShaderId shader, i32 node)
 {
   if (m_skinningCache.size() < static_cast<size_t>(p_numSkins)) {
     m_skinningCache.resize(p_numSkins);
@@ -88,78 +92,207 @@ GraphicsObject::applySkinning(const ShaderProgram& sPrg, i32 node)
 
   // Upload joint matrices to GPU texture
   if (!cache.jointMatrices.empty()) {
-    glUniform1i(sPrg.getUniformLocation("jointMats"), 5);
-    p_textureManager.bindActivateTexture("jointMats", 5);
+    auto& resources = gfx::RenderResources::getInstance();
+    auto& device = gfx::GraphicsDevice::getInstance();
 
-    // Create texture on first use, then reuse with glTexSubImage2D
-    if (cache.textureId == 0) {
-      // First time: allocate texture storage
-      glTexImage2D(GL_TEXTURE_2D,
-                   0,                          // mipmap level
-                   GL_RGBA32F,                 // internal format
-                   4,                          // width (4 columns per matrix)
-                   cache.jointMatrices.size(), // height (number of matrices)
-                   0,                          // border
-                   GL_RGBA,                    // format
-                   GL_FLOAT,                   // type
-                   glm::value_ptr(cache.jointMatrices[0])); // data
-      cache.textureId = 1; // Mark as initialized
-    } else {
-      // Subsequent frames: update existing texture (faster)
-      glTexSubImage2D(GL_TEXTURE_2D,
-                      0,                                       // mipmap level
-                      0,                                       // x offset
-                      0,                                       // y offset
-                      4,                                       // width
-                      cache.jointMatrices.size(),              // height
-                      GL_RGBA,                                 // format
-                      GL_FLOAT,                                // type
-                      glm::value_ptr(cache.jointMatrices[0])); // data
-    }
+    // Set jointMats sampler uniform to texture unit 5
+    constexpr i32 kJointMatsUnit = 5;
+    i32 jointMatsLoc = device.getUniformLocation(shader, "jointMats");
+    device.setUniformInt(jointMatsLoc, kJointMatsUnit);
+    resources.bindTexture(kJointMatsUnit, "jointMats");
+
+    // Update texture data (width=4 for mat4 columns, height=jointCount)
+    // Always reallocate since the jointMats texture is shared globally and
+    // different skinned objects may have different joint counts.
+    u32 jointCount = static_cast<u32>(cache.jointMatrices.size());
+    constexpr u32 kMatrixColumns = 4;
+    resources.updateDataTexture("jointMats",
+                                kMatrixColumns,
+                                jointCount,
+                                glm::value_ptr(cache.jointMatrices[0]),
+                                true); // Always reallocate
   }
 }
 
 void
-GraphicsObject::draw(const ShaderProgram& sPrg)
+GraphicsObject::draw(gfx::ShaderId shader)
 {
+  auto& device = gfx::GraphicsDevice::getInstance();
 
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
+      i32 isSkinnedLoc = device.getUniformLocation(shader, "is_skinned");
       if (p_nodes[i].skin >= 0) {
-        glUniform1i(sPrg.getUniformLocation("is_skinned"), 1);
-        applySkinning(sPrg, p_nodes[i].skin);
+        device.setUniformInt(isSkinnedLoc, 1);
+        applySkinning(shader, p_nodes[i].skin);
       } else {
-        glUniform1i(sPrg.getUniformLocation("is_skinned"), 0);
+        device.setUniformInt(isSkinnedLoc, 0);
       }
 
-      Mesh& m = p_meshes[p_nodes[i].mesh];
-      for (u32 j = 0; j < m.numPrims; j++) {
-        Material* mat = m.m_primitives[j].m_material > -1
-                          ? &p_materials[m.m_primitives[j].m_material]
+      Mesh& mesh = p_meshes[p_nodes[i].mesh];
+      for (u32 j = 0; j < mesh.numPrims; j++) {
+        Material* mat = mesh.m_primitives[j].m_material > -1
+                          ? &p_materials[mesh.m_primitives[j].m_material]
                           : &defaultMat;
 
-        mat->bind(sPrg);
-        m.m_primitives[j].draw();
+        mat->bind(shader);
+        mesh.m_primitives[j].draw();
       }
     }
   }
 }
 
 void
-GraphicsObject::drawGeom(const ShaderProgram& sPrg)
+GraphicsObject::drawGeom(gfx::ShaderId shader)
 {
+  auto& device = gfx::GraphicsDevice::getInstance();
+
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
+      i32 isSkinnedLoc = device.getUniformLocation(shader, "is_skinned");
       if (p_nodes[i].skin >= 0) {
-        glUniform1i(sPrg.getUniformLocation("is_skinned"), 1);
-        applySkinning(sPrg, p_nodes[i].skin);
+        device.setUniformInt(isSkinnedLoc, 1);
+        applySkinning(shader, p_nodes[i].skin);
       } else {
-        glUniform1i(sPrg.getUniformLocation("is_skinned"), 0);
+        device.setUniformInt(isSkinnedLoc, 0);
       }
 
-      Mesh& m = p_meshes[p_nodes[i].mesh];
-      for (u32 j = 0; j < m.numPrims; j++) {
-        m.m_primitives[j].draw();
+      Mesh& mesh = p_meshes[p_nodes[i].mesh];
+      for (u32 j = 0; j < mesh.numPrims; j++) {
+        mesh.m_primitives[j].draw();
+      }
+    }
+  }
+}
+
+void
+GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
+                           gfx::SamplerId sampler,
+                           i32 isSkinnedLoc)
+{
+  auto& resources = gfx::RenderResources::getInstance();
+
+  for (u32 i = 0; i < p_numNodes; i++) {
+    if (p_nodes[i].mesh >= 0) {
+      bool isSkinned = p_nodes[i].skin >= 0;
+
+      // Set is_skinned uniform if location is valid
+      if (isSkinnedLoc >= 0) {
+        cmd.setUniform(isSkinnedLoc, isSkinned ? 1 : 0);
+      }
+
+      // Handle skinning: upload joint matrices (immediate), then record
+      // bindings
+      if (isSkinned) {
+        // Compute joint matrices if cache invalid
+        if (m_skinningCache.size() < static_cast<size_t>(p_numSkins)) {
+          m_skinningCache.resize(p_numSkins);
+        }
+        SkinningCache& cache = m_skinningCache[p_nodes[i].skin];
+        if (!cache.valid) {
+          cache.jointMatrices.clear();
+          cache.jointMatrices.reserve(p_skins[p_nodes[i].skin].joints.size());
+          for (u32 j = 0; j < p_skins[p_nodes[i].skin].joints.size(); j++) {
+            i32 joint = p_skins[p_nodes[i].skin].joints[j];
+            cache.jointMatrices.push_back(
+              getMatrix(joint) *
+              p_skins[p_nodes[i].skin].inverseBindMatrices[j]);
+          }
+          cache.valid = true;
+        }
+
+        // Upload joint matrices to texture (immediate operation)
+        // Must bind texture to unit before updating!
+        constexpr u32 kJointMatsUnit = 5;
+        if (!cache.jointMatrices.empty()) {
+          constexpr u32 kMatrixColumns = 4;
+          u32 jointCount = static_cast<u32>(cache.jointMatrices.size());
+          resources.bindTexture(kJointMatsUnit, "jointMats");
+          resources.updateDataTexture("jointMats",
+                                      kMatrixColumns,
+                                      jointCount,
+                                      glm::value_ptr(cache.jointMatrices[0]),
+                                      true);
+        }
+      }
+
+      Mesh& mesh = p_meshes[p_nodes[i].mesh];
+      for (u32 j = 0; j < mesh.numPrims; j++) {
+        // If skinned, record jointMats binding for EACH primitive
+        // to ensure it's bound right before the draw
+        if (isSkinned) {
+          constexpr u32 kJointMatsUnit = 5;
+          cmd.bindTextureByName(
+            kJointMatsUnit, "jointMats", resources.getLinearClampSampler());
+        }
+
+        Material* mat = mesh.m_primitives[j].m_material > -1
+                          ? &p_materials[mesh.m_primitives[j].m_material]
+                          : &defaultMat;
+
+        mat->recordBind(cmd, sampler);
+        mesh.m_primitives[j].recordDraw(cmd);
+      }
+    }
+  }
+}
+
+void
+GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd, i32 isSkinnedLoc)
+{
+  auto& resources = gfx::RenderResources::getInstance();
+
+  for (u32 i = 0; i < p_numNodes; i++) {
+    if (p_nodes[i].mesh >= 0) {
+      bool isSkinned = p_nodes[i].skin >= 0;
+
+      // Set is_skinned uniform if location is valid
+      if (isSkinnedLoc >= 0) {
+        cmd.setUniform(isSkinnedLoc, isSkinned ? 1 : 0);
+      }
+
+      // Handle skinning for shadow pass
+      if (isSkinned) {
+        // Compute joint matrices if cache invalid
+        if (m_skinningCache.size() < static_cast<size_t>(p_numSkins)) {
+          m_skinningCache.resize(p_numSkins);
+        }
+        SkinningCache& cache = m_skinningCache[p_nodes[i].skin];
+        if (!cache.valid) {
+          cache.jointMatrices.clear();
+          cache.jointMatrices.reserve(p_skins[p_nodes[i].skin].joints.size());
+          for (u32 j = 0; j < p_skins[p_nodes[i].skin].joints.size(); j++) {
+            i32 joint = p_skins[p_nodes[i].skin].joints[j];
+            cache.jointMatrices.push_back(
+              getMatrix(joint) *
+              p_skins[p_nodes[i].skin].inverseBindMatrices[j]);
+          }
+          cache.valid = true;
+        }
+
+        // Upload joint matrices to texture (immediate operation)
+        // Must bind texture to unit before updating!
+        constexpr u32 kJointMatsUnit = 5;
+        if (!cache.jointMatrices.empty()) {
+          constexpr u32 kMatrixColumns = 4;
+          u32 jointCount = static_cast<u32>(cache.jointMatrices.size());
+          resources.bindTexture(kJointMatsUnit, "jointMats");
+          resources.updateDataTexture("jointMats",
+                                      kMatrixColumns,
+                                      jointCount,
+                                      glm::value_ptr(cache.jointMatrices[0]),
+                                      true);
+        }
+
+        // Record: bind jointMats texture to unit 5 (for command buffer
+        // execution)
+        cmd.bindTextureByName(
+          kJointMatsUnit, "jointMats", resources.getLinearClampSampler());
+      }
+
+      Mesh& mesh = p_meshes[p_nodes[i].mesh];
+      for (u32 j = 0; j < mesh.numPrims; j++) {
+        mesh.m_primitives[j].recordDraw(cmd);
       }
     }
   }

@@ -1,6 +1,7 @@
 #include "CameraSystem.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "ECS/ECSManager.hpp"
+#include "Graphics/RenderResources.hpp"
 
 void
 CameraSystem::update(float /* dt */)
@@ -38,35 +39,21 @@ CameraSystem::updateMatrices(std::shared_ptr<CameraComponent> camera)
 }
 
 void
-CameraSystem::bindProjViewMatrix(std::shared_ptr<CameraComponent> camera,
-                                 u32 proj,
-                                 u32 view)
+CameraSystem::updateCameraUBO(std::shared_ptr<CameraComponent> camera)
 {
   if (camera->m_matrixNeedsUpdate) {
     updateMatrices(camera);
   }
-  glUniformMatrix4fv(
-    proj, 1, GL_FALSE, glm::value_ptr(camera->m_ProjectionMatrix));
-  glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(camera->m_viewMatrix));
-}
 
-void
-CameraSystem::bindProjMatrix(std::shared_ptr<CameraComponent> camera, u32 proj)
-{
-  if (camera->m_matrixNeedsUpdate) {
-    updateMatrices(camera);
-  }
-  glUniformMatrix4fv(
-    proj, 1, GL_FALSE, glm::value_ptr(camera->m_ProjectionMatrix));
-}
+  auto& resources = gfx::RenderResources::getInstance();
+  gfx::CameraUBO& ubo = resources.getCameraUBO();
 
-void
-CameraSystem::bindViewMatrix(std::shared_ptr<CameraComponent> camera, u32 view)
-{
-  if (camera->m_matrixNeedsUpdate) {
-    updateMatrices(camera);
-  }
-  glUniformMatrix4fv(view, 1, GL_FALSE, glm::value_ptr(camera->m_viewMatrix));
+  ubo.viewMatrix = camera->m_viewMatrix;
+  ubo.projMatrix = camera->m_ProjectionMatrix;
+  ubo.viewProjMatrix = camera->m_ProjectionMatrix * camera->m_viewMatrix;
+  ubo.cameraPosition = glm::vec4(camera->m_position, 1.0f);
+
+  resources.flushCameraUBO();
 }
 
 std::tuple<glm::vec3, glm::vec3>

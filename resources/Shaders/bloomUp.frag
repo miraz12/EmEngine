@@ -6,7 +6,13 @@
 precision highp float;
 
 uniform sampler2D srcTexture;
-uniform float filterRadius;
+
+// PostProcess UBO (binding point 5)
+layout(std140) uniform PostProcessData
+{
+  vec4 resolution;      // xy = resolution, z = exposure, w = filterRadius
+  ivec4 postConfig;     // x = mipLevel, y = sceneSampler, z = bloomSampler, w = unused
+};
 
 in vec2 texCoords;
 layout(location = 0) out vec3 upsample;
@@ -14,8 +20,8 @@ layout(location = 0) out vec3 upsample;
 void
 main()
 {
-  float x = filterRadius;
-  float y = filterRadius;
+  float x = resolution.w; // filterRadius
+  float y = resolution.w;
 
   // 9-tap sampling pattern:
   // a - b - c

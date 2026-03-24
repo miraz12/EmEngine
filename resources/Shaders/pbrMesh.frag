@@ -21,23 +21,19 @@ in vec3 pNormal;    // Vertex normal (for TBN construction)
 // Index 4: Normal map (RGB tangent-space)
 uniform sampler2D textures[5];
 
-// Material flags (bitfield)
-// Bit 0: Has base color texture
-// Bit 1: Has metallic/roughness texture
-// Bit 2: Has emissive texture
-// Bit 3: Has occlusion texture
-// Bit 4: Has normal map
-uniform int material;
+// ============================================================
+// UNIFORM BUFFER OBJECTS
+// ============================================================
 
-// Alpha modes: 0=blend with dithering, 1=mask (cutoff), 2=opaque
-uniform int alphaMode;
-uniform float alphaCutoff; // Alpha threshold for mode 1
-
-// Material property factors (multiplied with textures)
-uniform vec3 emissiveFactor;
-uniform vec3 baseColorFactor;
-uniform float roughnessFactor;
-uniform float metallicFactor;
+// Material UBO (binding point 3)
+// Matches gfx::MaterialUBO struct (64 bytes, std140 layout)
+layout(std140) uniform MaterialData
+{
+  vec4 baseColorFactor;    // xyz = color, w = alpha
+  vec4 emissiveFactor;     // xyz = emissive, w = unused
+  vec4 pbrFactors;         // x = roughness, y = metallic, z = alphaCutoff, w = unused
+  ivec4 materialConfig;    // x = materialFlags, y = alphaMode, zw = unused
+};
 
 // ============================================================
 // G-BUFFER OUTPUTS
@@ -94,7 +90,7 @@ getNormal()
 
   vec3 n, t, b, ng;
 
-  if ((material & (1 << 4)) > 0) {
+  if ((materialConfig.x & (1 << 4)) > 0) {
     ng = normalize(pNormal);
     t = normalize(t_ - ng * dot(ng, t_));
     b = cross(ng, t);
@@ -116,27 +112,34 @@ getNormal()
 void
 main()
 {
+  // Extract material flags for readability
+  int matFlags = materialConfig.x;
+  int alphaMode = materialConfig.y;
+  float roughnessFactor = pbrFactors.x;
+  float metallicFactor = pbrFactors.y;
+  float alphaCutoff = pbrFactors.z;
+
   // Cache texture samples to avoid redundant lookups
   vec4 baseColorSample =
-    (material & (1 << 0)) > 0 ? texture(textures[0], pTexCoords) : vec4(1.0);
+    (matFlags & (1 << 0)) > 0 ? texture(textures[0], pTexCoords) : vec4(1.0);
   vec4 metallicRoughnessSample =
-    (material & (1 << 1)) > 0 ? texture(textures[1], pTexCoords) : vec4(1.0);
+    (matFlags & (1 << 1)) > 0 ? texture(textures[1], pTexCoords) : vec4(1.0);
 
   float metal = metallicFactor;
-  vec4 baseRough = vec4(baseColorFactor, roughnessFactor);
-  if ((material & (1 << 0)) > 0) {
+  vec4 baseRough = vec4(baseColorFactor.xyz, roughnessFactor);
+  if ((matFlags & (1 << 0)) > 0) {
     baseRough.rgb *= baseColorSample.rgb;
   }
-  if ((material & (1 << 1)) > 0) {
+  if ((matFlags & (1 << 1)) > 0) {
     metal *= metallicRoughnessSample.b;       // glTF: blue = metallic
     baseRough.a *= metallicRoughnessSample.g; // glTF: green = roughness
   }
-  vec4 emissive = vec4(vec3(emissiveFactor), 1.0);
-  if ((material & (1 << 2)) > 0) {
+  vec4 emissive = vec4(emissiveFactor.xyz, 1.0);
+  if ((matFlags & (1 << 2)) > 0) {
     emissive *= texture(textures[2], pTexCoords);
   }
   float ao = 1.0;
-  if ((material & (1 << 3)) > 0) {
+  if ((matFlags & (1 << 3)) > 0) {
     ao = texture(textures[3], pTexCoords).r;
   }
 

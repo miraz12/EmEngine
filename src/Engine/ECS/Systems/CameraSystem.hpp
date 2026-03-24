@@ -15,11 +15,10 @@ class CameraSystem
 public:
   void update(float dt) override;
 
-  static void bindProjViewMatrix(std::shared_ptr<CameraComponent> camera,
-                                 u32 proj,
-                                 u32 view);
-  static void bindProjMatrix(std::shared_ptr<CameraComponent> camera, u32 proj);
-  static void bindViewMatrix(std::shared_ptr<CameraComponent> camera, u32 view);
+  /// Update CameraUBO with current camera matrices and position.
+  /// Call this once per frame before rendering passes that use CameraData UBO.
+  static void updateCameraUBO(std::shared_ptr<CameraComponent> camera);
+
   static std::tuple<glm::vec3, glm::vec3>
   getRayTo(std::shared_ptr<CameraComponent> camera, i32 x, i32 y);
   static void tilt(std::shared_ptr<CameraComponent> camera, float angle);

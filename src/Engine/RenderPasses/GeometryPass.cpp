@@ -1,58 +1,108 @@
 #include "GeometryPass.hpp"
-#include "ECS/Components/AnimationComponent.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/CameraSystem.hpp>
-#include <Managers/FrameBufferManager.hpp>
+#include <Graphics/CommandBuffer.hpp>
+#include <Graphics/GraphicsDevice.hpp>
+#include <Graphics/RenderResources.hpp>
+#include <Graphics/UBOStructs.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 #include <RenderPasses/RenderPass.hpp>
-#include <ShaderPrograms/ShaderProgram.hpp>
 
 GeometryPass::GeometryPass()
-  : RenderPass("resources/Shaders/mesh.vert", "resources/Shaders/pbrMesh.frag")
+  : RenderPass("GeometryPass",
+               "resources/Shaders/mesh.vert",
+               "resources/Shaders/pbrMesh.frag")
 {
-  glGenFramebuffers(1, &gBuffer);
-  glGenRenderbuffers(1, &rboDepth);
-  m_fboManager.setFBO("gBuffer", gBuffer);
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
+
+  // Create FBO through new RenderResources system (bare FBO, attachments
+  // managed in setViewport)
+  resources.createBareFramebuffer("gBuffer");
+
+  // Create renderbuffer for depth-stencil through new RenderResources system
+  gfx::RenderbufferCreateInfo rboInfo{};
+  rboInfo.width = m_width;
+  rboInfo.height = m_height;
+  rboInfo.format = gfx::PixelFormat::Depth24Stencil8;
+  rboInfo.debugName = "gBufferDepth";
+  resources.createRenderbuffer("gBufferDepth", rboInfo);
+
+  // Create G-buffer textures through new RenderResources system
+  // These are read by LightPass
+  gfx::TextureCreateInfo gBufferInfo{};
+  gBufferInfo.width = m_width;
+  gBufferInfo.height = m_height;
+  gBufferInfo.format = gfx::PixelFormat::RGBA16F;
+  gBufferInfo.mipLevels = 1;
+
+  gBufferInfo.debugName = "gPositionAo";
+  resources.createTexture2D("gPositionAo", gBufferInfo);
+
+  gBufferInfo.debugName = "gNormalMetal";
+  resources.createTexture2D("gNormalMetal", gBufferInfo);
+
+  gBufferInfo.debugName = "gAlbedoSpecRough";
+  resources.createTexture2D("gAlbedoSpecRough", gBufferInfo);
+
+  gBufferInfo.debugName = "gEmissive";
+  resources.createTexture2D("gEmissive", gBufferInfo);
+
+  // Create material sampler for texture binding
+  gfx::SamplerCreateInfo samplerInfo{};
+  samplerInfo.minFilter = gfx::FilterMode::LinearMipmapLinear;
+  samplerInfo.magFilter = gfx::FilterMode::Linear;
+  samplerInfo.wrapU = gfx::WrapMode::Repeat;
+  samplerInfo.wrapV = gfx::WrapMode::Repeat;
+  samplerInfo.debugName = "GeometryPass_MaterialSampler";
+  m_sampler = device.createSampler(samplerInfo);
+
+  m_useNewResources = true;
+
   setViewport(m_width, m_height);
 
-  m_shaderProgram.setUniformBinding("modelMatrix");
-  m_shaderProgram.setUniformBinding("viewMatrix");
-  m_shaderProgram.setUniformBinding("projMatrix");
-  m_shaderProgram.setUniformBinding("jointTransforms");
+  // Bind uniform blocks
+  useShader();
+  resources.bindShaderUniformBlock(
+    getShaderId(), "CameraData", gfx::UBOBinding::Camera);
+  resources.bindShaderUniformBlock(
+    getShaderId(), "MaterialData", gfx::UBOBinding::Material);
 
-  m_shaderProgram.setUniformBinding("textures");
-  m_shaderProgram.setUniformBinding("material");
-  m_shaderProgram.setUniformBinding("alphaMode");
-  m_shaderProgram.setUniformBinding("alphaCutoff");
-  m_shaderProgram.setUniformBinding("emissiveFactor");
-  m_shaderProgram.setUniformBinding("baseColorFactor");
-  m_shaderProgram.setUniformBinding("roughnessFactor");
-  m_shaderProgram.setUniformBinding("metallicFactor");
-  m_shaderProgram.setUniformBinding("meshMatrix");
-  m_shaderProgram.setUniformBinding("jointMats");
-  m_shaderProgram.setUniformBinding("is_skinned");
+  // Set texture sampler uniform once (always {0,1,2,3,4})
+  constexpr i32 kNumMaterialTextures = 5;
+  std::array<i32, kNumMaterialTextures> texUnits = { 0, 1, 2, 3, 4 };
+  device.setUniformIntArray(
+    device.getUniformLocation(getShaderId(), "textures"), texUnits);
 
-  m_shaderProgram.setAttribBinding("POSITION");
-  m_shaderProgram.setAttribBinding("NORMAL");
-  m_shaderProgram.setAttribBinding("TANGENT");
-  m_shaderProgram.setAttribBinding("TEXCOORD_0");
-  m_shaderProgram.setAttribBinding("JOINTS_0");
-  m_shaderProgram.setAttribBinding("WEIGHTS_0");
+  // Set jointMats sampler uniform to texture unit 5 (for skinning)
+  constexpr i32 kJointMatsUnit = 5;
+  i32 jointMatsLoc = device.getUniformLocation(getShaderId(), "jointMats");
+  device.setUniformInt(jointMatsLoc, kJointMatsUnit);
 
-  u32 jointMats;
-  glGenTextures(1, &jointMats);
-  m_textureManager.setTexture("jointMats", jointMats);
+  // Cache uniform locations for modelMatrix and is_skinned
+  m_modelMatrixLoc = device.getUniformLocation(getShaderId(), "modelMatrix");
+  m_isSkinnedLoc = device.getUniformLocation(getShaderId(), "is_skinned");
 
-  m_textureManager.bindTexture("jointMats");
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // Create pipeline for CommandBuffer rendering.
+  // Note: We use per-primitive VAOs (bindVertexArray), so the pipeline's vertex
+  // layout is not used for actual drawing. We provide an empty layout here.
+  gfx::PipelineCreateInfo pipeInfo{};
+  pipeInfo.shaderProgram = getShaderId();
+  // No vertex bindings/attributes - each primitive binds its own VAO
+  pipeInfo.topology = gfx::PrimitiveTopology::Triangles;
+  pipeInfo.depthStencil.depthTestEnable = true;
+  pipeInfo.depthStencil.depthWriteEnable = true;
+  pipeInfo.depthStencil.depthCompareOp = gfx::CompareOp::Less;
+  pipeInfo.blend.attachments[0].blendEnable = false;
+  pipeInfo.rasterizer.cullMode =
+    gfx::CullMode::Back; // Default, may be overridden by material
+  pipeInfo.debugName = "GeometryPassPipeline";
+  m_pipeline = resources.createPipeline("GeometryPassPipeline", pipeInfo);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  resources.bindDefaultFramebuffer();
 }
 
 void
@@ -67,53 +117,87 @@ GeometryPass::Init(FrameGraph& fGraph)
 void
 GeometryPass::Execute(ECSManager& eManager)
 {
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Geometry Pass");
-#endif
-  glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("gBuffer"));
-  glViewport(0, 0, m_width, m_height);
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
-  glDepthMask(GL_TRUE);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
 
-  m_shaderProgram.use();
-
+  // Update CameraUBO with current camera matrices (before CommandBuffer
+  // recording)
   auto cam =
     static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  CameraSystem::updateCameraUBO(cam);
 
-  CameraSystem::bindProjViewMatrix(
-    cam,
-    m_shaderProgram.getUniformLocation("projMatrix"),
-    m_shaderProgram.getUniformLocation("viewMatrix"));
+  // Ensure jointMats sampler uniform is set correctly each frame
+  // (binding the shader and setting the uniform before recording)
+  useShader();
+  constexpr i32 kJointMatsUnit = 5;
+  device.setUniformInt(device.getUniformLocation(getShaderId(), "jointMats"),
+                       kJointMatsUnit);
 
+  // Get command buffer for this pass
+  gfx::CommandBuffer* cmd = getCommandBuffer();
+  if (cmd == nullptr) {
+    return;
+  }
+
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  cmd->pushDebugGroup("Geometry Pass");
+#endif
+
+  // Begin render pass with gBuffer framebuffer
+  gfx::RenderPassBeginInfo passInfo{};
+  passInfo.framebuffer = resources.getFramebuffer("gBuffer");
+  passInfo.clearColors[0] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  passInfo.clearColors[1] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  passInfo.clearColors[2] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  passInfo.clearColors[3] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+  passInfo.clearDepth = 1.0f;
+  passInfo.clearStencil = 0;
+  passInfo.colorAttachmentCount = 4;
+  passInfo.clearColor = true;
+  passInfo.clearDepthStencil = true;
+  cmd->beginRenderPass(passInfo);
+
+  // Bind pipeline (includes shader, depth/stencil state, blend state)
+  cmd->bindPipeline(m_pipeline);
+
+  // Set viewport
+  gfx::Viewport viewport{};
+  viewport.x = 0;
+  viewport.y = 0;
+  viewport.width = static_cast<float>(m_width);
+  viewport.height = static_cast<float>(m_height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  cmd->setViewport(viewport);
+
+  // Iterate over entities with GraphicsComponent and record draw commands
   std::vector<Entity> view = eManager.view<GraphicsComponent>();
-  for (auto e : view) {
-    std::shared_ptr<PositionComponent> p =
-      eManager.getComponent<PositionComponent>(e);
-    std::shared_ptr<GraphicsComponent> g =
-      eManager.getComponent<GraphicsComponent>(e);
+  for (auto entity : view) {
+    std::shared_ptr<PositionComponent> posComp =
+      eManager.getComponent<PositionComponent>(entity);
+    std::shared_ptr<GraphicsComponent> gfxComp =
+      eManager.getComponent<GraphicsComponent>(entity);
 
-    // Check for position component and apply its model matrix
-    if (p) {
-      glUniformMatrix4fv(m_shaderProgram.getUniformLocation("modelMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(p->model));
+    // Set modelMatrix uniform
+    if (posComp) {
+      cmd->setUniform(m_modelMatrixLoc, posComp->model);
     } else {
-      glUniformMatrix4fv(m_shaderProgram.getUniformLocation("modelMatrix"),
-                         1,
-                         GL_FALSE,
-                         glm::value_ptr(glm::identity<glm::mat4>()));
+      cmd->setUniform(m_modelMatrixLoc, glm::identity<glm::mat4>());
     }
 
-    g->m_grapObj->draw(m_shaderProgram);
+    // Record draw commands (handles material binding + VAO + draw call +
+    // skinning)
+    gfxComp->m_grapObj->recordDraw(*cmd, m_sampler, m_isSkinnedLoc);
   }
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  cmd->endRenderPass();
+
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPopDebugGroup();
+  cmd->popDebugGroup();
 #endif
+
+  // Submit the command buffer
+  device.submit(m_cmdBuffer);
 }
 
 void
@@ -122,49 +206,33 @@ GeometryPass::setViewport(u32 w, u32 h)
   m_width = w;
   m_height = h;
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_fboManager.getFBO("gBuffer"));
+  auto& resources = gfx::RenderResources::getInstance();
 
-  // - position color buffer
-  u32 gPosition = m_textureManager.loadTexture(
-    "gPositionAo", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-
-  // - normal color buffer
-  u32 gNormal = m_textureManager.loadTexture(
-    "gNormalMetal", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
-  // - color
-  u32 gAlbedo = m_textureManager.loadTexture(
-    "gAlbedoSpecRough", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
-
-  // - emissive color buffer
-  u32 gEmissive = m_textureManager.loadTexture(
-    "gEmissive", GL_RGBA16F, GL_RGBA, GL_FLOAT, m_width, m_height, 0);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gEmissive, 0);
-
-  // - tell OpenGL which color attachments we'll use (of this framebuffer) for
-  // rendering
-  u32 attachments[4] = { GL_COLOR_ATTACHMENT0,
-                         GL_COLOR_ATTACHMENT1,
-                         GL_COLOR_ATTACHMENT2,
-                         GL_COLOR_ATTACHMENT3 };
-  glDrawBuffers(4, attachments);
-  // create and attach depth buffer (renderbuffer)
-  glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-  glRenderbufferStorage(
-    GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
-  glFramebufferRenderbuffer(
-    GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-  // finally check if framebuffer is complete
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "Framebuffer not complete!" << std::endl;
+  // Recreate G-buffer textures with new size
+  if (m_useNewResources) {
+    resources.recreateTexture2D("gPositionAo", m_width, m_height);
+    resources.recreateTexture2D("gNormalMetal", m_width, m_height);
+    resources.recreateTexture2D("gAlbedoSpecRough", m_width, m_height);
+    resources.recreateTexture2D("gEmissive", m_width, m_height);
+    resources.resizeRenderbuffer("gBufferDepth", m_width, m_height);
   }
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // Attach G-buffer textures to FBO
+  resources.setFramebufferAttachment("gBuffer", 0, "gPositionAo");
+  resources.setFramebufferAttachment("gBuffer", 1, "gNormalMetal");
+  resources.setFramebufferAttachment("gBuffer", 2, "gAlbedoSpecRough");
+  resources.setFramebufferAttachment("gBuffer", 3, "gEmissive");
+
+  // Set draw buffers
+  std::array<u32, 4> drawBuffers = { 0, 1, 2, 3 };
+  resources.setDrawBuffers("gBuffer", drawBuffers);
+
+  // Attach depth-stencil renderbuffer
+  resources.setFramebufferRenderbuffer(
+    "gBuffer", gfx::RenderbufferAttachment::DepthStencil, "gBufferDepth");
+
+  // Check framebuffer completeness
+  if (!resources.isFramebufferComplete("gBuffer")) {
+    std::cout << "Framebuffer not complete!\n";
+  }
 }

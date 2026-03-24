@@ -7,80 +7,85 @@
 
 #include "ECS/ECSManager.hpp"
 #include "RenderPasses/RenderPass.hpp"
+#include <Graphics/CommandBuffer.hpp>
+#include <Graphics/GraphicsDevice.hpp>
+#include <Graphics/RenderResources.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 
 ShadowPass::ShadowPass()
-  : RenderPass("resources/Shaders/shadow.vert", "resources/Shaders/shadow.frag")
+  : RenderPass("ShadowPass",
+               "resources/Shaders/shadow.vert",
+               "resources/Shaders/shadow.frag")
 {
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
 
-  m_shaderProgram.use();
-  m_shaderProgram.setUniformBinding("modelMatrix");
-  m_shaderProgram.setUniformBinding("lightSpaceMatrix");
-  m_shaderProgram.setUniformBinding("meshMatrix");
-  m_shaderProgram.setUniformBinding("is_skinned");
-  m_shaderProgram.setUniformBinding("jointMats");
+  // Create UBO for cascade data through RenderResources
+  // Size: 4 mat4 + 1 vec4 + 1 ivec4 = 288 bytes, binding point 0
+  constexpr u32 kCascadeUBOSize = 288;
+  resources.createUniformBuffer("cascadeUBO", kCascadeUBOSize, 0);
 
-  m_shaderProgram.setAttribBinding("POSITION");
-  m_shaderProgram.setAttribBinding("JOINTS_0");
-  m_shaderProgram.setAttribBinding("WEIGHTS_0");
+  // Create FBO through new RenderResources system (bare FBO, attachments
+  // managed separately)
+  resources.createBareFramebuffer("depthMapFbo");
 
-  u32 jointMats;
-  glGenTextures(1, &jointMats);
-  m_textureManager.setTexture("jointMats", jointMats);
+  // Create cascaded shadow map array through new RenderResources system
+  // This is read by LightPass
+  gfx::TextureCreateInfo shadowInfo{};
+  shadowInfo.width = SHADOW_MAP_SIZE;
+  shadowInfo.height = SHADOW_MAP_SIZE;
+  shadowInfo.depthOrLayers = NUM_CASCADES;
+  shadowInfo.format = gfx::PixelFormat::Depth24;
+  shadowInfo.mipLevels = 1;
+  shadowInfo.debugName = "depthMapArray";
+  resources.createTexture2DArray("depthMapArray", shadowInfo);
+  m_useNewResources = true;
 
-  m_textureManager.bindTexture("jointMats");
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // Create UBO for cascade data
-  glGenBuffers(1, &m_cascadeUBO);
-  glBindBuffer(GL_UNIFORM_BUFFER, m_cascadeUBO);
-  // Allocate space for cascade UBO (4 mat4 + 1 vec4 + 1 ivec4 = 288 bytes)
-  glBufferData(GL_UNIFORM_BUFFER, 288, nullptr, GL_DYNAMIC_DRAW);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_cascadeUBO);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-  u32 depthMapFbo;
-  glGenFramebuffers(1, &depthMapFbo);
-  m_fboManager.setFBO("depthMapFbo", depthMapFbo);
-
-  u32 depthMapArray;
-  glGenTextures(1, &depthMapArray);
-  m_textureManager.setTexture("depthMapArray", depthMapArray, GL_TEXTURE_2D_ARRAY);
-
-  m_fboManager.bindFBO("depthMapFbo");
-  glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
-  glTexImage3D(GL_TEXTURE_2D_ARRAY,
-               0,
-               GL_DEPTH_COMPONENT24,
-               SHADOW_MAP_SIZE,
-               SHADOW_MAP_SIZE,
-               NUM_CASCADES,
-               0,
-               GL_DEPTH_COMPONENT,
-               GL_UNSIGNED_INT,
-               nullptr);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(
-    GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  // Shadow comparison mode is handled by RenderResources::getShadowSampler()
+  // which is bound in LightPass when sampling the shadow map
 
   // Attach first cascade layer for initial setup (will be rebound per cascade)
-  glFramebufferTextureLayer(
-    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMapArray, 0, 0);
-  GLuint buffer = GL_NONE; // Emscripten strangeness
-  glDrawBuffers(1, &buffer);
-  glReadBuffer(GL_NONE);
+  resources.setFramebufferDepthAttachment("depthMapFbo", "depthMapArray", 0, 0);
 
-  GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    printf("FB error, status: 0x%x\n", Status);
+  // No color attachments for depth-only FBO
+  std::array<u32, 0> noColorAttachments = {};
+  resources.setDrawBuffers("depthMapFbo", noColorAttachments);
+
+  // Set read buffer to none for depth-only FBO
+  resources.bindFramebuffer("depthMapFbo");
+  resources.setReadBuffer(std::nullopt); // GL_NONE
+
+  if (!resources.isFramebufferComplete("depthMapFbo")) {
+    std::cout << "FB error, status: depthMapFbo incomplete\n";
   }
+  resources.bindDefaultFramebuffer();
+
+  // Cache uniform locations for CommandBuffer use
+  useShader();
+  m_lightSpaceMatrixLoc =
+    device.getUniformLocation(getShaderId(), "lightSpaceMatrix");
+  m_modelMatrixLoc = device.getUniformLocation(getShaderId(), "modelMatrix");
+  m_isSkinnedLoc = device.getUniformLocation(getShaderId(), "is_skinned");
+
+  // Set jointMats sampler uniform to texture unit 5 (for skinning)
+  constexpr i32 kJointMatsUnit = 5;
+  device.setUniformInt(device.getUniformLocation(getShaderId(), "jointMats"),
+                       kJointMatsUnit);
+
+  // Create pipeline for CommandBuffer rendering
+  // Note: We use per-primitive VAOs (bindVertexArray), so the pipeline's vertex
+  // layout is not used for actual drawing. We provide an empty layout here.
+  gfx::PipelineCreateInfo pipeInfo{};
+  pipeInfo.shaderProgram = getShaderId();
+  // No vertex bindings/attributes - each primitive binds its own VAO
+  pipeInfo.topology = gfx::PrimitiveTopology::Triangles;
+  pipeInfo.depthStencil.depthTestEnable = true;
+  pipeInfo.depthStencil.depthWriteEnable = true;
+  pipeInfo.depthStencil.depthCompareOp = gfx::CompareOp::Less;
+  pipeInfo.blend.attachments[0].blendEnable = false;
+  pipeInfo.rasterizer.cullMode = gfx::CullMode::Back;
+  pipeInfo.debugName = "ShadowPassPipeline";
+  m_pipeline = resources.createPipeline("ShadowPassPipeline", pipeInfo);
 }
 
 void
@@ -92,9 +97,8 @@ ShadowPass::Init(FrameGraph& fGraph)
 void
 ShadowPass::Execute(ECSManager& eManager)
 {
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Shadow Pass CSM");
-#endif
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
 
   // Get camera for cascade calculation
   auto cam =
@@ -115,14 +119,18 @@ ShadowPass::Execute(ECSManager& eManager)
   }
 
   // Calculate cascade splits and matrices
-  m_cascadeConfig.calculateSplitDistances(cam->m_near, cam->m_far, 0.5f);
-  m_cascadeConfig.calculateCascadeMatrices(
-    lightDirection, cam->m_position, cam->m_viewMatrix, cam->m_ProjectionMatrix);
+  constexpr float kLambdaSplit = 0.5f;
+  m_cascadeConfig.calculateSplitDistances(
+    cam->m_near, cam->m_far, kLambdaSplit);
+  m_cascadeConfig.calculateCascadeMatrices(lightDirection,
+                                           cam->m_position,
+                                           cam->m_viewMatrix,
+                                           cam->m_ProjectionMatrix);
 
   // Update UBO with cascade data
   struct CascadeUBO
   {
-    glm::mat4 lightSpaceMatrices[NUM_CASCADES];
+    std::array<glm::mat4, NUM_CASCADES> lightSpaceMatrices;
     glm::vec4 cascadeSplits;
     glm::ivec4 config;
   } uboData;
@@ -132,75 +140,94 @@ ShadowPass::Execute(ECSManager& eManager)
             std::begin(uboData.lightSpaceMatrices));
 
   uboData.cascadeSplits = glm::vec4(m_cascadeConfig.cascadeSplits[0],
-                                      m_cascadeConfig.cascadeSplits[1],
-                                      m_cascadeConfig.cascadeSplits[2],
-                                      m_cascadeConfig.cascadeSplits[3]);
+                                    m_cascadeConfig.cascadeSplits[1],
+                                    m_cascadeConfig.cascadeSplits[2],
+                                    m_cascadeConfig.cascadeSplits[3]);
   uboData.config = glm::ivec4(NUM_CASCADES, SHADOW_MAP_SIZE, 0, 0);
 
-  glBindBuffer(GL_UNIFORM_BUFFER, m_cascadeUBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CascadeUBO), &uboData);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  // Update cascade UBO through RenderResources
+  resources.updateUniformBuffer("cascadeUBO", &uboData, sizeof(CascadeUBO));
 
-  // Setup render state
-  m_fboManager.bindFBO("depthMapFbo");
-  glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
-  glDepthMask(GL_TRUE);
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
+  // Get command buffer for this pass
+  gfx::CommandBuffer* cmd = getCommandBuffer();
+  if (cmd == nullptr) {
+    return;
+  }
 
-  m_shaderProgram.use();
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  cmd->pushDebugGroup("Shadow Pass CSM");
+#endif
 
-  u32 depthMapArray = m_textureManager.bindTexture("depthMapArray");
+  // Get entity list once for all cascades
+  std::vector<Entity> entityView = eManager.view<GraphicsComponent>();
+
+  // Get FBO and texture handles for CommandBuffer commands
+  gfx::FramebufferId depthMapFbo = resources.getFramebuffer("depthMapFbo");
+  gfx::TextureId depthMapArray = resources.getTexture("depthMapArray");
+
+  // Set viewport for all cascades
+  gfx::Viewport viewport{};
+  viewport.x = 0;
+  viewport.y = 0;
+  viewport.width = static_cast<float>(SHADOW_MAP_SIZE);
+  viewport.height = static_cast<float>(SHADOW_MAP_SIZE);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
 
   // Render each cascade
   for (u32 cascade = 0; cascade < NUM_CASCADES; ++cascade) {
     // Attach this cascade's layer to the framebuffer
-    glFramebufferTextureLayer(
-      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMapArray, 0, cascade);
+    cmd->setFramebufferDepthAttachment(depthMapFbo, depthMapArray, 0, cascade);
 
-    glClearDepthf(1.0f);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    // Begin render pass (clears depth)
+    gfx::RenderPassBeginInfo passInfo{};
+    passInfo.framebuffer = depthMapFbo;
+    passInfo.clearDepth = 1.0f;
+    passInfo.clearStencil = 0;
+    passInfo.colorAttachmentCount = 0;
+    passInfo.clearColor = false;
+    passInfo.clearDepthStencil = true;
+    cmd->beginRenderPass(passInfo);
+
+    // Bind pipeline
+    cmd->bindPipeline(m_pipeline);
+
+    // Set viewport
+    cmd->setViewport(viewport);
 
     // Set light space matrix for this cascade
-    glUniformMatrix4fv(
-      m_shaderProgram.getUniformLocation("lightSpaceMatrix"),
-      1,
-      GL_FALSE,
-      glm::value_ptr(m_cascadeConfig.lightSpaceMatrices[cascade]));
+    cmd->setUniform(m_lightSpaceMatrixLoc,
+                    m_cascadeConfig.lightSpaceMatrices[cascade]);
 
-    // Render all shadow-casting geometry
-    std::vector<Entity> gView = eManager.view<GraphicsComponent>();
-    for (auto& entity : gView) {
+    // Draw all shadow-casting geometry
+    for (auto& entity : entityView) {
       std::shared_ptr<PositionComponent> posComp =
         eManager.getComponent<PositionComponent>(entity);
 
+      // Set modelMatrix uniform
       if (posComp) {
-        glUniformMatrix4fv(m_shaderProgram.getUniformLocation("modelMatrix"),
-                           1,
-                           GL_FALSE,
-                           glm::value_ptr(posComp->model));
+        cmd->setUniform(m_modelMatrixLoc, posComp->model);
       } else {
-        glUniformMatrix4fv(m_shaderProgram.getUniformLocation("modelMatrix"),
-                           1,
-                           GL_FALSE,
-                           glm::value_ptr(glm::identity<glm::mat4>()));
+        cmd->setUniform(m_modelMatrixLoc, glm::identity<glm::mat4>());
       }
 
       std::shared_ptr<GraphicsComponent> grapComp =
         eManager.getComponent<GraphicsComponent>(entity);
 
-      grapComp->m_grapObj->drawGeom(m_shaderProgram);
+      // Record geometry-only draw commands (no material bindings, with skinning
+      // support)
+      grapComp->m_grapObj->recordDrawGeom(*cmd, m_isSkinnedLoc);
     }
+
+    cmd->endRenderPass();
   }
 
-  // Clean up GL state
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPopDebugGroup();
+  cmd->popDebugGroup();
 #endif
+
+  // Submit the command buffer
+  device.submit(m_cmdBuffer);
 }
 
 void
@@ -210,19 +237,5 @@ ShadowPass::setViewport(u32 w, u32 h)
   m_height = h;
 
   // Note: Shadow map resolution is fixed at SHADOW_MAP_SIZE, not viewport size
-  m_fboManager.bindFBO("depthMapFbo");
-  u32 depthMapArray = m_textureManager.bindTexture("depthMapArray");
-  glBindTexture(GL_TEXTURE_2D_ARRAY, depthMapArray);
-  glTexImage3D(GL_TEXTURE_2D_ARRAY,
-               0,
-               GL_DEPTH_COMPONENT24,
-               SHADOW_MAP_SIZE,
-               SHADOW_MAP_SIZE,
-               NUM_CASCADES,
-               0,
-               GL_DEPTH_COMPONENT,
-               GL_UNSIGNED_INT,
-               nullptr);
-
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // No need to recreate the texture - it's allocated with immutable storage
 }

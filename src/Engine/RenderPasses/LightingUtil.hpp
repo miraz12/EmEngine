@@ -41,8 +41,9 @@ calculateLightSpaceMatrix(const glm::vec3& lightDirection,
 
   // Choose an up vector that's not parallel to the light direction
   // If light is pointing mostly up/down, use Z-axis as up, otherwise use Y-axis
-  glm::vec3 up = (glm::abs(normLightDir.y) > LIGHT_DIR_VERTICAL_THRESHOLD) ? glm::vec3(0, 0, 1)
-                                                                            : glm::vec3(0, 1, 0);
+  glm::vec3 up = (glm::abs(normLightDir.y) > LIGHT_DIR_VERTICAL_THRESHOLD)
+                   ? glm::vec3(0, 0, 1)
+                   : glm::vec3(0, 1, 0);
 
   glm::mat4 lightView = glm::lookAt(lightPos, frustumCenter, up);
 
@@ -58,7 +59,8 @@ struct CascadeConfig
   std::array<float, NUM_CASCADES> cascadeSplits;
 
   // Calculate cascade split distances using PSSM (Parallel-Split Shadow Maps)
-  inline void calculateSplitDistances(float nearPlane, float farPlane,
+  inline void calculateSplitDistances(float nearPlane,
+                                      float farPlane,
                                       float lambda = 0.5f)
   {
     float range = farPlane - nearPlane;
@@ -119,8 +121,9 @@ struct CascadeConfig
       center /= 8.0f;
 
       // Create light view matrix looking at frustum center
-      glm::vec3 up = (std::abs(lightDir.y) > LIGHT_DIR_VERTICAL_THRESHOLD) ? glm::vec3(0.0f, 0.0f, 1.0f)
-                                                                            : glm::vec3(0.0f, 1.0f, 0.0f);
+      glm::vec3 up = (std::abs(lightDir.y) > LIGHT_DIR_VERTICAL_THRESHOLD)
+                       ? glm::vec3(0.0f, 0.0f, 1.0f)
+                       : glm::vec3(0.0f, 1.0f, 0.0f);
       glm::mat4 lightView =
         glm::lookAt(center - lightDir * LIGHT_POSITION_OFFSET, center, up);
 
@@ -141,14 +144,22 @@ struct CascadeConfig
       // Texel snapping for shadow stability (prevents swimming)
       float worldUnitsPerTexel =
         (lightMax.x - lightMin.x) / static_cast<float>(SHADOW_MAP_SIZE);
-      lightMin.x = std::floor(lightMin.x / worldUnitsPerTexel) * worldUnitsPerTexel;
-      lightMin.y = std::floor(lightMin.y / worldUnitsPerTexel) * worldUnitsPerTexel;
-      lightMax.x = std::floor(lightMax.x / worldUnitsPerTexel) * worldUnitsPerTexel;
-      lightMax.y = std::floor(lightMax.y / worldUnitsPerTexel) * worldUnitsPerTexel;
+      lightMin.x =
+        std::floor(lightMin.x / worldUnitsPerTexel) * worldUnitsPerTexel;
+      lightMin.y =
+        std::floor(lightMin.y / worldUnitsPerTexel) * worldUnitsPerTexel;
+      lightMax.x =
+        std::floor(lightMax.x / worldUnitsPerTexel) * worldUnitsPerTexel;
+      lightMax.y =
+        std::floor(lightMax.y / worldUnitsPerTexel) * worldUnitsPerTexel;
 
       // Create orthographic projection for this cascade
-      glm::mat4 lightProj = glm::ortho(lightMin.x, lightMax.x, lightMin.y,
-                                       lightMax.y, 0.0f, lightMax.z - lightMin.z);
+      glm::mat4 lightProj = glm::ortho(lightMin.x,
+                                       lightMax.x,
+                                       lightMin.y,
+                                       lightMax.y,
+                                       0.0f,
+                                       lightMax.z - lightMin.z);
 
       lightSpaceMatrices[cascade] = lightProj * lightView;
     }

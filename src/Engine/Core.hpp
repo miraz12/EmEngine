@@ -2,6 +2,8 @@
 #define CORE_H_
 #include <ECS/ECSManager.hpp>
 #include <GameStateManager.hpp>
+#include <Graphics/GraphicsDevice.hpp>
+#include <Graphics/RenderResources.hpp>
 #include <Gui.hpp>
 #include <UIManager.hpp>
 

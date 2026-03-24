@@ -6,8 +6,13 @@
 precision highp float;
 
 uniform sampler2D srcTexture;
-uniform vec2 srcResolution;
-uniform int mipLevel;
+
+// PostProcess UBO (binding point 5)
+layout(std140) uniform PostProcessData
+{
+  vec4 resolution;      // xy = resolution, z = exposure, w = filterRadius
+  ivec4 postConfig;     // x = mipLevel, y = sceneSampler, z = bloomSampler, w = unused
+};
 
 in vec2 texCoords;
 layout(location = 0) out vec3 downsample;
@@ -54,9 +59,10 @@ KarisAverage(vec3 col)
 void
 main()
 {
-  vec2 srcTexelSize = 1.0 / srcResolution;
+  vec2 srcTexelSize = 1.0 / resolution.xy;
   float x = srcTexelSize.x;
   float y = srcTexelSize.y;
+  int mipLevel = postConfig.x;
 
   // Take 13 samples around current texel:
   // a - b - c

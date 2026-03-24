@@ -2,13 +2,17 @@
 #define GRAPHICSOBJECT_H_
 
 #include "Rendering/Skin.hpp"
+#include <Graphics/Handle.hpp>
 #include <Rendering/Animation.hpp>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
 #include <Rendering/Primitive.hpp>
-#include <ShaderPrograms/ShaderProgram.hpp>
 #include <glm/gtx/string_cast.hpp>
+
+namespace gfx {
+class CommandBuffer;
+}
 
 class GraphicsObject
 {
@@ -19,11 +23,21 @@ public:
   // Add a new node to the object
   void newNode(glm::mat4 model);
 
-  virtual void draw(const ShaderProgram& sPrg);
+  virtual void draw(gfx::ShaderId shader);
 
-  virtual void drawGeom(const ShaderProgram& sPrg);
+  virtual void drawGeom(gfx::ShaderId shader);
 
-  void applySkinning(const ShaderProgram& sPrg, i32 node);
+  /// Record draw commands (with materials) into CommandBuffer
+  /// @param isSkinnedLoc Uniform location for is_skinned, or -1 to skip
+  virtual void recordDraw(gfx::CommandBuffer& cmd,
+                          gfx::SamplerId sampler,
+                          i32 isSkinnedLoc = -1);
+
+  /// Record geometry-only draw commands into CommandBuffer (for shadow pass)
+  /// @param isSkinnedLoc Uniform location for is_skinned, or -1 to skip
+  virtual void recordDrawGeom(gfx::CommandBuffer& cmd, i32 isSkinnedLoc = -1);
+
+  void applySkinning(gfx::ShaderId shader, i32 node);
 
   // Compute the local transformation matrix of the given node
   glm::mat4 getLocalMat(i32 node);
@@ -48,8 +62,6 @@ public:
   u32 p_numSkins{ 0 };                       // Number of skins
   std::unique_ptr<Skin[]> p_skins;           // Array of skins
 
-  TextureManager& p_textureManager{ TextureManager::getInstance() };
-
 private:
   // Cache for computed matrices
   mutable std::vector<std::pair<bool, glm::mat4>> m_matrixCache;
@@ -59,7 +71,6 @@ private:
   {
     bool valid = false;                   // Is cache valid?
     std::vector<glm::mat4> jointMatrices; // Cached joint matrices
-    GLuint textureId = 0;                 // Reusable texture object
   };
   mutable std::vector<SkinningCache> m_skinningCache;
 };

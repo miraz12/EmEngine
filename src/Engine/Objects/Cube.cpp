@@ -1,4 +1,5 @@
 #include "Cube.hpp"
+#include <Graphics/RenderResources.hpp>
 
 Cube::Cube()
 {
@@ -63,64 +64,44 @@ Cube::Cube()
   p_meshes[0].numPrims = 1;
   p_meshes[0].m_primitives = std::make_unique<Primitive[]>(1);
   Primitive* newPrim = &p_meshes[0].m_primitives[0];
-  u32 vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
 
-  newPrim->m_vao = vao;
-  newPrim->m_mode = GL_TRIANGLES;
-
-  newPrim->m_count = 36;
-  newPrim->m_type = GL_UNSIGNED_INT;
-  newPrim->m_offset = 0;
-
-  u32 vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  // Use abstracted geometry creation
+  auto& resources = gfx::RenderResources::getInstance();
 
   // Stride is 8 floats: 3 for position + 3 for normal + 2 for texcoord
-  GLsizei stride = 8 * sizeof(float);
+  constexpr u32 stride = 8 * sizeof(float);
 
-  // Position attribute (location 0)
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-  glEnableVertexAttribArray(0);
-  Primitive::AttribInfo posAttrib;
-  posAttrib.vbo = 0;
-  posAttrib.type = 3;
-  posAttrib.componentType = GL_FLOAT;
-  posAttrib.normalized = GL_FALSE;
-  posAttrib.byteStride = stride;
-  posAttrib.byteOffset = 0;
-  newPrim->attributes["POSITION"] = posAttrib;
+  std::array<gfx::VertexBinding, 1> bindings = { { { 0, stride, false } } };
+  std::array<gfx::VertexAttribute, 3> attributes = { {
+    { 0, 0, 0, gfx::PixelFormat::RGB32F }, // POSITION at location 0
+    { 1,
+      0,
+      3 * sizeof(float),
+      gfx::PixelFormat::RGB32F }, // NORMAL at location 1
+    { 3,
+      0,
+      6 * sizeof(float),
+      gfx::PixelFormat::RG32F } // TEXCOORD_0 at location 3
+  } };
 
-  // Normal attribute (location 1)
-  glVertexAttribPointer(
-    1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-  Primitive::AttribInfo normAttrib;
-  normAttrib.vbo = 0;
-  normAttrib.type = 3;
-  normAttrib.componentType = GL_FLOAT;
-  normAttrib.normalized = GL_FALSE;
-  normAttrib.byteStride = stride;
-  normAttrib.byteOffset = 3 * sizeof(float);
-  newPrim->attributes["NORMAL"] = normAttrib;
+  auto result = resources.createGeometry(vertices,
+                                         sizeof(vertices),
+                                         nullptr,
+                                         0,
+                                         bindings,
+                                         attributes,
+                                         gfx::PrimitiveTopology::Triangles,
+                                         36,
+                                         "Cube");
 
-  // Texture coordinate attribute (location 3)
-  glVertexAttribPointer(
-    3, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
-  glEnableVertexAttribArray(3);
-  Primitive::AttribInfo texAttrib;
-  texAttrib.vbo = 0;
-  texAttrib.type = 2;
-  texAttrib.componentType = GL_FLOAT;
-  texAttrib.normalized = GL_FALSE;
-  texAttrib.byteStride = stride;
-  texAttrib.byteOffset = 6 * sizeof(float);
-  newPrim->attributes["TEXCOORD_0"] = texAttrib;
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  newPrim->m_vaoId = result.vao;
+  newPrim->m_vboId = result.vbo;
+  newPrim->m_topology = gfx::PrimitiveTopology::Triangles;
+  newPrim->m_count = 36;
+  newPrim->m_offset = 0;
 
   p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
+
+  defaultMat.m_metallicFactor = 0.0f;
+  defaultMat.m_roughnessFactor = 1.0f;
 }

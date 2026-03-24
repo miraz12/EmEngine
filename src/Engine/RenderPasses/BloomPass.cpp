@@ -1,34 +1,55 @@
 #include "BloomPass.hpp"
 #include "RenderUtil.hpp"
-#include "glm/fwd.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include <Graphics/GraphicsDevice.hpp>
+#include <Graphics/UBOStructs.hpp>
+#include <array>
 #include <iostream>
 
 BloomPass::BloomPass()
-  : RenderPass("resources/Shaders/quad.vert", "resources/Shaders/bloomUp.frag")
-  , m_extractBright("resources/Shaders/quad.vert",
-                    "resources/Shaders/extractBright.frag")
-  , m_downShader("resources/Shaders/quad.vert",
-                 "resources/Shaders/bloomDown.frag")
-  , m_bloomCombine("resources/Shaders/quad.vert",
-                   "resources/Shaders/bloomCombine.frag")
+  : RenderPass("BloomUp",
+               "resources/Shaders/quad.vert",
+               "resources/Shaders/bloomUp.frag")
 {
+  auto& resources = gfx::RenderResources::getInstance();
 
-  u32 fbos[3];
-  glGenFramebuffers(3, fbos);
-  m_fboManager.setFBO("brightFBO", fbos[0]);
-  m_fboManager.setFBO("bloomFBO", fbos[1]);
-  m_fboManager.setFBO("bloomFinalFBO", fbos[2]);
+  // Load additional shaders
+  resources.loadShaderProgram(m_extractBrightName,
+                              "resources/Shaders/quad.vert",
+                              "resources/Shaders/extractBright.frag");
+  resources.loadShaderProgram(m_downShaderName,
+                              "resources/Shaders/quad.vert",
+                              "resources/Shaders/bloomDown.frag");
+  resources.loadShaderProgram(m_bloomCombineName,
+                              "resources/Shaders/quad.vert",
+                              "resources/Shaders/bloomCombine.frag");
 
-  u32 frameBright;
-  glGenTextures(1, &frameBright);
-  m_textureManager.setTexture("frameBright", frameBright, GL_TEXTURE_2D);
+  // Create FBOs through new RenderResources system (bare FBOs, attachments
+  // managed separately)
+  resources.createBareFramebuffer("brightFBO");
+  resources.createBareFramebuffer("bloomFBO");
+  resources.createBareFramebuffer("bloomFinalFBO");
 
-  u32 frameBloomFinal;
-  glGenTextures(1, &frameBloomFinal);
-  m_textureManager.setTexture(
-    "frameBloomFinal", frameBloomFinal, GL_TEXTURE_2D);
+  // Create main textures through new RenderResources system
+  // These are used by other passes (FxaaPass reads frameBloomFinal)
+  gfx::TextureCreateInfo brightInfo{};
+  brightInfo.width = m_width;
+  brightInfo.height = m_height;
+  brightInfo.format = gfx::PixelFormat::RGBA16F;
+  brightInfo.mipLevels = 1;
+  brightInfo.debugName = "frameBright";
+  resources.createTexture2D("frameBright", brightInfo);
 
+  gfx::TextureCreateInfo finalInfo{};
+  finalInfo.width = m_width;
+  finalInfo.height = m_height;
+  finalInfo.format = gfx::PixelFormat::RGBA16F;
+  finalInfo.mipLevels = 1;
+  finalInfo.debugName = "frameBloomFinal";
+  resources.createTexture2D("frameBloomFinal", finalInfo);
+
+  m_useNewResources = true;
+
+  // Create mip chain textures through RenderResources
   glm::vec2 currentMipSize(m_width, m_height);
   glm::ivec2 currentMipSizeInt(m_width, m_height);
   for (u32 i = 0; i < 5; i++) {
@@ -37,128 +58,289 @@ BloomPass::BloomPass()
     currentMipSizeInt /= 2;
     mip.size = currentMipSize;
     mip.intSize = currentMipSizeInt;
+    mip.textureName = "bloomMip" + std::to_string(i);
 
-    glGenTextures(1, &mip.texture);
+    gfx::TextureCreateInfo mipInfo{};
+    mipInfo.width = static_cast<u32>(currentMipSize.x);
+    mipInfo.height = static_cast<u32>(currentMipSize.y);
+    mipInfo.format = gfx::PixelFormat::R11G11B10F;
+    mipInfo.mipLevels = 1;
+    mipInfo.debugName = mip.textureName.c_str();
+    resources.createTexture2D(mip.textureName, mipInfo);
+
     m_mipChain.emplace_back(mip);
   }
 
   setViewport(m_width, m_height);
 
-  m_shaderProgram.setAttribBinding("POSITION");
-  m_shaderProgram.setAttribBinding("TEXCOORD_0");
-  m_shaderProgram.setUniformBinding("srcResolution");
-  m_shaderProgram.setUniformBinding("filterRadius");
+  // Bind PostProcessData UBO block for all bloom shaders
+  useShader();
+  resources.bindShaderUniformBlock(
+    getShaderId(), "PostProcessData", gfx::UBOBinding::PostProcess);
 
-  m_extractBright.setAttribBinding("POSITION");
-  m_extractBright.setAttribBinding("TEXCOORD_0");
-  m_extractBright.setUniformBinding("srcResolution");
-  m_extractBright.setUniformBinding("mipLevel");
+  gfx::ShaderId downShader = resources.getShaderProgram(m_downShaderName);
+  resources.bindShaderProgram(m_downShaderName);
+  resources.bindShaderUniformBlock(
+    downShader, "PostProcessData", gfx::UBOBinding::PostProcess);
 
-  m_downShader.setAttribBinding("POSITION");
-  m_downShader.setAttribBinding("TEXCOORD_0");
-  m_downShader.setUniformBinding("srcResolution");
-  m_downShader.setUniformBinding("mipLevel");
+  gfx::ShaderId combineShader = resources.getShaderProgram(m_bloomCombineName);
+  resources.bindShaderProgram(m_bloomCombineName);
+  resources.bindShaderUniformBlock(
+    combineShader, "PostProcessData", gfx::UBOBinding::PostProcess);
 
-  m_bloomCombine.setAttribBinding("POSITION");
-  m_bloomCombine.setAttribBinding("TEXCOORD_0");
-  m_bloomCombine.setUniformBinding("scene");
-  m_bloomCombine.setUniformBinding("bloomBlur");
-  m_bloomCombine.setUniformBinding("exposure");
+  // Cache sampler uniform locations (samplers must remain regular uniforms)
+  auto& device = gfx::GraphicsDevice::getInstance();
+  m_combineSceneLoc = device.getUniformLocation(combineShader, "scene");
+  m_combineBloomBlurLoc = device.getUniformLocation(combineShader, "bloomBlur");
 
-  // Cache uniform locations for performance
-  m_upFilterRadiusLoc = m_shaderProgram.getUniformLocation("filterRadius");
-  m_downSrcResolutionLoc = m_downShader.getUniformLocation("srcResolution");
-  m_downMipLevelLoc = m_downShader.getUniformLocation("mipLevel");
-  m_combineExposureLoc = m_bloomCombine.getUniformLocation("exposure");
-  m_combineSceneLoc = m_bloomCombine.getUniformLocation("scene");
-  m_combineBloomBlurLoc = m_bloomCombine.getUniformLocation("bloomBlur");
+  // Create pipelines for CommandBuffer rendering
+  // All bloom passes use the same quad vertex layout: vec3 position, vec2
+  // texcoord
+  static constexpr u32 kQuadStride = 5 * sizeof(float);
+  std::array<gfx::VertexBinding, 1> bindings = {
+    { { .binding = 0, .stride = kQuadStride, .perInstance = false } }
+  };
+  std::array<gfx::VertexAttribute, 2> attributes = {
+    { { .location = 0,
+        .binding = 0,
+        .offset = 0,
+        .format = gfx::PixelFormat::RGB32F },
+      { .location = 1,
+        .binding = 0,
+        .offset = 3 * sizeof(float),
+        .format = gfx::PixelFormat::RG32F } }
+  };
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // Common pipeline settings for fullscreen quad rendering
+  auto createBloomPipeline = [&](const std::string& name,
+                                 gfx::ShaderId shader,
+                                 bool enableBlend = false) -> gfx::PipelineId {
+    gfx::PipelineCreateInfo pipeInfo{};
+    pipeInfo.shaderProgram = shader;
+    pipeInfo.vertexBindings = bindings;
+    pipeInfo.vertexAttributes = attributes;
+    pipeInfo.topology = gfx::PrimitiveTopology::TriangleStrip;
+    pipeInfo.depthStencil.depthTestEnable = false;
+    pipeInfo.depthStencil.depthWriteEnable = false;
+    pipeInfo.rasterizer.cullMode = gfx::CullMode::None;
+    pipeInfo.debugName = name.c_str();
+    if (enableBlend) {
+      pipeInfo.blend.attachments[0].blendEnable = true;
+      pipeInfo.blend.attachments[0].srcColorBlendFactor = gfx::BlendFactor::One;
+      pipeInfo.blend.attachments[0].dstColorBlendFactor = gfx::BlendFactor::One;
+      pipeInfo.blend.attachments[0].colorBlendOp = gfx::BlendOp::Add;
+      pipeInfo.blend.attachments[0].srcAlphaBlendFactor = gfx::BlendFactor::One;
+      pipeInfo.blend.attachments[0].dstAlphaBlendFactor = gfx::BlendFactor::One;
+      pipeInfo.blend.attachments[0].alphaBlendOp = gfx::BlendOp::Add;
+    } else {
+      pipeInfo.blend.attachments[0].blendEnable = false;
+    }
+    return resources.createPipeline(name, pipeInfo);
+  };
+
+  gfx::ShaderId extractShader = resources.getShaderProgram(m_extractBrightName);
+  m_extractBrightPipeline =
+    createBloomPipeline("ExtractBrightPipeline", extractShader, false);
+  m_downPipeline = createBloomPipeline("BloomDownPipeline", downShader, false);
+  m_upPipeline = createBloomPipeline(
+    "BloomUpPipeline", getShaderId(), true); // Additive blend
+  m_combinePipeline =
+    createBloomPipeline("BloomCombinePipeline", combineShader, false);
+
+  resources.bindDefaultFramebuffer();
 }
 
 void
 BloomPass::Execute(ECSManager& /* eManager */)
 {
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Bloom Pass");
-#endif
-  m_fboManager.bindFBO("brightFBO");
-  m_extractBright.use();
-  m_textureManager.bindActivateTexture("cubeFrame", 0);
-  Util::renderQuad();
+  auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
+  gfx::PostProcessUBO& postProcessUBO = resources.getPostProcessUBO();
 
-  m_fboManager.bindFBO("bloomFBO");
-  m_downShader.use();
-  // Disable blending
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
-
-  glUniform2f(m_downSrcResolutionLoc, m_width, m_height);
-  glUniform1i(m_downMipLevelLoc, 0);
-
-  // Bind srcTexture (HDR color buffer) as initial texture input
-  m_textureManager.bindActivateTexture("frameBright", 0);
-
-  // Progressively downsample through the mip chain
-  for (u32 i = 0; i < (u32)m_mipChain.size(); i++) {
-    const mipLevel& mip = m_mipChain[i];
-    glViewport(0, 0, mip.size.x, mip.size.y);
-    glFramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mip.texture, 0);
-
-    Util::renderQuad();
-
-    // Set current mip resolution as srcResolution for next iteration
-    glUniform2f(m_downSrcResolutionLoc, mip.size.x, mip.size.y);
-    // Set current mip as texture input for next iteration
-    glBindTexture(GL_TEXTURE_2D, mip.texture);
-    // Disable Karis average for consequent downsamples
-    if (i == 0) {
-      glUniform1i(m_downMipLevelLoc, 1);
-    }
+  gfx::CommandBuffer* cmd = getCommandBuffer();
+  if (cmd == nullptr) {
+    return;
   }
 
-  m_shaderProgram.use();
-  glUniform1f(m_upFilterRadiusLoc, 0.005f);
+  gfx::SamplerId linearClampSampler = resources.getLinearClampSampler();
+  gfx::FramebufferId brightFBO = resources.getFramebuffer("brightFBO");
+  gfx::FramebufferId bloomFBO = resources.getFramebuffer("bloomFBO");
+  gfx::FramebufferId bloomFinalFBO = resources.getFramebuffer("bloomFinalFBO");
 
-  // Enable additive blending
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE);
-  glBlendEquation(GL_FUNC_ADD);
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  cmd->pushDebugGroup("Bloom Pass");
+#endif
 
-  for (u32 i = (u32)m_mipChain.size() - 1; i > 0; i--) {
+  // =========================================================================
+  // Stage 1: Extract bright pixels
+  // =========================================================================
+  gfx::RenderPassBeginInfo extractPassInfo{};
+  extractPassInfo.framebuffer = brightFBO;
+  extractPassInfo.colorAttachmentCount = 1;
+  extractPassInfo.clearColor = false;
+  extractPassInfo.clearDepthStencil = false;
+  cmd->beginRenderPass(extractPassInfo);
+
+  cmd->bindPipeline(m_extractBrightPipeline);
+
+  gfx::Viewport fullViewport{};
+  fullViewport.x = 0;
+  fullViewport.y = 0;
+  fullViewport.width = static_cast<float>(m_width);
+  fullViewport.height = static_cast<float>(m_height);
+  fullViewport.minDepth = 0.0f;
+  fullViewport.maxDepth = 1.0f;
+  cmd->setViewport(fullViewport);
+
+  cmd->bindVertexBuffer(0, resources.getQuadVertexBuffer(), 0);
+  cmd->bindTexture(0, resources.getTexture("cubeFrame"), linearClampSampler);
+  cmd->draw(gfx::RenderResources::kQuadVertexCount, 1, 0, 0);
+
+  cmd->endRenderPass();
+
+  // Submit extract pass before downsample since we need to set UBO for
+  // downsample
+  device.submit(m_cmdBuffer);
+
+  // =========================================================================
+  // Stage 2: Progressive downsample through mip chain
+  // =========================================================================
+  // Set initial resolution and mipLevel=0 for Karis average
+  postProcessUBO.resolution = glm::vec4(
+    static_cast<float>(m_width), static_cast<float>(m_height), 1.0f, 0.005f);
+  postProcessUBO.postConfig = glm::ivec4(0, 0, 0, 0); // mipLevel = 0
+  resources.flushPostProcessUBO();
+
+  gfx::TextureId prevTexture = resources.getTexture("frameBright");
+
+  for (u32 i = 0; i < static_cast<u32>(m_mipChain.size()); i++) {
+    const mipLevel& mip = m_mipChain[i];
+
+    // Reset command buffer for this mip level
+    cmd->reset();
+
+    // Set framebuffer attachment for this mip level
+    cmd->setFramebufferAttachment(
+      bloomFBO, 0, resources.getTexture(mip.textureName), 0, 0);
+
+    gfx::RenderPassBeginInfo downPassInfo{};
+    downPassInfo.framebuffer = bloomFBO;
+    downPassInfo.colorAttachmentCount = 1;
+    downPassInfo.clearColor = false;
+    downPassInfo.clearDepthStencil = false;
+    cmd->beginRenderPass(downPassInfo);
+
+    cmd->bindPipeline(m_downPipeline);
+
+    gfx::Viewport mipViewport{};
+    mipViewport.x = 0;
+    mipViewport.y = 0;
+    mipViewport.width = mip.size.x;
+    mipViewport.height = mip.size.y;
+    mipViewport.minDepth = 0.0f;
+    mipViewport.maxDepth = 1.0f;
+    cmd->setViewport(mipViewport);
+
+    cmd->bindVertexBuffer(0, resources.getQuadVertexBuffer(), 0);
+    cmd->bindTexture(0, prevTexture, linearClampSampler);
+    cmd->draw(gfx::RenderResources::kQuadVertexCount, 1, 0, 0);
+
+    cmd->endRenderPass();
+
+    device.submit(m_cmdBuffer);
+
+    // Update UBO for next iteration
+    postProcessUBO.resolution.x = mip.size.x;
+    postProcessUBO.resolution.y = mip.size.y;
+    if (i == 0) {
+      postProcessUBO.postConfig.x = 1; // mipLevel = 1 (disable Karis average)
+    }
+    resources.flushPostProcessUBO();
+
+    prevTexture = resources.getTexture(mip.textureName);
+  }
+
+  // =========================================================================
+  // Stage 3: Progressive upsample through mip chain (additive blending)
+  // =========================================================================
+  for (u32 i = static_cast<u32>(m_mipChain.size()) - 1; i > 0; i--) {
     const mipLevel& mip = m_mipChain[i];
     const mipLevel& nextMip = m_mipChain[i - 1];
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, mip.texture);
+    cmd->reset();
 
-    glViewport(0, 0, nextMip.size.x, nextMip.size.y);
-    glFramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, nextMip.texture, 0);
+    // Set framebuffer attachment for next mip level
+    cmd->setFramebufferAttachment(
+      bloomFBO, 0, resources.getTexture(nextMip.textureName), 0, 0);
 
-    Util::renderQuad();
+    gfx::RenderPassBeginInfo upPassInfo{};
+    upPassInfo.framebuffer = bloomFBO;
+    upPassInfo.colorAttachmentCount = 1;
+    upPassInfo.clearColor = false;
+    upPassInfo.clearDepthStencil = false;
+    cmd->beginRenderPass(upPassInfo);
+
+    cmd->bindPipeline(m_upPipeline); // Uses additive blend
+
+    gfx::Viewport upViewport{};
+    upViewport.x = 0;
+    upViewport.y = 0;
+    upViewport.width = nextMip.size.x;
+    upViewport.height = nextMip.size.y;
+    upViewport.minDepth = 0.0f;
+    upViewport.maxDepth = 1.0f;
+    cmd->setViewport(upViewport);
+
+    cmd->bindVertexBuffer(0, resources.getQuadVertexBuffer(), 0);
+    cmd->bindTexture(
+      0, resources.getTexture(mip.textureName), linearClampSampler);
+    cmd->draw(gfx::RenderResources::kQuadVertexCount, 1, 0, 0);
+
+    cmd->endRenderPass();
+
+    device.submit(m_cmdBuffer);
   }
 
-  // Disable additive blending
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  glDisable(GL_BLEND);
+  // =========================================================================
+  // Stage 4: Final combine pass
+  // =========================================================================
+  postProcessUBO.resolution.z = 1.0f; // exposure
+  resources.flushPostProcessUBO();
 
-  m_fboManager.bindFBO("bloomFinalFBO");
-  glViewport(0, 0, m_width, m_height);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  m_bloomCombine.use();
-  glUniform1f(m_combineExposureLoc, 1.0f);
-  glUniform1i(m_combineSceneLoc, 0);
-  glUniform1i(m_combineBloomBlurLoc, 1);
-  m_textureManager.bindActivateTexture("cubeFrame", 0);
-  glActiveTexture(GL_TEXTURE0 + 1);
-  glBindTexture(GL_TEXTURE_2D, m_mipChain.front().texture);
+  cmd->reset();
 
-  Util::renderQuad();
+  gfx::RenderPassBeginInfo combinePassInfo{};
+  combinePassInfo.framebuffer = bloomFinalFBO;
+  combinePassInfo.clearColors[0] = glm::vec4(0.0f);
+  combinePassInfo.clearDepth = 1.0f;
+  combinePassInfo.clearStencil = 0;
+  combinePassInfo.colorAttachmentCount = 1;
+  combinePassInfo.clearColor = true;
+  combinePassInfo.clearDepthStencil = true;
+  cmd->beginRenderPass(combinePassInfo);
+
+  cmd->bindPipeline(m_combinePipeline);
+
+  cmd->setViewport(fullViewport);
+
+  // Set sampler uniform bindings
+  cmd->setUniform(m_combineSceneLoc, 0);
+  cmd->setUniform(m_combineBloomBlurLoc, 1);
+
+  cmd->bindVertexBuffer(0, resources.getQuadVertexBuffer(), 0);
+  cmd->bindTexture(0, resources.getTexture("cubeFrame"), linearClampSampler);
+  cmd->bindTexture(1,
+                   resources.getTexture(m_mipChain.front().textureName),
+                   linearClampSampler);
+  cmd->draw(gfx::RenderResources::kQuadVertexCount, 1, 0, 0);
+
+  cmd->endRenderPass();
+
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  glPopDebugGroup();
+  cmd->popDebugGroup();
 #endif
+
+  device.submit(m_cmdBuffer);
 }
 
 void
@@ -167,95 +349,61 @@ BloomPass::setViewport(u32 w, u32 h)
   m_width = w;
   m_height = h;
 
-  m_fboManager.bindFBO("brightFBO");
-  u32 frameBright = m_textureManager.bindTexture("frameBright");
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGBA16F,
-               m_width,
-               m_height,
-               0,
-               GL_RGBA,
-               GL_FLOAT,
-               NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(
-    GL_TEXTURE_2D,
-    GL_TEXTURE_WRAP_S,
-    GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would
-                       // otherwise sample repeated texture values!
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBright, 0);
+  auto& resources = gfx::RenderResources::getInstance();
 
-  u32 attachments[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, attachments);
-  // check completion status
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "Framebuffer not complete!" << std::endl;
-  }
-
-  m_fboManager.bindFBO("bloomFBO");
+  // Update mip chain sizes
+  glm::vec2 currentMipSize(m_width, m_height);
+  glm::ivec2 currentMipSizeInt(m_width, m_height);
   for (u32 i = 0; i < 5; i++) {
-    mipLevel mip = m_mipChain[i];
-
-    glBindTexture(GL_TEXTURE_2D, mip.texture);
-    // we are downscaling a HDR color buffer, so we need a float texture format
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_R11F_G11F_B10F,
-                 (i32)mip.size.x,
-                 (i32)mip.size.y,
-                 0,
-                 GL_RGB,
-                 GL_FLOAT,
-                 nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    currentMipSize *= 0.5f;
+    currentMipSizeInt /= 2;
+    m_mipChain[i].size = currentMipSize;
+    m_mipChain[i].intSize = currentMipSizeInt;
   }
 
-  glFramebufferTexture2D(GL_FRAMEBUFFER,
-                         GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D,
-                         m_mipChain[0].texture,
-                         0);
+  // Recreate frameBright texture with new size
+  if (m_useNewResources) {
+    resources.recreateTexture2D("frameBright", m_width, m_height);
+  }
 
-  glDrawBuffers(1, attachments);
-  // check completion status
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "Framebuffer not complete!" << std::endl;
+  // Attach frameBright to brightFBO
+  resources.setFramebufferAttachment("brightFBO", 0, "frameBright");
+  std::array<u32, 1> drawBuffers = { 0 };
+  resources.setDrawBuffers("brightFBO", drawBuffers);
+
+  if (!resources.isFramebufferComplete("brightFBO")) {
+    std::cout << "brightFBO not complete!\n";
+  }
+
+  // Recreate mip chain textures through RenderResources
+  for (u32 i = 0; i < 5; i++) {
+    mipLevel& mip = m_mipChain[i];
+    if (m_useNewResources) {
+      resources.recreateTexture2D(mip.textureName,
+                                  static_cast<u32>(mip.size.x),
+                                  static_cast<u32>(mip.size.y));
+    }
+  }
+
+  // Attach first mip to bloomFBO
+  resources.setFramebufferAttachment("bloomFBO", 0, m_mipChain[0].textureName);
+  resources.setDrawBuffers("bloomFBO", drawBuffers);
+
+  if (!resources.isFramebufferComplete("bloomFBO")) {
+    std::cout << "bloomFBO not complete!\n";
     assert(false);
   }
 
-  m_fboManager.bindFBO("bloomFinalFBO");
-  u32 frameBloomFinal = m_textureManager.bindTexture("frameBloomFinal");
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGBA16F,
-               m_width,
-               m_height,
-               0,
-               GL_RGBA,
-               GL_FLOAT,
-               NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(
-    GL_TEXTURE_2D,
-    GL_TEXTURE_WRAP_S,
-    GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would
-                       // otherwise sample repeated texture values!
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture2D(
-    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBloomFinal, 0);
-  glGenerateMipmap(GL_TEXTURE_2D);
+  // Recreate frameBloomFinal texture with new size
+  if (m_useNewResources) {
+    resources.recreateTexture2D("frameBloomFinal", m_width, m_height);
+  }
 
-  glDrawBuffers(1, attachments);
-  // check completion status
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    std::cout << "Framebuffer not complete!" << std::endl;
+  // Attach frameBloomFinal to bloomFinalFBO
+  resources.setFramebufferAttachment("bloomFinalFBO", 0, "frameBloomFinal");
+  resources.setDrawBuffers("bloomFinalFBO", drawBuffers);
+
+  if (!resources.isFramebufferComplete("bloomFinalFBO")) {
+    std::cout << "bloomFinalFBO not complete!\n";
   }
 }

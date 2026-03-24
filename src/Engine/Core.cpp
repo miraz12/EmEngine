@@ -9,6 +9,18 @@ Core::initialize()
   std::cout << "[core] Initialize" << std::endl;
 
   if (Window::getInstance().start() && Window::getInstance().open()) {
+    // Initialize GraphicsDevice (must be after GL context is created)
+    if (!gfx::GraphicsDevice::getInstance().initialize()) {
+      std::cerr << "Failed to initialize GraphicsDevice" << std::endl;
+      return false;
+    }
+
+    // Initialize RenderResources bridge layer
+    if (!gfx::RenderResources::getInstance().initialize()) {
+      std::cerr << "Failed to initialize RenderResources" << std::endl;
+      return false;
+    }
+
     m_ECSManager = &ECSManager::getInstance();
     m_ECSManager->initializeSystems();
 

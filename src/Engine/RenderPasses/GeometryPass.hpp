@@ -1,6 +1,7 @@
 #ifndef GEOMETRYPASS_H_
 #define GEOMETRYPASS_H_
 #include "RenderPasses/RenderPass.hpp"
+#include <Graphics/Handle.hpp>
 
 class GeometryPass final : public RenderPass
 {
@@ -12,8 +13,10 @@ public:
   void Init(FrameGraph& fGraph) override;
 
 private:
-  u32 gBuffer;
-  u32 rboDepth;
+  gfx::SamplerId m_sampler{};
+  gfx::PipelineId m_pipeline{};
+  i32 m_modelMatrixLoc{ -1 };
+  i32 m_isSkinnedLoc{ -1 };
 };
 
 #endif // GEOMETRYPASS_H_

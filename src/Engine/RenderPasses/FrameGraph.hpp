@@ -31,10 +31,12 @@ public:
   void draw(ECSManager& eManager);
   void setViewport(u32 w, u32 h);
 
-  RenderPass* getPass(PassId id) {
+  RenderPass* getPass(PassId id)
+  {
     return m_renderPass[static_cast<size_t>(id)].get();
   }
-  const RenderPass* getPass(PassId id) const {
+  const RenderPass* getPass(PassId id) const
+  {
     return m_renderPass[static_cast<size_t>(id)].get();
   }
 

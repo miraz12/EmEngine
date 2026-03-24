@@ -108,14 +108,4 @@ using Signature = std::bitset<MAX_COMPONENTS>;
 #define DEG2RAD (M_PI / 180.f)
 #define RAD2DEG (180.f / M_PI)
 
-static void
-checkGLError(const char* operation)
-{
-  GLenum error;
-  while ((error = glGetError()) != GL_NO_ERROR) {
-    std::cout << "GL error after " << operation << ": 0x" << std::hex << error
-              << std::dec << '\n';
-  }
-}
-
 #endif // ENGINE_PCH_

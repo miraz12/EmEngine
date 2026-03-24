@@ -6,6 +6,7 @@
 #include <tiny_gltf.h>
 
 #include "GltfObject.hpp"
+#include <Graphics/RenderResources.hpp>
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
@@ -163,168 +164,275 @@ GltfObject::loadMaterials(tinygltf::Model& model)
 void
 GltfObject::loadTextures(tinygltf::Model& model)
 {
+  auto& resources = gfx::RenderResources::getInstance();
 
-  for (auto& tex : model.textures) {
-    TextureManager& texMan = TextureManager::getInstance();
-
+  for (size_t texIdx = 0; texIdx < model.textures.size(); texIdx++) {
+    auto& tex = model.textures[texIdx];
     tinygltf::Image& image = model.images[tex.source];
+
     if (tex.source > -1) {
-      GLenum format = GL_RGBA;
+      // Map component count to PixelFormat
+      gfx::PixelFormat format = gfx::PixelFormat::RGBA8;
       if (image.component == 1) {
-        format = GL_RED;
+        format = gfx::PixelFormat::R8;
       } else if (image.component == 2) {
-        format = GL_RG;
+        format = gfx::PixelFormat::RG8;
       } else if (image.component == 3) {
-        format = GL_RGB;
+        format = gfx::PixelFormat::RGB8;
       } else if (image.component == 4) {
-        format = GL_RGBA;
+        format = gfx::PixelFormat::RGBA8;
       } else {
         std::cout << "WARNING: no matching format." << std::endl;
       }
 
-      GLenum type = GL_UNSIGNED_BYTE;
-      if (image.bits == 8) {
-        type = GL_UNSIGNED_BYTE;
-      } else if (image.bits == 16) {
-        type = GL_UNSIGNED_SHORT;
-      } else {
-        std::cout << "WARNING: no matching type." << std::endl;
+      // Validate bit depth (currently only 8-bit supported in PixelFormat
+      // enums)
+      if (image.bits != 8 && image.bits != 16) {
+        std::cout << "WARNING: unsupported bit depth: " << image.bits
+                  << std::endl;
       }
-      u32 id = texMan.loadTexture(
-        GL_RGBA, format, type, image.width, image.height, &image.image.at(0));
-      m_texIds.push_back(std::to_string(id));
+
+      // Generate unique texture name based on model filename and texture index
+      std::string texName = m_filename + "_tex" + std::to_string(texIdx);
+
+      gfx::TextureCreateInfo texInfo{};
+      texInfo.width = static_cast<u32>(image.width);
+      texInfo.height = static_cast<u32>(image.height);
+      texInfo.format = format;
+      texInfo.mipLevels = 1;
+      texInfo.initialData = image.image.data();
+      texInfo.debugName = texName.c_str();
+
+      resources.createTexture2D(texName, texInfo);
+      m_texIds.push_back(texName);
     }
   }
+}
+
+// Interleaved vertex layout for glTF meshes
+// Attribute locations match shader expectations:
+//   0 = POSITION (vec3), 1 = NORMAL (vec3), 2 = TANGENT (vec4),
+//   3 = TEXCOORD_0 (vec2), 4 = JOINTS_0 (uvec4), 5 = WEIGHTS_0 (vec4)
+struct InterleavedVertex
+{
+  glm::vec3 position{ 0.0f };
+  glm::vec3 normal{ 0.0f, 1.0f, 0.0f };
+  glm::vec4 tangent{ 1.0f, 0.0f, 0.0f, 1.0f };
+  glm::vec2 texcoord{ 0.0f };
+  glm::u16vec4 joints{ 0 };
+  glm::vec4 weights{ 1.0f, 0.0f, 0.0f, 0.0f };
+};
+
+// Helper to get attribute data pointer from glTF accessor
+static const void*
+getAccessorDataPtr(const tinygltf::Model& model,
+                   const tinygltf::Accessor& accessor)
+{
+  const auto& bufferView = model.bufferViews[accessor.bufferView];
+  const auto& buffer = model.buffers[bufferView.buffer];
+  return &buffer.data[bufferView.byteOffset + accessor.byteOffset];
 }
 
 void
 GltfObject::loadMeshes(tinygltf::Model& model)
 {
+  auto& resources = gfx::RenderResources::getInstance();
+
   p_numMeshes = model.meshes.size();
   p_meshes = std::make_unique<Mesh[]>(p_numMeshes);
   u32 meshCount = 0;
+
   for (auto& mesh : model.meshes) {
     p_meshes[meshCount].m_primitives =
       std::make_unique<Primitive[]>(mesh.primitives.size());
-    for (auto& primitive : mesh.primitives) {
-      u32 vao;
-      glGenVertexArrays(1, &vao);
-      glBindVertexArray(vao);
 
+    for (auto& primitive : mesh.primitives) {
       Primitive* newPrim =
         &p_meshes[meshCount].m_primitives[p_meshes[meshCount].numPrims++];
       m_mesh = new btTriangleMesh();
-      newPrim->m_vao = vao;
-      newPrim->m_mode = primitive.mode;
       newPrim->m_material = primitive.material;
 
-      // Check if using element buffer
+      // Determine vertex count from POSITION attribute (required)
+      u32 vertexCount = 0;
+      auto posIt = primitive.attributes.find("POSITION");
+      if (posIt != primitive.attributes.end()) {
+        vertexCount = model.accessors[posIt->second].count;
+      }
+
+      // Create interleaved vertex buffer
+      std::vector<InterleavedVertex> vertices(vertexCount);
+
+      // Fill vertex data from each attribute
+      for (const auto& attrib : primitive.attributes) {
+        const auto& accessor = model.accessors[attrib.second];
+        const void* dataPtr = getAccessorDataPtr(model, accessor);
+
+        if (attrib.first == "POSITION") {
+          const auto* positions = static_cast<const float*>(dataPtr);
+          for (u32 idx = 0; idx < vertexCount; idx++) {
+            vertices[idx].position = glm::vec3(positions[idx * 3 + 0],
+                                               positions[idx * 3 + 1],
+                                               positions[idx * 3 + 2]);
+          }
+          // Build collision mesh from positions
+          for (u32 idx = 0; idx + 2 < vertexCount; idx += 3) {
+            btVector3 v0(positions[idx * 3],
+                         positions[idx * 3 + 1],
+                         positions[idx * 3 + 2]);
+            btVector3 v1(positions[(idx + 1) * 3],
+                         positions[(idx + 1) * 3 + 1],
+                         positions[(idx + 1) * 3 + 2]);
+            btVector3 v2(positions[(idx + 2) * 3],
+                         positions[(idx + 2) * 3 + 1],
+                         positions[(idx + 2) * 3 + 2]);
+            m_mesh->addTriangle(v0, v1, v2);
+          }
+        } else if (attrib.first == "NORMAL") {
+          const auto* normals = static_cast<const float*>(dataPtr);
+          for (u32 idx = 0; idx < vertexCount; idx++) {
+            vertices[idx].normal = glm::vec3(
+              normals[idx * 3 + 0], normals[idx * 3 + 1], normals[idx * 3 + 2]);
+          }
+        } else if (attrib.first == "TANGENT") {
+          const auto* tangents = static_cast<const float*>(dataPtr);
+          for (u32 idx = 0; idx < vertexCount; idx++) {
+            vertices[idx].tangent = glm::vec4(tangents[idx * 4 + 0],
+                                              tangents[idx * 4 + 1],
+                                              tangents[idx * 4 + 2],
+                                              tangents[idx * 4 + 3]);
+          }
+        } else if (attrib.first == "TEXCOORD_0") {
+          const auto* texcoords = static_cast<const float*>(dataPtr);
+          for (u32 idx = 0; idx < vertexCount; idx++) {
+            vertices[idx].texcoord =
+              glm::vec2(texcoords[idx * 2 + 0], texcoords[idx * 2 + 1]);
+          }
+        } else if (attrib.first == "JOINTS_0") {
+          // Joints can be u8 or u16
+          if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+            const auto* joints = static_cast<const u8*>(dataPtr);
+            for (u32 idx = 0; idx < vertexCount; idx++) {
+              vertices[idx].joints = glm::u16vec4(joints[idx * 4 + 0],
+                                                  joints[idx * 4 + 1],
+                                                  joints[idx * 4 + 2],
+                                                  joints[idx * 4 + 3]);
+            }
+          } else {
+            const auto* joints = static_cast<const u16*>(dataPtr);
+            for (u32 idx = 0; idx < vertexCount; idx++) {
+              vertices[idx].joints = glm::u16vec4(joints[idx * 4 + 0],
+                                                  joints[idx * 4 + 1],
+                                                  joints[idx * 4 + 2],
+                                                  joints[idx * 4 + 3]);
+            }
+          }
+        } else if (attrib.first == "WEIGHTS_0") {
+          const auto* weights = static_cast<const float*>(dataPtr);
+          for (u32 idx = 0; idx < vertexCount; idx++) {
+            vertices[idx].weights = glm::vec4(weights[idx * 4 + 0],
+                                              weights[idx * 4 + 1],
+                                              weights[idx * 4 + 2],
+                                              weights[idx * 4 + 3]);
+          }
+        }
+      }
+
+      // Prepare index data
+      const void* indexData = nullptr;
+      u64 indexDataSize = 0;
+      gfx::IndexType indexType = gfx::IndexType::U16;
+
       if (primitive.indices != -1) {
-        tinygltf::Accessor accessor = model.accessors[primitive.indices];
+        const auto& accessor = model.accessors[primitive.indices];
+        const auto& bufferView = model.bufferViews[accessor.bufferView];
+        const auto& buffer = model.buffers[bufferView.buffer];
+
+        // Include both bufferView and accessor offsets in the data pointer
+        indexData = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
+        indexDataSize =
+          accessor.count *
+          (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT
+             ? sizeof(u32)
+             : sizeof(u16));
         newPrim->m_count = accessor.count;
-        newPrim->m_type = accessor.componentType;
-        newPrim->m_offset = accessor.byteOffset;
-        const tinygltf::BufferView& bufferView =
-          model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-        GLuint ebo;
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     bufferView.byteLength,
-                     &buffer.data.at(0) + bufferView.byteOffset,
-                     GL_STATIC_DRAW);
-        newPrim->m_ebo = ebo;
-        newPrim->m_drawType = 1;
-        const void* indicesData =
+        newPrim->m_offset = 0; // Offset already applied to data pointer
+
+        if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+          indexType = gfx::IndexType::U32;
+        }
+
+        // Build collision mesh from indexed triangles
+        const void* indicesPtr =
           &buffer.data[bufferView.byteOffset + accessor.byteOffset];
         if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-          const u16* indices = reinterpret_cast<const u16*>(indicesData);
-          for (u32 i = 0; i < newPrim->m_count; i += 3) {
-            i32 index1 = indices[i];
-            i32 index2 = indices[i + 1];
-            i32 index3 = indices[i + 2];
-            m_mesh->addTriangleIndices(index1, index2, index3);
+          const auto* indices = static_cast<const u16*>(indicesPtr);
+          for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
+            m_mesh->addTriangleIndices(
+              indices[idx], indices[idx + 1], indices[idx + 2]);
           }
         } else if (accessor.componentType ==
                    TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-          const u32* indices = reinterpret_cast<const u32*>(indicesData);
-          for (u32 i = 0; i < newPrim->m_count; i += 3) {
-            i32 index1 = indices[i];
-            i32 index2 = indices[i + 1];
-            i32 index3 = indices[i + 2];
-            m_mesh->addTriangleIndices(index1, index2, index3);
+          const auto* indices = static_cast<const u32*>(indicesPtr);
+          for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
+            m_mesh->addTriangleIndices(
+              indices[idx], indices[idx + 1], indices[idx + 2]);
           }
         }
+      } else {
+        newPrim->m_count = vertexCount;
       }
-      // Load all vertex attributes
-      for (const auto& attrib : primitive.attributes) {
-        tinygltf::Accessor accessor = model.accessors[attrib.second];
-        const tinygltf::BufferView& bufferView =
-          model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
 
-        u32 loc = 0;
-        if (attrib.first == "POSITION") {
-          loc = 0;
-          auto positions = reinterpret_cast<const float*>(
-            &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
-          u32 numVertices = accessor.count;
-          for (u32 i = 0; i < numVertices; i += 3) {
-            // clang-format off
-              btVector3 vertex0(positions[i * 3],
-                                positions[i * 3 + 1],
-                                positions[i * 3 + 2]);
-              btVector3 vertex1(positions[(i + 1) * 3],
-                                positions[(i + 1) * 3 + 1],
-                                positions[(i + 1) * 3 + 2]);
-              btVector3 vertex2(positions[(i + 2) * 3],
-                                positions[(i + 2) * 3 + 1],
-                                positions[(i + 2) * 3 + 2]);
-            // clang-format on
-            m_mesh->addTriangle(vertex0, vertex1, vertex2);
-          }
-        } else if (attrib.first == "NORMAL") {
-          loc = 1;
-        } else if (attrib.first == "TANGENT") {
-          loc = 2;
-        } else if (attrib.first == "TEXCOORD_0") {
-          loc = 3;
-        } else if (attrib.first == "JOINTS_0") {
-          loc = 4;
-        } else if (attrib.first == "WEIGHTS_0") {
-          loc = 5;
-        }
+      // Set up vertex bindings and attributes for interleaved layout
+      std::array<gfx::VertexBinding, 1> bindings = {
+        { { 0, sizeof(InterleavedVertex), false } }
+      };
 
-        u32 vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(bufferView.target,
-                     bufferView.byteLength,
-                     &buffer.data.at(0) + bufferView.byteOffset,
-                     GL_STATIC_DRAW);
+      std::array<gfx::VertexAttribute, 6> attributes = { {
+        { 0,
+          0,
+          offsetof(InterleavedVertex, position),
+          gfx::PixelFormat::RGB32F },
+        { 1, 0, offsetof(InterleavedVertex, normal), gfx::PixelFormat::RGB32F },
+        { 2,
+          0,
+          offsetof(InterleavedVertex, tangent),
+          gfx::PixelFormat::RGBA32F },
+        { 3,
+          0,
+          offsetof(InterleavedVertex, texcoord),
+          gfx::PixelFormat::RG32F },
+        { 4, 0, offsetof(InterleavedVertex, joints), gfx::PixelFormat::RGBA16 },
+        { 5,
+          0,
+          offsetof(InterleavedVertex, weights),
+          gfx::PixelFormat::RGBA32F },
+      } };
 
-        i32 byteStride =
-          accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        glVertexAttribPointer(loc,
-                              accessor.type,
-                              accessor.componentType,
-                              accessor.normalized,
-                              byteStride,
-                              reinterpret_cast<void*>(accessor.byteOffset));
-        glEnableVertexAttribArray(loc);
+      // Convert primitive mode to topology
+      gfx::PrimitiveTopology topology = gfx::gltfModeToTopology(primitive.mode);
 
-        Primitive::AttribInfo attribInfo;
-        attribInfo.vbo = loc;
-        attribInfo.type = accessor.type;
-        attribInfo.componentType = accessor.componentType;
-        attribInfo.byteOffset = accessor.byteOffset;
-        attribInfo.byteStride =
-          accessor.ByteStride(model.bufferViews[accessor.bufferView]);
-        attribInfo.normalized = accessor.normalized;
-        newPrim->attributes[attrib.first] = attribInfo;
-        loc++;
-      }
+      // Create geometry using abstraction
+      std::string debugName = m_filename + "_mesh" + std::to_string(meshCount) +
+                              "_prim" +
+                              std::to_string(p_meshes[meshCount].numPrims - 1);
+
+      auto result =
+        resources.createGeometry(vertices.data(),
+                                 vertices.size() * sizeof(InterleavedVertex),
+                                 indexData,
+                                 indexDataSize,
+                                 bindings,
+                                 attributes,
+                                 topology,
+                                 vertexCount,
+                                 debugName.c_str());
+
+      // Store handles in primitive
+      newPrim->m_vaoId = result.vao;
+      newPrim->m_vboId = result.vbo;
+      newPrim->m_eboId = result.ebo;
+      newPrim->m_topology = topology;
+      newPrim->m_indexType = indexType;
     }
     meshCount++;
   }
