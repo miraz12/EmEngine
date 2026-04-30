@@ -332,6 +332,19 @@ GraphicsDevice::submit(CommandBufferId cmdBuffer)
 }
 
 void
+GraphicsDevice::submit(std::span<const CommandBufferId> cmdBuffers)
+{
+  if (m_backend) {
+    for (auto id : cmdBuffers) {
+      auto* cmd = m_backend->getCommandBuffer(id);
+      if (cmd) {
+        m_backend->executeCommandBuffer(*cmd);
+      }
+    }
+  }
+}
+
+void
 GraphicsDevice::beginFrame()
 {
   if (m_backend) {

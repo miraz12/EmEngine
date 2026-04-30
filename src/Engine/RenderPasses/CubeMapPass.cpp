@@ -173,45 +173,10 @@ CubeMapPass::Init(FrameGraph& fGraph)
 }
 
 void
-CubeMapPass::Execute(ECSManager& /* eManager */)
+CubeMapPass::Record(ECSManager& /* eManager */)
 {
   auto& resources = gfx::RenderResources::getInstance();
-  auto& device = gfx::GraphicsDevice::getInstance();
 
-  // Blit operations must remain immediate mode (CommandBuffer doesn't support
-  // blit yet) Blit depth from gBuffer to cubeFBO
-  resources.blitFramebuffer("gBuffer",
-                            "cubeFBO",
-                            0,
-                            0,
-                            static_cast<i32>(m_width),
-                            static_cast<i32>(m_height),
-                            0,
-                            0,
-                            static_cast<i32>(m_width),
-                            static_cast<i32>(m_height),
-                            false,
-                            true,
-                            false,
-                            false);
-
-  // Blit color from lightFBO to cubeFBO
-  resources.blitFramebuffer("lightFBO",
-                            "cubeFBO",
-                            0,
-                            0,
-                            static_cast<i32>(m_width),
-                            static_cast<i32>(m_height),
-                            0,
-                            0,
-                            static_cast<i32>(m_width),
-                            static_cast<i32>(m_height),
-                            true,
-                            false,
-                            false,
-                            false);
-
-  // Now use CommandBuffer for background cube rendering
   gfx::CommandBuffer* cmd = getCommandBuffer();
   if (cmd == nullptr) {
     return;
@@ -220,6 +185,19 @@ CubeMapPass::Execute(ECSManager& /* eManager */)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   cmd->pushDebugGroup("Background Pass");
 #endif
+
+  // Blit depth from gBuffer to cubeFBO
+  auto gBufferFBO = resources.getFramebuffer("gBuffer");
+  auto cubeFBO = resources.getFramebuffer("cubeFBO");
+  auto w = static_cast<i32>(m_width);
+  auto h = static_cast<i32>(m_height);
+  cmd->blitFramebuffer(
+    gBufferFBO, cubeFBO, 0, 0, w, h, 0, 0, w, h, false, true, false, false);
+
+  // Blit color from lightFBO to cubeFBO
+  auto lightFBO = resources.getFramebuffer("lightFBO");
+  cmd->blitFramebuffer(
+    lightFBO, cubeFBO, 0, 0, w, h, 0, 0, w, h, true, false, false, false);
 
   // Begin render pass (no clear - we want to keep the blitted content)
   gfx::RenderPassBeginInfo passInfo{};
@@ -257,9 +235,6 @@ CubeMapPass::Execute(ECSManager& /* eManager */)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   cmd->popDebugGroup();
 #endif
-
-  // Submit the command buffer
-  device.submit(m_cmdBuffer);
 }
 
 void

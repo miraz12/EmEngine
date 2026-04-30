@@ -15,7 +15,27 @@ public:
   RenderPass() = delete;
   RenderPass(std::string_view name, std::string_view vs, std::string_view fs);
   virtual ~RenderPass() = default;
-  virtual void Execute(ECSManager& eManager) = 0;
+
+  /// Record commands into the command buffer without submitting.
+  /// Passes that only need a single record+submit cycle should override this.
+  /// Default implementation does nothing (for passes that override Execute).
+  virtual void Record(ECSManager& eManager) { (void)eManager; }
+
+  /// Execute the pass. Default implementation calls Record() — passes that
+  /// need multiple submits or mid-frame CPU work (e.g. BloomPass) override
+  /// this directly.
+  virtual void Execute(ECSManager& eManager);
+
+  /// Returns true if this pass manages its own submission (overrides Execute).
+  /// Such passes are excluded from batch submission by the FrameGraph.
+  [[nodiscard]] virtual bool selfSubmitting() const { return false; }
+
+  /// Get the command buffer handle (for batch submission by FrameGraph)
+  [[nodiscard]] gfx::CommandBufferId getCommandBufferId() const
+  {
+    return m_cmdBuffer;
+  }
+
   virtual void setViewport(u32 /* w */, u32 /* h */) = 0;
   virtual void Init(FrameGraph& /* fGraph */) = 0;
   void addTexture(std::string_view texName);

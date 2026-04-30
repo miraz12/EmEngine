@@ -51,7 +51,7 @@ FxaaPass::FxaaPass()
 }
 
 void
-FxaaPass::Execute(ECSManager& /* eManager */)
+FxaaPass::Record(ECSManager& /* eManager */)
 {
   auto& resources = gfx::RenderResources::getInstance();
   auto& device = gfx::GraphicsDevice::getInstance();
@@ -117,9 +117,6 @@ FxaaPass::Execute(ECSManager& /* eManager */)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   cmd->popDebugGroup();
 #endif
-
-  // Submit the command buffer
-  device.submit(m_cmdBuffer);
 }
 
 void

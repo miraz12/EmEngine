@@ -95,10 +95,9 @@ ShadowPass::Init(FrameGraph& fGraph)
 }
 
 void
-ShadowPass::Execute(ECSManager& eManager)
+ShadowPass::Record(ECSManager& eManager)
 {
   auto& resources = gfx::RenderResources::getInstance();
-  auto& device = gfx::GraphicsDevice::getInstance();
 
   // Get camera for cascade calculation
   auto cam =
@@ -225,9 +224,6 @@ ShadowPass::Execute(ECSManager& eManager)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   cmd->popDebugGroup();
 #endif
-
-  // Submit the command buffer
-  device.submit(m_cmdBuffer);
 }
 
 void

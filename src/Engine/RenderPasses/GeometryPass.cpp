@@ -115,7 +115,7 @@ GeometryPass::Init(FrameGraph& fGraph)
 }
 
 void
-GeometryPass::Execute(ECSManager& eManager)
+GeometryPass::Record(ECSManager& eManager)
 {
   auto& resources = gfx::RenderResources::getInstance();
   auto& device = gfx::GraphicsDevice::getInstance();
@@ -195,9 +195,6 @@ GeometryPass::Execute(ECSManager& eManager)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   cmd->popDebugGroup();
 #endif
-
-  // Submit the command buffer
-  device.submit(m_cmdBuffer);
 }
 
 void

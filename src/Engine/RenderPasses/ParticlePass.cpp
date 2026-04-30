@@ -57,10 +57,9 @@ ParticlePass::ParticlePass()
 }
 
 void
-ParticlePass::Execute(ECSManager& eManager)
+ParticlePass::Record(ECSManager& eManager)
 {
   auto& resources = gfx::RenderResources::getInstance();
-  auto& device = gfx::GraphicsDevice::getInstance();
 
   // Get command buffer for this pass
   gfx::CommandBuffer* cmd = getCommandBuffer();
@@ -117,9 +116,6 @@ ParticlePass::Execute(ECSManager& eManager)
 
   cmd->endRenderPass();
   cmd->popDebugGroup();
-
-  // Submit the command buffer
-  device.submit(m_cmdBuffer);
 }
 
 void

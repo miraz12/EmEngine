@@ -265,6 +265,39 @@ CommandBuffer::drawIndexed(u32 indexCount,
 }
 
 void
+CommandBuffer::blitFramebuffer(FramebufferId src,
+                               FramebufferId dst,
+                               i32 srcX0,
+                               i32 srcY0,
+                               i32 srcX1,
+                               i32 srcY1,
+                               i32 dstX0,
+                               i32 dstY0,
+                               i32 dstX1,
+                               i32 dstY1,
+                               bool colorBit,
+                               bool depthBit,
+                               bool stencilBit,
+                               bool linearFilter)
+{
+  encodeCommand(CommandType::BlitFramebuffer);
+  encode(src);
+  encode(dst);
+  encode(srcX0);
+  encode(srcY0);
+  encode(srcX1);
+  encode(srcY1);
+  encode(dstX0);
+  encode(dstY0);
+  encode(dstX1);
+  encode(dstY1);
+  encode(colorBit);
+  encode(depthBit);
+  encode(stencilBit);
+  encode(linearFilter);
+}
+
+void
 CommandBuffer::pushDebugGroup(const char* name)
 {
   encodeCommand(CommandType::PushDebugGroup);

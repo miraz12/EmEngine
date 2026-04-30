@@ -129,6 +129,7 @@ public:
   CommandBuffer* getCommandBuffer(CommandBufferId cmdId);
 
   void submit(CommandBufferId cmdBuffer);
+  void submit(std::span<const CommandBufferId> cmdBuffers);
 
   void beginFrame();
   void endFrame();

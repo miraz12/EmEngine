@@ -82,6 +82,8 @@ enum class CommandType : u8
   // Draw calls
   Draw,
   DrawIndexed,
+  // Blit
+  BlitFramebuffer,
   // Debug
   PushDebugGroup,
   PopDebugGroup,
@@ -165,6 +167,21 @@ public:
                    u32 firstIndex = 0,
                    i32 vertexOffset = 0,
                    u32 firstInstance = 0);
+
+  void blitFramebuffer(FramebufferId src,
+                       FramebufferId dst,
+                       i32 srcX0,
+                       i32 srcY0,
+                       i32 srcX1,
+                       i32 srcY1,
+                       i32 dstX0,
+                       i32 dstY0,
+                       i32 dstX1,
+                       i32 dstY1,
+                       bool colorBit,
+                       bool depthBit,
+                       bool stencilBit,
+                       bool linearFilter = false);
 
   void pushDebugGroup(const char* name);
   void popDebugGroup();

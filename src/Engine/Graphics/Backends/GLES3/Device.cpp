@@ -1764,6 +1764,41 @@ Device::executeCommandBuffer(const CommandBuffer& cmdBuffer)
         glPopDebugGroup();
 #endif
         break;
+      case CommandType::BlitFramebuffer: {
+        FramebufferId src, dst;
+        i32 srcX0, srcY0, srcX1, srcY1;
+        i32 dstX0, dstY0, dstX1, dstY1;
+        bool colorBit, depthBit, stencilBit, linearFilter;
+        read(src);
+        read(dst);
+        read(srcX0);
+        read(srcY0);
+        read(srcX1);
+        read(srcY1);
+        read(dstX0);
+        read(dstY0);
+        read(dstX1);
+        read(dstY1);
+        read(colorBit);
+        read(depthBit);
+        read(stencilBit);
+        read(linearFilter);
+        blitFramebuffer(src,
+                        dst,
+                        srcX0,
+                        srcY0,
+                        srcX1,
+                        srcY1,
+                        dstX0,
+                        dstY0,
+                        dstX1,
+                        dstY1,
+                        colorBit,
+                        depthBit,
+                        stencilBit,
+                        linearFilter);
+        break;
+      }
     }
   }
 }

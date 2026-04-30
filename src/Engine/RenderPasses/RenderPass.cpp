@@ -46,6 +46,15 @@ RenderPass::getShaderId() const
   return gfx::RenderResources::getInstance().getShaderProgram(m_shaderName);
 }
 
+void
+RenderPass::Execute(ECSManager& eManager)
+{
+  Record(eManager);
+  if (m_cmdBuffer.isValid()) {
+    gfx::GraphicsDevice::getInstance().submit(m_cmdBuffer);
+  }
+}
+
 gfx::CommandBuffer*
 RenderPass::getCommandBuffer()
 {

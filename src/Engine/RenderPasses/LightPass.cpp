@@ -100,10 +100,9 @@ LightPass::LightPass()
 }
 
 void
-LightPass::Execute(ECSManager& eManager)
+LightPass::Record(ECSManager& eManager)
 {
   auto& resources = gfx::RenderResources::getInstance();
-  auto& device = gfx::GraphicsDevice::getInstance();
 
   // Populate LightingUBO from ECS light components
   gfx::LightingUBO& lightingUBO = resources.getLightingUBO();
@@ -231,9 +230,6 @@ LightPass::Execute(ECSManager& eManager)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   cmd->popDebugGroup();
 #endif
-
-  // Submit the command buffer
-  device.submit(m_cmdBuffer);
 }
 
 void

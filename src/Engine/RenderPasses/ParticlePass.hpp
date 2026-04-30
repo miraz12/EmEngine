@@ -10,7 +10,7 @@ class ParticlePass final : public RenderPass
 public:
   ParticlePass();
   ~ParticlePass() override = default;
-  void Execute(ECSManager& eManager) override;
+  void Record(ECSManager& eManager) override;
   void setViewport(u32 w, u32 h) override;
   void Init(FrameGraph& /* fGraph */) override {};
 

@@ -50,14 +50,40 @@ void
 FrameGraph::draw(ECSManager& eManager)
 {
   auto& resources = gfx::RenderResources::getInstance();
+  auto& device = gfx::GraphicsDevice::getInstance();
+
   resources.clearColor(std::nullopt, 0.0f, 0.0f, 0.0f, 0.0f);
   resources.clearDepth(1.0f);
   resources.clearStencil(0);
   resources.setViewportRect(0, 0, m_width, m_height);
 
-  // Execute all render passes except debug pass first
-  for (const auto& renderPas : m_renderPass) {
-    renderPas->Execute(eManager);
+  // Two-phase rendering: record all pass commands first, then batch submit.
+  // Self-submitting passes (e.g. BloomPass) manage their own submission
+  // because they need mid-frame CPU work between submits.
+  std::vector<gfx::CommandBufferId> pendingBuffers;
+  pendingBuffers.reserve(static_cast<size_t>(PassId::kNumPasses));
+
+  for (const auto& pass : m_renderPass) {
+    if (pass->selfSubmitting()) {
+      // Flush any pending command buffers before this pass executes,
+      // since it may depend on their results.
+      if (!pendingBuffers.empty()) {
+        device.submit(pendingBuffers);
+        pendingBuffers.clear();
+      }
+      pass->Execute(eManager);
+    } else {
+      pass->Record(eManager);
+      gfx::CommandBufferId cmdId = pass->getCommandBufferId();
+      if (cmdId.isValid()) {
+        pendingBuffers.push_back(cmdId);
+      }
+    }
+  }
+
+  // Submit any remaining recorded command buffers
+  if (!pendingBuffers.empty()) {
+    device.submit(pendingBuffers);
   }
 }
 
