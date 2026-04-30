@@ -63,6 +63,7 @@
       "name": "base-emscripten",
       "hidden": true,
       "inherits": "base",
+      "generator": "Unix Makefiles",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "exts/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "EMSCRIPTEN":"ON"
