@@ -341,41 +341,53 @@ GltfObject::loadMeshes(tinygltf::Model& model)
       const void* indexData = nullptr;
       u64 indexDataSize = 0;
       gfx::IndexType indexType = gfx::IndexType::U16;
+      std::vector<u16> widenedIndices;
 
       if (primitive.indices != -1) {
         const auto& accessor = model.accessors[primitive.indices];
         const auto& bufferView = model.bufferViews[accessor.bufferView];
         const auto& buffer = model.buffers[bufferView.buffer];
 
-        // Include both bufferView and accessor offsets in the data pointer
-        indexData = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
-        indexDataSize =
-          accessor.count *
-          (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT
-             ? sizeof(u32)
-             : sizeof(u16));
+        const void* indicesPtr =
+          &buffer.data[bufferView.byteOffset + accessor.byteOffset];
+
         newPrim->m_count = accessor.count;
-        newPrim->m_offset = 0; // Offset already applied to data pointer
+        newPrim->m_offset = 0;
 
         if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
           indexType = gfx::IndexType::U32;
-        }
+          indexData = indicesPtr;
+          indexDataSize = accessor.count * sizeof(u32);
 
-        // Build collision mesh from indexed triangles
-        const void* indicesPtr =
-          &buffer.data[bufferView.byteOffset + accessor.byteOffset];
-        if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+          const auto* indices = static_cast<const u32*>(indicesPtr);
+          for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
+            m_mesh->addTriangleIndices(
+              indices[idx], indices[idx + 1], indices[idx + 2]);
+          }
+        } else if (accessor.componentType ==
+                   TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+          indexType = gfx::IndexType::U16;
+          indexData = indicesPtr;
+          indexDataSize = accessor.count * sizeof(u16);
+
           const auto* indices = static_cast<const u16*>(indicesPtr);
           for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
             m_mesh->addTriangleIndices(
               indices[idx], indices[idx + 1], indices[idx + 2]);
           }
         } else if (accessor.componentType ==
-                   TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-          const auto* indices = static_cast<const u32*>(indicesPtr);
+                   TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+          const auto* src = static_cast<const u8*>(indicesPtr);
+          widenedIndices.resize(accessor.count);
+          for (u32 idx = 0; idx < accessor.count; idx++) {
+            widenedIndices[idx] = static_cast<u16>(src[idx]);
+          }
+          indexType = gfx::IndexType::U16;
+          indexData = widenedIndices.data();
+          indexDataSize = accessor.count * sizeof(u16);
+
           for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
-            m_mesh->addTriangleIndices(
-              indices[idx], indices[idx + 1], indices[idx + 2]);
+            m_mesh->addTriangleIndices(src[idx], src[idx + 1], src[idx + 2]);
           }
         }
       } else {

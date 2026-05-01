@@ -45,3 +45,4 @@ Testing/*
 .emscripten_cache/*
 src/Game/Generated
 /resources/lib/
+actual/*

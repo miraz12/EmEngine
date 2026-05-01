@@ -86,18 +86,8 @@ Material::recordBind(gfx::CommandBuffer& cmd, gfx::SamplerId sampler)
     cmd.setCullMode(gfx::CullMode::Back);
   }
 
-  if (m_alphaMode == "BLEND") {
-    cmd.setBlendEnabled(true);
-    cmd.setBlendFunc(gfx::BlendFactor::SrcAlpha,
-                     gfx::BlendFactor::OneMinusSrcAlpha,
-                     gfx::BlendFactor::SrcAlpha,
-                     gfx::BlendFactor::OneMinusSrcAlpha);
-  } else if (m_alphaMode == "OPAQUE") {
-    cmd.setBlendEnabled(false);
-    cmd.setBlendFunc(gfx::BlendFactor::ConstantAlpha,
-                     gfx::BlendFactor::OneMinusConstantAlpha,
-                     gfx::BlendFactor::ConstantAlpha,
-                     gfx::BlendFactor::OneMinusConstantAlpha);
-  }
-  // MASK mode: no blend state changes needed (alpha test in shader)
+  // G-buffer pass never uses GL blending — all transparency is handled in the
+  // shader (dither for BLEND, hard cutoff for MASK). Ensure blend is always
+  // off.
+  cmd.setBlendEnabled(false);
 }

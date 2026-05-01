@@ -203,19 +203,15 @@ ShadowPass::Record(ECSManager& eManager)
       std::shared_ptr<PositionComponent> posComp =
         eManager.getComponent<PositionComponent>(entity);
 
-      // Set modelMatrix uniform
-      if (posComp) {
-        cmd->setUniform(m_modelMatrixLoc, posComp->model);
-      } else {
-        cmd->setUniform(m_modelMatrixLoc, glm::identity<glm::mat4>());
-      }
+      glm::mat4 entityModel =
+        posComp ? posComp->model : glm::identity<glm::mat4>();
 
       std::shared_ptr<GraphicsComponent> grapComp =
         eManager.getComponent<GraphicsComponent>(entity);
 
-      // Record geometry-only draw commands (no material bindings, with skinning
-      // support)
-      grapComp->m_grapObj->recordDrawGeom(*cmd, m_isSkinnedLoc);
+      // Record geometry-only draw commands; model matrix set per-node inside
+      grapComp->m_grapObj->recordDrawGeom(
+        *cmd, entityModel, m_modelMatrixLoc, m_isSkinnedLoc);
     }
 
     cmd->endRenderPass();

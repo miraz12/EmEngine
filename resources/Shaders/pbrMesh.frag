@@ -143,15 +143,16 @@ main()
     ao = texture(textures[3], pTexCoords).r;
   }
 
-  if (alphaMode < 2) {
+  if (alphaMode == 1) {
+    // MASK: hard cutoff, no dithering
+    if (baseColorSample.a < alphaCutoff) {
+      discard;
+    }
+  } else if (alphaMode == 0) {
+    // BLEND: ordered dithering (deferred pipeline has no blending in G-buffer)
     float threshold = thresholdMatrix[int(floor(mod(gl_FragCoord.x, 4.0)))]
                                      [int(floor(mod(gl_FragCoord.y, 4.0)))] /
                       16.0;
-    if (alphaMode == 1) {
-      if (baseColorSample.a < alphaCutoff) {
-        discard;
-      }
-    }
     if (threshold >= baseColorSample.a) {
       discard;
     }

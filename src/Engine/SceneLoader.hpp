@@ -20,6 +20,7 @@ private:
   void addPositionComponent(Entity entity, const YAML::Node& component);
   void addParticlesComponent(Entity entity, const YAML::Node& component);
   void addDirectionalLight(Entity entity, const YAML::Node& component);
+  void addCameraComponent(Entity entity, const YAML::Node& component);
 };
 
 #endif // SCENELOADER_H_

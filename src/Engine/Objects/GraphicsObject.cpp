@@ -168,6 +168,8 @@ GraphicsObject::drawGeom(gfx::ShaderId shader)
 void
 GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
                            gfx::SamplerId sampler,
+                           const glm::mat4& entityModel,
+                           i32 modelMatrixLoc,
                            i32 isSkinnedLoc)
 {
   auto& resources = gfx::RenderResources::getInstance();
@@ -175,6 +177,14 @@ GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
       bool isSkinned = p_nodes[i].skin >= 0;
+
+      // Skinned meshes: modelMatrix is the entity transform only (skinning
+      // matrices already encode node-to-world via getMatrix(joint)).
+      // Non-skinned meshes: bake the node's local-to-world into modelMatrix.
+      if (modelMatrixLoc >= 0) {
+        cmd.setUniform(modelMatrixLoc,
+                       isSkinned ? entityModel : entityModel * getMatrix(i));
+      }
 
       // Set is_skinned uniform if location is valid
       if (isSkinnedLoc >= 0) {
@@ -238,13 +248,24 @@ GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
 }
 
 void
-GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd, i32 isSkinnedLoc)
+GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd,
+                               const glm::mat4& entityModel,
+                               i32 modelMatrixLoc,
+                               i32 isSkinnedLoc)
 {
   auto& resources = gfx::RenderResources::getInstance();
 
   for (u32 i = 0; i < p_numNodes; i++) {
     if (p_nodes[i].mesh >= 0) {
       bool isSkinned = p_nodes[i].skin >= 0;
+
+      // Skinned meshes: modelMatrix is the entity transform only (skinning
+      // matrices already encode node-to-world via getMatrix(joint)).
+      // Non-skinned meshes: bake the node's local-to-world into modelMatrix.
+      if (modelMatrixLoc >= 0) {
+        cmd.setUniform(modelMatrixLoc,
+                       isSkinned ? entityModel : entityModel * getMatrix(i));
+      }
 
       // Set is_skinned uniform if location is valid
       if (isSkinnedLoc >= 0) {

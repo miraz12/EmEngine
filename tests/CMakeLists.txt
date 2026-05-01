@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(EmEngineTests)
 
+# exts/CMakeLists.txt force-sets CMAKE_RUNTIME_OUTPUT_DIRECTORY to
+# resources/lib via the cache. Override it here so test binaries land in the
+# normal build directory instead.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" CACHE PATH "" FORCE)
+
 # Add source files
 add_executable(emengine_tests component_tests.cpp ecs_tests.cpp core_tests.cpp
                               scene_tests.cpp math_tests.cpp)
@@ -59,5 +64,6 @@ endif()
 
 add_test(NAME VisualTests COMMAND visual_tests)
 set_tests_properties(VisualTests PROPERTIES
-    ENVIRONMENT "REF_IMAGE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/reference_images"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    ENVIRONMENT "REF_IMAGE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/reference_images;SCENE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/scenes"
 )

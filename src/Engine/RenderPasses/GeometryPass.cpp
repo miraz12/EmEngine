@@ -178,16 +178,12 @@ GeometryPass::Record(ECSManager& eManager)
     std::shared_ptr<GraphicsComponent> gfxComp =
       eManager.getComponent<GraphicsComponent>(entity);
 
-    // Set modelMatrix uniform
-    if (posComp) {
-      cmd->setUniform(m_modelMatrixLoc, posComp->model);
-    } else {
-      cmd->setUniform(m_modelMatrixLoc, glm::identity<glm::mat4>());
-    }
+    glm::mat4 entityModel =
+      posComp ? posComp->model : glm::identity<glm::mat4>();
 
-    // Record draw commands (handles material binding + VAO + draw call +
-    // skinning)
-    gfxComp->m_grapObj->recordDraw(*cmd, m_sampler, m_isSkinnedLoc);
+    // Record draw commands; model matrix is set per-node inside recordDraw
+    gfxComp->m_grapObj->recordDraw(
+      *cmd, m_sampler, entityModel, m_modelMatrixLoc, m_isSkinnedLoc);
   }
 
   cmd->endRenderPass();

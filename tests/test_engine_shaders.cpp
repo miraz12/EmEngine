@@ -4,27 +4,18 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include <ECS/Components/CameraComponent.hpp>
-#include <ECS/Components/GraphicsComponent.hpp>
-#include <ECS/Components/LightingComponent.hpp>
-#include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
 #include <Graphics/GraphicsDevice.hpp>
 #include <Graphics/RenderResources.hpp>
 #include <Graphics/UBOStructs.hpp>
-#include <Objects/GltfObject.hpp>
 #include <RenderPasses/FrameGraph.hpp>
-#include <Rendering/Material.hpp>
-#include <Rendering/Mesh.hpp>
-#include <Rendering/Primitive.hpp>
-#include <Types/LightTypes.hpp>
+#include <SceneLoader.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <cstdlib>
 #include <filesystem>
-#include <memory>
 #include <print>
 #include <string>
 
@@ -45,6 +36,15 @@ getRefDir()
            ? refEnv
            : (std::filesystem::current_path() / "tests" / "reference_images")
                .string();
+}
+
+static std::string
+getSceneDir()
+{
+  const char* sceneEnv = std::getenv("SCENE_DIR");
+  return sceneEnv
+           ? sceneEnv
+           : (std::filesystem::current_path() / "tests" / "scenes").string();
 }
 
 static bool
@@ -80,6 +80,29 @@ captureAndCompare(VisualTestHarness& harness, const std::string& testName)
 
   return diff.passed;
 #endif
+}
+
+// Loads a scene YAML, runs one FrameGraph frame, and compares the result.
+static bool
+runSceneTest(VisualTestHarness& harness,
+             const std::string& sceneFile,
+             const std::string& testName)
+{
+  const u32 w = static_cast<u32>(harness.getWidth());
+  const u32 h = static_cast<u32>(harness.getHeight());
+
+  auto& ecs = ECSManager::getInstance();
+  ecs.reset();
+
+  std::string scenePath = getSceneDir() + "/" + sceneFile;
+  SceneLoader::getInstance().init(scenePath.c_str());
+
+  auto& fg = FrameGraph::getInstance();
+  fg.setViewport(w, h);
+  fg.draw(ecs);
+
+  glFinish();
+  return captureAndCompare(harness, testName);
 }
 
 // ---------------------------------------------------------------------------
@@ -491,6 +514,7 @@ bloomCombineTest(VisualTestHarness& harness)
 // ---------------------------------------------------------------------------
 // Test 4: PBR Metal-Rough Spheres — full engine pipeline via FrameGraph + ECS
 //
+// Scene description: tests/scenes/pbr_metal_rough.yaml
 // Loads the MetalRoughSpheres glTF model through the real engine pipeline:
 // FrameGraph (Shadow→Geometry→Light→CubeMap→Bloom→FXAA) driven by ECS.
 // This exercises the exact same code path as a live game scene.
@@ -499,69 +523,44 @@ bloomCombineTest(VisualTestHarness& harness)
 static bool
 pbrMetalRoughSpheresTest(VisualTestHarness& harness)
 {
-  const u32 w = static_cast<u32>(harness.getWidth());
-  const u32 h = static_cast<u32>(harness.getHeight());
+  return runSceneTest(harness, "pbr_metal_rough.yaml", "pbr_metal_rough");
+}
 
-  // Initialize FrameGraph (creates all render passes + IBL from HDR)
-  // This is idempotent — singletons mean it's only set up once.
-  static FrameGraph* s_frameGraph = nullptr;
-  if (!s_frameGraph) {
-    s_frameGraph = &FrameGraph::getInstance();
-  }
-  s_frameGraph->setViewport(w, h);
+// ---------------------------------------------------------------------------
+// Test 5: Alpha Blend Mode — full engine pipeline via FrameGraph + ECS
+//
+// Scene description: tests/scenes/alpha_blend_mode.yaml
+// Loads the AlphaBlendModeTest glTF model through the real engine pipeline.
+// The model contains opaque, alpha-masked, and alpha-blended primitives,
+// exercising the transparency path of the PBR material system.
+// ---------------------------------------------------------------------------
 
-  // Reset ECS and populate a minimal scene: camera + directional light + model
-  auto& ecs = ECSManager::getInstance();
-  ecs.reset();
+static bool
+alphaBlendModeTest(VisualTestHarness& harness)
+{
+  return runSceneTest(harness, "alpha_blend_mode.yaml", "alpha_blend_mode");
+}
 
-  // Camera entity — pulled back to frame the full sphere grid.
-  // MetalRoughSpheres glTF has nodes spread roughly ±6 units in X/Y at Z=0.
-  Entity camEntity = ecs.createEntity("camera");
-  const glm::vec3 camPos(0.0f, 0.0f, 20.0f);
-  auto camComp = std::make_shared<CameraComponent>(
-    true, 45.0f, static_cast<float>(w), static_cast<float>(h), 0.1f, 200.0f);
-  camComp->m_position = camPos;
-  camComp->m_front = glm::vec3(0.0f, 0.0f, -1.0f);
-  camComp->m_viewMatrix =
-    glm::lookAt(camPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  camComp->m_ProjectionMatrix =
-    glm::perspective(glm::radians(45.0f),
-                     static_cast<float>(w) / static_cast<float>(h),
-                     0.1f,
-                     200.0f);
-  camComp->m_matrixNeedsUpdate = false;
-  ecs.addComponent(camEntity, camComp);
+// ---------------------------------------------------------------------------
+// Test 6: Normal Tangent Test — full engine pipeline via FrameGraph + ECS
+//
+// Scene descriptions:
+//   tests/scenes/normal_tangent_front.yaml — camera straight-on
+//   tests/scenes/normal_tangent_top.yaml   — camera above
+//   tests/scenes/normal_tangent_back.yaml  — camera behind
+//
+// The model contains quads with varying normal/tangent configurations to
+// verify that normal mapping is applied correctly in the PBR shader.
+// ---------------------------------------------------------------------------
 
-  // Directional light entity
-  Entity lightEntity = ecs.createEntity("sun");
-  ecs.setupDirectionalLight(lightEntity,
-                            glm::vec3(1.0f, 0.98f, 0.95f), // warm white
-                            1.5f,                          // intensity
-                            glm::vec3(-0.3f, -1.0f, -0.5f) // direction
-  );
-
-  // Load the glTF model and attach to an entity
-  auto model = std::make_shared<GltfObject>(
-    "resources/Models/gltf/MetalRoughSpheres/MetalRoughSpheres.glb");
-  if (model->p_numMeshes == 0) {
-    std::println(stderr, "  [pbr_metal_rough] Failed to load model");
+static bool
+normalTangentTest(VisualTestHarness& harness)
+{
+  if (!runSceneTest(harness, "normal_tangent_front.yaml", "normal_tangent_front"))
     return false;
-  }
-
-  Entity modelEntity = ecs.createEntity("spheres");
-  ecs.addComponent(modelEntity, std::make_shared<GraphicsComponent>(model));
-  auto posComp = std::make_shared<PositionComponent>();
-  // Apply the root node's transform (node 0 has scale+rotation, no mesh).
-  // The real engine pipeline sets one model matrix per entity; per-node
-  // transforms are not applied in recordDraw, so we bake the root transform.
-  posComp->model = model->getMatrix(0);
-  ecs.addComponent(modelEntity, posComp);
-
-  // Run one frame through the real pipeline
-  s_frameGraph->draw(ecs);
-
-  glFinish();
-  return captureAndCompare(harness, "pbr_metal_rough");
+  if (!runSceneTest(harness, "normal_tangent_top.yaml", "normal_tangent_top"))
+    return false;
+  return runSceneTest(harness, "normal_tangent_back.yaml", "normal_tangent_back");
 }
 
 // Auto-register tests at static init
@@ -570,3 +569,5 @@ static bool reg2 = registerVisualTest("fxaa", fxaaTest);
 static bool reg3 = registerVisualTest("bloom_combine", bloomCombineTest);
 static bool reg4 =
   registerVisualTest("pbr_metal_rough", pbrMetalRoughSpheresTest);
+static bool reg5 = registerVisualTest("alpha_blend_mode", alphaBlendModeTest);
+static bool reg6 = registerVisualTest("normal_tangent", normalTangentTest);

@@ -16,7 +16,7 @@ if(NOT EMSCRIPTEN)
   if(WIN32)
     add_custom_target(
       PublishDotNet ALL
-      COMMAND dotnet publish Game.csproj -r win-x64 -c Release --packages
+      COMMAND dotnet publish Game.csproj -r win-x64 -c ${CMAKE_BUILD_TYPE} --packages
               .nuget/
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS Engine GenerateBindings
@@ -24,8 +24,8 @@ if(NOT EMSCRIPTEN)
   endif(WIN32)
   if(LINUX)
     add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release/net9.0/linux-x64/native/Game
-      COMMAND dotnet publish Game.csproj -r linux-x64 -c Release --packages .nuget/
+      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net9.0/linux-x64/native/Game
+      COMMAND dotnet publish Game.csproj -r linux-x64 -c ${CMAKE_BUILD_TYPE} --packages .nuget/
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS Engine
               GenerateBindings
@@ -41,20 +41,13 @@ if(NOT EMSCRIPTEN)
     )
     add_custom_target(
       PublishDotNet ALL
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release/net9.0/linux-x64/native/Game
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/net9.0/linux-x64/native/Game
     )
   endif(LINUX)
 else()
-  # Use CMAKE_BUILD_TYPE to determine the .NET configuration
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(DOTNET_CONFIG "Debug")
-  else()
-    set(DOTNET_CONFIG "Release")
-  endif()
-
   add_custom_target(
     PublishDotNet ALL
-    COMMAND dotnet publish Game_wasm.csproj -c ${DOTNET_CONFIG} -r browser-wasm
+    COMMAND dotnet publish Game_wasm.csproj -c ${CMAKE_BUILD_TYPE} -r browser-wasm
             --packages .nuget/
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS Engine GenerateBindings

@@ -63,8 +63,8 @@ main()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
-  constexpr int kWidth = 800;
-  constexpr int kHeight = 600;
+  constexpr int kWidth = 1600;
+  constexpr int kHeight = 1200;
 
   VisualTestHarness harness;
   if (!harness.init(kWidth, kHeight)) {

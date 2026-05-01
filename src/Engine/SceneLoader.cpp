@@ -1,5 +1,6 @@
 #include "SceneLoader.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
+#include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/ParticlesComponent.hpp"
@@ -13,6 +14,8 @@
 #include "Objects/Quad.hpp"
 #include "ResourceManager.hpp"
 #include <ECS/Components/DebugComponent.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 void
 SceneLoader::init(const char* file)
@@ -33,6 +36,8 @@ SceneLoader::init(const char* file)
             addParticlesComponent(entity, component);
           } else if (component["type"].as<std::string>() == "Lig") {
             addDirectionalLight(entity, component);
+          } else if (component["type"].as<std::string>() == "Cam") {
+            addCameraComponent(entity, component);
           }
         }
       }
@@ -279,6 +284,50 @@ SceneLoader::addParticlesComponent(Entity entity, const YAML::Node& component)
     std::make_shared<ParticlesComponent>(glm::vec3(xv, yv, zv));
   ecsMan.addComponents(entity, parComp);
 }
+void
+SceneLoader::addCameraComponent(Entity entity, const YAML::Node& component)
+{
+  auto& ecsMan = ECSManager::getInstance();
+
+  float fov    = component["fov"]  ? component["fov"].as<float>()   : 45.0f;
+  float near   = component["near"] ? component["near"].as<float>()  : 0.1f;
+  float far    = component["far"]  ? component["far"].as<float>()   : 200.0f;
+  float width  = component["width"]  ? component["width"].as<float>()  : 1600.0f;
+  float height = component["height"] ? component["height"].as<float>() : 1200.0f;
+  bool isMain  = component["main"] ? component["main"].as<bool>() : true;
+
+  glm::vec3 position(0.0f, 0.0f, 5.0f);
+  if (component["position"]) {
+    position = glm::vec3(component["position"][0].as<float>(),
+                         component["position"][1].as<float>(),
+                         component["position"][2].as<float>());
+  }
+
+  glm::vec3 target(0.0f, 0.0f, 0.0f);
+  if (component["target"]) {
+    target = glm::vec3(component["target"][0].as<float>(),
+                       component["target"][1].as<float>(),
+                       component["target"][2].as<float>());
+  }
+
+  glm::vec3 up(0.0f, 1.0f, 0.0f);
+  if (component["up"]) {
+    up = glm::vec3(component["up"][0].as<float>(),
+                   component["up"][1].as<float>(),
+                   component["up"][2].as<float>());
+  }
+
+  auto camComp = std::make_shared<CameraComponent>(isMain, fov, width, height, near, far);
+  camComp->m_position    = position;
+  camComp->m_front       = glm::normalize(target - position);
+  camComp->m_viewMatrix  = glm::lookAt(position, target, up);
+  camComp->m_ProjectionMatrix =
+    glm::perspective(glm::radians(fov), width / height, near, far);
+  camComp->m_matrixNeedsUpdate = false;
+
+  ecsMan.addComponents(entity, camComp);
+}
+
 void
 SceneLoader::addDirectionalLight(Entity entity, const YAML::Node& component)
 {
