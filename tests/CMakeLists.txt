@@ -29,3 +29,35 @@ add_test(NAME GLMTests COMMAND emengine_tests
                                --gtest_filter=*GLMIntegrationTest*)
 add_test(NAME EntityStressTests COMMAND emengine_tests
                                         --gtest_filter=*EntityStressTest*)
+
+# ---------------------------------------------------------------------------
+# Visual regression tests
+# ---------------------------------------------------------------------------
+
+option(GENERATE_REFS "Write reference images instead of diffing (re-baselining)" OFF)
+
+add_executable(visual_tests visual_test_main.cpp test_engine_shaders.cpp)
+
+target_include_directories(visual_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/exts/header_only
+    ${CMAKE_SOURCE_DIR}/exts/glad/include
+    ${CMAKE_SOURCE_DIR}/exts/glfw/include
+)
+
+set_property(TARGET visual_tests PROPERTY CXX_STANDARD 23)
+set_property(TARGET visual_tests PROPERTY CXX_STANDARD_REQUIRED ON)
+
+target_link_libraries(visual_tests Engine exts)
+
+target_include_directories(visual_tests SYSTEM
+    PUBLIC ${CMAKE_SOURCE_DIR}/src/Engine)
+
+if(GENERATE_REFS)
+    target_compile_definitions(visual_tests PRIVATE GENERATE_REFS)
+endif()
+
+add_test(NAME VisualTests COMMAND visual_tests)
+set_tests_properties(VisualTests PROPERTIES
+    ENVIRONMENT "REF_IMAGE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/reference_images"
+)
