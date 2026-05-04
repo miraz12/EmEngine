@@ -147,7 +147,7 @@ Device::createBuffer(const BufferCreateInfo& info)
   glBufferData(target,
                static_cast<GLsizeiptr>(info.size),
                info.initialData,
-               GL_DYNAMIC_DRAW);
+               toGLBufferUsage(info.usage));
   glBindBuffer(target, 0);
 
   return m_buffers.allocate(std::move(buffer));
@@ -2040,6 +2040,7 @@ Device::executeBindTexture(u32 slot, TextureId texture, SamplerId sampler)
   if (tex) {
     glBindTexture(tex->glTarget, tex->glName);
     m_stateCache.boundTextures[slot] = tex->glName;
+    m_stateCache.boundTextureTargets[slot] = tex->glTarget;
   }
 
   if (samp) {
@@ -2301,9 +2302,11 @@ Device::toGLTarget(TextureType type)
 }
 
 GLenum
-Device::toGLBufferUsage(BufferUsage /*usage*/)
+Device::toGLBufferUsage(BufferUsage usage)
 {
-  return GL_DYNAMIC_DRAW;
+  if (hasFlag(usage, BufferUsage::Uniform))
+    return GL_DYNAMIC_DRAW;
+  return GL_STATIC_DRAW;
 }
 
 GLenum
@@ -2739,12 +2742,13 @@ Device::bindTexture(u32 unit, TextureId texture)
     }
   }
 
-  // Always bind - the cache can be stale when legacy code (TextureManager)
-  // binds textures directly. Once migration is complete, we can re-enable
-  // the cache optimization with proper target tracking.
+  // Always bind — internal helpers (createTexture, updateTexture, generateMipmaps)
+  // call glBindTexture directly without updating the cache, so skipping here
+  // would leave stale bindings.
   glActiveTexture(GL_TEXTURE0 + unit);
   glBindTexture(target, glTex);
   m_stateCache.boundTextures[unit] = glTex;
+  m_stateCache.boundTextureTargets[unit] = target;
 }
 
 void

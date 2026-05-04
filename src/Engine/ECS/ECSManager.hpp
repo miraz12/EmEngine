@@ -157,16 +157,23 @@ public:
 
   std::shared_ptr<Component> getCamera();
   System& getSystem(std::string const& system) { return *m_systems[system]; }
-  Entity& getPickedEntity() { return m_pickedEntity; }
-  bool& getEntitySelected() { return m_entitySelected; }
-  std::vector<Entity>& getEntities() { return m_entities; };
-  std::string_view getEntityName(Entity entity)
+  Entity getPickedEntity() const { return m_pickedEntity; }
+  bool getEntitySelected() const { return m_entitySelected; }
+  const std::vector<Entity>& getEntities() const { return m_entities; }
+  std::string_view getEntityName(Entity entity) const
   {
-    return m_entityNames[entity];
-  };
-  bool& getSimulatePhysics() { return m_simulatePhysics; };
-  bool& getRenderGraphics() { return m_renderGraphics; };
-  i32& getDebugView() { return m_debugView; };
+    auto it = m_entityNames.find(entity);
+    if (it != m_entityNames.end())
+      return it->second;
+    return {};
+  }
+  bool getSimulatePhysics() const { return m_simulatePhysics; }
+  bool getRenderGraphics() const { return m_renderGraphics; }
+  i32 getDebugView() const { return m_debugView; }
+
+  // Mutable refs for ImGui widget binding
+  bool& refSimulatePhysics() { return m_simulatePhysics; }
+  i32& refDebugView() { return m_debugView; }
 
   void setViewport(u32 width, u32 height);
   void setPickedEntity(Entity entity) { m_pickedEntity = entity; }

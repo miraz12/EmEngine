@@ -38,7 +38,7 @@ GUI::renderGUI()
   // }
 
   if (ImGui::CollapsingHeader("Physics")) {
-    ImGui::Checkbox("Enabled", &ECSManager::getInstance().getSimulatePhysics());
+    ImGui::Checkbox("Enabled", &ECSManager::getInstance().refSimulatePhysics());
   }
 
   static i32 offset = 0;
@@ -57,7 +57,7 @@ GUI::renderGUI()
       charitems.push_back(debugNamesInputs[i].c_str());
     }
     ImGui::Combo("views",
-                 &ECSManager::getInstance().getDebugView(),
+                 &ECSManager::getInstance().refDebugView(),
                  &charitems[0],
                  debugNamesInputs.size(),
                  debugNamesInputs.size());

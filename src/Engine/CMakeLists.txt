@@ -1,8 +1,137 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Add source files
-file(GLOB_RECURSE ENGINE_FILES ${CMAKE_SOURCE_DIR}/src/Engine/*.cpp
-     ${CMAKE_SOURCE_DIR}/src/Engine/*.hpp)
+# Engine source files
+set(ENGINE_FILES
+  Core.cpp
+  Core.hpp
+  engine_pch.hpp
+  GameStateManager.cpp
+  GameStateManager.hpp
+  Gui.cpp
+  Gui.hpp
+  InputManager.cpp
+  InputManager.hpp
+  MapLoader.cpp
+  MapLoader.hpp
+  ResourceManager.cpp
+  ResourceManager.hpp
+  SceneLoader.cpp
+  SceneLoader.hpp
+  Singleton.hpp
+  UIManager.cpp
+  UIManager.hpp
+  Window.cpp
+  Window.hpp
+
+  # ECS
+  ECS/ECSManager.cpp
+  ECS/ECSManager.hpp
+  ECS/ComponentPool.hpp
+  ECS/Components/AnimationComponent.hpp
+  ECS/Components/CameraComponent.hpp
+  ECS/Components/Component.hpp
+  ECS/Components/DebugComponent.hpp
+  ECS/Components/GraphicsComponent.hpp
+  ECS/Components/LightingComponent.hpp
+  ECS/Components/ParticlesComponent.hpp
+  ECS/Components/PhysicsComponent.cpp
+  ECS/Components/PhysicsComponent.hpp
+  ECS/Components/PositionComponent.hpp
+  ECS/Systems/AnimationSystem.cpp
+  ECS/Systems/AnimationSystem.hpp
+  ECS/Systems/CameraSystem.cpp
+  ECS/Systems/CameraSystem.hpp
+  ECS/Systems/GraphicsSystem.cpp
+  ECS/Systems/GraphicsSystem.hpp
+  ECS/Systems/ParticleSystem.cpp
+  ECS/Systems/ParticleSystem.hpp
+  ECS/Systems/PhysicsLayers.hpp
+  ECS/Systems/PhysicsSystem.cpp
+  ECS/Systems/PhysicsSystem.hpp
+  ECS/Systems/PositionSystem.cpp
+  ECS/Systems/PositionSystem.hpp
+  ECS/Systems/System.hpp
+
+  # Graphics
+  Graphics/Backends/GLES3/Device.cpp
+  Graphics/Backends/GLES3/Device.hpp
+  Graphics/Backends/GLES3/Resources.hpp
+  Graphics/CommandBuffer.cpp
+  Graphics/CommandBuffer.hpp
+  Graphics/GraphicsDevice.cpp
+  Graphics/GraphicsDevice.hpp
+  Graphics/GraphicsTypes.hpp
+  Graphics/Handle.hpp
+  Graphics/RenderResources.cpp
+  Graphics/RenderResources.hpp
+  Graphics/Resources/Buffer.hpp
+  Graphics/Resources/Framebuffer.hpp
+  Graphics/Resources/Pipeline.hpp
+  Graphics/Resources/Renderbuffer.hpp
+  Graphics/Resources/Sampler.hpp
+  Graphics/Resources/Shader.hpp
+  Graphics/Resources/Texture.hpp
+  Graphics/UBOStructs.hpp
+
+  # Objects
+  Objects/Cube.cpp
+  Objects/Cube.hpp
+  Objects/GltfObject.cpp
+  Objects/GltfObject.hpp
+  Objects/GraphicsObject.cpp
+  Objects/GraphicsObject.hpp
+  Objects/Heightmap.cpp
+  Objects/Heightmap.hpp
+  Objects/Line.cpp
+  Objects/Line.hpp
+  Objects/Point.cpp
+  Objects/Point.hpp
+  Objects/Quad.cpp
+  Objects/Quad.hpp
+
+  # Rendering
+  Rendering/Animation.cpp
+  Rendering/Animation.hpp
+  Rendering/DebugDrawer.cpp
+  Rendering/DebugDrawer.hpp
+  Rendering/Material.cpp
+  Rendering/Material.hpp
+  Rendering/Mesh.hpp
+  Rendering/Node.hpp
+  Rendering/Primitive.cpp
+  Rendering/Primitive.hpp
+  Rendering/Skin.hpp
+
+  # Render Passes
+  RenderPasses/BloomPass.cpp
+  RenderPasses/BloomPass.hpp
+  RenderPasses/CubeMapPass.cpp
+  RenderPasses/CubeMapPass.hpp
+  RenderPasses/DebugPass.cpp
+  RenderPasses/DebugPass.hpp
+  RenderPasses/FrameGraph.cpp
+  RenderPasses/FrameGraph.hpp
+  RenderPasses/FxaaPass.cpp
+  RenderPasses/FxaaPass.hpp
+  RenderPasses/GeometryPass.cpp
+  RenderPasses/GeometryPass.hpp
+  RenderPasses/LightingUtil.hpp
+  RenderPasses/LightPass.cpp
+  RenderPasses/LightPass.hpp
+  RenderPasses/ParticlePass.cpp
+  RenderPasses/ParticlePass.hpp
+  RenderPasses/RenderPass.cpp
+  RenderPasses/RenderPass.hpp
+  RenderPasses/RenderUtil.hpp
+  RenderPasses/ShadowPass.cpp
+  RenderPasses/ShadowPass.hpp
+
+  # Types
+  Types/LightTypes.hpp
+
+  # Public API
+  include/engine_api.hpp
+)
 
 # Add source files as libraries
 if(DEFINED EMSCRIPTEN)
