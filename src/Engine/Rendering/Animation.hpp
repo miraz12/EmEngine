@@ -51,7 +51,7 @@ public:
   std::vector<AnimationSampler> samplers;
   std::vector<AnimationChannel> channels;
   float start = std::numeric_limits<float>::max();
-  float end = std::numeric_limits<float>::min();
+  float end = std::numeric_limits<float>::lowest();
 };
 
 #endif // ANIMATION_H_

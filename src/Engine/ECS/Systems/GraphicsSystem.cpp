@@ -7,25 +7,22 @@
 #include <RenderPasses/FrameGraph.hpp>
 
 GraphicsSystem::GraphicsSystem()
-  : m_fGraph(*new FrameGraph())
+  : m_fGraph(std::make_unique<FrameGraph>())
 {
 }
 
-GraphicsSystem::~GraphicsSystem()
-{
-  delete &m_fGraph;
-}
+GraphicsSystem::~GraphicsSystem() = default;
 
 void
 GraphicsSystem::update(float /*dt*/)
 {
   if (m_manager->getRenderGraphics()) {
-    m_fGraph.draw(*m_manager);
+    m_fGraph->draw(*m_manager);
   }
 }
 
 void
 GraphicsSystem::setViewport(u32 w, u32 h)
 {
-  m_fGraph.setViewport(w, h);
+  m_fGraph->setViewport(w, h);
 }

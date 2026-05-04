@@ -18,6 +18,6 @@ protected:
   System() = default;
   virtual ~System() = default;
 
-  ECSManager* m_manager;
+  ECSManager* m_manager = nullptr;
 };
 #endif // SYSTEM_H_

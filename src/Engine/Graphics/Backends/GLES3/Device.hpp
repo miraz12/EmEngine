@@ -235,6 +235,7 @@ private:
     GLuint boundVAO{ 0 };
     GLuint boundFBO{ 0 };
     std::array<GLuint, 16> boundTextures{};
+    std::array<GLenum, 16> boundTextureTargets{};
     std::array<GLuint, 16> boundSamplers{};
     PipelineId currentPipeline;
     VertexArrayId explicitVAO{}; // VAO bound via bindVertexArray command
@@ -245,6 +246,7 @@ private:
       boundVAO = 0;
       boundFBO = 0;
       boundTextures.fill(0);
+      boundTextureTargets.fill(0);
       boundSamplers.fill(0);
       currentPipeline = {};
       explicitVAO = {};

@@ -61,7 +61,6 @@ extern "C"
   void GetVelocity(unsigned int entity, float* velocity);
   void AddImpulse(unsigned int entity, float x, float y, float z);
   void AddForce(unsigned int entity, float x, float y, float z);
-  void SetAcceleration(unsigned int entity, float x, float y, float z);
   bool EntityOnGround(unsigned int entity);
 
   // UI API functions

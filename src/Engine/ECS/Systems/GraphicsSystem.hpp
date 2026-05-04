@@ -18,6 +18,6 @@ public:
 private:
   GraphicsSystem();
   ~GraphicsSystem() override;
-  FrameGraph& m_fGraph;
+  std::unique_ptr<FrameGraph> m_fGraph;
 };
 #endif // GRAPHICSSYSTEM_H_

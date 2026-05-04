@@ -33,7 +33,7 @@ public:
 private:
   u32 m_width = 800;
   u32 m_height = 800;
-  GLFWwindow* m_window;
+  GLFWwindow* m_window = nullptr;
 };
 
 #endif // WINDOW_H_

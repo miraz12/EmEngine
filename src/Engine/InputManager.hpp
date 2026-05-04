@@ -51,10 +51,10 @@ public:
   std::unordered_map<KEY, bool> m_keys;
 
 private:
-  i32 m_mousePosX;
-  i32 m_mousePosY;
-  double lastX;
-  double lastY;
+  i32 m_mousePosX = 0;
+  i32 m_mousePosY = 0;
+  double lastX = 0.0;
+  double lastY = 0.0;
   double m_mouseDeltaX{ 0.0 };
   double m_mouseDeltaY{ 0.0 };
   double m_pitch{ 0.0f };

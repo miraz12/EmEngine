@@ -121,7 +121,7 @@ SceneLoader::saveScene(const char* file)
       out << YAML::Key << "type" << YAML::Value << "Lig";
       switch (ligComp->getType()) {
         case LightingComponent::TYPE::NONE:
-          throw;
+          throw std::logic_error("Cannot serialize LightingComponent with type NONE");
           break;
         case LightingComponent::TYPE::POINT: {
           auto* point = static_cast<PointLight*>(&ligComp->getBaseLight());

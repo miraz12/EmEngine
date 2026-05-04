@@ -24,7 +24,20 @@ ECSManager::initializeSystems()
   m_systems["ANIMATION"] = &AnimationSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
   m_systems["CAMERA"] = &CameraSystem::getInstance();
-  for (const auto& [name, system] : m_systems) {
+
+  // Explicit update order: camera -> particles -> animation -> position -> graphics -> physics
+  // Physics runs last so that forces/velocities set by the game layer (C# via C API)
+  // between frames are consumed in the same frame's physics step.
+  m_systemUpdateOrder = {
+    m_systems["CAMERA"],
+    m_systems["PARTICLES"],
+    m_systems["ANIMATION"],
+    m_systems["POSITION"],
+    m_systems["GRAPHICS"],
+    m_systems["PHYSICS"],
+  };
+
+  for (auto* system : m_systemUpdateOrder) {
     system->initialize(*this);
   }
 }
@@ -32,8 +45,7 @@ ECSManager::initializeSystems()
 void
 ECSManager::update(float dt)
 {
-  // update all systems
-  for (const auto& [name, system] : m_systems) {
+  for (auto* system : m_systemUpdateOrder) {
     system->update(dt);
   }
 }
@@ -108,9 +120,9 @@ ECSManager::setupDirectionalLight(Entity entity,
 void
 ECSManager::updateDirLight(glm::vec3 color, float intensity, glm::vec3 dir)
 {
-
   std::shared_ptr<LightingComponent> lComp =
     getComponent<LightingComponent>(m_dirLightEntity);
+  if (!lComp) return;
   auto* dLight = static_cast<DirectionalLight*>(&lComp->getBaseLight());
   dLight->direction = dir;
   dLight->color = color;
@@ -157,10 +169,12 @@ SetMainCamera(int entity)
 void
 ECSManager::setViewport(u32 width, u32 height)
 {
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
-  cam->m_width = width;
-  cam->m_height = height;
+  auto camBase = ECSManager::getInstance().getCamera();
+  if (camBase) {
+    auto cam = static_pointer_cast<CameraComponent>(camBase);
+    cam->m_width = width;
+    cam->m_height = height;
+  }
 
   static_cast<GraphicsSystem*>(m_systems["GRAPHICS"])
     ->setViewport(width, height);
@@ -241,6 +255,7 @@ extern "C"
   void SetRotation(unsigned int entity, float angle)
   {
     auto p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (!p) return;
     p->rotation = glm::eulerAngleY(angle);
   }
 
@@ -263,6 +278,9 @@ extern "C"
 
   void GetVelocity(unsigned int entity, float* velocity)
   {
+    velocity[0] = 0.0f;
+    velocity[1] = 0.0f;
+    velocity[2] = 0.0f;
     auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
     if (phy && phy->isValid()) {
       PhysicsSystem::getInstance().getLinearVelocity(phy->getBodyID(),
@@ -353,18 +371,21 @@ extern "C"
   void pauseAnimation(unsigned int entity)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    if (!a) return;
     a->isPlaying = false;
   }
 
   void StartAnimation(unsigned int entity)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    if (!a) return;
     a->isPlaying = true;
   }
 
   void SetAnimationIndex(unsigned int entity, unsigned int idx)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    if (!a) return;
     if (a->animationIndex != idx) {
       a->animationIndex = idx;
       a->currentTime = 0;

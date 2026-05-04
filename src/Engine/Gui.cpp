@@ -19,14 +19,15 @@ GUI::renderGUI()
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
   if (ImGui::CollapsingHeader("Camera")) {
-    auto cam = static_pointer_cast<CameraComponent>(
-      ECSManager::getInstance().getCamera());
-
-    ImGui::SliderFloat("FOV", &cam->m_fov, 0.0f, 120.0f);
-    float* nearFar[2];
-    nearFar[0] = &cam->m_near;
-    nearFar[1] = &cam->m_far;
-    ImGui::InputFloat2("FOV", nearFar[0]);
+    auto camBase = ECSManager::getInstance().getCamera();
+    if (camBase) {
+      auto cam = static_pointer_cast<CameraComponent>(camBase);
+      ImGui::SliderFloat("FOV", &cam->m_fov, 0.0f, 120.0f);
+      float* nearFar[2];
+      nearFar[0] = &cam->m_near;
+      nearFar[1] = &cam->m_far;
+      ImGui::InputFloat2("FOV", nearFar[0]);
+    }
   }
 
   // if (ImGui::CollapsingHeader("Lights")) {
@@ -38,7 +39,7 @@ GUI::renderGUI()
   // }
 
   if (ImGui::CollapsingHeader("Physics")) {
-    ImGui::Checkbox("Enabled", &ECSManager::getInstance().getSimulatePhysics());
+    ImGui::Checkbox("Enabled", &ECSManager::getInstance().refSimulatePhysics());
   }
 
   static i32 offset = 0;
@@ -57,21 +58,19 @@ GUI::renderGUI()
       charitems.push_back(debugNamesInputs[i].c_str());
     }
     ImGui::Combo("views",
-                 &ECSManager::getInstance().getDebugView(),
+                 &ECSManager::getInstance().refDebugView(),
                  &charitems[0],
                  debugNamesInputs.size(),
                  debugNamesInputs.size());
   }
 
   Entity en = ECSManager::getInstance().getPickedEntity();
-  if (en > 0) {
+  auto posComp = ECSManager::getInstance().getComponent<PositionComponent>(en);
+  if (en > 0 && posComp) {
 
-    glm::vec3& pos =
-      ECSManager::getInstance().getComponent<PositionComponent>(en)->position;
-    glm::quat& rot =
-      ECSManager::getInstance().getComponent<PositionComponent>(en)->rotation;
-    glm::vec3& scale =
-      ECSManager::getInstance().getComponent<PositionComponent>(en)->scale;
+    glm::vec3& pos = posComp->position;
+    glm::quat& rot = posComp->rotation;
+    glm::vec3& scale = posComp->scale;
 
     ImGuizmo::BeginFrame();
 
@@ -99,12 +98,13 @@ GUI::renderGUI()
         mCurrentGizmoMode = ImGuizmo::WORLD;
     }
 
-    auto cam = static_pointer_cast<CameraComponent>(
-      ECSManager::getInstance().getCamera());
-
-    glm::vec3 euler = glm::eulerAngles(rot) * RAD2DEG;
-    editTransform(cam, pos, euler, scale);
-    rot = glm::quat(euler * DEG2RAD);
+    auto camBase = ECSManager::getInstance().getCamera();
+    if (camBase) {
+      auto cam = static_pointer_cast<CameraComponent>(camBase);
+      glm::vec3 euler = glm::eulerAngles(rot) * RAD2DEG;
+      editTransform(cam, pos, euler, scale);
+      rot = glm::quat(euler * DEG2RAD);
+    }
   }
   if (ImGui::Button("Save scene")) {
     SceneLoader::getInstance().saveScene("resources/scene.yaml");

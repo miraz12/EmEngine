@@ -21,12 +21,12 @@ public:
   float& getDeltaTime();
 
 private:
-  ECSManager* m_ECSManager;
-  UIManager* m_UIManager;
-  GameStateManager* m_gameStateManager;
-  float m_dt;
-  float m_prevTime;
-  float m_currentTime;
+  ECSManager* m_ECSManager = nullptr;
+  UIManager* m_UIManager = nullptr;
+  GameStateManager* m_gameStateManager = nullptr;
+  float m_dt = 0.0f;
+  float m_prevTime = 0.0f;
+  float m_currentTime = 0.0f;
 
   GUI m_gui;
 };
