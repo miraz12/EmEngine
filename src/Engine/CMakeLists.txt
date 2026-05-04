@@ -9,8 +9,7 @@ if(DEFINED EMSCRIPTEN)
   add_library(
     Engine STATIC
     ${ENGINE_FILES} $<TARGET_OBJECTS:yaml-cpp> $<TARGET_OBJECTS:imgui>
-    $<TARGET_OBJECTS:BulletCollision> $<TARGET_OBJECTS:BulletDynamics>
-    $<TARGET_OBJECTS:LinearMath>)
+    $<TARGET_OBJECTS:Jolt>)
 
   set_target_properties(
     Engine
@@ -26,9 +25,7 @@ else()
     $<TARGET_OBJECTS:yaml-cpp>
     $<TARGET_OBJECTS:imgui>
     $<TARGET_OBJECTS:imguizmo>
-    $<TARGET_OBJECTS:BulletCollision>
-    $<TARGET_OBJECTS:BulletDynamics>
-    $<TARGET_OBJECTS:LinearMath>
+    $<TARGET_OBJECTS:Jolt>
     $<TARGET_OBJECTS:glad>
     $<TARGET_OBJECTS:glfw>)
 

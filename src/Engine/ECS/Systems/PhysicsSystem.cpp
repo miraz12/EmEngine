@@ -1,143 +1,84 @@
 #include "PhysicsSystem.hpp"
 #include "CameraSystem.hpp"
-#include "GraphicsSystem.hpp"
+#include "PhysicsLayers.hpp"
 
-#include <ECS/Components/DebugComponent.hpp>
+#include <ECS/Components/GraphicsComponent.hpp>
 #include <ECS/Components/PhysicsComponent.hpp>
 #include <ECS/Components/PositionComponent.hpp>
 #include <ECS/ECSManager.hpp>
-#include <Objects/Line.hpp>
-#include <Objects/Point.hpp>
+
+#include <Jolt/Jolt.h>
+
+#include <Jolt/Core/Factory.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyFilter.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+#include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/ShapeCast.h>
+#include <Jolt/Physics/Collision/TransformedShape.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/RegisterTypes.h>
+
+#ifdef EMSCRIPTEN
+#include <Jolt/Core/JobSystemSingleThreaded.h>
+#else
+#include <Jolt/Core/JobSystemThreadPool.h>
+#endif
+
+// Jolt trace/assert callbacks
+static void
+JoltTraceImpl(const char* inFMT, ...)
+{
+  va_list list;
+  va_start(list, inFMT);
+  char buffer[1024];
+  vsnprintf(buffer, sizeof(buffer), inFMT, list);
+  va_end(list);
+  std::cerr << buffer << std::endl;
+}
+
+#ifdef JPH_ENABLE_ASSERTS
+static bool
+JoltAssertFailed(const char* inExpression,
+                 const char* inMessage,
+                 const char* inFile,
+                 unsigned int inLine)
+{
+  std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") "
+            << (inMessage ? inMessage : "") << std::endl;
+  return true; // Breakpoint
+}
+#endif
 
 PhysicsSystem::~PhysicsSystem()
 {
-  delete m_dynamicsWorld;
-  delete m_solver;
-  delete m_overlappingPairCache;
-  delete m_dispatcher;
-  delete m_collisionConfiguration;
+  // Remove all bodies from the physics system before destroying it
+  if (m_joltSystem) {
+    auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
 
-  delete m_body;
-  delete myMotionState;
-  delete groundShape;
-}
-
-bool
-PhysicsSystem::EntityOnGround(Entity entity)
-{
-  std::shared_ptr<PhysicsComponent> phyComp =
-    ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-  if (!phyComp->body) {
-    return false;
-  }
-
-  btVector3 velocity = phyComp->body->getLinearVelocity();
-  bool hasDownwardContact = false;
-
-  // Get all contact manifolds for this body
-  int numManifolds = m_dynamicsWorld->getDispatcher()->getNumManifolds();
-  for (int i = 0; i < numManifolds; i++) {
-    btPersistentManifold* contactManifold =
-      m_dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
-
-    // Check if this manifold involves our player body
-    const btCollisionObject* obA = contactManifold->getBody0();
-    const btCollisionObject* obB = contactManifold->getBody1();
-
-    if (obA == phyComp->body || obB == phyComp->body) {
-      // Check contact points
-      int numContacts = contactManifold->getNumContacts();
-      for (int j = 0; j < numContacts; j++) {
-        btManifoldPoint& pt = contactManifold->getContactPoint(j);
-
-        // Only consider contacts that are close enough (penetration depth)
-        if (pt.getDistance() < 0.1f) {
-
-          // Get the contact normal (pointing from A to B)
-          btVector3 normal = pt.m_normalWorldOnB;
-          if (obB == phyComp->body) {
-            normal = -normal; // Flip if our body is B
-          }
-
-          // Check if the normal points upward (ground contact)
-          // Normal should point roughly upward (Y > 0.7 for slopes up to ~45
-          // degrees)
-          if (normal.y() > 0.7f) {
-            hasDownwardContact = true;
-            break;
-          }
-        }
-      }
-      if (hasDownwardContact) {
-        break;
-      }
+    // Remove ground body
+    if (!m_groundBody.IsInvalid()) {
+      bodyInterface.RemoveBody(m_groundBody);
+      bodyInterface.DestroyBody(m_groundBody);
     }
+
+    // Remove all tracked entity bodies
+    for (auto& [bodyId, entity] : m_bodyToEntity) {
+      bodyInterface.RemoveBody(bodyId);
+      bodyInterface.DestroyBody(bodyId);
+    }
+    m_bodyToEntity.clear();
+    m_entityToBody.clear();
   }
-
-  return hasDownwardContact;
-}
-
-void
-PhysicsSystem::CreatePhysicsBody(Entity entity,
-                                 PhysicsComponent& physicsComponent)
-{
-  btCollisionShape* shape = nullptr;
-
-  switch (physicsComponent.shapeType) {
-    case CollisionShapeType::BOX:
-      shape = new btBoxShape(physicsComponent.dimensions *
-                             0.5f); // Box dimensions are half-extents
-      break;
-
-    case CollisionShapeType::SPHERE:
-      shape = new btSphereShape(
-        physicsComponent.dimensions.x()); // Use x as the radius
-      break;
-
-    case CollisionShapeType::CAPSULE:
-      shape = new btCapsuleShape(physicsComponent.capsuleRadius,
-                                 physicsComponent.capsuleHeight);
-      break;
-
-    case CollisionShapeType::CONVEX_HULL:
-      // Assuming you already have a convex mesh defined in the component
-      shape = new btConvexTriangleMeshShape(physicsComponent.mesh);
-      break;
-
-    default:
-      // Handle error or unsupported shape
-      std::cerr << "Error: Unsupported collision shape type!" << std::endl;
-      return;
-  }
-
-  // Calculate inertia for dynamic bodies (mass > 0)
-  btVector3 localInertia(0, 0, 0);
-  if (physicsComponent.mass > 0.0f) {
-    shape->calculateLocalInertia(physicsComponent.mass, localInertia);
-  }
-
-  // Set up motion state and initial transform
-  btTransform startTransform;
-  startTransform.setIdentity();
-  startTransform.setOrigin(
-    physicsComponent.dimensions); // Set initial position (if applicable)
-
-  auto* motionState = new btDefaultMotionState(startTransform);
-
-  btRigidBody::btRigidBodyConstructionInfo rbInfo(
-    physicsComponent.mass, motionState, shape, localInertia);
-  physicsComponent.body = new btRigidBody(rbInfo);
-
-  // Optionally disable rotation (common for characters)
-  if (physicsComponent.shapeType == CollisionShapeType::CAPSULE) {
-    physicsComponent.body->setAngularFactor(btVector3(0, 0, 0));
-  }
-
-  // Add the body to the dynamics world
-  m_dynamicsWorld->addRigidBody(physicsComponent.body);
-
-  // Store the shape in the component for later cleanup
-  physicsComponent.shape = shape;
 }
 
 void
@@ -145,200 +86,416 @@ PhysicsSystem::initialize(ECSManager& ecsManager)
 {
   m_manager = &ecsManager;
 
-  /// collision configuration contains default setup for memory, collision
-  /// setup. Advanced users can create their own configuration.
-  m_collisionConfiguration = new btDefaultCollisionConfiguration();
-
-  /// use the default collision dispatcher. For parallel processing you can use
-  /// a diffent dispatcher (see Extras/BulletMultiThreaded)
-  m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
-
-  /// btDbvtBroadphase is a good general purpose broadphase. You can also try
-  /// out btAxis3Sweep.
-  m_overlappingPairCache = new btDbvtBroadphase();
-
-  /// the default constraint solver. For parallel processing you can use a
-  /// different solver (see Extras/BulletMultiThreaded)
-  m_solver = new btSequentialImpulseConstraintSolver;
-
-  m_dynamicsWorld = new btDiscreteDynamicsWorld(
-    m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
-
-  m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
-
-  // Set debug drawer with ALL debug modes for maximum visibility
-  // m_dDraw.setDebugMode(btIDebugDraw::DBG_DrawWireframe); // Draw wireframes
-
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-  m_dDraw.setDebugMode(btIDebugDraw::DBG_DrawAabb); // Draw wireframes
-  // btIDebugDraw::DBG_DrawAabb |      // Draw axis-aligned bounding boxes
-  // btIDebugDraw::DBG_DrawContactPoints | // Show contact points
-  // btIDebugDraw::DBG_DrawConstraints |   // Show constraints
-  // btIDebugDraw::DBG_DrawConstraintLimits | // Show constraint limits
-  // btIDebugDraw::DBG_DrawNormals |    // Show normals
-  // btIDebugDraw::DBG_FastWireframe);  // Faster wireframe drawing
-
-  m_dynamicsWorld->setDebugDrawer(&m_dDraw);
+  // Install trace/assert callbacks
+  JPH::Trace = JoltTraceImpl;
+#ifdef JPH_ENABLE_ASSERTS
+  JPH::AssertFailed = JoltAssertFailed;
 #endif
 
-  ///-----initialization_end-----
+  // Register allocation hook and physics types
+  JPH::RegisterDefaultAllocator();
 
-  // Create a ground plane for debugging - always visible
+  if (!JPH::Factory::sInstance) {
+    JPH::Factory::sInstance = new JPH::Factory();
+  }
+  JPH::RegisterTypes();
+
+  // Create temp allocator (10 MB)
+  m_tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+
+  // Create job system
+#ifdef EMSCRIPTEN
+  m_jobSystem =
+    std::make_unique<JPH::JobSystemSingleThreaded>(JPH::cMaxPhysicsJobs);
+#else
+  m_jobSystem = std::make_unique<JPH::JobSystemThreadPool>(
+    JPH::cMaxPhysicsJobs,
+    JPH::cMaxPhysicsBarriers,
+    std::thread::hardware_concurrency() - 1);
+#endif
+
+  // Create the physics system
+  constexpr JPH::uint cMaxBodies = 4096;
+  constexpr JPH::uint cNumBodyMutexes = 0; // auto
+  constexpr JPH::uint cMaxBodyPairs = 4096;
+  constexpr JPH::uint cMaxContactConstraints = 2048;
+
+  static BroadPhaseLayerInterfaceImpl broadPhaseLayerInterface;
+  static ObjectVsBroadPhaseLayerFilterImpl objectVsBroadPhaseLayerFilter;
+  static ObjectLayerPairFilterImpl objectLayerPairFilter;
+
+  m_joltSystem = std::make_unique<JPH::PhysicsSystem>();
+  m_joltSystem->Init(cMaxBodies,
+                     cNumBodyMutexes,
+                     cMaxBodyPairs,
+                     cMaxContactConstraints,
+                     broadPhaseLayerInterface,
+                     objectVsBroadPhaseLayerFilter,
+                     objectLayerPairFilter);
+
+  m_joltSystem->SetGravity(JPH::Vec3(0.0f, -9.8f, 0.0f));
+
+  // Create ground plane (static box at y = -1)
   {
-    groundShape =
-      new btBoxShape(btVector3(btScalar(100.), btScalar(1.), btScalar(100.)));
+    auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
 
-    btTransform groundTransform;
-    groundTransform.setIdentity();
-    groundTransform.setOrigin(btVector3(0, -1, 0));
+    JPH::BoxShapeSettings groundSettings(JPH::Vec3(100.0f, 1.0f, 100.0f));
+    auto groundShapeResult = groundSettings.Create();
+    JPH::ShapeRefC groundShape = groundShapeResult.Get();
 
-    btScalar mass(0.); // static object with mass 0
+    JPH::BodyCreationSettings groundBodySettings(groundShape,
+                                                 JPH::RVec3(0.0f, -1.0f, 0.0f),
+                                                 JPH::Quat::sIdentity(),
+                                                 JPH::EMotionType::Static,
+                                                 Layers::NON_MOVING);
 
-    btVector3 localInertia(0, 0, 0);
-
-    // using motionstate is optional, it provides interpolation capabilities
-    myMotionState = new btDefaultMotionState(groundTransform);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(
-      mass, myMotionState, groundShape, localInertia);
-
-    m_body = new btRigidBody(rbInfo);
-
-    // add the body to the dynamics world
-    m_dynamicsWorld->addRigidBody(m_body);
+    JPH::Body* groundBody = bodyInterface.CreateBody(groundBodySettings);
+    m_groundBody = groundBody->GetID();
+    bodyInterface.AddBody(m_groundBody, JPH::EActivation::DontActivate);
   }
 
-  // Also add a dynamic cube for testing
-  {
-    // btCollisionShape* cubeShape = new btBoxShape(btVector3(1.0, 1.0, 1.0));
-
-    // btTransform startTransform;
-    // startTransform.setIdentity();
-    // startTransform.setOrigin(btVector3(0, 10, 0)); // Start above the ground
-
-    // btScalar mass(1.0); // Dynamic object
-    // btVector3 localInertia(0, 0, 0);
-    // cubeShape->calculateLocalInertia(mass, localInertia);
-
-    // btDefaultMotionState* motionState =
-    // new btDefaultMotionState(startTransform);
-    // btRigidBody::btRigidBodyConstructionInfo rbInfo(
-    //   mass, motionState, cubeShape, localInertia);
-
-    // btRigidBody* body = new btRigidBody(rbInfo);
-    // m_dynamicsWorld->addRigidBody(body);
-  }
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  m_dDraw.initialize();
+#endif
 }
 
 void
 PhysicsSystem::update(float dt)
 {
-  // Always draw debug lines if debug drawing is enabled, regardless of
-  // simulation state
   if (m_manager->getSimulatePhysics()) {
-    m_dynamicsWorld->stepSimulation(dt, 10);
+    // Step the physics world
+    m_joltSystem->Update(dt, 1, m_tempAllocator.get(), m_jobSystem.get());
 
-#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
-    m_dynamicsWorld->debugDrawWorld();
-#endif
-
+    // Sync physics transforms to ECS PositionComponents
     std::vector<Entity> view =
       m_manager->view<PositionComponent, PhysicsComponent>();
     for (auto e : view) {
-      std::shared_ptr<PositionComponent> p =
-        m_manager->getComponent<PositionComponent>(e);
-      std::shared_ptr<PhysicsComponent> phy =
-        m_manager->getComponent<PhysicsComponent>(e);
+      auto p = m_manager->getComponent<PositionComponent>(e);
+      auto phy = m_manager->getComponent<PhysicsComponent>(e);
 
-      if (!phy) {
+      if (!phy || !phy->isValid()) {
         continue;
       }
 
-      btRigidBody* body = phy->getRigidBody();
-      if (!body) {
-        continue;
-      }
+      auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+      JPH::RVec3 pos = bodyInterface.GetPosition(phy->getBodyID());
+      JPH::Quat rot = bodyInterface.GetRotation(phy->getBodyID());
 
-      btTransform btTrans;
-      if (body->getMotionState()) {
-        body->getMotionState()->getWorldTransform(btTrans);
-      } else {
-        btTrans = body->getWorldTransform();
-      }
-
-      p->position = glm::vec3(btTrans.getOrigin().getX(),
-                              btTrans.getOrigin().getY(),
-                              btTrans.getOrigin().getZ());
-      p->rotation = glm::quat(btTrans.getRotation().w(),
-                              btTrans.getRotation().x(),
-                              btTrans.getRotation().y(),
-                              btTrans.getRotation().z());
+      p->position =
+        glm::vec3(float(pos.GetX()), float(pos.GetY()), float(pos.GetZ()));
+      p->rotation = glm::quat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
     }
   } else {
+    // Editor mode: sync selected entity position to physics body
     std::vector<Entity> view =
       m_manager->view<PositionComponent, PhysicsComponent>();
     for (auto e : view) {
       if (e == m_manager->getEntitySelected()) {
-        std::shared_ptr<PositionComponent> p =
-          m_manager->getComponent<PositionComponent>(e);
-        std::shared_ptr<PhysicsComponent> phy =
-          m_manager->getComponent<PhysicsComponent>(e);
+        auto p = m_manager->getComponent<PositionComponent>(e);
+        auto phy = m_manager->getComponent<PhysicsComponent>(e);
 
-        // Update bullet
-        btTransform btTrans;
-        btTrans.setFromOpenGLMatrix(glm::value_ptr(p->model));
+        if (!phy || !phy->isValid()) {
+          continue;
+        }
 
-        btRigidBody* body = phy->getRigidBody();
-        body->setWorldTransform(btTrans);
-
-        // Recalculate aabbs
-        btCollisionWorld* collisionWorld = m_dynamicsWorld->getCollisionWorld();
-        collisionWorld->updateAabbs();
-        collisionWorld->computeOverlappingPairs();
+        auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+        bodyInterface.SetPositionAndRotation(
+          phy->getBodyID(),
+          JPH::RVec3(p->position.x, p->position.y, p->position.z),
+          JPH::Quat(p->rotation.x, p->rotation.y, p->rotation.z, p->rotation.w),
+          JPH::EActivation::DontActivate);
       }
     }
   }
+
+#if !defined(EMSCRIPTEN) && !defined(NDEBUG)
+  // Draw debug wireframe AABBs for all physics bodies
+  auto& dbgBodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  std::vector<Entity> debugView =
+    m_manager->view<PositionComponent, PhysicsComponent>();
+  for (auto e : debugView) {
+    auto phy = m_manager->getComponent<PhysicsComponent>(e);
+    if (!phy || !phy->isValid()) {
+      continue;
+    }
+
+    JPH::TransformedShape ts =
+      dbgBodyInterface.GetTransformedShape(phy->getBodyID());
+    JPH::AABox worldBounds = ts.GetWorldSpaceBounds();
+    glm::vec3 mn(worldBounds.mMin.GetX(),
+                 worldBounds.mMin.GetY(),
+                 worldBounds.mMin.GetZ());
+    glm::vec3 mx(worldBounds.mMax.GetX(),
+                 worldBounds.mMax.GetY(),
+                 worldBounds.mMax.GetZ());
+
+    glm::vec3 color(0.0f, 1.0f, 0.0f);
+
+    // 12 edges of an AABB
+    m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mx.x, mn.y, mn.z }, color);
+    m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mn.x, mx.y, mn.z }, color);
+    m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mn.x, mn.y, mx.z }, color);
+    m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mn.x, mx.y, mx.z }, color);
+    m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mx.x, mn.y, mx.z }, color);
+    m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mx.x, mx.y, mn.z }, color);
+    m_dDraw.drawLine({ mn.x, mx.y, mn.z }, { mx.x, mx.y, mn.z }, color);
+    m_dDraw.drawLine({ mn.x, mx.y, mn.z }, { mn.x, mx.y, mx.z }, color);
+    m_dDraw.drawLine({ mx.x, mn.y, mn.z }, { mx.x, mn.y, mx.z }, color);
+    m_dDraw.drawLine({ mx.x, mn.y, mn.z }, { mx.x, mx.y, mn.z }, color);
+    m_dDraw.drawLine({ mn.x, mn.y, mx.z }, { mx.x, mn.y, mx.z }, color);
+    m_dDraw.drawLine({ mn.x, mn.y, mx.z }, { mn.x, mx.y, mx.z }, color);
+  }
+#endif
 }
+
+JPH::BodyID
+PhysicsSystem::createBody(Entity entity, float mass, CollisionShapeType type)
+{
+  auto posComp =
+    ECSManager::getInstance().getComponent<PositionComponent>(entity);
+  if (!posComp) {
+    return JPH::BodyID();
+  }
+
+  glm::vec3 pos = posComp->position;
+  glm::vec3 scale = posComp->scale;
+  glm::quat rot = posComp->rotation;
+
+  // Create shape based on type
+  JPH::ShapeRefC shape;
+  switch (type) {
+    case CollisionShapeType::BOX: {
+      JPH::BoxShapeSettings settings(
+        JPH::Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
+      auto result = settings.Create();
+      if (result.IsValid())
+        shape = result.Get();
+      break;
+    }
+    case CollisionShapeType::SPHERE: {
+      JPH::SphereShapeSettings settings(scale.x * 0.5f);
+      auto result = settings.Create();
+      if (result.IsValid())
+        shape = result.Get();
+      break;
+    }
+    case CollisionShapeType::CAPSULE: {
+      float radius = scale.x * 0.5f;
+      float halfHeight = scale.y * 0.25f;
+      JPH::CapsuleShapeSettings settings(halfHeight, radius);
+      auto result = settings.Create();
+      if (result.IsValid())
+        shape = result.Get();
+      break;
+    }
+    case CollisionShapeType::CONVEX_HULL:
+    case CollisionShapeType::HEIGHTMAP: {
+      // Get shape from the entity's GraphicsComponent
+      auto graphComp =
+        ECSManager::getInstance().getComponent<GraphicsComponent>(entity);
+      if (graphComp && graphComp->m_grapObj &&
+          graphComp->m_grapObj->p_collisionShape) {
+        shape = graphComp->m_grapObj->p_collisionShape;
+      }
+      // Fallback to a box if no collision shape available
+      if (!shape) {
+        JPH::BoxShapeSettings settings(JPH::Vec3::sReplicate(0.5f));
+        auto result = settings.Create();
+        if (result.IsValid())
+          shape = result.Get();
+      }
+      break;
+    }
+  }
+
+  if (!shape) {
+    return JPH::BodyID();
+  }
+
+  bool isDynamic = (mass != 0.0f);
+  JPH::EMotionType motionType =
+    isDynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static;
+  JPH::ObjectLayer layer = isDynamic ? Layers::MOVING : Layers::NON_MOVING;
+
+  JPH::BodyCreationSettings bodySettings(shape,
+                                         JPH::RVec3(pos.x, pos.y, pos.z),
+                                         JPH::Quat(rot.x, rot.y, rot.z, rot.w),
+                                         motionType,
+                                         layer);
+
+  if (isDynamic) {
+    bodySettings.mOverrideMassProperties =
+      JPH::EOverrideMassProperties::CalculateInertia;
+    bodySettings.mMassPropertiesOverride.mMass = mass;
+  }
+
+  // Capsule-specific: lock rotation, low friction, always active
+  if (type == CollisionShapeType::CAPSULE && isDynamic) {
+    bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX |
+                                JPH::EAllowedDOFs::TranslationY |
+                                JPH::EAllowedDOFs::TranslationZ;
+    bodySettings.mFriction = 0.1f;
+    bodySettings.mRestitution = 0.0f;
+    bodySettings.mLinearDamping = 0.0f;
+    bodySettings.mAngularDamping = 0.0f;
+  }
+
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  JPH::Body* body = bodyInterface.CreateBody(bodySettings);
+  if (!body) {
+    return JPH::BodyID();
+  }
+
+  body->SetUserData(static_cast<u64>(entity));
+
+  JPH::BodyID bodyId = body->GetID();
+  bodyInterface.AddBody(bodyId,
+                        isDynamic ? JPH::EActivation::Activate
+                                  : JPH::EActivation::DontActivate);
+
+  m_bodyToEntity[bodyId] = entity;
+  m_entityToBody[entity] = bodyId;
+
+  return bodyId;
+}
+
+void
+PhysicsSystem::destroyBody(JPH::BodyID bodyId)
+{
+  if (bodyId.IsInvalid() || !m_joltSystem) {
+    return;
+  }
+
+  // Only destroy if we still track this body (avoids double-destroy on
+  // shutdown)
+  auto it = m_bodyToEntity.find(bodyId);
+  if (it == m_bodyToEntity.end()) {
+    return;
+  }
+
+  m_entityToBody.erase(it->second);
+  m_bodyToEntity.erase(it);
+
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  bodyInterface.RemoveBody(bodyId);
+  bodyInterface.DestroyBody(bodyId);
+}
+
+void
+PhysicsSystem::setLinearVelocity(JPH::BodyID bodyId, float x, float y, float z)
+{
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  if (y == 0.0f) {
+    // Preserve existing Y velocity (gravity/jumping)
+    JPH::Vec3 vel = bodyInterface.GetLinearVelocity(bodyId);
+    bodyInterface.SetLinearVelocity(bodyId, JPH::Vec3(x, vel.GetY(), z));
+  } else {
+    bodyInterface.SetLinearVelocity(bodyId, JPH::Vec3(x, y, z));
+  }
+}
+
+void
+PhysicsSystem::setHorizontalVelocity(JPH::BodyID bodyId, float x, float z)
+{
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  JPH::Vec3 vel = bodyInterface.GetLinearVelocity(bodyId);
+  bodyInterface.SetLinearVelocity(bodyId, JPH::Vec3(x, vel.GetY(), z));
+}
+
+void
+PhysicsSystem::getLinearVelocity(JPH::BodyID bodyId, float* out)
+{
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  JPH::Vec3 vel = bodyInterface.GetLinearVelocity(bodyId);
+  out[0] = vel.GetX();
+  out[1] = vel.GetY();
+  out[2] = vel.GetZ();
+}
+
+void
+PhysicsSystem::addImpulse(JPH::BodyID bodyId, float x, float y, float z)
+{
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  bodyInterface.AddImpulse(bodyId, JPH::Vec3(x, y, z));
+}
+
+void
+PhysicsSystem::addForce(JPH::BodyID bodyId, float x, float y, float z)
+{
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  bodyInterface.AddForce(bodyId, JPH::Vec3(x, y, z));
+}
+
+bool
+PhysicsSystem::entityOnGround(Entity entity)
+{
+  auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+  if (!phy || !phy->isValid()) {
+    return false;
+  }
+
+  auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+  JPH::RVec3 position = bodyInterface.GetPosition(phy->getBodyID());
+
+  // Get actual shape bounds to find the bottom of the body
+  JPH::AABox bounds =
+    bodyInterface.GetShape(phy->getBodyID())->GetLocalBounds();
+  float shapeBottomOffset = bounds.mMin.GetY(); // negative value
+
+  // Start ray from slightly above the shape's bottom
+  JPH::RRayCast ray;
+  ray.mOrigin = position + JPH::Vec3(0.0f, shapeBottomOffset + 0.05f, 0.0f);
+  ray.mDirection = JPH::Vec3(0.0f, -0.3f, 0.0f);
+
+  JPH::RayCastResult result;
+  JPH::IgnoreSingleBodyFilter bodyFilter(phy->getBodyID());
+
+  if (m_joltSystem->GetNarrowPhaseQuery().CastRay(
+        ray, result, {}, {}, bodyFilter)) {
+    return true;
+  }
+  return false;
+}
+
 void
 PhysicsSystem::performPicking(i32 mouseX, i32 mouseY)
 {
+  auto cam = std::static_pointer_cast<CameraComponent>(
+    ECSManager::getInstance().getCamera());
 
-  // Define the ray's start and end positions in world space
+  auto [camPos, rayDir] = CameraSystem::getRayTo(cam, mouseX, mouseY);
+  glm::vec3 direction = rayDir * 1000.0f - camPos;
 
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  JPH::RRayCast ray;
+  ray.mOrigin = JPH::RVec3(camPos.x, camPos.y, camPos.z);
+  ray.mDirection = JPH::Vec3(direction.x, direction.y, direction.z);
 
-  std::tuple<glm::vec3, glm::vec3> camStartDir =
-    CameraSystem::getRayTo(cam, mouseX, mouseY);
+  JPH::RayCastResult result;
 
-  glm::vec3 camPos = std::get<0>(camStartDir);
-  glm::vec3 rayDir = std::get<1>(camStartDir);
-  glm::vec3 endPos = rayDir * 1000.f;
-  btVector3 rayTo(endPos.x, endPos.y, endPos.z);
-  btVector3 rayFrom(camPos.x, camPos.y, camPos.z);
-  btCollisionWorld::ClosestRayResultCallback rayCallback(rayFrom, rayTo);
-  // Perform raycast
-  m_dynamicsWorld->rayTest(rayFrom, rayTo, rayCallback);
-  if (rayCallback.hasHit()) {
-    // An object was hit by the ray
-    // std::shared_ptr<DebugComponent> graphComp =
-    // std::make_shared<DebugComponent>(
-    //     new Point(rayCallback.m_hitPointWorld.x(),
-    //     rayCallback.m_hitPointWorld.y(),
-    //               rayCallback.m_hitPointWorld.z()));
-    // Entity en = m_manager->createEntity();
-    // m_manager->addComponent(en, graphComp);
-
-    auto* body =
-      (btRigidBody*)btRigidBody::upcast(rayCallback.m_collisionObject);
-    if (body && body->getUserIndex() > 0) {
+  if (m_joltSystem->GetNarrowPhaseQuery().CastRay(ray, result)) {
+    JPH::BodyID hitBodyId = result.mBodyID;
+    auto it = m_bodyToEntity.find(hitBodyId);
+    if (it != m_bodyToEntity.end() && it->second > 0) {
       m_manager->setEntitySelected(true);
-      m_manager->setPickedEntity(body->getUserIndex());
-    } else {
-      m_manager->setEntitySelected(false);
-      m_manager->setPickedEntity(0);
+      m_manager->setPickedEntity(it->second);
+      return;
     }
-  } else {
-    m_manager->setEntitySelected(false);
-    m_manager->setPickedEntity(0);
+  }
+  m_manager->setEntitySelected(false);
+  m_manager->setPickedEntity(0);
+}
+
+void
+PhysicsSystem::setWindowSize(float x, float y)
+{
+  m_winWidth = x;
+  m_winHeight = y;
+}
+
+void
+PhysicsSystem::setGravity(float x, float y, float z)
+{
+  if (m_joltSystem) {
+    m_joltSystem->SetGravity(JPH::Vec3(x, y, z));
   }
 }

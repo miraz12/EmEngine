@@ -7,9 +7,6 @@
 [submodule "exts/glm"]
 	path = exts/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "exts/bullet3"]
-	path = exts/bullet3
-	url = https://github.com/bulletphysics/bullet3.git
 [submodule "exts/yaml-cpp"]
 	path = exts/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
@@ -25,3 +22,6 @@
 [submodule "exts/freetype"]
 	path = exts/freetype
 	url = https://github.com/freetype/freetype.git
+[submodule "exts/JoltPhysics"]
+	path = exts/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics.git

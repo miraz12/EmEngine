@@ -3,8 +3,20 @@
 
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "System.hpp"
-#include <ECS/ECSManager.hpp>
 #include <Rendering/DebugDrawer.hpp>
+
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+
+#ifdef EMSCRIPTEN
+#include <Jolt/Core/JobSystemSingleThreaded.h>
+#else
+#include <Jolt/Core/JobSystemThreadPool.h>
+#endif
+
+class ECSManager;
 
 class PhysicsSystem
   : public System
@@ -15,33 +27,46 @@ class PhysicsSystem
 public:
   void initialize(ECSManager& ecsManager) override;
   void update(float dt) override;
-  void setViewport(u32 /* w */, u32 /* h */){};
-  // Add rigid body to physics sim
-  void addRigidBody(btRigidBody* body) { m_dynamicsWorld->addRigidBody(body); };
-  void removeRigidBody(btRigidBody* body)
-  {
-    m_dynamicsWorld->removeRigidBody(body);
-  };
-  // Function to perform raycasting and pick an object
+  void setViewport(u32, u32){};
+
+  // Body lifecycle
+  JPH::BodyID createBody(Entity entity, float mass, CollisionShapeType type);
+  void destroyBody(JPH::BodyID bodyId);
+
+  // Physics operations
+  void setLinearVelocity(JPH::BodyID bodyId, float x, float y, float z);
+  void setHorizontalVelocity(JPH::BodyID bodyId, float x, float z);
+  void getLinearVelocity(JPH::BodyID bodyId, float* out);
+  void addImpulse(JPH::BodyID bodyId, float x, float y, float z);
+  void addForce(JPH::BodyID bodyId, float x, float y, float z);
+
+  // Queries
+  bool entityOnGround(Entity entity);
   void performPicking(i32 mouseX, i32 mouseY);
   void setWindowSize(float x, float y);
-  void CreatePhysicsBody(Entity entity, PhysicsComponent& physicsComponent);
-  bool EntityOnGround(Entity entity);
 
-  DebugDrawer& getDebugDrawer() { return m_dDraw; };
+  // Configuration
+  void setGravity(float x, float y, float z);
+
+  DebugDrawer& getDebugDrawer() { return m_dDraw; }
 
 private:
   PhysicsSystem() = default;
   ~PhysicsSystem() override;
-  btDiscreteDynamicsWorld* m_dynamicsWorld;
-  btDefaultCollisionConfiguration* m_collisionConfiguration;
-  btCollisionDispatcher* m_dispatcher;
-  btBroadphaseInterface* m_overlappingPairCache;
-  btSequentialImpulseConstraintSolver* m_solver;
-  btRigidBody* m_body;
-  btDefaultMotionState* myMotionState;
-  btCollisionShape* groundShape;
-  float m_winWidth, m_winHeigth;
+
+  std::unique_ptr<JPH::PhysicsSystem> m_joltSystem;
+  std::unique_ptr<JPH::TempAllocatorImpl> m_tempAllocator;
+  std::unique_ptr<JPH::JobSystem> m_jobSystem;
+
+  // Entity <-> BodyID mapping
+  std::unordered_map<JPH::BodyID, Entity> m_bodyToEntity;
+  std::unordered_map<Entity, JPH::BodyID> m_entityToBody;
+
+  JPH::BodyID m_groundBody;
+
+  float m_winWidth{ 0 };
+  float m_winHeight{ 0 };
   DebugDrawer m_dDraw;
 };
+
 #endif // PHYSICSSYSTEM_H_

@@ -235,9 +235,7 @@ extern "C"
 {
   bool EntityOnGround(unsigned int entity)
   {
-    return dynamic_cast<PhysicsSystem*>(
-             &ECSManager::getInstance().getSystem("PHYSICS"))
-      ->EntityOnGround(entity);
+    return PhysicsSystem::getInstance().entityOnGround(entity);
   }
 
   void SetRotation(unsigned int entity, float angle)
@@ -248,44 +246,44 @@ extern "C"
 
   void SetVelocity(unsigned int entity, float x, float y, float z)
   {
-    std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-    btVector3 vel = phy->body->getLinearVelocity();
-    // Use y parameter if needed, otherwise keep existing Y velocity
-    phy->body->setLinearVelocity(btVector3(x, y != 0.0f ? y : vel.getY(), z));
+    auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    if (phy && phy->isValid()) {
+      PhysicsSystem::getInstance().setLinearVelocity(phy->getBodyID(), x, y, z);
+    }
   }
 
   void SetHorizontalVelocity(unsigned int entity, float x, float z)
   {
-    std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-    btVector3 vel = phy->body->getLinearVelocity();
-    // Only change horizontal velocity, preserve Y velocity (gravity/jumping)
-    phy->body->setLinearVelocity(btVector3(x, vel.getY(), z));
+    auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    if (phy && phy->isValid()) {
+      PhysicsSystem::getInstance().setHorizontalVelocity(
+        phy->getBodyID(), x, z);
+    }
   }
 
   void GetVelocity(unsigned int entity, float* velocity)
   {
-    std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-    btVector3 vel = phy->body->getLinearVelocity();
-    velocity[0] = vel.getX();
-    velocity[1] = vel.getY();
-    velocity[2] = vel.getZ();
+    auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    if (phy && phy->isValid()) {
+      PhysicsSystem::getInstance().getLinearVelocity(phy->getBodyID(),
+                                                     velocity);
+    }
   }
 
   void AddImpulse(unsigned int entity, float x, float y, float z)
   {
-    std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-    phy->body->applyCentralImpulse(btVector3(x, y, z));
+    auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    if (phy && phy->isValid()) {
+      PhysicsSystem::getInstance().addImpulse(phy->getBodyID(), x, y, z);
+    }
   }
 
   void AddForce(unsigned int entity, float x, float y, float z)
   {
-    std::shared_ptr<PhysicsComponent> phy =
-      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
-    phy->body->applyCentralForce(btVector3(x, y, z));
+    auto phy = ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    if (phy && phy->isValid()) {
+      PhysicsSystem::getInstance().addForce(phy->getBodyID(), x, y, z);
+    }
   }
 
   void AddGraphicsComponent(int entity, const char* model)

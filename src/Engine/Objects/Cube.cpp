@@ -1,5 +1,7 @@
 #include "Cube.hpp"
 #include <Graphics/RenderResources.hpp>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 Cube::Cube()
 {
@@ -100,7 +102,7 @@ Cube::Cube()
   newPrim->m_count = 36;
   newPrim->m_offset = 0;
 
-  p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
+  p_collisionShape = new JPH::BoxShape(JPH::Vec3(0.5f, 0.5f, 0.5f));
 
   defaultMat.m_metallicFactor = 0.0f;
   defaultMat.m_roughnessFactor = 1.0f;

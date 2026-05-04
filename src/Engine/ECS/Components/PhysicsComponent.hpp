@@ -3,6 +3,9 @@
 
 #include "Component.hpp"
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyID.h>
+
 enum class CollisionShapeType
 {
   BOX,
@@ -16,32 +19,19 @@ class PhysicsComponent final : public Component
 {
 public:
   PhysicsComponent() = delete;
-  // Create colision mesh from grapComp and give position
-  PhysicsComponent(std::size_t en, float mass, CollisionShapeType type);
+  PhysicsComponent(Entity entity, float mass, CollisionShapeType type);
   ~PhysicsComponent() override;
 
-  btRigidBody* getRigidBody() { return body; }
-  btScalar getMass() { return mass; }
+  JPH::BodyID getBodyID() const { return m_bodyId; }
+  float getMass() const { return m_mass; }
+  CollisionShapeType getShapeType() const { return m_shapeType; }
+  bool isValid() const { return !m_bodyId.IsInvalid(); }
 
 private:
-  void setupCollisionShapeFromGra();
-
-public:
-  btTransform startTransform;
-  btVector3 initialPos{ 0., 0., 0. };
-  btVector3 initialScale{ 1., 1., 1. };
-  btQuaternion initialRotation{ 1., 1., 1., 1. };
-  btDefaultMotionState* myMotionState;
-  std::size_t m_en;
-
-  btRigidBody* body{ nullptr };       // Bullet physics body
-  btCollisionShape* shape{ nullptr }; // Bullet collision shape
-  CollisionShapeType shapeType;       // Type of collision shape
-  btScalar mass;                      // Mass of the object
-  btVector3 dimensions;               // General dimensions (for box and sphere)
-  float capsuleRadius;                // Radius for capsule shape
-  float capsuleHeight;                // Height for capsule shape
-  btTriangleMesh* mesh{ nullptr };    // Optional mesh (for complex shapes)
+  JPH::BodyID m_bodyId;
+  CollisionShapeType m_shapeType;
+  float m_mass;
+  Entity m_entity;
 };
 
 #endif // PHYSICSCOMPONENT_H_

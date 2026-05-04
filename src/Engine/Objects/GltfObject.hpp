@@ -23,7 +23,7 @@ private:
   void loadJoints(tinygltf::Model& model);
   void generateCollisionShape();
 
-  btTriangleMesh* m_mesh;
+  std::vector<glm::vec3> m_collisionVertices;
   std::vector<std::string> m_texIds;
   std::string m_filename;
 };

@@ -10,6 +10,9 @@
 #include <Rendering/Material.hpp>
 #include <Rendering/Mesh.hpp>
 #include <Rendering/Node.hpp>
+
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Rendering/Primitive.hpp>
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
@@ -249,7 +252,6 @@ GltfObject::loadMeshes(tinygltf::Model& model)
     for (auto& primitive : mesh.primitives) {
       Primitive* newPrim =
         &p_meshes[meshCount].m_primitives[p_meshes[meshCount].numPrims++];
-      m_mesh = new btTriangleMesh();
       newPrim->m_material = primitive.material;
 
       // Determine vertex count from POSITION attribute (required)
@@ -274,18 +276,11 @@ GltfObject::loadMeshes(tinygltf::Model& model)
                                                positions[idx * 3 + 1],
                                                positions[idx * 3 + 2]);
           }
-          // Build collision mesh from positions
-          for (u32 idx = 0; idx + 2 < vertexCount; idx += 3) {
-            btVector3 v0(positions[idx * 3],
-                         positions[idx * 3 + 1],
-                         positions[idx * 3 + 2]);
-            btVector3 v1(positions[(idx + 1) * 3],
-                         positions[(idx + 1) * 3 + 1],
-                         positions[(idx + 1) * 3 + 2]);
-            btVector3 v2(positions[(idx + 2) * 3],
-                         positions[(idx + 2) * 3 + 1],
-                         positions[(idx + 2) * 3 + 2]);
-            m_mesh->addTriangle(v0, v1, v2);
+          // Collect vertices for collision shape generation
+          for (u32 idx = 0; idx < vertexCount; idx++) {
+            m_collisionVertices.emplace_back(positions[idx * 3],
+                                             positions[idx * 3 + 1],
+                                             positions[idx * 3 + 2]);
           }
         } else if (attrib.first == "NORMAL") {
           const auto* normals = static_cast<const float*>(dataPtr);
@@ -359,22 +354,14 @@ GltfObject::loadMeshes(tinygltf::Model& model)
           indexData = indicesPtr;
           indexDataSize = accessor.count * sizeof(u32);
 
-          const auto* indices = static_cast<const u32*>(indicesPtr);
-          for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
-            m_mesh->addTriangleIndices(
-              indices[idx], indices[idx + 1], indices[idx + 2]);
-          }
+          indexType = gfx::IndexType::U32;
+          indexData = indicesPtr;
+          indexDataSize = accessor.count * sizeof(u32);
         } else if (accessor.componentType ==
                    TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
           indexType = gfx::IndexType::U16;
           indexData = indicesPtr;
           indexDataSize = accessor.count * sizeof(u16);
-
-          const auto* indices = static_cast<const u16*>(indicesPtr);
-          for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
-            m_mesh->addTriangleIndices(
-              indices[idx], indices[idx + 1], indices[idx + 2]);
-          }
         } else if (accessor.componentType ==
                    TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
           const auto* src = static_cast<const u8*>(indicesPtr);
@@ -385,10 +372,6 @@ GltfObject::loadMeshes(tinygltf::Model& model)
           indexType = gfx::IndexType::U16;
           indexData = widenedIndices.data();
           indexDataSize = accessor.count * sizeof(u16);
-
-          for (u32 idx = 0; idx + 2 < newPrim->m_count; idx += 3) {
-            m_mesh->addTriangleIndices(src[idx], src[idx + 1], src[idx + 2]);
-          }
         }
       } else {
         newPrim->m_count = vertexCount;
@@ -623,31 +606,21 @@ GltfObject::loadSkins(tinygltf::Model& model)
 void
 GltfObject::generateCollisionShape()
 {
-  // Generate convex shape from a triangle mesh
-  btConvexShape* cShape = new btConvexTriangleMeshShape(
-    m_mesh); // m_mesh is assumed to be a btTriangleMesh
-  btShapeHull* cHull = new btShapeHull(cShape);
-
-  // Build hull from the triangle mesh shape with margin
-  cHull->buildHull(cShape->getMargin());
-
-  // Create a new convex hull shape to hold the simplified vertices
-  btConvexHullShape* chShape = new btConvexHullShape();
-
-  // Check if the hull has valid data
-  if (cHull->numVertices() > 0) {
-
-    // Iterate through all vertices in the hull and add them to the convex hull
-    // shape
-    for (i32 i = 0; i < cHull->numVertices(); ++i) {
-      // Add the vertex to the convex hull shape
-      chShape->addPoint(cHull->getVertexPointer()[i]);
-    }
-
-    // Optional: Optimize the convex hull shape for better performance
-    chShape->optimizeConvexHull();
+  if (m_collisionVertices.empty()) {
+    return;
   }
 
-  // Assign the final collision shape
-  p_coll = chShape;
+  // Convert vertices to Jolt format and create convex hull directly
+  JPH::Array<JPH::Vec3> points;
+  points.reserve(m_collisionVertices.size());
+  for (const auto& v : m_collisionVertices) {
+    points.push_back(JPH::Vec3(v.x, v.y, v.z));
+  }
+
+  JPH::ConvexHullShapeSettings settings(points.data(),
+                                        static_cast<int>(points.size()));
+  auto result = settings.Create();
+  if (result.IsValid()) {
+    p_collisionShape = result.Get();
+  }
 }

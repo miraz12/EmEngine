@@ -1,5 +1,7 @@
 #include "Heightmap.hpp"
 #include <Graphics/RenderResources.hpp>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
 
 Heightmap::Heightmap(std::string filename)
   : m_filename(filename)
@@ -37,15 +39,18 @@ Heightmap::Heightmap(std::string filename)
       }
     }
 
-    p_coll = new btHeightfieldTerrainShape(width,
-                                           height,
-                                           m_data.data(),
-                                           1,
-                                           -terrainScale,
-                                           terrainScale,
-                                           1,
-                                           PHY_FLOAT,
-                                           false);
+    // Create Jolt heightfield collision shape
+    {
+      JPH::HeightFieldShapeSettings settings(
+        m_data.data(),
+        JPH::Vec3(-width * 0.5f, 0.0f, -height * 0.5f),
+        JPH::Vec3(1.0f, 1.0f, 1.0f),
+        width);
+      auto result = settings.Create();
+      if (result.IsValid()) {
+        p_collisionShape = result.Get();
+      }
+    }
 
     i32 numStrips = height - 1;
     i32 numDegens = 2 * (numStrips - 1);

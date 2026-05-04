@@ -289,12 +289,13 @@ SceneLoader::addCameraComponent(Entity entity, const YAML::Node& component)
 {
   auto& ecsMan = ECSManager::getInstance();
 
-  float fov    = component["fov"]  ? component["fov"].as<float>()   : 45.0f;
-  float near   = component["near"] ? component["near"].as<float>()  : 0.1f;
-  float far    = component["far"]  ? component["far"].as<float>()   : 200.0f;
-  float width  = component["width"]  ? component["width"].as<float>()  : 1600.0f;
-  float height = component["height"] ? component["height"].as<float>() : 1200.0f;
-  bool isMain  = component["main"] ? component["main"].as<bool>() : true;
+  float fov = component["fov"] ? component["fov"].as<float>() : 45.0f;
+  float near = component["near"] ? component["near"].as<float>() : 0.1f;
+  float far = component["far"] ? component["far"].as<float>() : 200.0f;
+  float width = component["width"] ? component["width"].as<float>() : 1600.0f;
+  float height =
+    component["height"] ? component["height"].as<float>() : 1200.0f;
+  bool isMain = component["main"] ? component["main"].as<bool>() : true;
 
   glm::vec3 position(0.0f, 0.0f, 5.0f);
   if (component["position"]) {
@@ -317,10 +318,11 @@ SceneLoader::addCameraComponent(Entity entity, const YAML::Node& component)
                    component["up"][2].as<float>());
   }
 
-  auto camComp = std::make_shared<CameraComponent>(isMain, fov, width, height, near, far);
-  camComp->m_position    = position;
-  camComp->m_front       = glm::normalize(target - position);
-  camComp->m_viewMatrix  = glm::lookAt(position, target, up);
+  auto camComp =
+    std::make_shared<CameraComponent>(isMain, fov, width, height, near, far);
+  camComp->m_position = position;
+  camComp->m_front = glm::normalize(target - position);
+  camComp->m_viewMatrix = glm::lookAt(position, target, up);
   camComp->m_ProjectionMatrix =
     glm::perspective(glm::radians(fov), width / height, near, far);
   camComp->m_matrixNeedsUpdate = false;

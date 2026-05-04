@@ -10,6 +10,9 @@
 #include <Rendering/Primitive.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
+
 namespace gfx {
 class CommandBuffer;
 }
@@ -56,8 +59,8 @@ public:
   // Reset the matrix cache (call when node transforms change)
   void resetMatrixCache();
 
-  // Bullet Physics collision shape
-  btCollisionShape* p_coll;
+  // Physics collision shape (Jolt)
+  JPH::ShapeRefC p_collisionShape;
 
   u32 p_numNodes{ 0 };                       // Number of nodes
   std::unique_ptr<Node[]> p_nodes;           // Array of nodes

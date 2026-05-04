@@ -1,10 +1,12 @@
 add_library(exts INTERFACE null.cpp)
 
-if(LINUX)
-  add_compile_options(-Wno-everything)
-elseif(WIN32)
-  add_compile_options(/W0 /MT;)
-endif()
+function(disable_warnings target)
+  if(LINUX)
+    target_compile_options(${target} PRIVATE -Wno-everything)
+  elseif(WIN32)
+    target_compile_options(${target} PRIVATE /W0)
+  endif()
+endfunction()
 
 if(NOT DEFINED EMSCRIPTEN)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/lib" CACHE PATH "" FORCE)
@@ -36,18 +38,29 @@ endif()
 # GLAD
 add_library(glad glad/src/glad.c glad/include/glad/glad.h)
 target_include_directories(glad PUBLIC glad/include)
+disable_warnings(glad)
 
-# Bullet3
-option(BUILD_BULLET2_DEMOS OFF)
-option(BUILD_BULLET3_DEMOS OFF)
-option(BUILD_OPENGL3_DEMOS OFF)
-option(BUILD_PYBULLET OFF)
-option(BUILD_UNIT_TESTS OFF)
-option(BUILD_CPU_DEMOS OFF)
-option(BUILD_EXTRAS OFF)
-
-add_subdirectory(bullet3)
-target_include_directories(exts SYSTEM INTERFACE bullet3/src)
+# Jolt Physics
+set(TARGET_HELLO_WORLD OFF CACHE BOOL "" FORCE)
+set(TARGET_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(TARGET_PERFORMANCE_TEST OFF CACHE BOOL "" FORCE)
+set(TARGET_SAMPLES OFF CACHE BOOL "" FORCE)
+set(TARGET_VIEWER OFF CACHE BOOL "" FORCE)
+set(INTERPROCEDURAL_OPTIMIZATION OFF CACHE BOOL "" FORCE)
+if(DEFINED EMSCRIPTEN)
+  set(JPH_USE_SSE OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_AVX OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_AVX2 OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_AVX512 OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_LZCNT OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_TZCNT OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_F16C OFF CACHE BOOL "" FORCE)
+  set(JPH_USE_FMADD OFF CACHE BOOL "" FORCE)
+endif()
+set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF CACHE BOOL "" FORCE)
+set(DEBUG_RENDERER_IN_DISTRIBUTION OFF CACHE BOOL "" FORCE)
+add_subdirectory(JoltPhysics/Build)
+target_include_directories(exts SYSTEM INTERFACE JoltPhysics)
 
 # GLM
 add_subdirectory(glm)
@@ -78,6 +91,7 @@ add_library(
   imgui/backends/imgui_impl_opengl3.h
   imgui/backends/imgui_impl_opengl3.cpp)
 target_include_directories(imgui PUBLIC imgui glfw/include)
+disable_warnings(imgui)
 
 # IMGUIZMO
 add_library(
@@ -94,6 +108,7 @@ add_library(
   ImGuizmo/ImSequencer.h
   ImGuizmo/ImZoomSlider.h)
 target_include_directories(imguizmo PUBLIC ImGuizmo imgui)
+disable_warnings(imguizmo)
 
 # FreeType
 add_subdirectory(freetype)
@@ -126,9 +141,7 @@ target_link_libraries(
         ${OPENGL_LIBRARIES}
         glm
         imgui
-        BulletDynamics
-        BulletCollision
-        LinearMath
+        Jolt
         yaml-cpp
         imguizmo
         RmlUi::RmlUi

@@ -1,5 +1,7 @@
 #include "Quad.hpp"
 #include <Graphics/RenderResources.hpp>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 Quad::Quad()
 {
@@ -42,5 +44,5 @@ Quad::Quad()
   newPrim->m_count = 6;
   newPrim->m_offset = 0;
 
-  p_coll = new btBoxShape(btVector3(0.5, 0.5, 0.5));
+  p_collisionShape = new JPH::BoxShape(JPH::Vec3(0.5f, 0.5f, 0.5f));
 }
