@@ -472,16 +472,17 @@ GltfObject::loadAnimation(tinygltf::Model& model)
         const void* dataPtr =
           &buffer.data[accessor.byteOffset + bufferView.byteOffset];
         const float* buf = static_cast<const float*>(dataPtr);
+        sampler.keyframes.resize(accessor.count);
         for (size_t index = 0; index < accessor.count; index++) {
-          sampler.inputs.push_back(buf[index]);
+          sampler.keyframes[index].time = buf[index];
         }
 
-        for (auto input : sampler.inputs) {
-          if (input < animation.start) {
-            animation.start = input;
+        for (auto& kf : sampler.keyframes) {
+          if (kf.time < animation.start) {
+            animation.start = kf.time;
           };
-          if (input > animation.end) {
-            animation.end = input;
+          if (kf.time > animation.end) {
+            animation.end = kf.time;
           }
         }
       }
@@ -502,7 +503,7 @@ GltfObject::loadAnimation(tinygltf::Model& model)
           case TINYGLTF_TYPE_VEC3: {
             const glm::vec3* buf = static_cast<const glm::vec3*>(dataPtr);
             for (size_t index = 0; index < accessor.count; index++) {
-              sampler.outputsVec4.push_back(glm::vec4(buf[index], 0.0f));
+              sampler.keyframes[index].value = glm::vec4(buf[index], 0.0f);
               sampler.outputs.push_back(buf[index][0]);
               sampler.outputs.push_back(buf[index][1]);
               sampler.outputs.push_back(buf[index][2]);
@@ -512,7 +513,7 @@ GltfObject::loadAnimation(tinygltf::Model& model)
           case TINYGLTF_TYPE_VEC4: {
             const glm::vec4* buf = static_cast<const glm::vec4*>(dataPtr);
             for (size_t index = 0; index < accessor.count; index++) {
-              sampler.outputsVec4.push_back(buf[index]);
+              sampler.keyframes[index].value = buf[index];
               sampler.outputs.push_back(buf[index][0]);
               sampler.outputs.push_back(buf[index][1]);
               sampler.outputs.push_back(buf[index][2]);

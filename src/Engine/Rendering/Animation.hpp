@@ -3,6 +3,12 @@
 
 #include <Rendering/Node.hpp>
 
+struct Keyframe
+{
+  float time;
+  glm::vec4 value;
+};
+
 struct AnimationSampler
 {
   enum class InterpolationType
@@ -12,9 +18,8 @@ struct AnimationSampler
     CUBICSPLINE
   };
   InterpolationType interpolation;
-  std::vector<float> inputs;
-  std::vector<glm::vec4> outputsVec4;
-  std::vector<float> outputs;
+  std::vector<Keyframe> keyframes;
+  std::vector<float> outputs; // flat float array for cubic spline interpolation
 
   // Pre-calculated time indices to avoid binary search during animation
   mutable size_t lastIndex = 0;

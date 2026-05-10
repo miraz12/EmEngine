@@ -47,8 +47,7 @@ AnimationSystem::update(float dt)
       // Process each channel (e.g., translation, rotation, scale)
       for (auto& channel : animation.channels) {
         AnimationSampler& sampler = animation.samplers[channel.samplerIndex];
-        if (sampler.inputs.size() <= 1 ||
-            sampler.inputs.size() > sampler.outputsVec4.size()) {
+        if (sampler.keyframes.size() <= 1) {
           continue; // Invalid sampler, skip
         }
 

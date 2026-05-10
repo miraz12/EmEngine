@@ -6,14 +6,16 @@ size_t
 AnimationSampler::findKeyframeIndex(float time) const
 {
   // Check if we can use the cached index
-  if (lastIndex < inputs.size() - 1) {
-    if (time >= inputs[lastIndex] && time <= inputs[lastIndex + 1]) {
+  if (lastIndex < keyframes.size() - 1) {
+    if (time >= keyframes[lastIndex].time &&
+        time <= keyframes[lastIndex + 1].time) {
       return lastIndex;
     }
 
     // Try the next index
-    if (lastIndex + 1 < inputs.size() - 1 && time >= inputs[lastIndex + 1] &&
-        time <= inputs[lastIndex + 2]) {
+    if (lastIndex + 1 < keyframes.size() - 1 &&
+        time >= keyframes[lastIndex + 1].time &&
+        time <= keyframes[lastIndex + 2].time) {
       lastIndex++;
       return lastIndex;
     }
@@ -21,17 +23,17 @@ AnimationSampler::findKeyframeIndex(float time) const
 
   // Fall back to binary search
   size_t left = 0;
-  size_t right = inputs.size() - 2;
+  size_t right = keyframes.size() - 2;
 
   while (left <= right) {
     size_t mid = left + (right - left) / 2;
 
-    if (time >= inputs[mid] && time <= inputs[mid + 1]) {
+    if (time >= keyframes[mid].time && time <= keyframes[mid + 1].time) {
       lastIndex = mid;
       return mid;
     }
 
-    if (inputs[mid] > time) {
+    if (keyframes[mid].time > time) {
       if (mid == 0)
         break;
       right = mid - 1;
@@ -53,8 +55,8 @@ AnimationSampler::cubicSplineInterpolation(size_t index,
                                            float time,
                                            uint32_t stride)
 {
-  float delta = inputs[index + 1] - inputs[index];
-  float t = (time - inputs[index]) / delta;
+  float delta = keyframes[index + 1].time - keyframes[index].time;
+  float t = (time - keyframes[index].time) / delta;
   const size_t current = index * stride * 3;
   const size_t next = (index + 1) * stride * 3;
   const size_t A = 0;
@@ -84,21 +86,21 @@ AnimationSampler::translate(size_t index, float time)
 {
   switch (interpolation) {
     case AnimationSampler::InterpolationType::LINEAR: {
-      float delta = inputs[index + 1] - inputs[index];
+      float delta = keyframes[index + 1].time - keyframes[index].time;
       if (delta > 0.0f) {
-        float u = std::max(0.0f, time - inputs[index]) / delta;
-        return glm::mix(outputsVec4[index], outputsVec4[index + 1], u);
+        float u = std::max(0.0f, time - keyframes[index].time) / delta;
+        return glm::mix(keyframes[index].value, keyframes[index + 1].value, u);
       }
-      return outputsVec4[index];
+      return keyframes[index].value;
     }
     case AnimationSampler::InterpolationType::STEP: {
-      return outputsVec4[index];
+      return keyframes[index].value;
     }
     case AnimationSampler::InterpolationType::CUBICSPLINE: {
       return cubicSplineInterpolation(index, time, 3);
     }
     default:
-      return outputsVec4[index];
+      return keyframes[index].value;
   }
 }
 
@@ -109,21 +111,21 @@ AnimationSampler::scale(size_t index, float time)
 {
   switch (interpolation) {
     case AnimationSampler::InterpolationType::LINEAR: {
-      float delta = inputs[index + 1] - inputs[index];
+      float delta = keyframes[index + 1].time - keyframes[index].time;
       if (delta > 0.0f) {
-        float u = std::max(0.0f, time - inputs[index]) / delta;
-        return glm::mix(outputsVec4[index], outputsVec4[index + 1], u);
+        float u = std::max(0.0f, time - keyframes[index].time) / delta;
+        return glm::mix(keyframes[index].value, keyframes[index + 1].value, u);
       }
-      return outputsVec4[index];
+      return keyframes[index].value;
     }
     case AnimationSampler::InterpolationType::STEP: {
-      return outputsVec4[index];
+      return keyframes[index].value;
     }
     case AnimationSampler::InterpolationType::CUBICSPLINE: {
       return cubicSplineInterpolation(index, time, 3);
     }
     default:
-      return outputsVec4[index];
+      return keyframes[index].value;
   }
 }
 
@@ -134,13 +136,13 @@ AnimationSampler::rotate(size_t index, float time)
 {
   switch (interpolation) {
     case AnimationSampler::InterpolationType::LINEAR: {
-      float delta = inputs[index + 1] - inputs[index];
+      float delta = keyframes[index + 1].time - keyframes[index].time;
       if (delta > 0.0f) {
-        float u = std::max(0.0f, time - inputs[index]) / delta;
+        float u = std::max(0.0f, time - keyframes[index].time) / delta;
 
         // Direct access to vec4 components is more efficient
-        const glm::vec4& v1 = outputsVec4[index];
-        const glm::vec4& v2 = outputsVec4[index + 1];
+        const glm::vec4& v1 = keyframes[index].value;
+        const glm::vec4& v2 = keyframes[index + 1].value;
 
         glm::quat q1(v1.w, v1.x, v1.y, v1.z);
         glm::quat q2(v2.w, v2.x, v2.y, v2.z);
@@ -148,11 +150,11 @@ AnimationSampler::rotate(size_t index, float time)
         return glm::normalize(glm::slerp(q1, q2, u));
       }
 
-      const glm::vec4& v = outputsVec4[index];
+      const glm::vec4& v = keyframes[index].value;
       return glm::quat(v.w, v.x, v.y, v.z);
     }
     case AnimationSampler::InterpolationType::STEP: {
-      const glm::vec4& v = outputsVec4[index];
+      const glm::vec4& v = keyframes[index].value;
       return glm::quat(v.w, v.x, v.y, v.z);
     }
     case AnimationSampler::InterpolationType::CUBICSPLINE: {
@@ -160,7 +162,7 @@ AnimationSampler::rotate(size_t index, float time)
       return glm::quat(rot.w, rot.x, rot.y, rot.z);
     }
     default: {
-      const glm::vec4& v = outputsVec4[index];
+      const glm::vec4& v = keyframes[index].value;
       return glm::quat(v.w, v.x, v.y, v.z);
     }
   }
