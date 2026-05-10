@@ -292,6 +292,15 @@ GraphicsDevice::resizeTexture(TextureId texture,
   }
 }
 
+const TextureCreateInfo*
+GraphicsDevice::getTextureInfo(TextureId texture) const
+{
+  if (m_backend) {
+    return m_backend->getTextureInfo(texture);
+  }
+  return nullptr;
+}
+
 void
 GraphicsDevice::generateMipmaps(TextureId texture)
 {

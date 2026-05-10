@@ -99,7 +99,9 @@ GraphicsObject::applySkinning(gfx::ShaderId shader, i32 node)
     constexpr i32 kJointMatsUnit = 5;
     i32 jointMatsLoc = device.getUniformLocation(shader, "jointMats");
     device.setUniformInt(jointMatsLoc, kJointMatsUnit);
-    resources.bindTexture(kJointMatsUnit, "jointMats");
+    static gfx::TextureId jointMatsTexId =
+      resources.getDataTexture("jointMats");
+    resources.bindTexture(kJointMatsUnit, jointMatsTexId);
 
     // Update texture data (width=4 for mat4 columns, height=jointCount)
     // Always reallocate since the jointMats texture is shared globally and
@@ -109,8 +111,7 @@ GraphicsObject::applySkinning(gfx::ShaderId shader, i32 node)
     resources.updateDataTexture("jointMats",
                                 kMatrixColumns,
                                 jointCount,
-                                glm::value_ptr(cache.jointMatrices[0]),
-                                true); // Always reallocate
+                                glm::value_ptr(cache.jointMatrices[0]));
   }
 }
 
@@ -217,12 +218,13 @@ GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
         if (!cache.jointMatrices.empty()) {
           constexpr u32 kMatrixColumns = 4;
           u32 jointCount = static_cast<u32>(cache.jointMatrices.size());
-          resources.bindTexture(kJointMatsUnit, "jointMats");
+          static gfx::TextureId jointMatsTexId =
+            resources.getDataTexture("jointMats");
+          resources.bindTexture(kJointMatsUnit, jointMatsTexId);
           resources.updateDataTexture("jointMats",
                                       kMatrixColumns,
                                       jointCount,
-                                      glm::value_ptr(cache.jointMatrices[0]),
-                                      true);
+                                      glm::value_ptr(cache.jointMatrices[0]));
         }
       }
 
@@ -297,12 +299,13 @@ GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd,
         if (!cache.jointMatrices.empty()) {
           constexpr u32 kMatrixColumns = 4;
           u32 jointCount = static_cast<u32>(cache.jointMatrices.size());
-          resources.bindTexture(kJointMatsUnit, "jointMats");
+          static gfx::TextureId jointMatsTexId =
+            resources.getDataTexture("jointMats");
+          resources.bindTexture(kJointMatsUnit, jointMatsTexId);
           resources.updateDataTexture("jointMats",
                                       kMatrixColumns,
                                       jointCount,
-                                      glm::value_ptr(cache.jointMatrices[0]),
-                                      true);
+                                      glm::value_ptr(cache.jointMatrices[0]));
         }
 
         // Record: bind jointMats texture to unit 5 (for command buffer

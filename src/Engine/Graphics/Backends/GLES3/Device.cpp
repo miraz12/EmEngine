@@ -486,6 +486,16 @@ Device::resizeTexture(TextureId texture,
   glBindTexture(res->glTarget, 0);
 }
 
+const TextureCreateInfo*
+Device::getTextureInfo(TextureId texture) const
+{
+  auto* res = m_textures.get(texture);
+  if (!res) {
+    return nullptr;
+  }
+  return &res->info;
+}
+
 void
 Device::generateMipmaps(TextureId texture)
 {

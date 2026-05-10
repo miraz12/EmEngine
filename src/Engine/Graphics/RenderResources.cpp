@@ -543,6 +543,13 @@ RenderResources::createDataTexture(const std::string& name, PixelFormat format)
   return handle;
 }
 
+TextureId
+RenderResources::getDataTexture(const std::string& name) const
+{
+  auto it = m_dataTextures.find(name);
+  return (it != m_dataTextures.end()) ? it->second : TextureId{};
+}
+
 void
 RenderResources::updateDataTexture(const std::string& name,
                                    u32 width,
@@ -559,10 +566,14 @@ RenderResources::updateDataTexture(const std::string& name,
 
   auto& device = GraphicsDevice::getInstance();
 
-  // Always use resizeTexture (glTexImage2D) for simplicity and correctness.
-  // This handles both reallocation and in-place update cases since mutable
-  // textures use glTexImage2D which can change dimensions.
-  device.resizeTexture(it->second, width, height, data);
+  const auto* info = device.getTextureInfo(it->second);
+  if (!reallocate && info && info->width == width && info->height == height) {
+    // Dimensions unchanged — use glTexSubImage2D (no reallocation)
+    device.updateTexture(it->second, 0, 0, data, 0);
+  } else {
+    // Dimensions changed — must reallocate via glTexImage2D
+    device.resizeTexture(it->second, width, height, data);
+  }
 }
 
 TextureId

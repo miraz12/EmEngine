@@ -86,6 +86,7 @@ public:
                      u32 newWidth,
                      u32 newHeight,
                      const void* data = nullptr);
+  const TextureCreateInfo* getTextureInfo(TextureId texture) const;
   void generateMipmaps(TextureId texture);
 
   CommandBufferId createCommandBuffer();

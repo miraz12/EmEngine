@@ -64,6 +64,8 @@ public:
   /// Returns the managed TextureId handle.
   TextureId createDataTexture(const std::string& name, PixelFormat format);
 
+  [[nodiscard]] TextureId getDataTexture(const std::string& name) const;
+
   /// Update a data texture's contents (mutable storage).
   /// If reallocate is true or dimensions changed, reallocates via glTexImage2D.
   /// Otherwise uses glTexSubImage2D for faster updates.
