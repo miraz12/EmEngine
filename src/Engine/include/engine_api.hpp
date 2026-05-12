@@ -22,6 +22,9 @@ extern "C"
   void PauseAnimation(unsigned int entity);
   void StartAnimation(unsigned int entity);
   void SetAnimationIndex(unsigned int entity, unsigned int idx);
+  void CrossfadeAnimation(unsigned int entity,
+                           unsigned int targetIndex,
+                           float duration);
   void SetRotation(unsigned int entity, float angle);
   void AddPositionComponent(int entity,
                             float pos[3],

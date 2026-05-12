@@ -386,10 +386,39 @@ extern "C"
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
     if (!a) return;
-    if (a->animationIndex != idx) {
+    if (a->animationIndex != idx || a->blending) {
       a->animationIndex = idx;
       a->currentTime = 0;
+      a->blending = false;
     }
+  }
+
+  void CrossfadeAnimation(unsigned int entity,
+                           unsigned int targetIndex,
+                           float duration)
+  {
+    auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
+    if (!a) return;
+
+    // Already playing or blending to this target — nothing to do
+    if (a->animationIndex == targetIndex) return;
+
+    // Zero/negative duration — hard cut
+    if (duration <= 0.0f) {
+      a->animationIndex = targetIndex;
+      a->currentTime = 0.0f;
+      a->blending = false;
+      return;
+    }
+
+    a->blendFromIndex = a->animationIndex;
+    a->blendFromTime = a->currentTime;
+    a->animationIndex = targetIndex;
+    a->currentTime = 0.0f;
+    a->blending = true;
+    a->blendWeight = 0.0f;
+    a->blendDuration = duration;
+    a->blendElapsed = 0.0f;
   }
 
   bool GetSimulatePhysics()

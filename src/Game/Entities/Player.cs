@@ -214,24 +214,24 @@ namespace Entities
                 UpdateFacingDirection(dt);
                 
                 // Animation based on speed thresholds
-                if (finalHorizontalSpeed > walkSpeed * 0.5f && onGround)
+                if (onGround)
                 {
-                    EngineApi.SetAnimationIndex(entityId, 1);
+                    EngineApi.CrossfadeAnimation(entityId, 1, 0.2f);
                 }
                 else
                 {
-                    EngineApi.SetAnimationIndex(entityId, 6);
+                    EngineApi.CrossfadeAnimation(entityId, 6, 0.2f);
                 }
             }
             else
             {
               if(onGround)
               {
-                EngineApi.SetAnimationIndex(entityId, 2);
+                EngineApi.CrossfadeAnimation(entityId, 2, 0.2f);
               }
               else
               {
-                EngineApi.SetAnimationIndex(entityId, 6);
+                EngineApi.CrossfadeAnimation(entityId, 6, 0.2f);
               }
             }
 

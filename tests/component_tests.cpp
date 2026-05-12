@@ -74,6 +74,14 @@ TEST_F(AnimationComponentTest, DefaultInitialization)
   EXPECT_TRUE(component->isPlaying);
   EXPECT_EQ(component->animationIndex, 0);
   EXPECT_FALSE(component->loggedNoAnimation);
+
+  // Blend state defaults
+  EXPECT_FALSE(component->blending);
+  EXPECT_EQ(component->blendFromIndex, 0u);
+  EXPECT_FLOAT_EQ(component->blendFromTime, 0.0f);
+  EXPECT_FLOAT_EQ(component->blendWeight, 0.0f);
+  EXPECT_FLOAT_EQ(component->blendDuration, 0.0f);
+  EXPECT_FLOAT_EQ(component->blendElapsed, 0.0f);
 }
 
 TEST_F(AnimationComponentTest, SetAnimationIndex)
@@ -99,6 +107,48 @@ TEST_F(AnimationComponentTest, SetLoggedFlag)
 {
   component->loggedNoAnimation = true;
   EXPECT_TRUE(component->loggedNoAnimation);
+}
+
+TEST_F(AnimationComponentTest, InitiateCrossfade)
+{
+  component->animationIndex = 0;
+  component->currentTime = 1.5f;
+
+  // Simulate CrossfadeAnimation setup
+  component->blendFromIndex = component->animationIndex;
+  component->blendFromTime = component->currentTime;
+  component->animationIndex = 2;
+  component->currentTime = 0.0f;
+  component->blending = true;
+  component->blendDuration = 0.3f;
+  component->blendElapsed = 0.0f;
+  component->blendWeight = 0.0f;
+
+  EXPECT_TRUE(component->blending);
+  EXPECT_EQ(component->blendFromIndex, 0u);
+  EXPECT_FLOAT_EQ(component->blendFromTime, 1.5f);
+  EXPECT_EQ(component->animationIndex, 2u);
+  EXPECT_FLOAT_EQ(component->currentTime, 0.0f);
+  EXPECT_FLOAT_EQ(component->blendDuration, 0.3f);
+}
+
+TEST_F(AnimationComponentTest, CancelBlendOnHardCut)
+{
+  // Set up an active blend
+  component->blending = true;
+  component->blendFromIndex = 0;
+  component->blendElapsed = 0.1f;
+  component->blendDuration = 0.3f;
+  component->animationIndex = 1;
+
+  // Simulate SetAnimationIndex hard cut
+  component->animationIndex = 2;
+  component->currentTime = 0;
+  component->blending = false;
+
+  EXPECT_FALSE(component->blending);
+  EXPECT_EQ(component->animationIndex, 2u);
+  EXPECT_FLOAT_EQ(component->currentTime, 0.0f);
 }
 
 // LightingComponent Tests

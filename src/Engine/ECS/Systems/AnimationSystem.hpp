@@ -4,6 +4,9 @@
 #include "System.hpp"
 #include <Singleton.hpp>
 
+class GraphicsObject;
+class Animation;
+
 class AnimationSystem final
   : public System
   , public Singleton<AnimationSystem>
@@ -17,8 +20,14 @@ private:
   AnimationSystem() = default;
   ~AnimationSystem() override = default;
 
-  void scale(size_t index, float time, float scale);
-  void rotate(size_t index, float time, glm::quat rot);
-  void translate(size_t index, float time, glm::vec3 trans);
+  void sampleAnimation(GraphicsObject* obj, Animation& animation, float time);
+  // Snapshot current animation into snapshot storage. Used for blending
+  void snapshotPose(GraphicsObject* obj);
+  void blendPose(GraphicsObject* obj, float weight);
+
+  // Reusable per-frame storage for source pose during crossfade
+  std::vector<glm::vec3> m_snapTrans;
+  std::vector<glm::quat> m_snapRot;
+  std::vector<glm::vec3> m_snapScale;
 };
 #endif // ANIMATIONSYSTEM_H_
