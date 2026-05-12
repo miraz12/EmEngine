@@ -4,6 +4,10 @@
 #include <RenderPasses/RenderPass.hpp>
 #include <array>
 
+#ifndef NDEBUG
+class Profiler;
+#endif
+
 // Moving a pass enum to the right of kNumPasses will deactivate it.
 enum class PassId : size_t
 {
@@ -46,6 +50,12 @@ private:
     m_renderPass;
   u32 m_width{ 800 };
   u32 m_height{ 800 };
+
+#ifndef NDEBUG
+  Profiler* m_profiler{ nullptr };
+public:
+  void setProfiler(Profiler* prof) { m_profiler = prof; }
+#endif
 };
 
 #endif // FRAMEGRAPH_H_

@@ -2,6 +2,9 @@
 #include "InputManager.hpp"
 #include "Window.hpp"
 #include "engine_api.hpp"
+#ifndef NDEBUG
+#include "ECS/Systems/GraphicsSystem.hpp"
+#endif
 
 bool
 Core::initialize()
@@ -23,6 +26,11 @@ Core::initialize()
 
     m_ECSManager = &ECSManager::getInstance();
     m_ECSManager->initializeSystems();
+#ifndef NDEBUG
+    m_ECSManager->setProfiler(&m_profiler);
+    static_cast<GraphicsSystem&>(m_ECSManager->getSystem("GRAPHICS"))
+      .setProfiler(&m_profiler);
+#endif
 
     // Initialize UIManager
     m_UIManager = &UIManager::getInstance();
@@ -99,17 +107,6 @@ Core::getDeltaTime()
   m_currentTime = glfwGetTime();
   m_dt = m_currentTime - m_prevTime;
   m_prevTime = m_currentTime;
-
-  static double lastFPSPrintTime = 0.0;
-  // Check if 3 seconds have passed since the last FPS print
-  if (m_currentTime - lastFPSPrintTime >= 3.0) {
-    // Calculate and print FPS
-    float fps = 1.0f / m_dt;
-    std::cout << "FPS: " << fps << std::endl;
-
-    // Update the last FPS print time
-    lastFPSPrintTime = m_currentTime;
-  }
   return m_dt;
 }
 
@@ -120,20 +117,44 @@ Core::update()
 
   float& dt = getDeltaTime();
 
-  // Update UI
-  m_UIManager->update(dt);
+#ifndef NDEBUG
+  m_profiler.beginFrame();
+  m_profiler.resetSections();
+#endif
 
-  // Update game logic
+  // Update UI
+#ifndef NDEBUG
+  m_profiler.beginPhase(Profiler::kPhaseUI);
+#endif
+  m_UIManager->update(dt);
+#ifndef NDEBUG
+  m_profiler.endPhase(Profiler::kPhaseUI);
+#endif
+
+  // Update game logic (ECS systems including rendering)
+#ifndef NDEBUG
+  m_profiler.beginPhase(Profiler::kPhaseECS);
+#endif
   InputManager::getInstance().update(dt);
   ECSManager::getInstance().update(dt);
+#ifndef NDEBUG
+  m_profiler.endPhase(Profiler::kPhaseECS);
+#endif
 
   // Render debug GUI and UI
 #ifndef NDEBUG
-  m_gui.renderGUI();
+  m_gui.renderGUI(m_profiler);
 #endif
   m_UIManager->render();
 
+#ifndef NDEBUG
+  m_profiler.beginPhase(Profiler::kPhaseSwap);
+#endif
   Window::getInstance().swap();
+#ifndef NDEBUG
+  m_profiler.endPhase(Profiler::kPhaseSwap);
+  m_profiler.endFrame();
+#endif
 }
 
 bool

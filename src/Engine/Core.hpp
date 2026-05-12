@@ -6,6 +6,7 @@
 #include <Graphics/RenderResources.hpp>
 #ifndef NDEBUG
 #include <Gui.hpp>
+#include <Profiler.hpp>
 #endif
 #include <UIManager.hpp>
 
@@ -32,6 +33,7 @@ private:
 
 #ifndef NDEBUG
   GUI m_gui;
+  Profiler m_profiler;
 #endif
 };
 

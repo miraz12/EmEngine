@@ -1,4 +1,7 @@
 #include "FrameGraph.hpp"
+#ifndef NDEBUG
+#include <Profiler.hpp>
+#endif
 #include <ECS/Systems/PhysicsSystem.hpp>
 #include <Graphics/GraphicsDevice.hpp>
 #include <Graphics/RenderResources.hpp>
@@ -63,7 +66,22 @@ FrameGraph::draw(ECSManager& eManager)
   std::vector<gfx::CommandBufferId> pendingBuffers;
   pendingBuffers.reserve(static_cast<size_t>(PassId::kNumPasses));
 
+#ifndef NDEBUG
+  static constexpr std::string_view kPassNames[] = {
+    "Shadow",   "Geometry", "Light", "CubeMap",
+    "Particle", "Bloom",    "FXAA",
+#if !defined(EMSCRIPTEN)
+    "Debug",
+#endif
+  };
+  size_t passIdx = 0;
+#endif
+
   for (const auto& pass : m_renderPass) {
+#ifndef NDEBUG
+    if (m_profiler)
+      m_profiler->beginSection(kPassNames[passIdx], SectionCategory::kRenderPass);
+#endif
     if (pass->selfSubmitting()) {
       // Flush any pending command buffers before this pass executes,
       // since it may depend on their results.
@@ -79,6 +97,11 @@ FrameGraph::draw(ECSManager& eManager)
         pendingBuffers.push_back(cmdId);
       }
     }
+#ifndef NDEBUG
+    if (m_profiler)
+      m_profiler->endSection();
+    ++passIdx;
+#endif
   }
 
   // Submit any remaining recorded command buffers

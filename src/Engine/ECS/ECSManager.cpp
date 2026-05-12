@@ -1,4 +1,7 @@
 #include "ECSManager.hpp"
+#ifndef NDEBUG
+#include "Profiler.hpp"
+#endif
 #include "Components/GraphicsComponent.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
 #include "ECS/Components/CameraComponent.hpp"
@@ -45,8 +48,24 @@ ECSManager::initializeSystems()
 void
 ECSManager::update(float dt)
 {
-  for (auto* system : m_systemUpdateOrder) {
-    system->update(dt);
+#ifndef NDEBUG
+  static constexpr std::string_view kSystemNames[] = {
+    "Camera", "Particles", "Animation", "Position", "Graphics", "Physics"
+  };
+#endif
+
+  for (size_t i = 0; i < m_systemUpdateOrder.size(); ++i) {
+#ifndef NDEBUG
+    // Skip timing Graphics — its internals are covered by render pass sections
+    bool profileThis = m_profiler && kSystemNames[i] != "Graphics";
+    if (profileThis)
+      m_profiler->beginSection(kSystemNames[i], SectionCategory::kSystem);
+#endif
+    m_systemUpdateOrder[i]->update(dt);
+#ifndef NDEBUG
+    if (profileThis)
+      m_profiler->endSection();
+#endif
   }
 }
 

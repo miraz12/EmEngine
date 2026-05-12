@@ -7,6 +7,10 @@
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
 
+#ifndef NDEBUG
+class Profiler;
+#endif
+
 class ECSManager : public Singleton<ECSManager>
 {
   friend class Singleton<ECSManager>;
@@ -212,5 +216,11 @@ private:
 
   // Entity ID reuse system
   std::queue<Entity> m_availableEntityIds;
+
+#ifndef NDEBUG
+  Profiler* m_profiler{ nullptr };
+public:
+  void setProfiler(Profiler* prof) { m_profiler = prof; }
+#endif
 };
 #endif // LIGHTINGSYSTEM_H_

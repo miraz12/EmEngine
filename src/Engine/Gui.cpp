@@ -1,5 +1,6 @@
 #include "Gui.hpp"
 #ifndef NDEBUG
+#include "Profiler.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/DebugComponent.hpp"
@@ -26,7 +27,7 @@ static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
 
 void
-GUI::renderGUI()
+GUI::renderGUI(Profiler& profiler)
 {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
@@ -35,7 +36,10 @@ GUI::renderGUI()
 
   drawSceneHierarchy();
   drawInspector();
-  drawSettingsWindow();
+  drawSettingsWindow(profiler);
+  if (profiler.visible) {
+    drawProfilerWindow(profiler);
+  }
   drawCreateEntityPopup();
 
   ImGui::Render();
@@ -345,7 +349,7 @@ GUI::drawInspector()
 }
 
 void
-GUI::drawSettingsWindow()
+GUI::drawSettingsWindow(Profiler& profiler)
 {
   ImGui::Begin("Settings", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -372,6 +376,122 @@ GUI::drawSettingsWindow()
 
   if (ImGui::Button("Save scene")) {
     SceneLoader::getInstance().saveScene("resources/scene.yaml");
+  }
+
+  ImGui::Separator();
+  ImGui::Checkbox("Show Profiler", &profiler.visible);
+
+  ImGui::End();
+}
+
+void
+GUI::drawProfilerWindow(Profiler& profiler)
+{
+  ImGui::SetNextWindowPos(ImVec2(0, 420), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(400, 350), ImGuiCond_FirstUseEver);
+  ImGui::Begin("Performance Profiler", &profiler.visible);
+
+  // FPS counter
+  ImGui::Text(
+    "FPS: %.1f  |  Frame: %.2f ms", profiler.getFps(), profiler.getFrameTimeMs());
+
+  // FPS history graph
+  auto& fpsHist = profiler.fpsHistory();
+  if (fpsHist.count > 0) {
+    char overlay[32];
+    snprintf(overlay, sizeof(overlay), "%.1f FPS", profiler.getFps());
+    ImGui::PlotLines(
+      "##fps",
+      RingBuffer::getter,
+      &fpsHist,
+      static_cast<int>(fpsHist.count),
+      0,
+      overlay,
+      0.0f,
+      200.0f,
+      ImVec2(0, 60));
+  }
+
+  // Frame time history graph
+  auto& ftHist = profiler.frameTimeHistory();
+  if (ftHist.count > 0) {
+    char overlay[32];
+    snprintf(overlay, sizeof(overlay), "%.2f ms", profiler.getFrameTimeMs());
+    ImGui::PlotLines(
+      "##frametime",
+      RingBuffer::getter,
+      &ftHist,
+      static_cast<int>(ftHist.count),
+      0,
+      overlay,
+      0.0f,
+      33.3f,
+      ImVec2(0, 60));
+  }
+
+  ImGui::Separator();
+
+  // Per-system CPU timing
+  if (ImGui::CollapsingHeader("ECS Systems", ImGuiTreeNodeFlags_DefaultOpen)) {
+    float totalSys = 0.0f;
+    float maxSys = 0.0f;
+    for (size_t idx = 0; idx < profiler.getSectionCount(); ++idx) {
+      if (profiler.getSection(idx).category == SectionCategory::kSystem) {
+        totalSys += profiler.getSection(idx).durationMs;
+        maxSys = std::max(maxSys, profiler.getSection(idx).durationMs);
+      }
+    }
+    for (size_t idx = 0; idx < profiler.getSectionCount(); ++idx) {
+      const auto& sec = profiler.getSection(idx);
+      if (sec.category != SectionCategory::kSystem)
+        continue;
+      float frac = (maxSys > 0.001f) ? sec.durationMs / maxSys : 0.0f;
+      char label[64];
+      snprintf(label,
+               sizeof(label),
+               "%.*s: %.3f ms",
+               static_cast<int>(sec.name.size()),
+               sec.name.data(),
+               sec.durationMs);
+      ImGui::ProgressBar(frac, ImVec2(-1, 0), label);
+    }
+    ImGui::Text("Total ECS: %.3f ms", totalSys);
+  }
+
+  // Per-render-pass CPU timing
+  if (ImGui::CollapsingHeader("Render Passes", ImGuiTreeNodeFlags_DefaultOpen)) {
+    float totalPass = 0.0f;
+    float maxPass = 0.0f;
+    for (size_t idx = 0; idx < profiler.getSectionCount(); ++idx) {
+      if (profiler.getSection(idx).category == SectionCategory::kRenderPass) {
+        totalPass += profiler.getSection(idx).durationMs;
+        maxPass = std::max(maxPass, profiler.getSection(idx).durationMs);
+      }
+    }
+    for (size_t idx = 0; idx < profiler.getSectionCount(); ++idx) {
+      const auto& sec = profiler.getSection(idx);
+      if (sec.category != SectionCategory::kRenderPass)
+        continue;
+      float frac = (maxPass > 0.001f) ? sec.durationMs / maxPass : 0.0f;
+      char label[64];
+      snprintf(label,
+               sizeof(label),
+               "%.*s: %.3f ms",
+               static_cast<int>(sec.name.size()),
+               sec.name.data(),
+               sec.durationMs);
+      ImGui::ProgressBar(frac, ImVec2(-1, 0), label);
+    }
+    ImGui::Text("Total Render: %.3f ms", totalPass);
+  }
+
+  // Frame breakdown
+  if (ImGui::CollapsingHeader("Frame Breakdown", ImGuiTreeNodeFlags_DefaultOpen)) {
+    static constexpr const char* phaseNames[] = { "ECS Update", "UI", "Swap" };
+    for (size_t idx = 0; idx < Profiler::kNumPhases; ++idx) {
+      ImGui::Text("%-12s: %.3f ms", phaseNames[idx], profiler.getPhaseMs(idx));
+    }
+    ImGui::Text("Total Frame:  %.3f ms", profiler.getFrameTimeMs());
   }
 
   ImGui::End();

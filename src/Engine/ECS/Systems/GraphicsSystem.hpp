@@ -14,6 +14,9 @@ class GraphicsSystem final
 public:
   void update(float dt) override;
   void setViewport(u32 w, u32 h);
+#ifndef NDEBUG
+  void setProfiler(Profiler* prof) { m_fGraph->setProfiler(prof); }
+#endif
 
 private:
   GraphicsSystem();

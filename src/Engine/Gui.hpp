@@ -8,13 +8,15 @@
 #include <string>
 #include <vector>
 
+class Profiler;
+
 class GUI
 {
 
 public:
   GUI() = default;
   ~GUI() = default;
-  void renderGUI();
+  void renderGUI(Profiler& profiler);
 
 private:
   void editTransform(std::shared_ptr<CameraComponent> camera,
@@ -23,7 +25,8 @@ private:
                      glm::vec3& scale);
   void drawSceneHierarchy();
   void drawInspector();
-  void drawSettingsWindow();
+  void drawSettingsWindow(Profiler& profiler);
+  void drawProfilerWindow(Profiler& profiler);
   void drawCreateEntityPopup();
   void scanAvailableModels();
 
