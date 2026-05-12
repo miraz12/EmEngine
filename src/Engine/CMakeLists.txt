@@ -137,7 +137,8 @@ set(ENGINE_FILES
 if(DEFINED EMSCRIPTEN)
   add_library(
     Engine STATIC
-    ${ENGINE_FILES} $<TARGET_OBJECTS:yaml-cpp> $<TARGET_OBJECTS:imgui>
+    ${ENGINE_FILES} $<TARGET_OBJECTS:yaml-cpp>
+    $<$<CONFIG:Debug>:$<TARGET_OBJECTS:imgui>>
     $<TARGET_OBJECTS:Jolt>)
 
   set_target_properties(
@@ -152,8 +153,8 @@ else()
     Engine STATIC
     ${ENGINE_FILES}
     $<TARGET_OBJECTS:yaml-cpp>
-    $<TARGET_OBJECTS:imgui>
-    $<TARGET_OBJECTS:imguizmo>
+    $<$<CONFIG:Debug>:$<TARGET_OBJECTS:imgui>>
+    $<$<CONFIG:Debug>:$<TARGET_OBJECTS:imguizmo>>
     $<TARGET_OBJECTS:Jolt>
     $<TARGET_OBJECTS:glad>
     $<TARGET_OBJECTS:glfw>)

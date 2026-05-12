@@ -122,8 +122,7 @@ GeometryPass::Record(ECSManager& eManager)
 
   // Update CameraUBO with current camera matrices (before CommandBuffer
   // recording)
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  auto cam = CameraSystem::getInstance().getMainCameraComponent();
   CameraSystem::updateCameraUBO(cam);
 
   // Ensure jointMats sampler uniform is set correctly each frame

@@ -186,18 +186,13 @@ PhysicsSystem::update(float dt)
       p->rotation = glm::quat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
     }
   } else {
-    // Editor mode: sync selected entity position to physics body
-    std::vector<Entity> view =
-      m_manager->view<PositionComponent, PhysicsComponent>();
-    for (auto e : view) {
-      if (e == m_manager->getEntitySelected()) {
-        auto p = m_manager->getComponent<PositionComponent>(e);
-        auto phy = m_manager->getComponent<PhysicsComponent>(e);
+    // Editor mode: sync picked entity position to physics body
+    Entity picked = m_manager->getPickedEntity();
+    if (picked != 0) {
+      auto p = m_manager->getComponent<PositionComponent>(picked);
+      auto phy = m_manager->getComponent<PhysicsComponent>(picked);
 
-        if (!phy || !phy->isValid()) {
-          continue;
-        }
-
+      if (p && phy && phy->isValid()) {
         auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
         bodyInterface.SetPositionAndRotation(
           phy->getBodyID(),
@@ -460,8 +455,7 @@ PhysicsSystem::entityOnGround(Entity entity)
 void
 PhysicsSystem::performPicking(i32 mouseX, i32 mouseY)
 {
-  auto cam = std::static_pointer_cast<CameraComponent>(
-    ECSManager::getInstance().getCamera());
+  auto cam = CameraSystem::getInstance().getMainCameraComponent();
 
   auto [camPos, rayDir] = CameraSystem::getRayTo(cam, mouseX, mouseY);
   glm::vec3 direction = rayDir * 1000.0f - camPos;

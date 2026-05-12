@@ -7,6 +7,7 @@
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "ECS/ECSManager.hpp"
+#include "ECS/Systems/CameraSystem.hpp"
 #include "Objects/Cube.hpp"
 #include "Objects/GltfObject.hpp"
 #include "Objects/Heightmap.hpp"
@@ -166,6 +167,8 @@ SceneLoader::saveScene(const char* file)
       out << YAML::BeginMap;
       out << YAML::Key << "type" << YAML::Value << "Phy";
       out << YAML::Key << "mass" << YAML::Value << phyComp->getMass();
+      out << YAML::Key << "shape" << YAML::Value
+          << static_cast<int>(phyComp->getShapeType());
       out << YAML::EndMap;
     }
 
@@ -320,7 +323,7 @@ SceneLoader::addCameraComponent(Entity entity, const YAML::Node& component)
   }
 
   auto camComp =
-    std::make_shared<CameraComponent>(isMain, fov, width, height, near, far);
+    std::make_shared<CameraComponent>(fov, width, height, near, far);
   camComp->m_position = position;
   camComp->m_front = glm::normalize(target - position);
   camComp->m_viewMatrix = glm::lookAt(position, target, up);
@@ -329,6 +332,9 @@ SceneLoader::addCameraComponent(Entity entity, const YAML::Node& component)
   camComp->m_matrixNeedsUpdate = false;
 
   ecsMan.addComponents(entity, camComp);
+  if (isMain) {
+    CameraSystem::getInstance().setMainCamera(entity);
+  }
 }
 
 void

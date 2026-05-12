@@ -129,56 +129,24 @@ ECSManager::updateDirLight(glm::vec3 color, float intensity, glm::vec3 dir)
   dLight->intensity = intensity;
 }
 
-std::shared_ptr<Component>
-ECSManager::getCamera()
-{
-  std::vector<Entity> view = this->view<CameraComponent>();
-
-  for (auto& entity : view) {
-    std::shared_ptr<CameraComponent> camera =
-      getComponent<CameraComponent>(entity);
-
-    if (camera->mainCamera) {
-      return camera;
-    }
-  }
-  return nullptr;
-}
-
 extern "C" void
 SetMainCamera(int entity)
 {
-  ECSManager& ecsManager = ECSManager::getInstance();
-  std::vector<Entity> view = ecsManager.view<CameraComponent>();
-
-  for (auto& e : view) {
-    std::shared_ptr<CameraComponent> cam =
-      ecsManager.getComponent<CameraComponent>(e);
-    if (cam) {
-      cam->mainCamera = false;
-    }
-  }
-
-  std::shared_ptr<CameraComponent> targetCam =
-    ecsManager.getComponent<CameraComponent>(entity);
-  if (targetCam) {
-    targetCam->mainCamera = true;
-  }
+  CameraSystem::getInstance().setMainCamera(entity);
 }
 
 void
 ECSManager::setViewport(u32 width, u32 height)
 {
-  auto camBase = ECSManager::getInstance().getCamera();
-  if (camBase) {
-    auto cam = static_pointer_cast<CameraComponent>(camBase);
+  auto cam = CameraSystem::getInstance().getMainCameraComponent();
+  if (cam) {
     cam->m_width = width;
     cam->m_height = height;
   }
 
   static_cast<GraphicsSystem*>(m_systems["GRAPHICS"])
     ->setViewport(width, height);
-};
+}
 
 void
 ECSManager::reset()
@@ -341,9 +309,12 @@ extern "C"
   void AddCameraComponent(int entity, bool main, float offset[3])
   {
     std::shared_ptr<CameraComponent> c = std::make_shared<CameraComponent>(
-      main, glm::vec3(offset[0], offset[1], offset[2]));
+      glm::vec3(offset[0], offset[1], offset[2]));
     CameraSystem::tilt(c, -30.0f);
     ECSManager::getInstance().addComponents(entity, c);
+    if (main) {
+      CameraSystem::getInstance().setMainCamera(entity);
+    }
   }
 
   void SetCameraOrientation(int entity,

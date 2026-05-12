@@ -59,17 +59,17 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
-// ImGui
+// ImGui / ImGuizmo (dev UI, debug builds only)
+#ifndef NDEBUG
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <ImGuizmo.h>
+#endif
 
 #include <tiny_gltf.h>
-
-// ImGuizmo
-#include <ImGuizmo.h>
 
 // yaml-cpp
 #include <yaml-cpp/yaml.h>

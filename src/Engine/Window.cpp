@@ -103,6 +103,7 @@ Window::open()
   }
 #endif
 
+#ifndef NDEBUG
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
@@ -118,6 +119,7 @@ Window::open()
   ImGui_ImplGlfw_InstallEmscriptenCallbacks(m_window, "#canvas");
 #endif
   ImGui_ImplOpenGL3_Init("#version 300 es");
+#endif
 
 #ifdef _DEBUG_
   glEnable(GL_DEBUG_OUTPUT);
@@ -144,8 +146,9 @@ Window::close()
 void
 Window::swap()
 {
-
+#ifndef NDEBUG
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
   glfwSwapBuffers(m_window);
 }
 

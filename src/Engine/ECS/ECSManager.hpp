@@ -155,7 +155,6 @@ public:
                                                           glm::vec3 dir);
   void updateDirLight(glm::vec3 color, float intensity, glm::vec3 dir);
 
-  std::shared_ptr<Component> getCamera();
   System& getSystem(std::string const& system) { return *m_systems[system]; }
   Entity getPickedEntity() const { return m_pickedEntity; }
   bool getEntitySelected() const { return m_entitySelected; }

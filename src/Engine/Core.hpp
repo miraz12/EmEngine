@@ -4,7 +4,9 @@
 #include <GameStateManager.hpp>
 #include <Graphics/GraphicsDevice.hpp>
 #include <Graphics/RenderResources.hpp>
+#ifndef NDEBUG
 #include <Gui.hpp>
+#endif
 #include <UIManager.hpp>
 
 class Core : public Singleton<Core>
@@ -28,7 +30,9 @@ private:
   float m_prevTime = 0.0f;
   float m_currentTime = 0.0f;
 
+#ifndef NDEBUG
   GUI m_gui;
+#endif
 };
 
 #endif // CORE_H_

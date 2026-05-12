@@ -46,20 +46,30 @@ Core::initialize()
   Window::getInstance().setCursorPosCallback(
     [](GLFWwindow* /* win */, double xpos, double ypos) {
       InputManager::getInstance().setMousePos(xpos, ypos);
+#ifndef NDEBUG
       ImGuiIO& io = ImGui::GetIO();
       io.AddMousePosEvent(xpos, ypos);
+#endif
       UIManager::getInstance().onMouseMove(
         static_cast<int>(xpos), static_cast<int>(ypos), 0);
     });
   Window::getInstance().setMouseButtonCallback(
     [](GLFWwindow* /* win */, i32 button, i32 action, i32 /* mods */) {
+#ifndef NDEBUG
       ImGuiIO& io = ImGui::GetIO();
       io.AddMouseButtonEvent(button, action);
+#endif
       UIManager::getInstance().onMouseButton(button, action, 0);
+#ifndef NDEBUG
       if (!io.WantCaptureMouse &&
           !UIManager::getInstance().wantsMouseCapture()) {
         InputManager::getInstance().handleInput(button, action);
       }
+#else
+      if (!UIManager::getInstance().wantsMouseCapture()) {
+        InputManager::getInstance().handleInput(button, action);
+      }
+#endif
     });
   Window::getInstance().setKeyCallback([](GLFWwindow* /* win */,
                                           i32 key,
@@ -118,7 +128,9 @@ Core::update()
   ECSManager::getInstance().update(dt);
 
   // Render debug GUI and UI
+#ifndef NDEBUG
   m_gui.renderGUI();
+#endif
   m_UIManager->render();
 
   Window::getInstance().swap();

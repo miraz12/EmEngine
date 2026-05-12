@@ -89,3 +89,11 @@ CameraSystem::tilt(std::shared_ptr<CameraComponent> camera, float angle)
 
   camera->m_matrixNeedsUpdate = true;
 }
+
+std::shared_ptr<CameraComponent>
+CameraSystem::getMainCameraComponent()
+{
+  if (m_mainCamera == 0 || !m_manager)
+    return nullptr;
+  return m_manager->getComponent<CameraComponent>(m_mainCamera);
+}

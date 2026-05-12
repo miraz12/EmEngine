@@ -49,6 +49,7 @@ public:
   void setGravity(float x, float y, float z);
 
   DebugDrawer& getDebugDrawer() { return m_dDraw; }
+  JPH::BodyInterface& getBodyInterface() { return m_joltSystem->GetBodyInterfaceNoLock(); }
 
 private:
   PhysicsSystem() = default;

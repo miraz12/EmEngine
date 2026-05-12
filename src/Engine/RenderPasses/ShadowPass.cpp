@@ -6,6 +6,7 @@
 #include "LightingUtil.hpp"
 
 #include "ECS/ECSManager.hpp"
+#include "ECS/Systems/CameraSystem.hpp"
 #include "RenderPasses/RenderPass.hpp"
 #include <Graphics/CommandBuffer.hpp>
 #include <Graphics/GraphicsDevice.hpp>
@@ -100,8 +101,7 @@ ShadowPass::Record(ECSManager& eManager)
   auto& resources = gfx::RenderResources::getInstance();
 
   // Get camera for cascade calculation
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  auto cam = CameraSystem::getInstance().getMainCameraComponent();
 
   // Get directional light
   glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);

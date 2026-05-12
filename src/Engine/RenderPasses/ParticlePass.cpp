@@ -67,8 +67,7 @@ ParticlePass::Record(ECSManager& eManager)
     return;
   }
 
-  auto cam =
-    static_pointer_cast<CameraComponent>(ECSManager::getInstance().getCamera());
+  auto cam = CameraSystem::getInstance().getMainCameraComponent();
 
   // Begin render pass - particles render to cubeFBO (same as CubeMapPass
   // output)
