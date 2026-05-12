@@ -304,7 +304,6 @@ BloomPass::Execute(ECSManager& /* eManager */)
   // =========================================================================
   // Stage 4: Final combine pass
   // =========================================================================
-  postProcessUBO.resolution.z = 1.0f; // exposure
   resources.flushPostProcessUBO();
 
   cmd->reset();

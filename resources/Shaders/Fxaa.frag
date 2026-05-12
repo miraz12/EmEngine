@@ -19,6 +19,25 @@ layout(std140) uniform PostProcessData
 };
 
 // =============================================================================
+// ACES FILMIC TONE MAPPING (Stephen Hill's approximation)
+// =============================================================================
+vec3 ACESFilm(vec3 x) {
+  const float a = 2.51;
+  const float b = 0.03;
+  const float c = 2.43;
+  const float d = 0.59;
+  const float e = 0.14;
+  return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
+vec3 tonemap(vec3 hdr) {
+  float exposure = resolution.z;
+  vec3 mapped = ACESFilm(hdr * exposure);
+  // Gamma correction
+  return pow(mapped, vec3(1.0 / 2.2));
+}
+
+// =============================================================================
 // FXAA QUALITY SETTINGS
 // =============================================================================
 const float FXAA_SPAN_MAX = 8.0;
@@ -33,12 +52,12 @@ main()
 {
   vec2 texOffset = 1.0 / resolution.xy;
 
-  // Sample 5-tap cross pattern
-  vec3 rgbNW = texture(scene, texCoords + vec2(-1.0, -1.0) * texOffset).xyz;
-  vec3 rgbNE = texture(scene, texCoords + vec2(1.0, -1.0) * texOffset).xyz;
-  vec3 rgbSW = texture(scene, texCoords + vec2(-1.0, 1.0) * texOffset).xyz;
-  vec3 rgbSE = texture(scene, texCoords + vec2(1.0, 1.0) * texOffset).xyz;
-  vec3 rgbM = texture(scene, texCoords).xyz;
+  // Sample 5-tap cross pattern and tone map each sample
+  vec3 rgbNW = tonemap(texture(scene, texCoords + vec2(-1.0, -1.0) * texOffset).xyz);
+  vec3 rgbNE = tonemap(texture(scene, texCoords + vec2(1.0, -1.0) * texOffset).xyz);
+  vec3 rgbSW = tonemap(texture(scene, texCoords + vec2(-1.0, 1.0) * texOffset).xyz);
+  vec3 rgbSE = tonemap(texture(scene, texCoords + vec2(1.0, 1.0) * texOffset).xyz);
+  vec3 rgbM = tonemap(texture(scene, texCoords).xyz);
 
   vec3 luma = vec3(0.299, 0.587, 0.114);
   float lumaNW = dot(rgbNW, luma);
@@ -64,12 +83,12 @@ main()
             max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX), dir * rcpDirMin)) *
         texOffset;
 
-  // Sample along edge direction
-  vec3 rgbA = 0.5 * (texture(scene, texCoords + dir * (1.0 / 3.0 - 0.5)).xyz +
-                     texture(scene, texCoords + dir * (2.0 / 3.0 - 0.5)).xyz);
+  // Sample along edge direction (tone map each sample)
+  vec3 rgbA = 0.5 * (tonemap(texture(scene, texCoords + dir * (1.0 / 3.0 - 0.5)).xyz) +
+                     tonemap(texture(scene, texCoords + dir * (2.0 / 3.0 - 0.5)).xyz));
 
-  vec3 rgbB = rgbA * 0.5 + 0.25 * (texture(scene, texCoords + dir * -0.5).xyz +
-                                   texture(scene, texCoords + dir * 0.5).xyz);
+  vec3 rgbB = rgbA * 0.5 + 0.25 * (tonemap(texture(scene, texCoords + dir * -0.5).xyz) +
+                                   tonemap(texture(scene, texCoords + dir * 0.5).xyz));
 
   float lumaB = dot(rgbB, luma);
 
