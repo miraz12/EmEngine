@@ -129,14 +129,8 @@ public:
   const TimerEntry& getSection(size_t i) const { return m_smoothedSections[i]; }
   float getPhaseMs(size_t i) const { return m_smoothedPhaseDurations[i]; }
 
-  RingBuffer& fpsHistory()
-  {
-    return m_fpsHistory;
-  }
-  RingBuffer& frameTimeHistory()
-  {
-    return m_frameTimeHistory;
-  }
+  RingBuffer& fpsHistory() { return m_fpsHistory; }
+  RingBuffer& frameTimeHistory() { return m_frameTimeHistory; }
 
   bool visible{ false };
 

@@ -1,11 +1,8 @@
 #ifndef CAMERACOMPONENT_H_
 #define CAMERACOMPONENT_H_
 
-#include "Component.hpp"
-
-class CameraComponent : public Component
+struct CameraComponent
 {
-public:
   CameraComponent() = default;
   explicit CameraComponent(glm::vec3 offset)
     : m_offset(offset)

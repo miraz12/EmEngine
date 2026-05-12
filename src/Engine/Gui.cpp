@@ -1,6 +1,5 @@
 #include "Gui.hpp"
 #ifndef NDEBUG
-#include "Profiler.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/DebugComponent.hpp"
@@ -13,6 +12,7 @@
 #include "Objects/GltfObject.hpp"
 #include "Objects/Heightmap.hpp"
 #include "Objects/Quad.hpp"
+#include "Profiler.hpp"
 #include "ResourceManager.hpp"
 
 #include <ECS/ECSManager.hpp>
@@ -208,17 +208,16 @@ GUI::drawInspector()
         auto phyComp = ecsMan.getComponent<PhysicsComponent>(en);
         if (phyComp && phyComp->isValid()) {
           auto& physSys = PhysicsSystem::getInstance();
-          auto& bodyInterface =
-            physSys.getBodyInterface();
-          bodyInterface.SetPositionAndRotation(
-            phyComp->getBodyID(),
-            JPH::RVec3(
-              posComp->position.x, posComp->position.y, posComp->position.z),
-            JPH::Quat(posComp->rotation.x,
-                       posComp->rotation.y,
-                       posComp->rotation.z,
-                       posComp->rotation.w),
-            JPH::EActivation::Activate);
+          auto& bodyInterface = physSys.getBodyInterface();
+          bodyInterface.SetPositionAndRotation(phyComp->getBodyID(),
+                                               JPH::RVec3(posComp->position.x,
+                                                          posComp->position.y,
+                                                          posComp->position.z),
+                                               JPH::Quat(posComp->rotation.x,
+                                                         posComp->rotation.y,
+                                                         posComp->rotation.z,
+                                                         posComp->rotation.w),
+                                               JPH::EActivation::Activate);
         }
       }
     }
@@ -253,14 +252,14 @@ GUI::drawInspector()
   // LightingComponent
   auto ligComp = ecsMan.getComponent<LightingComponent>(en);
   if (ligComp && ImGui::CollapsingHeader("Lighting")) {
-    if (ligComp->getType() == LightingComponent::TYPE::DIRECTIONAL) {
-      auto* dir = static_cast<DirectionalLight*>(&ligComp->getBaseLight());
+    if (ligComp->type == LightingComponent::TYPE::DIRECTIONAL) {
+      auto* dir = static_cast<DirectionalLight*>(ligComp->light.get());
       ImGui::Text("Type: Directional");
       ImGui::ColorEdit3("Color##lig", glm::value_ptr(dir->color));
       ImGui::InputFloat3("Direction##lig", glm::value_ptr(dir->direction));
       ImGui::InputFloat("Intensity##lig", &dir->intensity);
-    } else if (ligComp->getType() == LightingComponent::TYPE::POINT) {
-      auto* point = static_cast<PointLight*>(&ligComp->getBaseLight());
+    } else if (ligComp->type == LightingComponent::TYPE::POINT) {
+      auto* point = static_cast<PointLight*>(ligComp->light.get());
       ImGui::Text("Type: Point");
       ImGui::ColorEdit3("Color##lig", glm::value_ptr(point->color));
       ImGui::InputFloat3("Position##lig", glm::value_ptr(point->position));
@@ -273,9 +272,9 @@ GUI::drawInspector()
   // ParticlesComponent
   auto parComp = ecsMan.getComponent<ParticlesComponent>(en);
   if (parComp && ImGui::CollapsingHeader("Particles")) {
-    ImGui::InputFloat3("Velocity##par", glm::value_ptr(parComp->getVelocity()));
-    ImGui::Text("Alive: %zu", parComp->getAliveParticles().size());
-    ImGui::Text("Dead: %zu", parComp->getDeadParticles().size());
+    ImGui::InputFloat3("Velocity##par", glm::value_ptr(parComp->velocity));
+    ImGui::Text("Alive: %zu", parComp->aliveParticles.size());
+    ImGui::Text("Dead: %zu", parComp->deadParticles.size());
   }
 
   // CameraComponent
@@ -330,18 +329,17 @@ GUI::drawInspector()
   ImGui::Separator();
   if (ImGui::CollapsingHeader("Add Component")) {
     if (!posComp && ImGui::Button("+ Position")) {
-      ecsMan.addComponents(en, std::make_shared<PositionComponent>());
+      ecsMan.emplaceComponent<PositionComponent>(en);
     }
     if (!camComp && ImGui::Button("+ Camera")) {
-      ecsMan.addComponents(
-        en,
-        std::make_shared<CameraComponent>(45.0f, 800.0f, 600.0f, 0.1f, 200.0f));
+      ecsMan.emplaceComponent<CameraComponent>(
+        en, 45.0f, 800.0f, 600.0f, 0.1f, 200.0f);
     }
     if (!animComp && graComp &&
         graComp->type == GraphicsComponent::TYPE::MESH &&
         graComp->m_grapObj->p_numAnimations > 0 &&
         ImGui::Button("+ Animation")) {
-      ecsMan.addComponents(en, std::make_shared<AnimationComponent>());
+      ecsMan.emplaceComponent<AnimationComponent>(en);
     }
   }
 
@@ -392,24 +390,24 @@ GUI::drawProfilerWindow(Profiler& profiler)
   ImGui::Begin("Performance Profiler", &profiler.visible);
 
   // FPS counter
-  ImGui::Text(
-    "FPS: %.1f  |  Frame: %.2f ms", profiler.getFps(), profiler.getFrameTimeMs());
+  ImGui::Text("FPS: %.1f  |  Frame: %.2f ms",
+              profiler.getFps(),
+              profiler.getFrameTimeMs());
 
   // FPS history graph
   auto& fpsHist = profiler.fpsHistory();
   if (fpsHist.count > 0) {
     char overlay[32];
     snprintf(overlay, sizeof(overlay), "%.1f FPS", profiler.getFps());
-    ImGui::PlotLines(
-      "##fps",
-      RingBuffer::getter,
-      &fpsHist,
-      static_cast<int>(fpsHist.count),
-      0,
-      overlay,
-      0.0f,
-      200.0f,
-      ImVec2(0, 60));
+    ImGui::PlotLines("##fps",
+                     RingBuffer::getter,
+                     &fpsHist,
+                     static_cast<int>(fpsHist.count),
+                     0,
+                     overlay,
+                     0.0f,
+                     200.0f,
+                     ImVec2(0, 60));
   }
 
   // Frame time history graph
@@ -417,16 +415,15 @@ GUI::drawProfilerWindow(Profiler& profiler)
   if (ftHist.count > 0) {
     char overlay[32];
     snprintf(overlay, sizeof(overlay), "%.2f ms", profiler.getFrameTimeMs());
-    ImGui::PlotLines(
-      "##frametime",
-      RingBuffer::getter,
-      &ftHist,
-      static_cast<int>(ftHist.count),
-      0,
-      overlay,
-      0.0f,
-      33.3f,
-      ImVec2(0, 60));
+    ImGui::PlotLines("##frametime",
+                     RingBuffer::getter,
+                     &ftHist,
+                     static_cast<int>(ftHist.count),
+                     0,
+                     overlay,
+                     0.0f,
+                     33.3f,
+                     ImVec2(0, 60));
   }
 
   ImGui::Separator();
@@ -459,7 +456,8 @@ GUI::drawProfilerWindow(Profiler& profiler)
   }
 
   // Per-render-pass CPU timing
-  if (ImGui::CollapsingHeader("Render Passes", ImGuiTreeNodeFlags_DefaultOpen)) {
+  if (ImGui::CollapsingHeader("Render Passes",
+                              ImGuiTreeNodeFlags_DefaultOpen)) {
     float totalPass = 0.0f;
     float maxPass = 0.0f;
     for (size_t idx = 0; idx < profiler.getSectionCount(); ++idx) {
@@ -486,7 +484,8 @@ GUI::drawProfilerWindow(Profiler& profiler)
   }
 
   // Frame breakdown
-  if (ImGui::CollapsingHeader("Frame Breakdown", ImGuiTreeNodeFlags_DefaultOpen)) {
+  if (ImGui::CollapsingHeader("Frame Breakdown",
+                              ImGuiTreeNodeFlags_DefaultOpen)) {
     static constexpr const char* phaseNames[] = { "ECS Update", "UI", "Swap" };
     for (size_t idx = 0; idx < Profiler::kNumPhases; ++idx) {
       ImGui::Text("%-12s: %.3f ms", phaseNames[idx], profiler.getPhaseMs(idx));
@@ -571,57 +570,63 @@ GUI::drawCreateEntityPopup()
       Entity newEntity = ecsMan.createEntity(m_newEntityName);
 
       if (m_createWithPosition) {
-        ecsMan.addComponents(newEntity, std::make_shared<PositionComponent>());
+        ecsMan.emplaceComponent<PositionComponent>(newEntity);
       }
 
       if (m_createWithGraphics) {
-        std::shared_ptr<GraphicsComponent> graphComp;
+        bool added = false;
         switch (m_createGraphicsType) {
-          case 0: // Quad
-            graphComp = std::make_shared<GraphicsComponent>(
-              std::static_pointer_cast<GraphicsObject>(resMgr.getQuad()));
-            graphComp->type = GraphicsComponent::TYPE::QUAD;
+          case 0: { // Quad
+            auto& gc = ecsMan.emplaceComponent<GraphicsComponent>(
+              newEntity, resMgr.getQuad());
+            gc.type = GraphicsComponent::TYPE::QUAD;
+            added = true;
             break;
-          case 1: // Cube
-            graphComp = std::make_shared<GraphicsComponent>(
-              std::static_pointer_cast<GraphicsObject>(resMgr.getCube()));
-            graphComp->type = GraphicsComponent::TYPE::CUBE;
+          }
+          case 1: { // Cube
+            auto& gc = ecsMan.emplaceComponent<GraphicsComponent>(
+              newEntity, resMgr.getCube());
+            gc.type = GraphicsComponent::TYPE::CUBE;
+            added = true;
             break;
-          case 2: // Mesh
+          }
+          case 2: { // Mesh
             if (m_selectedModel >= 0) {
               std::string path =
                 "resources/Models/" + m_availableModels[m_selectedModel];
-              graphComp = std::make_shared<GraphicsComponent>(
-                std::static_pointer_cast<GraphicsObject>(
-                  resMgr.getGltfModel(path)));
-              graphComp->type = GraphicsComponent::TYPE::MESH;
-              if (graphComp->m_grapObj->p_numAnimations > 0) {
-                ecsMan.addComponents(newEntity,
-                                     std::make_shared<AnimationComponent>());
+              auto obj = resMgr.getGltfModel(path);
+              bool hasAnims = obj->p_numAnimations > 0;
+              auto& gc = ecsMan.emplaceComponent<GraphicsComponent>(
+                newEntity, std::move(obj));
+              gc.type = GraphicsComponent::TYPE::MESH;
+              if (hasAnims) {
+                ecsMan.emplaceComponent<AnimationComponent>(newEntity);
               }
+              added = true;
             }
             break;
-          case 3: // Heightmap
+          }
+          case 3: { // Heightmap
             if (m_createHeightmapPath[0] != '\0') {
               std::string path =
                 "resources/Textures/" + std::string(m_createHeightmapPath);
-              graphComp = std::make_shared<GraphicsComponent>(
-                std::static_pointer_cast<GraphicsObject>(
-                  resMgr.getHeightmap(path)));
-              graphComp->type = GraphicsComponent::TYPE::HEIGHTMAP;
+              auto& gc = ecsMan.emplaceComponent<GraphicsComponent>(
+                newEntity, resMgr.getHeightmap(path));
+              gc.type = GraphicsComponent::TYPE::HEIGHTMAP;
+              added = true;
             }
             break;
+          }
         }
-        if (graphComp) {
-          ecsMan.addComponents(newEntity, graphComp);
-        }
+        (void)added;
       }
 
       if (m_createWithPhysics) {
-        ecsMan.addComponents(
+        ecsMan.emplaceComponent<PhysicsComponent>(
           newEntity,
-          std::make_shared<PhysicsComponent>(
-            newEntity, m_createMass, CollisionShapeType(m_createPhysicsShape)));
+          newEntity,
+          m_createMass,
+          CollisionShapeType(m_createPhysicsShape));
       }
 
       ecsMan.setPickedEntity(newEntity);
@@ -668,7 +673,7 @@ GUI::scanAvailableModels()
 }
 
 void
-GUI::editTransform(std::shared_ptr<CameraComponent> camera,
+GUI::editTransform(CameraComponent* camera,
                    glm::vec3& pos,
                    glm::vec3& rot,
                    glm::vec3& scale)

@@ -53,13 +53,11 @@ TEST_F(ECSManagerTest, AddPositionComponent)
 {
   Entity entity = manager->createEntity("PositionEntity");
 
-  auto posComponent = std::make_shared<PositionComponent>();
-  posComponent->position = glm::vec3(1.0f, 2.0f, 3.0f);
-  posComponent->scale = glm::vec3(2.0f, 2.0f, 2.0f);
+  auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+  posComp.position = glm::vec3(1.0f, 2.0f, 3.0f);
+  posComp.scale = glm::vec3(2.0f, 2.0f, 2.0f);
 
-  manager->addComponent(entity, posComponent);
-
-  auto retrievedComponent = manager->getComponent<PositionComponent>(entity);
+  auto* retrievedComponent = manager->getComponent<PositionComponent>(entity);
   ASSERT_NE(retrievedComponent, nullptr);
   EXPECT_EQ(retrievedComponent->position, glm::vec3(1.0f, 2.0f, 3.0f));
   EXPECT_EQ(retrievedComponent->scale, glm::vec3(2.0f, 2.0f, 2.0f));
@@ -69,14 +67,12 @@ TEST_F(ECSManagerTest, AddAnimationComponent)
 {
   Entity entity = manager->createEntity("AnimationEntity");
 
-  auto animComponent = std::make_shared<AnimationComponent>();
-  animComponent->currentTime = 1.5f;
-  animComponent->isPlaying = false;
-  animComponent->animationIndex = 2;
+  auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
+  animComp.currentTime = 1.5f;
+  animComp.isPlaying = false;
+  animComp.animationIndex = 2;
 
-  manager->addComponent(entity, animComponent);
-
-  auto retrievedComponent = manager->getComponent<AnimationComponent>(entity);
+  auto* retrievedComponent = manager->getComponent<AnimationComponent>(entity);
   ASSERT_NE(retrievedComponent, nullptr);
   EXPECT_FLOAT_EQ(retrievedComponent->currentTime, 1.5f);
   EXPECT_FALSE(retrievedComponent->isPlaying);
@@ -90,14 +86,14 @@ TEST_F(ECSManagerTest, ComponentViews)
   Entity entity3 = manager->createEntity("Entity3");
 
   // Entity1: Position only
-  manager->addComponent(entity1, std::make_shared<PositionComponent>());
+  manager->emplaceComponent<PositionComponent>(entity1);
 
   // Entity2: Position + Animation
-  manager->addComponent(entity2, std::make_shared<PositionComponent>());
-  manager->addComponent(entity2, std::make_shared<AnimationComponent>());
+  manager->emplaceComponent<PositionComponent>(entity2);
+  manager->emplaceComponent<AnimationComponent>(entity2);
 
   // Entity3: Animation only
-  manager->addComponent(entity3, std::make_shared<AnimationComponent>());
+  manager->emplaceComponent<AnimationComponent>(entity3);
 
   auto positionView = manager->view<PositionComponent>();
   auto animationView = manager->view<AnimationComponent>();
@@ -174,16 +170,13 @@ TEST_F(ECSManagerTest, EntityManagement)
   Entity entity = manager->createEntity("TestEntity");
 
   // Add multiple components
-  auto posComponent = std::make_shared<PositionComponent>();
-  auto animComponent = std::make_shared<AnimationComponent>();
+  manager->emplaceComponent<PositionComponent>(entity);
+  manager->emplaceComponent<AnimationComponent>(entity);
+
   auto baseLight = std::make_shared<BaseLight>();
   baseLight->color = glm::vec3(1.0f, 1.0f, 1.0f);
-  auto lightComponent = std::make_shared<LightingComponent>(
-    baseLight, LightingComponent::TYPE::POINT);
-
-  manager->addComponent(entity, posComponent);
-  manager->addComponent(entity, animComponent);
-  manager->addComponent(entity, lightComponent);
+  manager->emplaceComponent<LightingComponent>(
+    entity, baseLight, LightingComponent::TYPE::POINT);
 
   // Verify all components can be retrieved
   EXPECT_NE(manager->getComponent<PositionComponent>(entity), nullptr);
@@ -301,9 +294,8 @@ TEST_F(EntityStressTest, CreateAndDestroyManyEntities)
     entities.push_back(entity);
 
     // Add a component to make sure destruction cleans up properly
-    auto posComponent = std::make_shared<PositionComponent>();
-    posComponent->position = glm::vec3(i, i, i);
-    manager->addComponent(entity, posComponent);
+    auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+    posComp.position = glm::vec3(i, i, i);
   }
 
   // Verify all entities exist
@@ -382,15 +374,13 @@ TEST_F(EntityStressTest, EntityLimitBehavior)
 
     // Add components to test component pool limits too
     if (i % 2 == 0) { // Add PositionComponent to every other entity
-      auto posComponent = std::make_shared<PositionComponent>();
-      posComponent->position = glm::vec3(i, 0, 0);
-      manager->addComponent(entity, posComponent);
+      auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+      posComp.position = glm::vec3(i, 0, 0);
     }
 
     if (i % 3 == 0) { // Add AnimationComponent to every third entity
-      auto animComponent = std::make_shared<AnimationComponent>();
-      animComponent->animationIndex = i;
-      manager->addComponent(entity, animComponent);
+      auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
+      animComp.animationIndex = i;
     }
   }
 
@@ -445,11 +435,10 @@ TEST_F(EntityStressTest, EntityMaxLimitBoundary)
   EXPECT_EQ(lastValidEntity, 999);
 
   // Components should work fine on valid entities
-  auto posComponent = std::make_shared<PositionComponent>();
-  posComponent->position = glm::vec3(999, 999, 999);
-  manager->addComponent(lastValidEntity, posComponent);
+  auto& posComp = manager->emplaceComponent<PositionComponent>(lastValidEntity);
+  posComp.position = glm::vec3(999, 999, 999);
 
-  auto retrievedComponent =
+  auto* retrievedComponent =
     manager->getComponent<PositionComponent>(lastValidEntity);
   ASSERT_NE(retrievedComponent, nullptr);
   EXPECT_EQ(retrievedComponent->position, glm::vec3(999, 999, 999));
@@ -498,7 +487,7 @@ TEST_F(EntityStressTest, EntityLimitWithReuse)
 TEST_F(EntityStressTest, MassEntityDestructionAndRecreation)
 {
   const int BATCH_SIZE = 150; // Reduced to stay within MAX_ENTITIES
-  const int NUM_BATCHES = 4;  // 4 batches × 150 = 600 entities total
+  const int NUM_BATCHES = 4;  // 4 batches x 150 = 600 entities total
 
   for (int batch = 0; batch < NUM_BATCHES; ++batch) {
     std::vector<Entity> batchEntities;
@@ -511,15 +500,13 @@ TEST_F(EntityStressTest, MassEntityDestructionAndRecreation)
 
       // Add random components
       if (i % 2 == 0) {
-        auto posComponent = std::make_shared<PositionComponent>();
-        posComponent->position = glm::vec3(batch, i, 0);
-        manager->addComponent(entity, posComponent);
+        auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+        posComp.position = glm::vec3(batch, i, 0);
       }
 
       if (i % 3 == 0) {
-        auto animComponent = std::make_shared<AnimationComponent>();
-        animComponent->currentTime = batch * i;
-        manager->addComponent(entity, animComponent);
+        auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
+        animComp.currentTime = batch * i;
       }
     }
 

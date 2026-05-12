@@ -172,13 +172,14 @@ GeometryPass::Record(ECSManager& eManager)
   // Iterate over entities with GraphicsComponent and record draw commands
   std::vector<Entity> view = eManager.view<GraphicsComponent>();
   for (auto entity : view) {
-    std::shared_ptr<PositionComponent> posComp =
-      eManager.getComponent<PositionComponent>(entity);
-    std::shared_ptr<GraphicsComponent> gfxComp =
-      eManager.getComponent<GraphicsComponent>(entity);
+    auto* posComp = eManager.getComponent<PositionComponent>(entity);
+    auto* gfxComp = eManager.getComponent<GraphicsComponent>(entity);
 
     glm::mat4 entityModel =
-      posComp ? posComp->model : glm::identity<glm::mat4>();
+      posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
+                  glm::mat4_cast(posComp->rotation) *
+                  glm::scale(glm::mat4(1.0f), posComp->scale)
+              : glm::identity<glm::mat4>();
 
     // Record draw commands; model matrix is set per-node inside recordDraw
     gfxComp->m_grapObj->recordDraw(

@@ -18,137 +18,137 @@ Game_Update(float dt)
 class PositionComponentTest : public ::testing::Test
 {
 protected:
-  void SetUp() override { component = std::make_shared<PositionComponent>(); }
-  std::shared_ptr<PositionComponent> component;
+  void SetUp() override { component = PositionComponent{}; }
+  PositionComponent component;
 };
 
 TEST_F(PositionComponentTest, DefaultInitialization)
 {
-  EXPECT_EQ(component->position, glm::vec3(0.0f));
-  EXPECT_EQ(component->scale, glm::vec3(1.0f));
+  EXPECT_EQ(component.position, glm::vec3(0.0f));
+  EXPECT_EQ(component.scale, glm::vec3(1.0f));
   // Test that rotation is identity quaternion
-  EXPECT_NEAR(component->rotation.w, 1.0f, 0.001f);
-  EXPECT_NEAR(component->rotation.x, 0.0f, 0.001f);
-  EXPECT_NEAR(component->rotation.y, 0.0f, 0.001f);
-  EXPECT_NEAR(component->rotation.z, 0.0f, 0.001f);
+  EXPECT_NEAR(component.rotation.w, 1.0f, 0.001f);
+  EXPECT_NEAR(component.rotation.x, 0.0f, 0.001f);
+  EXPECT_NEAR(component.rotation.y, 0.0f, 0.001f);
+  EXPECT_NEAR(component.rotation.z, 0.0f, 0.001f);
 }
 
 TEST_F(PositionComponentTest, SetPosition)
 {
   glm::vec3 newPos(1.0f, 2.0f, 3.0f);
-  component->position = newPos;
-  EXPECT_EQ(component->position, newPos);
+  component.position = newPos;
+  EXPECT_EQ(component.position, newPos);
 }
 
 TEST_F(PositionComponentTest, SetRotation)
 {
   glm::quat newRot(0.707f, 0.0f, 0.707f, 0.0f);
-  component->rotation = newRot;
-  EXPECT_EQ(component->rotation, newRot);
+  component.rotation = newRot;
+  EXPECT_EQ(component.rotation, newRot);
 }
 
 TEST_F(PositionComponentTest, SetScale)
 {
   glm::vec3 newScale(2.0f, 2.0f, 2.0f);
-  component->scale = newScale;
-  EXPECT_EQ(component->scale, newScale);
+  component.scale = newScale;
+  EXPECT_EQ(component.scale, newScale);
 }
 
 TEST_F(PositionComponentTest, ConstructorWithParameters)
 {
-  auto component2 = std::make_shared<PositionComponent>(5.0f, 10.0f);
-  EXPECT_EQ(component2->position, glm::vec3(5.0f, 10.0f, -0.1f));
+  PositionComponent comp2(5.0f, 10.0f);
+  EXPECT_EQ(comp2.position, glm::vec3(5.0f, 10.0f, -0.1f));
 }
 
 // AnimationComponent Tests
 class AnimationComponentTest : public ::testing::Test
 {
 protected:
-  void SetUp() override { component = std::make_shared<AnimationComponent>(); }
-  std::shared_ptr<AnimationComponent> component;
+  void SetUp() override { component = AnimationComponent{}; }
+  AnimationComponent component;
 };
 
 TEST_F(AnimationComponentTest, DefaultInitialization)
 {
-  EXPECT_FLOAT_EQ(component->currentTime, 0.0f);
-  EXPECT_TRUE(component->isPlaying);
-  EXPECT_EQ(component->animationIndex, 0);
-  EXPECT_FALSE(component->loggedNoAnimation);
+  EXPECT_FLOAT_EQ(component.currentTime, 0.0f);
+  EXPECT_TRUE(component.isPlaying);
+  EXPECT_EQ(component.animationIndex, 0);
+  EXPECT_FALSE(component.loggedNoAnimation);
 
   // Blend state defaults
-  EXPECT_FALSE(component->blending);
-  EXPECT_EQ(component->blendFromIndex, 0u);
-  EXPECT_FLOAT_EQ(component->blendFromTime, 0.0f);
-  EXPECT_FLOAT_EQ(component->blendWeight, 0.0f);
-  EXPECT_FLOAT_EQ(component->blendDuration, 0.0f);
-  EXPECT_FLOAT_EQ(component->blendElapsed, 0.0f);
+  EXPECT_FALSE(component.blending);
+  EXPECT_EQ(component.blendFromIndex, 0u);
+  EXPECT_FLOAT_EQ(component.blendFromTime, 0.0f);
+  EXPECT_FLOAT_EQ(component.blendWeight, 0.0f);
+  EXPECT_FLOAT_EQ(component.blendDuration, 0.0f);
+  EXPECT_FLOAT_EQ(component.blendElapsed, 0.0f);
 }
 
 TEST_F(AnimationComponentTest, SetAnimationIndex)
 {
-  component->animationIndex = 1;
-  EXPECT_EQ(component->animationIndex, 1);
+  component.animationIndex = 1;
+  EXPECT_EQ(component.animationIndex, 1);
 }
 
 TEST_F(AnimationComponentTest, SetPlayingState)
 {
-  component->isPlaying = false;
-  EXPECT_FALSE(component->isPlaying);
+  component.isPlaying = false;
+  EXPECT_FALSE(component.isPlaying);
 }
 
 TEST_F(AnimationComponentTest, UpdateTime)
 {
   float newTime = 1.5f;
-  component->currentTime = newTime;
-  EXPECT_FLOAT_EQ(component->currentTime, newTime);
+  component.currentTime = newTime;
+  EXPECT_FLOAT_EQ(component.currentTime, newTime);
 }
 
 TEST_F(AnimationComponentTest, SetLoggedFlag)
 {
-  component->loggedNoAnimation = true;
-  EXPECT_TRUE(component->loggedNoAnimation);
+  component.loggedNoAnimation = true;
+  EXPECT_TRUE(component.loggedNoAnimation);
 }
 
 TEST_F(AnimationComponentTest, InitiateCrossfade)
 {
-  component->animationIndex = 0;
-  component->currentTime = 1.5f;
+  component.animationIndex = 0;
+  component.currentTime = 1.5f;
 
   // Simulate CrossfadeAnimation setup
-  component->blendFromIndex = component->animationIndex;
-  component->blendFromTime = component->currentTime;
-  component->animationIndex = 2;
-  component->currentTime = 0.0f;
-  component->blending = true;
-  component->blendDuration = 0.3f;
-  component->blendElapsed = 0.0f;
-  component->blendWeight = 0.0f;
+  component.blendFromIndex = component.animationIndex;
+  component.blendFromTime = component.currentTime;
+  component.animationIndex = 2;
+  component.currentTime = 0.0f;
+  component.blending = true;
+  component.blendDuration = 0.3f;
+  component.blendElapsed = 0.0f;
+  component.blendWeight = 0.0f;
 
-  EXPECT_TRUE(component->blending);
-  EXPECT_EQ(component->blendFromIndex, 0u);
-  EXPECT_FLOAT_EQ(component->blendFromTime, 1.5f);
-  EXPECT_EQ(component->animationIndex, 2u);
-  EXPECT_FLOAT_EQ(component->currentTime, 0.0f);
-  EXPECT_FLOAT_EQ(component->blendDuration, 0.3f);
+  EXPECT_TRUE(component.blending);
+  EXPECT_EQ(component.blendFromIndex, 0u);
+  EXPECT_FLOAT_EQ(component.blendFromTime, 1.5f);
+  EXPECT_EQ(component.animationIndex, 2u);
+  EXPECT_FLOAT_EQ(component.currentTime, 0.0f);
+  EXPECT_FLOAT_EQ(component.blendDuration, 0.3f);
 }
 
 TEST_F(AnimationComponentTest, CancelBlendOnHardCut)
 {
   // Set up an active blend
-  component->blending = true;
-  component->blendFromIndex = 0;
-  component->blendElapsed = 0.1f;
-  component->blendDuration = 0.3f;
-  component->animationIndex = 1;
+  component.blending = true;
+  component.blendFromIndex = 0;
+  component.blendElapsed = 0.1f;
+  component.blendDuration = 0.3f;
+  component.animationIndex = 1;
 
   // Simulate SetAnimationIndex hard cut
-  component->animationIndex = 2;
-  component->currentTime = 0;
-  component->blending = false;
+  component.animationIndex = 2;
+  component.currentTime = 0;
+  component.blending = false;
 
-  EXPECT_FALSE(component->blending);
-  EXPECT_EQ(component->animationIndex, 2u);
-  EXPECT_FLOAT_EQ(component->currentTime, 0.0f);
+  EXPECT_FALSE(component.blending);
+  EXPECT_EQ(component.animationIndex, 2u);
+  EXPECT_FLOAT_EQ(component.currentTime, 0.0f);
 }
 
 // LightingComponent Tests
@@ -164,10 +164,9 @@ TEST_F(LightingComponentTest, PointLightComponent)
   pointLight->linear = 0.09f;
   pointLight->quadratic = 0.032f;
 
-  auto component = std::make_shared<LightingComponent>(
-    pointLight, LightingComponent::TYPE::POINT);
-  EXPECT_EQ(component->getType(), LightingComponent::TYPE::POINT);
-  EXPECT_EQ(component->getBaseLight().color, glm::vec3(1.0f, 0.5f, 0.0f));
+  LightingComponent comp(pointLight, LightingComponent::TYPE::POINT);
+  EXPECT_EQ(comp.type, LightingComponent::TYPE::POINT);
+  EXPECT_EQ(comp.light->color, glm::vec3(1.0f, 0.5f, 0.0f));
 }
 
 TEST_F(LightingComponentTest, DirectionalLightComponent)
@@ -177,10 +176,9 @@ TEST_F(LightingComponentTest, DirectionalLightComponent)
   dirLight->direction = glm::vec3(-0.5f, -1.0f, -0.3f);
   dirLight->intensity = 0.3f;
 
-  auto component = std::make_shared<LightingComponent>(
-    dirLight, LightingComponent::TYPE::DIRECTIONAL);
-  EXPECT_EQ(component->getType(), LightingComponent::TYPE::DIRECTIONAL);
-  EXPECT_EQ(component->getBaseLight().color, glm::vec3(1.0f, 1.0f, 0.8f));
+  LightingComponent comp(dirLight, LightingComponent::TYPE::DIRECTIONAL);
+  EXPECT_EQ(comp.type, LightingComponent::TYPE::DIRECTIONAL);
+  EXPECT_EQ(comp.light->color, glm::vec3(1.0f, 1.0f, 0.8f));
 }
 
 TEST_F(LightingComponentTest, BaseLightComponent)
@@ -188,15 +186,14 @@ TEST_F(LightingComponentTest, BaseLightComponent)
   auto baseLight = std::make_shared<BaseLight>();
   baseLight->color = glm::vec3(0.8f, 0.8f, 1.0f);
 
-  auto component = std::make_shared<LightingComponent>(
-    baseLight, LightingComponent::TYPE::NONE);
-  EXPECT_EQ(component->getType(), LightingComponent::TYPE::NONE);
-  EXPECT_EQ(component->getBaseLight().color, glm::vec3(0.8f, 0.8f, 1.0f));
+  LightingComponent comp(baseLight, LightingComponent::TYPE::NONE);
+  EXPECT_EQ(comp.type, LightingComponent::TYPE::NONE);
+  EXPECT_EQ(comp.light->color, glm::vec3(0.8f, 0.8f, 1.0f));
 
   // Test modifying light through reference
-  BaseLight& light = component->getBaseLight();
+  BaseLight& light = *comp.light;
   light.color = glm::vec3(1.0f, 0.0f, 0.0f);
-  EXPECT_EQ(component->getBaseLight().color, glm::vec3(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(comp.light->color, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
 // GLM Math Integration Tests

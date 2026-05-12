@@ -62,11 +62,11 @@
 // ImGui / ImGuizmo (dev UI, debug builds only)
 #ifndef NDEBUG
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 #endif
 
 #include <tiny_gltf.h>

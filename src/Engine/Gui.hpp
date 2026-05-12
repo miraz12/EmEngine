@@ -19,7 +19,7 @@ public:
   void renderGUI(Profiler& profiler);
 
 private:
-  void editTransform(std::shared_ptr<CameraComponent> camera,
+  void editTransform(CameraComponent* camera,
                      glm::vec3& pos,
                      glm::vec3& rot,
                      glm::vec3& scale);

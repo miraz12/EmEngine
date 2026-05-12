@@ -53,6 +53,7 @@ private:
 
 #ifndef NDEBUG
   Profiler* m_profiler{ nullptr };
+
 public:
   void setProfiler(Profiler* prof) { m_profiler = prof; }
 #endif

@@ -9,12 +9,9 @@ CameraSystem::update(float /* dt */)
   std::vector<Entity> view = m_manager->view<CameraComponent>();
 
   for (auto& e : view) {
-    std::shared_ptr<CameraComponent> c =
-      m_manager->getComponent<CameraComponent>(e);
+    auto* c = m_manager->getComponent<CameraComponent>(e);
 
-    if (std::shared_ptr<PositionComponent> p =
-          m_manager->getComponent<PositionComponent>(e);
-        p) {
+    if (auto* p = m_manager->getComponent<PositionComponent>(e); p) {
       c->m_position = p->position + c->m_offset;
       updateMatrices(c);
     } else if (c->m_matrixNeedsUpdate) {
@@ -24,7 +21,7 @@ CameraSystem::update(float /* dt */)
 }
 
 void
-CameraSystem::updateMatrices(std::shared_ptr<CameraComponent> camera)
+CameraSystem::updateMatrices(CameraComponent* camera)
 {
   camera->m_viewMatrix = glm::lookAt(
     camera->m_position, camera->m_position + camera->m_front, camera->m_up);
@@ -39,7 +36,7 @@ CameraSystem::updateMatrices(std::shared_ptr<CameraComponent> camera)
 }
 
 void
-CameraSystem::updateCameraUBO(std::shared_ptr<CameraComponent> camera)
+CameraSystem::updateCameraUBO(CameraComponent* camera)
 {
   if (camera->m_matrixNeedsUpdate) {
     updateMatrices(camera);
@@ -57,7 +54,7 @@ CameraSystem::updateCameraUBO(std::shared_ptr<CameraComponent> camera)
 }
 
 std::tuple<glm::vec3, glm::vec3>
-CameraSystem::getRayTo(std::shared_ptr<CameraComponent> camera, i32 x, i32 y)
+CameraSystem::getRayTo(CameraComponent* camera, i32 x, i32 y)
 {
   glm::mat4 inverseProjectionMatrix = glm::inverse(camera->m_ProjectionMatrix);
   glm::mat4 inverseViewMatrix = glm::inverse(camera->m_viewMatrix);
@@ -76,7 +73,7 @@ CameraSystem::getRayTo(std::shared_ptr<CameraComponent> camera, i32 x, i32 y)
 }
 
 void
-CameraSystem::tilt(std::shared_ptr<CameraComponent> camera, float angle)
+CameraSystem::tilt(CameraComponent* camera, float angle)
 {
   glm::vec3 right = glm::normalize(glm::cross(camera->m_front, camera->m_up));
 
@@ -90,7 +87,7 @@ CameraSystem::tilt(std::shared_ptr<CameraComponent> camera, float angle)
   camera->m_matrixNeedsUpdate = true;
 }
 
-std::shared_ptr<CameraComponent>
+CameraComponent*
 CameraSystem::getMainCameraComponent()
 {
   if (m_mainCamera == 0 || !m_manager)

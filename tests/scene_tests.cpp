@@ -56,14 +56,12 @@ TEST_F(SceneManagementTest, ComponentAdditionAndRetrieval)
 {
   Entity entity = manager->createEntity("ComponentEntity");
 
-  auto posComponent = std::make_shared<PositionComponent>();
-  posComponent->position = glm::vec3(1.0f, 2.0f, 3.0f);
-  posComponent->rotation = glm::quat(0.7071f, 0.0f, 0.7071f, 0.0f);
-  posComponent->scale = glm::vec3(2.0f, 2.0f, 2.0f);
+  auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+  posComp.position = glm::vec3(1.0f, 2.0f, 3.0f);
+  posComp.rotation = glm::quat(0.7071f, 0.0f, 0.7071f, 0.0f);
+  posComp.scale = glm::vec3(2.0f, 2.0f, 2.0f);
 
-  manager->addComponent(entity, posComponent);
-
-  auto retrievedComponent = manager->getComponent<PositionComponent>(entity);
+  auto* retrievedComponent = manager->getComponent<PositionComponent>(entity);
   ASSERT_NE(retrievedComponent, nullptr);
   EXPECT_EQ(retrievedComponent->position, glm::vec3(1.0f, 2.0f, 3.0f));
   EXPECT_EQ(retrievedComponent->scale, glm::vec3(2.0f, 2.0f, 2.0f));
@@ -74,37 +72,34 @@ TEST_F(SceneManagementTest, MultipleComponentsPerEntity)
   Entity entity = manager->createEntity("MultiCompEntity");
 
   // Add position component
-  auto posComponent = std::make_shared<PositionComponent>();
-  posComponent->position = glm::vec3(0.0f, 5.0f, 0.0f);
-  manager->addComponent(entity, posComponent);
+  auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+  posComp.position = glm::vec3(0.0f, 5.0f, 0.0f);
 
   // Add animation component
-  auto animComponent = std::make_shared<AnimationComponent>();
-  animComponent->currentTime = 1.2f;
-  animComponent->isPlaying = true;
-  animComponent->animationIndex = 3;
-  manager->addComponent(entity, animComponent);
+  auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
+  animComp.currentTime = 1.2f;
+  animComp.isPlaying = true;
+  animComp.animationIndex = 3;
 
   // Add lighting component
   auto baseLight1 = std::make_shared<BaseLight>();
   baseLight1->color = glm::vec3(1.0f, 1.0f, 1.0f);
-  auto lightComponent = std::make_shared<LightingComponent>(
-    baseLight1, LightingComponent::TYPE::POINT);
-  manager->addComponent(entity, lightComponent);
+  manager->emplaceComponent<LightingComponent>(
+    entity, baseLight1, LightingComponent::TYPE::POINT);
 
   // Retrieve all components
-  auto posComp = manager->getComponent<PositionComponent>(entity);
-  auto animComp = manager->getComponent<AnimationComponent>(entity);
-  auto lightComp = manager->getComponent<LightingComponent>(entity);
+  auto* posResult = manager->getComponent<PositionComponent>(entity);
+  auto* animResult = manager->getComponent<AnimationComponent>(entity);
+  auto* lightResult = manager->getComponent<LightingComponent>(entity);
 
-  ASSERT_NE(posComp, nullptr);
-  ASSERT_NE(animComp, nullptr);
-  ASSERT_NE(lightComp, nullptr);
+  ASSERT_NE(posResult, nullptr);
+  ASSERT_NE(animResult, nullptr);
+  ASSERT_NE(lightResult, nullptr);
 
-  EXPECT_EQ(posComp->position, glm::vec3(0.0f, 5.0f, 0.0f));
-  EXPECT_FLOAT_EQ(animComp->currentTime, 1.2f);
-  EXPECT_EQ(animComp->animationIndex, 3);
-  EXPECT_TRUE(animComp->isPlaying);
+  EXPECT_EQ(posResult->position, glm::vec3(0.0f, 5.0f, 0.0f));
+  EXPECT_FLOAT_EQ(animResult->currentTime, 1.2f);
+  EXPECT_EQ(animResult->animationIndex, 3);
+  EXPECT_TRUE(animResult->isPlaying);
 }
 
 TEST_F(SceneManagementTest, EntityViews)
@@ -116,22 +111,21 @@ TEST_F(SceneManagementTest, EntityViews)
   Entity entity4 = manager->createEntity("Entity4");
 
   // Entity1: Position only
-  manager->addComponent(entity1, std::make_shared<PositionComponent>());
+  manager->emplaceComponent<PositionComponent>(entity1);
 
   // Entity2: Position + Animation
-  manager->addComponent(entity2, std::make_shared<PositionComponent>());
-  manager->addComponent(entity2, std::make_shared<AnimationComponent>());
+  manager->emplaceComponent<PositionComponent>(entity2);
+  manager->emplaceComponent<AnimationComponent>(entity2);
 
   // Entity3: Animation only
-  manager->addComponent(entity3, std::make_shared<AnimationComponent>());
+  manager->emplaceComponent<AnimationComponent>(entity3);
 
   // Entity4: Position + Lighting
-  manager->addComponent(entity4, std::make_shared<PositionComponent>());
+  manager->emplaceComponent<PositionComponent>(entity4);
   auto baseLight2 = std::make_shared<BaseLight>();
   baseLight2->color = glm::vec3(0.8f, 0.8f, 0.8f);
-  manager->addComponent(entity4,
-                        std::make_shared<LightingComponent>(
-                          baseLight2, LightingComponent::TYPE::DIRECTIONAL));
+  manager->emplaceComponent<LightingComponent>(
+    entity4, baseLight2, LightingComponent::TYPE::DIRECTIONAL);
 
   // Test views
   auto positionView = manager->view<PositionComponent>();
@@ -167,9 +161,9 @@ TEST_F(SceneManagementTest, LightSetup)
   EXPECT_EQ(pointLight->position, position);
 
   // Verify the lighting component was added to the entity
-  auto lightingComp = manager->getComponent<LightingComponent>(lightEntity);
+  auto* lightingComp = manager->getComponent<LightingComponent>(lightEntity);
   ASSERT_NE(lightingComp, nullptr);
-  EXPECT_EQ(lightingComp->getType(), LightingComponent::TYPE::POINT);
+  EXPECT_EQ(lightingComp->type, LightingComponent::TYPE::POINT);
 }
 
 TEST_F(SceneManagementTest, DirectionalLightSetup)
@@ -189,9 +183,9 @@ TEST_F(SceneManagementTest, DirectionalLightSetup)
   EXPECT_EQ(dirLight->direction, direction);
 
   // Verify the lighting component was added to the entity
-  auto lightingComp = manager->getComponent<LightingComponent>(lightEntity);
+  auto* lightingComp = manager->getComponent<LightingComponent>(lightEntity);
   ASSERT_NE(lightingComp, nullptr);
-  EXPECT_EQ(lightingComp->getType(), LightingComponent::TYPE::DIRECTIONAL);
+  EXPECT_EQ(lightingComp->type, LightingComponent::TYPE::DIRECTIONAL);
 }
 
 TEST_F(SceneManagementTest, DirectionalLightUpdate)
@@ -245,15 +239,15 @@ TEST_F(SceneManagementTest, MultipleLightTypes)
   EXPECT_EQ(dirLight->color, glm::vec3(0.0f, 1.0f, 0.0f));
 
   // Verify both entities have lighting components
-  auto pointLightComp =
+  auto* pointLightComp =
     manager->getComponent<LightingComponent>(pointLightEntity);
-  auto dirLightComp = manager->getComponent<LightingComponent>(dirLightEntity);
+  auto* dirLightComp = manager->getComponent<LightingComponent>(dirLightEntity);
 
   ASSERT_NE(pointLightComp, nullptr);
   ASSERT_NE(dirLightComp, nullptr);
 
-  EXPECT_EQ(pointLightComp->getType(), LightingComponent::TYPE::POINT);
-  EXPECT_EQ(dirLightComp->getType(), LightingComponent::TYPE::DIRECTIONAL);
+  EXPECT_EQ(pointLightComp->type, LightingComponent::TYPE::POINT);
+  EXPECT_EQ(dirLightComp->type, LightingComponent::TYPE::DIRECTIONAL);
 }
 
 TEST_F(SceneManagementTest, SceneResetOperation)
@@ -264,13 +258,12 @@ TEST_F(SceneManagementTest, SceneResetOperation)
   Entity entity3 = manager->createEntity("Entity3");
 
   // Add components to entities
-  manager->addComponent(entity1, std::make_shared<PositionComponent>());
-  manager->addComponent(entity2, std::make_shared<AnimationComponent>());
+  manager->emplaceComponent<PositionComponent>(entity1);
+  manager->emplaceComponent<AnimationComponent>(entity2);
   auto baseLight3 = std::make_shared<BaseLight>();
   baseLight3->color = glm::vec3(0.5f, 0.5f, 1.0f);
-  manager->addComponent(entity3,
-                        std::make_shared<LightingComponent>(
-                          baseLight3, LightingComponent::TYPE::POINT));
+  manager->emplaceComponent<LightingComponent>(
+    entity3, baseLight3, LightingComponent::TYPE::POINT);
 
   // Verify entities exist before reset
   auto allPosEntities = manager->view<PositionComponent>();
@@ -300,22 +293,19 @@ TEST_F(SceneManagementTest, ComplexSceneSetup)
 
   // Player entity
   Entity player = manager->createEntity("Player");
-  auto playerPos = std::make_shared<PositionComponent>();
-  playerPos->position = glm::vec3(0.0f, 1.0f, 0.0f);
-  auto playerAnim = std::make_shared<AnimationComponent>();
-  playerAnim->isPlaying = true;
-  playerAnim->animationIndex = 1;
-  manager->addComponent(player, playerPos);
-  manager->addComponent(player, playerAnim);
+  auto& playerPos = manager->emplaceComponent<PositionComponent>(player);
+  playerPos.position = glm::vec3(0.0f, 1.0f, 0.0f);
+  auto& playerAnim = manager->emplaceComponent<AnimationComponent>(player);
+  playerAnim.isPlaying = true;
+  playerAnim.animationIndex = 1;
 
   // Environment objects
   std::vector<Entity> objects;
   for (int i = 0; i < 5; ++i) {
     Entity obj = manager->createEntity("Object" + std::to_string(i));
-    auto objPos = std::make_shared<PositionComponent>();
-    objPos->position = glm::vec3(i * 2.0f - 4.0f, 0.0f, 0.0f);
-    objPos->scale = glm::vec3(0.5f + i * 0.1f);
-    manager->addComponent(obj, objPos);
+    auto& objPos = manager->emplaceComponent<PositionComponent>(obj);
+    objPos.position = glm::vec3(i * 2.0f - 4.0f, 0.0f, 0.0f);
+    objPos.scale = glm::vec3(0.5f + i * 0.1f);
     objects.push_back(obj);
   }
 
@@ -356,21 +346,19 @@ TEST_F(SceneManagementTest, EntityComponentOwnership)
   Entity entity = manager->createEntity("OwnershipTest");
 
   // Create component with specific values
-  auto component = std::make_shared<PositionComponent>();
   glm::vec3 testPosition(10.0f, 20.0f, 30.0f);
-  component->position = testPosition;
+  auto& comp = manager->emplaceComponent<PositionComponent>(entity);
+  comp.position = testPosition;
 
-  // Add to entity
-  manager->addComponent(entity, component);
+  // Get component back - should point into the dense array
+  auto* retrievedComponent = manager->getComponent<PositionComponent>(entity);
+  ASSERT_NE(retrievedComponent, nullptr);
 
-  // Get component back
-  auto retrievedComponent = manager->getComponent<PositionComponent>(entity);
-
-  // Should be the same object (shared_ptr)
-  EXPECT_EQ(component.get(), retrievedComponent.get());
+  // Should point to the same storage
+  EXPECT_EQ(&comp, retrievedComponent);
 
   // Modify through one reference
-  component->position = glm::vec3(100.0f, 200.0f, 300.0f);
+  comp.position = glm::vec3(100.0f, 200.0f, 300.0f);
 
   // Should reflect in the other reference
   EXPECT_EQ(retrievedComponent->position, glm::vec3(100.0f, 200.0f, 300.0f));

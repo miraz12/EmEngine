@@ -102,9 +102,8 @@ ParticlePass::Record(ECSManager& eManager)
   // Record draw commands for all alive particles
   std::vector<Entity> view = eManager.view<ParticlesComponent>();
   for (auto& entity : view) {
-    std::shared_ptr<ParticlesComponent> pComp =
-      eManager.getComponent<ParticlesComponent>(entity);
-    for (auto& particle : pComp->getAliveParticles()) {
+    auto* pComp = eManager.getComponent<ParticlesComponent>(entity);
+    for (auto& particle : pComp->aliveParticles) {
       if (particle->life > 0.0f) {
         cmd->setUniform(m_particlePosLoc, particle->position);
         cmd->setUniform(m_colorLoc, particle->color);

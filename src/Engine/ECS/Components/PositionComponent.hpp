@@ -1,15 +1,11 @@
 #ifndef POSITIONCOMPONENT_H_
 #define POSITIONCOMPONENT_H_
 
-#include "Component.hpp"
-
-class PositionComponent : public Component
+struct PositionComponent
 {
-public:
   glm::vec3 position{ 0.0f };
   glm::quat rotation{ glm::identity<glm::quat>() };
   glm::vec3 scale{ 1.0f };
-  glm::mat4 model{ glm::identity<glm::mat4>() };
 
   PositionComponent() = default;
   PositionComponent(float startX, float startY)

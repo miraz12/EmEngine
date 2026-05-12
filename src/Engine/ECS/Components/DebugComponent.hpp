@@ -1,16 +1,14 @@
 #ifndef DEBUGCOMPONENT_H_
 #define DEBUGCOMPONENT_H_
 
-#include "Component.hpp"
 #include <Objects/GraphicsObject.hpp>
 
-class DebugComponent final : public Component
+struct DebugComponent
 {
-public:
   explicit DebugComponent(std::unique_ptr<GraphicsObject> grapComp)
     : m_grapObj(std::move(grapComp)) {};
   DebugComponent() = delete;
-  ~DebugComponent() final = default;
+  ~DebugComponent() = default;
 
   std::unique_ptr<GraphicsObject> m_grapObj;
 };

@@ -1,8 +1,6 @@
 #ifndef PARTICLESCOMPONENT_H_
 #define PARTICLESCOMPONENT_H_
 
-#include "Component.hpp"
-
 struct Particle
 {
   glm::vec3 position{ 0.0f };
@@ -14,35 +12,23 @@ struct Particle
     , velocity(vel) {};
 };
 
-class ParticlesComponent : public Component
+struct ParticlesComponent
 {
-public:
   ParticlesComponent() = delete;
-  explicit ParticlesComponent(glm::vec3 velocity)
-    : m_velocity(velocity)
+  explicit ParticlesComponent(glm::vec3 vel)
+    : velocity(vel)
   {
     for (u32 i = 0; i < 50000; i++) {
-      m_deadParticles.push_back(
-        std::make_unique<Particle>(Particle(glm::vec3(0), m_velocity)));
+      deadParticles.push_back(
+        std::make_unique<Particle>(Particle(glm::vec3(0), velocity)));
     }
   };
-  virtual ~ParticlesComponent() = default;
-  std::vector<std::shared_ptr<Particle>>& getAliveParticles()
-  {
-    return m_aliveParticles;
-  }
-  std::vector<std::shared_ptr<Particle>>& getDeadParticles()
-  {
-    return m_deadParticles;
-  }
-  glm::vec3& getVelocity() { return m_velocity; }
-  u32 getNumNewParticles() { return m_numNewParticles; }
+  ~ParticlesComponent() = default;
 
-private:
-  std::vector<std::shared_ptr<Particle>> m_aliveParticles;
-  std::vector<std::shared_ptr<Particle>> m_deadParticles;
-  glm::vec3 m_velocity;
-  u32 m_numNewParticles{ 10 };
+  std::vector<std::shared_ptr<Particle>> aliveParticles;
+  std::vector<std::shared_ptr<Particle>> deadParticles;
+  glm::vec3 velocity;
+  u32 numNewParticles{ 10 };
 };
 
 #endif // PARTICLESCOMPONENT_H_

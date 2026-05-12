@@ -2754,9 +2754,9 @@ Device::bindTexture(u32 unit, TextureId texture)
     }
   }
 
-  // Always bind — internal helpers (createTexture, updateTexture, generateMipmaps)
-  // call glBindTexture directly without updating the cache, so skipping here
-  // would leave stale bindings.
+  // Always bind — internal helpers (createTexture, updateTexture,
+  // generateMipmaps) call glBindTexture directly without updating the cache, so
+  // skipping here would leave stale bindings.
   glActiveTexture(GL_TEXTURE0 + unit);
   glBindTexture(target, glTex);
   m_stateCache.boundTextures[unit] = glTex;

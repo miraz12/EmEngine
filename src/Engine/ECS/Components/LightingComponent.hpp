@@ -1,12 +1,10 @@
 #ifndef LIGHTINGCOMPONENT_H_
 #define LIGHTINGCOMPONENT_H_
 
-#include "Component.hpp"
 #include "Types/LightTypes.hpp"
 
-class LightingComponent : public Component
+struct LightingComponent
 {
-public:
   enum class TYPE
   {
     NONE,
@@ -15,21 +13,17 @@ public:
   };
 
   LightingComponent(const LightingComponent&) = default;
-  LightingComponent(LightingComponent&&) = delete;
+  LightingComponent(LightingComponent&&) = default;
   LightingComponent& operator=(const LightingComponent&) = default;
-  LightingComponent& operator=(LightingComponent&&) = delete;
+  LightingComponent& operator=(LightingComponent&&) = default;
   LightingComponent(std::shared_ptr<BaseLight> light, TYPE type)
-    : m_t(type)
-    , light(light)
+    : type(type)
+    , light(std::move(light))
   {
   }
-  virtual ~LightingComponent() = default;
+  ~LightingComponent() = default;
 
-  TYPE getType() { return m_t; };
-  BaseLight& getBaseLight() { return *light.get(); };
-
-private:
-  TYPE m_t{ TYPE::NONE };
+  TYPE type{ TYPE::NONE };
   std::shared_ptr<BaseLight> light;
 };
 #endif // LIGHTINGCOMPONENT_H_

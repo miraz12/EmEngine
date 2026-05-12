@@ -2,7 +2,6 @@
 #define ECSMANAGER_H_
 
 #include "ComponentPool.hpp"
-#include "Components/Component.hpp"
 #include "Systems/System.hpp"
 #include <SceneLoader.hpp>
 #include <Types/LightTypes.hpp>
@@ -32,43 +31,29 @@ public:
   // creates and returns a new entity
   Entity createEntity(std::string name = "no_name");
 
-  template<typename T>
-  void addComponent(Entity entity, std::shared_ptr<T> component)
+  // Emplace a component in-place (preferred)
+  template<typename T, typename... Args>
+  T& emplaceComponent(Entity entity, Args&&... args)
   {
-    // Get the component type ID
     u32 index = getComponentTypeID<T>();
-
-    // Ensure we have enough component pools
-    if (m_componentPools.size() <= index) {
-      m_componentPools.resize(index + 1);
-    }
-
-    // Create the component pool if it doesn't exist
-    if (!m_componentPools[index]) {
-      m_componentPools[index] = std::make_shared<ComponentPool<T>>();
-    }
-
-    // Add the component to the pool
-    std::static_pointer_cast<ComponentPool<T>>(m_componentPools[index])
-      ->add(entity, component);
-
-    // Set the component bit for this entity
+    ensurePool<T>(index);
+    T& comp = getPool<T>(index)->emplace(entity, std::forward<Args>(args)...);
     m_entityComponentMasks[entity].set(index);
+    return comp;
   }
 
-  template<typename... Args>
-  void addComponents(Entity entity, std::shared_ptr<Args>... args)
+  // Add a component by move
+  template<typename T>
+  T& addComponent(Entity entity, T&& component)
   {
-    (addComponent(entity, std::forward<std::shared_ptr<Args>>(args)), ...);
+    return emplaceComponent<std::decay_t<T>>(entity, std::move(component));
   }
 
+  // Check if the entity has a component of the specified type
   template<typename T>
   bool hasComponent(Entity entity)
   {
-    // Get the component type ID for T
     std::size_t idx = getComponentTypeID<T>();
-
-    // Check if the entity has a component of the specified type
     return m_entityComponentMasks[entity].test(idx);
   }
 
@@ -102,21 +87,15 @@ public:
   template<typename... T>
   std::vector<Entity> view()
   {
-    // Create a bitset representing the required components
     Signature requiredComponents;
     ((requiredComponents.set(getComponentTypeID<T>()), ...));
 
-    // Create a vector to store the matching entities
     std::vector<Entity> matchingEntities;
-    matchingEntities.reserve(m_entities.size() / 2); // Reserve reasonable space
+    matchingEntities.reserve(m_entities.size() / 2);
 
-    // Iterate only over active entities
     for (Entity entity : m_entities) {
-      // Check if the entity has the required components
       if ((m_entityComponentMasks[entity] & requiredComponents) ==
           requiredComponents) {
-        // If the entity has the required components, add it to the matching
-        // entities vector
         matchingEntities.push_back(entity);
       }
     }
@@ -124,35 +103,42 @@ public:
     return matchingEntities;
   }
 
+  // Get the component from the pool, returns nullptr if not found
   template<typename T>
-  std::shared_ptr<T> getComponent(Entity entity)
+  T* getComponent(Entity entity)
   {
-    // Check if the entity has this component
     if (!hasComponent<T>(entity)) {
       return nullptr;
     }
 
-    // Get the component type ID
     std::size_t typeID = getComponentTypeID<T>();
 
-    // Make sure we have a valid component pool
     if (typeID >= m_componentPools.size() || !m_componentPools[typeID]) {
       return nullptr;
     }
 
-    // Get the component from the pool
-    return std::static_pointer_cast<ComponentPool<T>>(m_componentPools[typeID])
-      ->get(entity);
+    return getPool<T>(typeID)->get(entity);
   }
 
-  // // Create point light
+  // Get a typed pool for direct iteration
+  template<typename T>
+  ComponentPool<T>* getPool()
+  {
+    u32 index = getComponentTypeID<T>();
+    if (index >= m_componentPools.size() || !m_componentPools[index]) {
+      return nullptr;
+    }
+    return getPool<T>(index);
+  }
+
+  // Create point light
   std::shared_ptr<PointLight> setupPointLight(Entity entity,
                                               glm::vec3 color,
                                               float constant,
                                               float linear,
                                               float quadratic,
                                               glm::vec3 pos);
-  // // Create directional light
+  // Create directional light
   std::shared_ptr<DirectionalLight> setupDirectionalLight(Entity entity,
                                                           glm::vec3 color,
                                                           float intensity,
@@ -190,6 +176,23 @@ private:
   ECSManager() = default;
   ~ECSManager() = default;
 
+  template<typename T>
+  void ensurePool(u32 index)
+  {
+    if (m_componentPools.size() <= index) {
+      m_componentPools.resize(index + 1);
+    }
+    if (!m_componentPools[index]) {
+      m_componentPools[index] = std::make_unique<ComponentPool<T>>();
+    }
+  }
+
+  template<typename T>
+  ComponentPool<T>* getPool(u32 index)
+  {
+    return static_cast<ComponentPool<T>*>(m_componentPools[index].get());
+  }
+
   // Entities
   std::vector<Entity> m_entities;
   std::map<Entity, std::string> m_entityNames;
@@ -197,7 +200,7 @@ private:
   std::unordered_map<std::string, System*> m_systems;
 
   // Component pools - one pool per component type
-  std::vector<std::shared_ptr<IComponentPool>> m_componentPools;
+  std::vector<std::unique_ptr<IComponentPool>> m_componentPools;
 
   // Maps component types to their indices
   std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
@@ -219,8 +222,9 @@ private:
 
 #ifndef NDEBUG
   Profiler* m_profiler{ nullptr };
+
 public:
   void setProfiler(Profiler* prof) { m_profiler = prof; }
 #endif
 };
-#endif // LIGHTINGSYSTEM_H_
+#endif // ECSMANAGER_H_

@@ -93,34 +93,23 @@ MapLoader::createWall(int x, int z)
 
   // Add graphics component with a cached cube
   ResourceManager& resourceMgr = ResourceManager::getInstance();
-  std::shared_ptr<GraphicsComponent> graphicsComp =
-    std::make_shared<GraphicsComponent>(resourceMgr.getCube());
-  graphicsComp->type = GraphicsComponent::TYPE::CUBE;
+  auto& gc = m_ecsMan->emplaceComponent<GraphicsComponent>(
+    wallEntity, resourceMgr.getCube());
+  gc.type = GraphicsComponent::TYPE::CUBE;
 
   // Add position component
-  std::shared_ptr<PositionComponent> positionComp =
-    std::make_shared<PositionComponent>();
-
-  // Position walls in world space
-  // Center the map around origin
   float offsetX = -(m_width * m_tileSize) / 2.0f;
   float offsetZ = -(m_height * m_tileSize) / 2.0f;
 
-  positionComp->position =
-    glm::vec3(offsetX + x * m_tileSize + m_tileSize / 2.0f,
-              m_tileSize / 2.0f, // Half tile height so cube sits on floor
-              offsetZ + z * m_tileSize + m_tileSize / 2.0f);
+  auto& pc = m_ecsMan->emplaceComponent<PositionComponent>(wallEntity);
+  pc.position = glm::vec3(offsetX + x * m_tileSize + m_tileSize / 2.0f,
+                          m_tileSize / 2.0f,
+                          offsetZ + z * m_tileSize + m_tileSize / 2.0f);
+  pc.scale = glm::vec3(m_tileSize, m_tileSize, m_tileSize);
+  pc.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 
-  positionComp->scale = glm::vec3(m_tileSize, m_tileSize, m_tileSize);
-  positionComp->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
-
-  m_ecsMan->addComponents(wallEntity, graphicsComp, positionComp);
-
-  std::shared_ptr<PhysicsComponent> physicsComp =
-    std::make_shared<PhysicsComponent>(
-      wallEntity, 0.0f, CollisionShapeType::BOX);
-
-  m_ecsMan->addComponents(wallEntity, physicsComp);
+  m_ecsMan->emplaceComponent<PhysicsComponent>(
+    wallEntity, wallEntity, 0.0f, CollisionShapeType::BOX);
 }
 
 void
@@ -131,31 +120,20 @@ MapLoader::createFloor()
 
   // Add graphics component with a cached cube (scaled flat)
   ResourceManager& resourceMgr = ResourceManager::getInstance();
-  std::shared_ptr<GraphicsComponent> graphicsComp =
-    std::make_shared<GraphicsComponent>(resourceMgr.getCube());
-  graphicsComp->type = GraphicsComponent::TYPE::CUBE;
-
-  // Add position component
-  std::shared_ptr<PositionComponent> positionComp =
-    std::make_shared<PositionComponent>();
-
-  // Position floor at origin, centered
-  positionComp->position = glm::vec3(0.0f, 0.0f, 0.0f);
+  auto& gc = m_ecsMan->emplaceComponent<GraphicsComponent>(
+    floorEntity, resourceMgr.getCube());
+  gc.type = GraphicsComponent::TYPE::CUBE;
 
   // Scale the floor to cover the entire map
-  // Make it thin (0.1 * tileSize) but wide enough to cover all tiles
   float floorWidth = m_width * m_tileSize;
   float floorDepth = m_height * m_tileSize;
   float floorHeight = 0.1f * m_tileSize;
 
-  positionComp->scale = glm::vec3(floorWidth, floorHeight, floorDepth);
-  positionComp->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
+  auto& pc = m_ecsMan->emplaceComponent<PositionComponent>(floorEntity);
+  pc.position = glm::vec3(0.0f, 0.0f, 0.0f);
+  pc.scale = glm::vec3(floorWidth, floorHeight, floorDepth);
+  pc.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 
-  m_ecsMan->addComponents(floorEntity, graphicsComp, positionComp);
-
-  std::shared_ptr<PhysicsComponent> physicsComp =
-    std::make_shared<PhysicsComponent>(
-      floorEntity, 0.0f, CollisionShapeType::BOX);
-
-  m_ecsMan->addComponents(floorEntity, physicsComp);
+  m_ecsMan->emplaceComponent<PhysicsComponent>(
+    floorEntity, floorEntity, 0.0f, CollisionShapeType::BOX);
 }

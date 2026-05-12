@@ -106,15 +106,14 @@ ECSManager::setupPointLight(Entity entity,
                             float quadratic,
                             glm::vec3 pos)
 {
-  std::shared_ptr<PointLight> pLight = std::make_shared<PointLight>();
+  auto pLight = std::make_shared<PointLight>();
   pLight->position = pos;
   pLight->color = color;
   pLight->constant = constant;
   pLight->linear = linear;
   pLight->quadratic = quadratic;
-  addComponent(entity,
-               std::make_shared<LightingComponent>(
-                 pLight, LightingComponent::TYPE::POINT));
+  emplaceComponent<LightingComponent>(
+    entity, pLight, LightingComponent::TYPE::POINT);
   return pLight;
 }
 
@@ -125,24 +124,22 @@ ECSManager::setupDirectionalLight(Entity entity,
                                   glm::vec3 dir)
 {
   m_dirLightEntity = entity;
-  std::shared_ptr<DirectionalLight> dLight =
-    std::make_shared<DirectionalLight>();
+  auto dLight = std::make_shared<DirectionalLight>();
   dLight->direction = dir;
   dLight->color = color;
   dLight->intensity = intensity;
-  addComponent(m_dirLightEntity,
-               std::make_shared<LightingComponent>(
-                 dLight, LightingComponent::TYPE::DIRECTIONAL));
+  emplaceComponent<LightingComponent>(
+    m_dirLightEntity, dLight, LightingComponent::TYPE::DIRECTIONAL);
   return dLight;
 }
 
 void
 ECSManager::updateDirLight(glm::vec3 color, float intensity, glm::vec3 dir)
 {
-  std::shared_ptr<LightingComponent> lComp =
-    getComponent<LightingComponent>(m_dirLightEntity);
-  if (!lComp) return;
-  auto* dLight = static_cast<DirectionalLight*>(&lComp->getBaseLight());
+  auto* lComp = getComponent<LightingComponent>(m_dirLightEntity);
+  if (!lComp)
+    return;
+  auto* dLight = static_cast<DirectionalLight*>(lComp->light.get());
   dLight->direction = dir;
   dLight->color = color;
   dLight->intensity = intensity;
@@ -177,9 +174,7 @@ ECSManager::reset()
   // Reset all component pools
   for (auto& pool : m_componentPools) {
     if (pool) {
-      for (Entity entity = 0; entity < MAX_ENTITIES; entity++) {
-        pool->entityDestroyed(entity);
-      }
+      pool->clear();
     }
   }
 
@@ -242,7 +237,8 @@ extern "C"
   void SetRotation(unsigned int entity, float angle)
   {
     auto p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
-    if (!p) return;
+    if (!p)
+      return;
     p->rotation = glm::eulerAngleY(angle);
   }
 
@@ -293,14 +289,14 @@ extern "C"
 
   void AddGraphicsComponent(int entity, const char* model)
   {
-    std::shared_ptr<GraphicsComponent> graphComp;
-    graphComp = std::make_shared<GraphicsComponent>(
-      std::make_shared<GltfObject>("resources/Models/" + std::string(model)));
-    if (graphComp->m_grapObj->p_numAnimations > 0) {
-      ECSManager::getInstance().addComponents(
-        entity, std::make_shared<AnimationComponent>());
+    auto gltfObj =
+      std::make_shared<GltfObject>("resources/Models/" + std::string(model));
+    bool hasAnims = gltfObj->p_numAnimations > 0;
+    ECSManager::getInstance().emplaceComponent<GraphicsComponent>(
+      entity, std::move(gltfObj));
+    if (hasAnims) {
+      ECSManager::getInstance().emplaceComponent<AnimationComponent>(entity);
     }
-    ECSManager::getInstance().addComponents(entity, graphComp);
   }
 
   void AddPositionComponent(int entity,
@@ -308,29 +304,25 @@ extern "C"
                             float scale[3],
                             float rot[3])
   {
-    std::shared_ptr<PositionComponent> posComp =
-      std::make_shared<PositionComponent>();
-    posComp->position = glm::vec3(pos[0], pos[1], pos[2]);
-    posComp->scale = glm::vec3(scale[0], scale[1], scale[2]);
-    posComp->rotation =
+    auto& posComp =
+      ECSManager::getInstance().emplaceComponent<PositionComponent>(entity);
+    posComp.position = glm::vec3(pos[0], pos[1], pos[2]);
+    posComp.scale = glm::vec3(scale[0], scale[1], scale[2]);
+    posComp.rotation =
       glm::vec3(rot[0], rot[1], rot[2]); // TODO is this correct?
-    ECSManager::getInstance().addComponents(entity, posComp);
   }
 
   void AddPhysicsComponent(int entity, float mass, int type)
   {
-    ECSManager::getInstance().addComponents(
-      entity,
-      std::make_shared<PhysicsComponent>(
-        entity, mass, CollisionShapeType(type)));
+    ECSManager::getInstance().emplaceComponent<PhysicsComponent>(
+      entity, entity, mass, CollisionShapeType(type));
   }
 
   void AddCameraComponent(int entity, bool main, float offset[3])
   {
-    std::shared_ptr<CameraComponent> c = std::make_shared<CameraComponent>(
-      glm::vec3(offset[0], offset[1], offset[2]));
-    CameraSystem::tilt(c, -30.0f);
-    ECSManager::getInstance().addComponents(entity, c);
+    auto& cam = ECSManager::getInstance().emplaceComponent<CameraComponent>(
+      entity, glm::vec3(offset[0], offset[1], offset[2]));
+    CameraSystem::tilt(&cam, -30.0f);
     if (main) {
       CameraSystem::getInstance().setMainCamera(entity);
     }
@@ -344,8 +336,7 @@ extern "C"
                             float upY,
                             float upZ)
   {
-    std::shared_ptr<CameraComponent> cam =
-      ECSManager::getInstance().getComponent<CameraComponent>(entity);
+    auto* cam = ECSManager::getInstance().getComponent<CameraComponent>(entity);
     if (cam) {
       cam->m_front = glm::vec3(frontX, frontY, frontZ);
       cam->m_up = glm::vec3(upX, upY, upZ);
@@ -361,21 +352,24 @@ extern "C"
   void pauseAnimation(unsigned int entity)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
-    if (!a) return;
+    if (!a)
+      return;
     a->isPlaying = false;
   }
 
   void StartAnimation(unsigned int entity)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
-    if (!a) return;
+    if (!a)
+      return;
     a->isPlaying = true;
   }
 
   void SetAnimationIndex(unsigned int entity, unsigned int idx)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
-    if (!a) return;
+    if (!a)
+      return;
     if (a->animationIndex != idx || a->blending) {
       a->animationIndex = idx;
       a->currentTime = 0;
@@ -384,14 +378,16 @@ extern "C"
   }
 
   void CrossfadeAnimation(unsigned int entity,
-                           unsigned int targetIndex,
-                           float duration)
+                          unsigned int targetIndex,
+                          float duration)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
-    if (!a) return;
+    if (!a)
+      return;
 
     // Already playing or blending to this target — nothing to do
-    if (a->animationIndex == targetIndex) return;
+    if (a->animationIndex == targetIndex)
+      return;
 
     // Zero/negative duration — hard cut
     if (duration <= 0.0f) {

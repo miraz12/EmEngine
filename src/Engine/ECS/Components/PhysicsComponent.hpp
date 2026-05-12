@@ -1,8 +1,6 @@
 #ifndef PHYSICSCOMPONENT_H_
 #define PHYSICSCOMPONENT_H_
 
-#include "Component.hpp"
-
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyID.h>
 
@@ -15,12 +13,22 @@ enum class CollisionShapeType
   HEIGHTMAP
 };
 
-class PhysicsComponent final : public Component
+struct PhysicsComponent
 {
-public:
   PhysicsComponent() = delete;
   PhysicsComponent(Entity entity, float mass, CollisionShapeType type);
-  ~PhysicsComponent() override;
+  ~PhysicsComponent();
+
+  PhysicsComponent(PhysicsComponent&& other) noexcept
+    : m_bodyId(other.m_bodyId)
+    , m_shapeType(other.m_shapeType)
+    , m_mass(other.m_mass)
+    , m_entity(other.m_entity)
+  {
+    other.m_bodyId = JPH::BodyID(); // Invalidate source so its dtor is a no-op
+  }
+
+  PhysicsComponent& operator=(PhysicsComponent&& other) noexcept;
 
   JPH::BodyID getBodyID() const { return m_bodyId; }
   float getMass() const { return m_mass; }

@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 #include "ECS/ComponentPool.hpp"
-#include "ECS/Components/Component.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "InputManager.hpp"
 #include "Singleton.hpp"
@@ -74,12 +73,10 @@ TEST_F(ComponentPoolTest, ComponentPoolCreation)
 TEST_F(ComponentPoolTest, ComponentAddition)
 {
   Entity entity = 1;
-  auto component = std::make_shared<PositionComponent>();
-  component->position = glm::vec3(1.0f, 2.0f, 3.0f);
+  auto& comp = pool->emplace(entity);
+  comp.position = glm::vec3(1.0f, 2.0f, 3.0f);
 
-  pool->add(entity, component);
-
-  auto retrieved = pool->get(entity);
+  auto* retrieved = pool->get(entity);
   ASSERT_NE(retrieved, nullptr);
   EXPECT_EQ(retrieved->position, glm::vec3(1.0f, 2.0f, 3.0f));
 }
@@ -89,17 +86,14 @@ TEST_F(ComponentPoolTest, ComponentRetrieval)
   Entity entity1 = 1;
   Entity entity2 = 2;
 
-  auto component1 = std::make_shared<PositionComponent>();
-  component1->position = glm::vec3(1.0f, 0.0f, 0.0f);
+  auto& comp1 = pool->emplace(entity1);
+  comp1.position = glm::vec3(1.0f, 0.0f, 0.0f);
 
-  auto component2 = std::make_shared<PositionComponent>();
-  component2->position = glm::vec3(0.0f, 1.0f, 0.0f);
+  auto& comp2 = pool->emplace(entity2);
+  comp2.position = glm::vec3(0.0f, 1.0f, 0.0f);
 
-  pool->add(entity1, component1);
-  pool->add(entity2, component2);
-
-  auto retrieved1 = pool->get(entity1);
-  auto retrieved2 = pool->get(entity2);
+  auto* retrieved1 = pool->get(entity1);
+  auto* retrieved2 = pool->get(entity2);
 
   ASSERT_NE(retrieved1, nullptr);
   ASSERT_NE(retrieved2, nullptr);
@@ -110,9 +104,7 @@ TEST_F(ComponentPoolTest, ComponentRetrieval)
 TEST_F(ComponentPoolTest, ComponentRemoval)
 {
   Entity entity = 1;
-  auto component = std::make_shared<PositionComponent>();
-
-  pool->add(entity, component);
+  pool->emplace(entity);
   ASSERT_NE(pool->get(entity), nullptr);
 
   pool->remove(entity);
@@ -126,12 +118,11 @@ TEST_F(ComponentPoolTest, ComponentOperations)
   // Check component doesn't exist initially
   EXPECT_EQ(pool->get(entity), nullptr);
 
-  auto component = std::make_shared<PositionComponent>();
-  pool->add(entity, component);
+  auto& comp = pool->emplace(entity);
 
   // Check component exists after adding
   EXPECT_NE(pool->get(entity), nullptr);
-  EXPECT_EQ(pool->get(entity), component);
+  EXPECT_EQ(pool->get(entity), &comp);
 
   pool->remove(entity);
 
@@ -145,17 +136,9 @@ TEST_F(ComponentPoolTest, MultipleComponents)
   Entity entity2 = 2;
   Entity entity3 = 3;
 
-  auto component1 = std::make_shared<PositionComponent>();
-  auto component2 = std::make_shared<PositionComponent>();
-  auto component3 = std::make_shared<PositionComponent>();
-
-  component1->position = glm::vec3(1.0f, 0.0f, 0.0f);
-  component2->position = glm::vec3(0.0f, 1.0f, 0.0f);
-  component3->position = glm::vec3(0.0f, 0.0f, 1.0f);
-
-  pool->add(entity1, component1);
-  pool->add(entity2, component2);
-  pool->add(entity3, component3);
+  pool->emplace(entity1).position = glm::vec3(1.0f, 0.0f, 0.0f);
+  pool->emplace(entity2).position = glm::vec3(0.0f, 1.0f, 0.0f);
+  pool->emplace(entity3).position = glm::vec3(0.0f, 0.0f, 1.0f);
 
   // Verify all components are stored correctly
   EXPECT_EQ(pool->get(entity1)->position, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -163,41 +146,105 @@ TEST_F(ComponentPoolTest, MultipleComponents)
   EXPECT_EQ(pool->get(entity3)->position, glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
-// Test Component Base Class
+TEST_F(ComponentPoolTest, SwapAndPopCorrectness)
+{
+  Entity entity1 = 1;
+  Entity entity2 = 2;
+  Entity entity3 = 3;
+
+  pool->emplace(entity1).position = glm::vec3(1.0f, 0.0f, 0.0f);
+  pool->emplace(entity2).position = glm::vec3(0.0f, 2.0f, 0.0f);
+  pool->emplace(entity3).position = glm::vec3(0.0f, 0.0f, 3.0f);
+
+  EXPECT_EQ(pool->size(), 3u);
+
+  // Remove middle entity
+  pool->remove(entity2);
+
+  EXPECT_EQ(pool->size(), 2u);
+  EXPECT_EQ(pool->get(entity2), nullptr);
+
+  // Remaining entities should still be intact
+  ASSERT_NE(pool->get(entity1), nullptr);
+  ASSERT_NE(pool->get(entity3), nullptr);
+  EXPECT_EQ(pool->get(entity1)->position, glm::vec3(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(pool->get(entity3)->position, glm::vec3(0.0f, 0.0f, 3.0f));
+}
+
+TEST_F(ComponentPoolTest, DenseIteration)
+{
+  Entity entity1 = 5;
+  Entity entity2 = 10;
+  Entity entity3 = 15;
+
+  pool->emplace(entity1).position = glm::vec3(5.0f, 0.0f, 0.0f);
+  pool->emplace(entity2).position = glm::vec3(10.0f, 0.0f, 0.0f);
+  pool->emplace(entity3).position = glm::vec3(15.0f, 0.0f, 0.0f);
+
+  // Verify begin()/end() visits exactly 3 components
+  size_t count = 0;
+  float posSum = 0.0f;
+  for (auto& comp : *pool) {
+    posSum += comp.position.x;
+    count++;
+  }
+
+  EXPECT_EQ(count, 3u);
+  EXPECT_FLOAT_EQ(posSum, 30.0f); // 5 + 10 + 15
+}
+
+TEST_F(ComponentPoolTest, EntityAtMapping)
+{
+  Entity entity1 = 3;
+  Entity entity2 = 7;
+
+  pool->emplace(entity1);
+  pool->emplace(entity2);
+
+  // entityAt should map back to original entities
+  std::set<Entity> entities;
+  for (size_t i = 0; i < pool->size(); ++i) {
+    entities.insert(pool->entityAt(i));
+  }
+
+  EXPECT_TRUE(entities.count(entity1));
+  EXPECT_TRUE(entities.count(entity2));
+}
+
+TEST_F(ComponentPoolTest, ClearPool)
+{
+  pool->emplace(Entity(1));
+  pool->emplace(Entity(2));
+  pool->emplace(Entity(3));
+
+  EXPECT_EQ(pool->size(), 3u);
+
+  pool->clear();
+
+  EXPECT_EQ(pool->size(), 0u);
+  EXPECT_EQ(pool->get(Entity(1)), nullptr);
+  EXPECT_EQ(pool->get(Entity(2)), nullptr);
+  EXPECT_EQ(pool->get(Entity(3)), nullptr);
+}
+
+// Test Component Data Structures
 class ComponentTest : public ::testing::Test
 {
 protected:
-  void SetUp() override { component = std::make_shared<PositionComponent>(); }
-
-  std::shared_ptr<Component> component;
+  void SetUp() override { component = PositionComponent{}; }
+  PositionComponent component;
 };
 
 TEST_F(ComponentTest, ComponentInstantiation)
 {
-  // Test that components can be created and have expected properties
-  auto pos1 = std::make_shared<PositionComponent>();
-  auto pos2 = std::make_shared<PositionComponent>();
-
-  ASSERT_NE(pos1, nullptr);
-  ASSERT_NE(pos2, nullptr);
+  PositionComponent pos1;
+  PositionComponent pos2;
 
   // Test they have independent state
-  pos1->position = glm::vec3(1.0f, 0.0f, 0.0f);
-  pos2->position = glm::vec3(0.0f, 1.0f, 0.0f);
+  pos1.position = glm::vec3(1.0f, 0.0f, 0.0f);
+  pos2.position = glm::vec3(0.0f, 1.0f, 0.0f);
 
-  EXPECT_NE(pos1->position, pos2->position);
-}
-
-TEST_F(ComponentTest, ComponentPolymorphism)
-{
-  // Test polymorphic behavior
-  std::shared_ptr<Component> basePtr = std::make_shared<PositionComponent>();
-  ASSERT_NE(basePtr, nullptr);
-
-  // Should be able to cast back
-  std::shared_ptr<PositionComponent> derivedPtr =
-    std::dynamic_pointer_cast<PositionComponent>(basePtr);
-  ASSERT_NE(derivedPtr, nullptr);
+  EXPECT_NE(pos1.position, pos2.position);
 }
 
 // Test Input Manager Core Functionality
@@ -308,15 +355,14 @@ class PerformanceTest : public ::testing::Test
 TEST_F(PerformanceTest, ComponentCreationPerformance)
 {
   const int NUM_COMPONENTS = 1000;
-  std::vector<std::shared_ptr<PositionComponent>> components;
-  components.reserve(NUM_COMPONENTS);
+  ComponentPool<PositionComponent> pool;
 
   auto start = std::chrono::high_resolution_clock::now();
 
   for (int i = 0; i < NUM_COMPONENTS; ++i) {
-    auto comp = std::make_shared<PositionComponent>();
-    comp->position = glm::vec3(i, i + 1, i + 2);
-    components.push_back(comp);
+    // Entity IDs 0..999 (MAX_ENTITIES is 1000)
+    auto& comp = pool.emplace(static_cast<Entity>(i));
+    comp.position = glm::vec3(i, i + 1, i + 2);
   }
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -327,30 +373,27 @@ TEST_F(PerformanceTest, ComponentCreationPerformance)
   EXPECT_LT(duration.count(), 10000);
 
   // Verify components are properly created
-  EXPECT_EQ(components.size(), NUM_COMPONENTS);
-  EXPECT_EQ(components[0]->position, glm::vec3(0, 1, 2));
-  EXPECT_EQ(components[999]->position, glm::vec3(999, 1000, 1001));
+  EXPECT_EQ(pool.size(), NUM_COMPONENTS);
+  EXPECT_EQ(pool.get(0)->position, glm::vec3(0, 1, 2));
+  EXPECT_EQ(pool.get(999)->position, glm::vec3(999, 1000, 1001));
 }
 
 TEST_F(PerformanceTest, ComponentPoolPerformance)
 {
   ComponentPool<PositionComponent> pool;
-  const int NUM_ENTITIES =
-    500; // Use fewer entities to stay within MAX_ENTITIES limit
+  const int NUM_ENTITIES = 500;
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  // Add components for many entities (0-based indexing to fit within
-  // MAX_ENTITIES)
+  // Add components for many entities
   for (Entity i = 0; i < NUM_ENTITIES; ++i) {
-    auto comp = std::make_shared<PositionComponent>();
-    comp->position = glm::vec3(i, i * 2, i * 3);
-    pool.add(i, comp);
+    auto& comp = pool.emplace(i);
+    comp.position = glm::vec3(i, i * 2, i * 3);
   }
 
   // Retrieve all components
   for (Entity i = 0; i < NUM_ENTITIES; ++i) {
-    auto comp = pool.get(i);
+    auto* comp = pool.get(i);
     ASSERT_NE(comp, nullptr);
   }
 
@@ -358,6 +401,6 @@ TEST_F(PerformanceTest, ComponentPoolPerformance)
   auto duration =
     std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-  // Should be fast (< 50ms for 1000 entities)
+  // Should be fast (< 50ms for 500 entities)
   EXPECT_LT(duration.count(), 50000);
 }

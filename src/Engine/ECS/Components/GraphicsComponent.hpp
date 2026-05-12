@@ -1,17 +1,15 @@
 #ifndef GRAPHICSCOMPONENT_H_
 #define GRAPHICSCOMPONENT_H_
 
-#include "Component.hpp"
 #include "Objects/GraphicsObject.hpp"
 
-class GraphicsComponent final : public Component
+struct GraphicsComponent
 {
-public:
   explicit GraphicsComponent(std::shared_ptr<GraphicsObject> grapComp)
-    : m_grapObj(grapComp)
+    : m_grapObj(std::move(grapComp))
   {
   }
-  ~GraphicsComponent() final = default;
+  ~GraphicsComponent() = default;
 
   GraphicsComponent() = delete;
 

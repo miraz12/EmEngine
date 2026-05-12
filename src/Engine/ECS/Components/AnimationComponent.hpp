@@ -1,11 +1,9 @@
 #ifndef ANMATIONCOMPONENT_H_
 #define ANMATIONCOMPONENT_H_
-#include "Component.hpp"
 #include <Rendering/Animation.hpp>
 
-class AnimationComponent : public Component
+struct AnimationComponent
 {
-public:
   AnimationComponent() = default;
 
   float currentTime{ 0.0f };

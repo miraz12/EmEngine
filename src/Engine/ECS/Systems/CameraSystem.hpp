@@ -15,22 +15,20 @@ class CameraSystem
 public:
   void update(float dt) override;
 
-  /// Update CameraUBO with current camera matrices and position.
-  /// Call this once per frame before rendering passes that use CameraData UBO.
-  static void updateCameraUBO(std::shared_ptr<CameraComponent> camera);
+  static void updateCameraUBO(CameraComponent* camera);
 
-  static std::tuple<glm::vec3, glm::vec3>
-  getRayTo(std::shared_ptr<CameraComponent> camera, i32 x, i32 y);
-  static void tilt(std::shared_ptr<CameraComponent> camera, float angle);
+  static std::tuple<glm::vec3, glm::vec3> getRayTo(CameraComponent* camera,
+                                                   i32 x,
+                                                   i32 y);
+  static void tilt(CameraComponent* camera, float angle);
 
   void setMainCamera(Entity entity) { m_mainCamera = entity; }
   Entity getMainCamera() const { return m_mainCamera; }
 
-  /// Get the main camera component (nullptr if none set).
-  std::shared_ptr<CameraComponent> getMainCameraComponent();
+  CameraComponent* getMainCameraComponent();
 
 private:
-  static void updateMatrices(std::shared_ptr<CameraComponent> camera);
+  static void updateMatrices(CameraComponent* camera);
   Entity m_mainCamera{ 0 };
 };
 

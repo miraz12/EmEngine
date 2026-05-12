@@ -107,11 +107,10 @@ ShadowPass::Record(ECSManager& eManager)
   glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
   std::vector<Entity> lightView = eManager.view<LightingComponent>();
   for (auto lightEntity : lightView) {
-    std::shared_ptr<LightingComponent> lightComp =
-      eManager.getComponent<LightingComponent>(lightEntity);
+    auto* lightComp = eManager.getComponent<LightingComponent>(lightEntity);
 
-    if (lightComp->getType() == LightingComponent::TYPE::DIRECTIONAL) {
-      auto& light = static_cast<DirectionalLight&>(lightComp->getBaseLight());
+    if (lightComp->type == LightingComponent::TYPE::DIRECTIONAL) {
+      auto& light = static_cast<DirectionalLight&>(*lightComp->light);
       lightDirection = light.direction;
       break;
     }
@@ -200,14 +199,15 @@ ShadowPass::Record(ECSManager& eManager)
 
     // Draw all shadow-casting geometry
     for (auto& entity : entityView) {
-      std::shared_ptr<PositionComponent> posComp =
-        eManager.getComponent<PositionComponent>(entity);
+      auto* posComp = eManager.getComponent<PositionComponent>(entity);
 
       glm::mat4 entityModel =
-        posComp ? posComp->model : glm::identity<glm::mat4>();
+        posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
+                    glm::mat4_cast(posComp->rotation) *
+                    glm::scale(glm::mat4(1.0f), posComp->scale)
+                : glm::identity<glm::mat4>();
 
-      std::shared_ptr<GraphicsComponent> grapComp =
-        eManager.getComponent<GraphicsComponent>(entity);
+      auto* grapComp = eManager.getComponent<GraphicsComponent>(entity);
 
       // Record geometry-only draw commands; model matrix set per-node inside
       grapComp->m_grapObj->recordDrawGeom(

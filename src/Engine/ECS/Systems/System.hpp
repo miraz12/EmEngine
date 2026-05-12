@@ -1,7 +1,6 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
-#include <ECS/Components/Component.hpp>
 #include <Singleton.hpp>
 
 class ECSManager;

@@ -29,7 +29,6 @@ set(ENGINE_FILES
   ECS/ComponentPool.hpp
   ECS/Components/AnimationComponent.hpp
   ECS/Components/CameraComponent.hpp
-  ECS/Components/Component.hpp
   ECS/Components/DebugComponent.hpp
   ECS/Components/GraphicsComponent.hpp
   ECS/Components/LightingComponent.hpp

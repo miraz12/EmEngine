@@ -110,12 +110,11 @@ LightPass::Record(ECSManager& eManager)
   std::vector<Entity> view = eManager.view<LightingComponent>();
   i32 numPLights = 0;
   for (auto e : view) {
-    std::shared_ptr<LightingComponent> g =
-      eManager.getComponent<LightingComponent>(e);
+    auto* g = eManager.getComponent<LightingComponent>(e);
 
-    switch (g->getType()) {
+    switch (g->type) {
       case LightingComponent::TYPE::DIRECTIONAL: {
-        auto& light = static_cast<DirectionalLight&>(g->getBaseLight());
+        auto& light = static_cast<DirectionalLight&>(*g->light);
 
         lightingUBO.dirLightDirection = glm::vec4(light.direction, 0.0f);
         lightingUBO.dirLightColor = glm::vec4(light.color, light.intensity);
@@ -127,7 +126,7 @@ LightPass::Record(ECSManager& eManager)
           break;
         }
 
-        PointLight& light = static_cast<PointLight&>(g->getBaseLight());
+        PointLight& light = static_cast<PointLight&>(*g->light);
 
         // Calculate radius for culling
         const float constant = 1.0f;

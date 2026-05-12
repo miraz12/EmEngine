@@ -68,8 +68,7 @@ FrameGraph::draw(ECSManager& eManager)
 
 #ifndef NDEBUG
   static constexpr std::string_view kPassNames[] = {
-    "Shadow",   "Geometry", "Light", "CubeMap",
-    "Particle", "Bloom",    "FXAA",
+    "Shadow", "Geometry", "Light", "CubeMap", "Particle", "Bloom", "FXAA",
 #if !defined(EMSCRIPTEN)
     "Debug",
 #endif
@@ -80,7 +79,8 @@ FrameGraph::draw(ECSManager& eManager)
   for (const auto& pass : m_renderPass) {
 #ifndef NDEBUG
     if (m_profiler)
-      m_profiler->beginSection(kPassNames[passIdx], SectionCategory::kRenderPass);
+      m_profiler->beginSection(kPassNames[passIdx],
+                               SectionCategory::kRenderPass);
 #endif
     if (pass->selfSubmitting()) {
       // Flush any pending command buffers before this pass executes,
