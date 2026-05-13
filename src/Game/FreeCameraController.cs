@@ -46,10 +46,7 @@ namespace Entities
                 position += normalizedMove * currentSpeed * dt;
             }
 
-            EngineApi.AddPositionComponent(cameraEntity,
-                new float[] { position.X, position.Y, position.Z },
-                new float[] { 1, 1, 1 },
-                new float[] { 0, 0, 0 });
+            EngineApi.SetPosition(cameraEntity, position.X, position.Y, position.Z);
 
             EngineApi.SetCameraOrientation(cameraEntity,
                 front.X, front.Y, front.Z,

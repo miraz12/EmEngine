@@ -47,6 +47,14 @@ public:
 
   // Configuration
   void setGravity(float x, float y, float z);
+  void setTransform(JPH::BodyID bodyId,
+                    float posX,
+                    float posY,
+                    float posZ,
+                    float rotX,
+                    float rotY,
+                    float rotZ,
+                    float rotW);
 
   DebugDrawer& getDebugDrawer() { return m_dDraw; }
   JPH::BodyInterface& getBodyInterface()

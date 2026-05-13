@@ -66,6 +66,95 @@ extern "C"
   void AddForce(unsigned int entity, float x, float y, float z);
   bool EntityOnGround(unsigned int entity);
 
+  // Entity Management API
+  void DestroyEntity(unsigned int entity);
+  int GetEntityCount();
+  unsigned int GetEntityAtIndex(int index);
+  bool HasComponent(unsigned int entity, int componentType);
+
+  // Transform API
+  void GetPosition(unsigned int entity, float* outX, float* outY, float* outZ);
+  void SetPosition(unsigned int entity, float x, float y, float z);
+  void GetScale(unsigned int entity, float* outX, float* outY, float* outZ);
+  void SetScale(unsigned int entity, float x, float y, float z);
+  void GetRotationQuat(unsigned int entity,
+                       float* outX,
+                       float* outY,
+                       float* outZ,
+                       float* outW);
+  void SetRotationQuat(unsigned int entity, float x, float y, float z, float w);
+
+  // Camera API
+  void SetCameraFov(unsigned int entity, float fov);
+  void SetCameraFarPlane(unsigned int entity, float farPlane);
+  void SetCameraNearPlane(unsigned int entity, float nearPlane);
+  void GetCameraPosition(unsigned int entity,
+                         float* outX,
+                         float* outY,
+                         float* outZ);
+
+  // Physics API
+  void SetGravity(float x, float y, float z);
+  void SetSimulatePhysics(bool simulate);
+  void SetPhysicsTransform(unsigned int entity,
+                           float posX,
+                           float posY,
+                           float posZ,
+                           float rotX,
+                           float rotY,
+                           float rotZ,
+                           float rotW);
+
+  // Lighting API
+  void AddPointLight(unsigned int entity,
+                     float r,
+                     float g,
+                     float b,
+                     float constant,
+                     float linear,
+                     float quadratic,
+                     float x,
+                     float y,
+                     float z);
+  void AddDirectionalLight(unsigned int entity,
+                           float r,
+                           float g,
+                           float b,
+                           float intensity,
+                           float dirX,
+                           float dirY,
+                           float dirZ);
+  void UpdateDirectionalLight(float r,
+                              float g,
+                              float b,
+                              float intensity,
+                              float dirX,
+                              float dirY,
+                              float dirZ);
+  void SetPointLightColor(unsigned int entity, float r, float g, float b);
+  void SetPointLightPosition(unsigned int entity, float x, float y, float z);
+
+  // Particles API
+  void AddParticlesComponent(unsigned int entity,
+                             float velX,
+                             float velY,
+                             float velZ);
+  void SetParticleVelocity(unsigned int entity, float x, float y, float z);
+  void SetParticleRate(unsigned int entity, unsigned int rate);
+
+  // ECS Reset
+  void ResetECS();
+
+  // Core API
+  float GetDeltaTime()
+  {
+    return Core::getInstance().getDt();
+  }
+
+  // Input / Window API
+  void SetCursorMode(int mode);
+  void GetWindowSize(int* outWidth, int* outHeight);
+
   // UI API functions
   bool UI_LoadDocument(const char* path, const char* name)
   {
@@ -90,6 +179,17 @@ extern "C"
   bool UI_IsDocumentVisible(const char* name)
   {
     return UIManager::getInstance().isDocumentVisible(name);
+  }
+
+  // Callback type for UI and state events
+  using StateChangeCallback = void (*)();
+
+  bool UI_RegisterClickCallback(const char* documentName,
+                                const char* elementId,
+                                StateChangeCallback callback)
+  {
+    return UIManager::getInstance().registerClickCallback(
+      documentName, elementId, [callback]() { callback(); });
   }
 
   // Game State API functions
@@ -132,9 +232,6 @@ extern "C"
   {
     return GameStateManager::getInstance().isPaused();
   }
-
-  // Callback type for state change events
-  using StateChangeCallback = void (*)();
 
   void GameState_OnEnterPlaying(StateChangeCallback callback)
   {

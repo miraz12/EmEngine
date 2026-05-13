@@ -179,3 +179,16 @@ Window::setFramebufferSizeCallback(void (*callback)(GLFWwindow* window,
 {
   glfwSetFramebufferSizeCallback(m_window, callback);
 }
+
+extern "C"
+{
+  void SetCursorMode(int mode)
+  {
+    glfwSetInputMode(Window::getInstance().getWindow(), GLFW_CURSOR, mode);
+  }
+
+  void GetWindowSize(int* outWidth, int* outHeight)
+  {
+    glfwGetWindowSize(Window::getInstance().getWindow(), outWidth, outHeight);
+  }
+}

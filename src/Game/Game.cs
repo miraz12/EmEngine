@@ -3,8 +3,6 @@ using Input;
 using EmEngine.Bindings;
 using Entities;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
-
 public class Game
 {
     public InputManager inputManager;
@@ -13,7 +11,6 @@ public class Game
     private static readonly Lazy<Game> lazy = new Lazy<Game>(() => new Game());
     public static Game Instance { get { return lazy.Value; } }
 
-    private Stopwatch stopwatch;
     private float deltaTime;
     public bool useFreeCam = true; // Start with free camera for map inspection
     private bool lastPhysicsState = false;
@@ -26,7 +23,6 @@ public class Game
     private Game()
     {
         inputManager = new InputManager(this);
-        stopwatch = new Stopwatch();
     }
 
     public void Initialize()
@@ -46,7 +42,6 @@ public class Game
             }
 
             EngineApi.Start();
-            stopwatch.Start();
         }
     }
 
@@ -106,7 +101,6 @@ public class Game
 
     private void CalculateDeltaTime()
     {
-        deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
-        stopwatch.Restart();
+        deltaTime = EngineApi.GetDeltaTime();
     }
 }

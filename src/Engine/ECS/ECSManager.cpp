@@ -7,6 +7,7 @@
 #include "ECS/Components/AudioSourceComponent.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
+#include "ECS/Components/ParticlesComponent.hpp"
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "Objects/GltfObject.hpp"
@@ -354,7 +355,7 @@ extern "C"
     return ECSManager::getInstance().createEntity(name);
   }
 
-  void pauseAnimation(unsigned int entity)
+  void PauseAnimation(unsigned int entity)
   {
     auto a = ECSManager::getInstance().getComponent<AnimationComponent>(entity);
     if (!a)
@@ -512,5 +513,280 @@ extern "C"
   void Audio_LoadClip(const char* path)
   {
     AudioSystem::getInstance().loadAudioClip(path);
+  }
+
+  // Entity Management API
+  void DestroyEntity(unsigned int entity)
+  {
+    ECSManager::getInstance().destroyEntity(entity);
+  }
+
+  int GetEntityCount()
+  {
+    return static_cast<int>(ECSManager::getInstance().getEntities().size());
+  }
+
+  unsigned int GetEntityAtIndex(int index)
+  {
+    const auto& entities = ECSManager::getInstance().getEntities();
+    if (index < 0 || index >= static_cast<int>(entities.size()))
+      return 0;
+    return static_cast<unsigned int>(entities[index]);
+  }
+
+  bool HasComponent(unsigned int entity, int componentType)
+  {
+    auto& ecs = ECSManager::getInstance();
+    switch (componentType) {
+      case 0:
+        return ecs.hasComponent<PositionComponent>(entity);
+      case 1:
+        return ecs.hasComponent<PhysicsComponent>(entity);
+      case 2:
+        return ecs.hasComponent<GraphicsComponent>(entity);
+      case 3:
+        return ecs.hasComponent<CameraComponent>(entity);
+      case 4:
+        return ecs.hasComponent<AnimationComponent>(entity);
+      case 5:
+        return ecs.hasComponent<LightingComponent>(entity);
+      case 6:
+        return ecs.hasComponent<ParticlesComponent>(entity);
+      case 7:
+        return ecs.hasComponent<AudioSourceComponent>(entity);
+      default:
+        return false;
+    }
+  }
+
+  // Transform API
+  void GetPosition(unsigned int entity, float* outX, float* outY, float* outZ)
+  {
+    auto* p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (!p) {
+      *outX = *outY = *outZ = 0.0f;
+      return;
+    }
+    *outX = p->position.x;
+    *outY = p->position.y;
+    *outZ = p->position.z;
+  }
+
+  void SetPosition(unsigned int entity, float x, float y, float z)
+  {
+    auto* p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (p)
+      p->position = glm::vec3(x, y, z);
+  }
+
+  void GetScale(unsigned int entity, float* outX, float* outY, float* outZ)
+  {
+    auto* p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (!p) {
+      *outX = *outY = *outZ = 0.0f;
+      return;
+    }
+    *outX = p->scale.x;
+    *outY = p->scale.y;
+    *outZ = p->scale.z;
+  }
+
+  void SetScale(unsigned int entity, float x, float y, float z)
+  {
+    auto* p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (p)
+      p->scale = glm::vec3(x, y, z);
+  }
+
+  void GetRotationQuat(unsigned int entity,
+                       float* outX,
+                       float* outY,
+                       float* outZ,
+                       float* outW)
+  {
+    auto* p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (!p) {
+      *outX = *outY = *outZ = *outW = 0.0f;
+      return;
+    }
+    *outX = p->rotation.x;
+    *outY = p->rotation.y;
+    *outZ = p->rotation.z;
+    *outW = p->rotation.w;
+  }
+
+  void SetRotationQuat(unsigned int entity, float x, float y, float z, float w)
+  {
+    auto* p = ECSManager::getInstance().getComponent<PositionComponent>(entity);
+    if (p)
+      p->rotation = glm::quat(w, x, y, z);
+  }
+
+  // Camera API
+  void SetCameraFov(unsigned int entity, float fov)
+  {
+    auto* cam = ECSManager::getInstance().getComponent<CameraComponent>(entity);
+    if (cam) {
+      cam->m_fov = fov;
+      cam->m_matrixNeedsUpdate = true;
+    }
+  }
+
+  void SetCameraFarPlane(unsigned int entity, float farPlane)
+  {
+    auto* cam = ECSManager::getInstance().getComponent<CameraComponent>(entity);
+    if (cam) {
+      cam->m_far = farPlane;
+      cam->m_matrixNeedsUpdate = true;
+    }
+  }
+
+  void SetCameraNearPlane(unsigned int entity, float nearPlane)
+  {
+    auto* cam = ECSManager::getInstance().getComponent<CameraComponent>(entity);
+    if (cam) {
+      cam->m_near = nearPlane;
+      cam->m_matrixNeedsUpdate = true;
+    }
+  }
+
+  void GetCameraPosition(unsigned int entity,
+                         float* outX,
+                         float* outY,
+                         float* outZ)
+  {
+    auto* cam = ECSManager::getInstance().getComponent<CameraComponent>(entity);
+    if (!cam) {
+      *outX = *outY = *outZ = 0.0f;
+      return;
+    }
+    *outX = cam->m_position.x;
+    *outY = cam->m_position.y;
+    *outZ = cam->m_position.z;
+  }
+
+  // Physics API
+  void SetGravity(float x, float y, float z)
+  {
+    PhysicsSystem::getInstance().setGravity(x, y, z);
+  }
+
+  void SetSimulatePhysics(bool simulate)
+  {
+    ECSManager::getInstance().setSimulatePhysics(simulate);
+  }
+
+  void SetPhysicsTransform(unsigned int entity,
+                           float posX,
+                           float posY,
+                           float posZ,
+                           float rotX,
+                           float rotY,
+                           float rotZ,
+                           float rotW)
+  {
+    auto* phy =
+      ECSManager::getInstance().getComponent<PhysicsComponent>(entity);
+    if (phy && phy->isValid()) {
+      PhysicsSystem::getInstance().setTransform(
+        phy->getBodyID(), posX, posY, posZ, rotX, rotY, rotZ, rotW);
+    }
+  }
+
+  // Lighting API
+  void AddPointLight(unsigned int entity,
+                     float r,
+                     float g,
+                     float b,
+                     float constant,
+                     float linear,
+                     float quadratic,
+                     float x,
+                     float y,
+                     float z)
+  {
+    ECSManager::getInstance().setupPointLight(entity,
+                                              glm::vec3(r, g, b),
+                                              constant,
+                                              linear,
+                                              quadratic,
+                                              glm::vec3(x, y, z));
+  }
+
+  void AddDirectionalLight(unsigned int entity,
+                           float r,
+                           float g,
+                           float b,
+                           float intensity,
+                           float dirX,
+                           float dirY,
+                           float dirZ)
+  {
+    ECSManager::getInstance().setupDirectionalLight(
+      entity, glm::vec3(r, g, b), intensity, glm::vec3(dirX, dirY, dirZ));
+  }
+
+  void UpdateDirectionalLight(float r,
+                              float g,
+                              float b,
+                              float intensity,
+                              float dirX,
+                              float dirY,
+                              float dirZ)
+  {
+    ECSManager::getInstance().updateDirLight(
+      glm::vec3(r, g, b), intensity, glm::vec3(dirX, dirY, dirZ));
+  }
+
+  void SetPointLightColor(unsigned int entity, float r, float g, float b)
+  {
+    auto* lComp =
+      ECSManager::getInstance().getComponent<LightingComponent>(entity);
+    if (lComp && lComp->type == LightingComponent::TYPE::POINT) {
+      auto* pLight = static_cast<PointLight*>(lComp->light.get());
+      pLight->color = glm::vec3(r, g, b);
+    }
+  }
+
+  void SetPointLightPosition(unsigned int entity, float x, float y, float z)
+  {
+    auto* lComp =
+      ECSManager::getInstance().getComponent<LightingComponent>(entity);
+    if (lComp && lComp->type == LightingComponent::TYPE::POINT) {
+      auto* pLight = static_cast<PointLight*>(lComp->light.get());
+      pLight->position = glm::vec3(x, y, z);
+    }
+  }
+
+  // Particles API
+  void AddParticlesComponent(unsigned int entity,
+                             float velX,
+                             float velY,
+                             float velZ)
+  {
+    ECSManager::getInstance().emplaceComponent<ParticlesComponent>(
+      entity, glm::vec3(velX, velY, velZ));
+  }
+
+  void SetParticleVelocity(unsigned int entity, float x, float y, float z)
+  {
+    auto* pc =
+      ECSManager::getInstance().getComponent<ParticlesComponent>(entity);
+    if (pc)
+      pc->velocity = glm::vec3(x, y, z);
+  }
+
+  void SetParticleRate(unsigned int entity, unsigned int rate)
+  {
+    auto* pc =
+      ECSManager::getInstance().getComponent<ParticlesComponent>(entity);
+    if (pc)
+      pc->numNewParticles = rate;
+  }
+
+  // ECS Reset
+  void ResetECS()
+  {
+    ECSManager::getInstance().reset();
   }
 };

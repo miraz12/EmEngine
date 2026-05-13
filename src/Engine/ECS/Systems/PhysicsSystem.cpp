@@ -493,3 +493,22 @@ PhysicsSystem::setGravity(float x, float y, float z)
     m_joltSystem->SetGravity(JPH::Vec3(x, y, z));
   }
 }
+
+void
+PhysicsSystem::setTransform(JPH::BodyID bodyId,
+                            float posX,
+                            float posY,
+                            float posZ,
+                            float rotX,
+                            float rotY,
+                            float rotZ,
+                            float rotW)
+{
+  if (m_joltSystem) {
+    auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+    bodyInterface.SetPositionAndRotation(bodyId,
+                                         JPH::RVec3(posX, posY, posZ),
+                                         JPH::Quat(rotX, rotY, rotZ, rotW),
+                                         JPH::EActivation::Activate);
+  }
+}

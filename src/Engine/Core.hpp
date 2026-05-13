@@ -22,6 +22,7 @@ public:
   void update();
   bool open();
   float& getDeltaTime();
+  float getDt() const { return m_dt; }
 
 private:
   ECSManager* m_ECSManager = nullptr;

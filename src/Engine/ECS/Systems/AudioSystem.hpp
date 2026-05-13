@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
-// OpenAL types (Emscripten's headers use different struct names for the typedefs)
+// OpenAL types (Emscripten's headers use different struct names for the
+// typedefs)
 #include <AL/al.h>
 #include <AL/alc.h>
 
