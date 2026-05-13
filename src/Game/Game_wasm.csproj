@@ -21,7 +21,7 @@
     <NativeLibrary Include="../../resources/lib/wasm/librmlui_debugger.a"/>
     <NativeLibrary Include="../../resources/lib/wasm/libfreetyped.a" Condition="'$(Configuration)' == 'Debug'"/>
     <NativeLibrary Include="../../resources/lib/wasm/libfreetype.a" Condition="'$(Configuration)' == 'Release'"/>
-    <LinkerArg Include="--bind -sFULL_ES2 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources  -sFORCE_FILESYSTEM"/>
+    <LinkerArg Include="--bind -sFULL_ES2 -sUSE_GLFW=3 -sWASM=1 -sMAX_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH --preload-file ../../resources --exclude-file %2Alib --exclude-file %2AScripts -sFORCE_FILESYSTEM"/>
   </ItemGroup>
 
 </Project>
