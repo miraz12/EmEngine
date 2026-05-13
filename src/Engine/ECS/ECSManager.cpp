@@ -4,12 +4,14 @@
 #endif
 #include "Components/GraphicsComponent.hpp"
 #include "ECS/Components/AnimationComponent.hpp"
+#include "ECS/Components/AudioSourceComponent.hpp"
 #include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/LightingComponent.hpp"
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "Objects/GltfObject.hpp"
 #include "Systems/AnimationSystem.hpp"
+#include "Systems/AudioSystem.hpp"
 #include "Systems/CameraSystem.hpp"
 #include "Systems/GraphicsSystem.hpp"
 #include "Systems/ParticleSystem.hpp"
@@ -27,14 +29,17 @@ ECSManager::initializeSystems()
   m_systems["ANIMATION"] = &AnimationSystem::getInstance();
   m_systems["GRAPHICS"] = &GraphicsSystem::getInstance();
   m_systems["CAMERA"] = &CameraSystem::getInstance();
+  m_systems["AUDIO"] = &AudioSystem::getInstance();
 
-  // Explicit update order: camera -> particles -> animation -> position -> graphics -> physics
+  // Explicit update order: camera -> particles -> animation -> audio -> position -> graphics -> physics
+  // Audio runs after animation (needs camera for listener) but before graphics.
   // Physics runs last so that forces/velocities set by the game layer (C# via C API)
   // between frames are consumed in the same frame's physics step.
   m_systemUpdateOrder = {
     m_systems["CAMERA"],
     m_systems["PARTICLES"],
     m_systems["ANIMATION"],
+    m_systems["AUDIO"],
     m_systems["POSITION"],
     m_systems["GRAPHICS"],
     m_systems["PHYSICS"],
@@ -50,7 +55,7 @@ ECSManager::update(float dt)
 {
 #ifndef NDEBUG
   static constexpr std::string_view kSystemNames[] = {
-    "Camera", "Particles", "Animation", "Position", "Graphics", "Physics"
+    "Camera", "Particles", "Animation", "Audio", "Position", "Graphics", "Physics"
   };
 #endif
 
@@ -410,5 +415,102 @@ extern "C"
   bool GetSimulatePhysics()
   {
     return ECSManager::getInstance().getSimulatePhysics();
+  }
+
+  // Audio API
+  void AddAudioSourceComponent(int entity, const char* clipPath)
+  {
+    ECSManager::getInstance().emplaceComponent<AudioSourceComponent>(
+      entity, std::string(clipPath));
+  }
+
+  void Audio_Play(unsigned int entity)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio) {
+      audio->play = true;
+      audio->stop = false;
+    }
+  }
+
+  void Audio_Stop(unsigned int entity)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio) {
+      audio->stop = true;
+      audio->play = false;
+    }
+  }
+
+  void Audio_SetVolume(unsigned int entity, float volume)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio)
+      audio->volume = volume;
+  }
+
+  void Audio_SetPitch(unsigned int entity, float pitch)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio)
+      audio->pitch = pitch;
+  }
+
+  void Audio_SetLoop(unsigned int entity, bool loop)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio)
+      audio->loop = loop;
+  }
+
+  void Audio_Set3D(unsigned int entity, bool is3D)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio)
+      audio->is3D = is3D;
+  }
+
+  void Audio_SetMinDistance(unsigned int entity, float dist)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio)
+      audio->minDistance = dist;
+  }
+
+  void Audio_SetMaxDistance(unsigned int entity, float dist)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    if (audio)
+      audio->maxDistance = dist;
+  }
+
+  bool Audio_IsPlaying(unsigned int entity)
+  {
+    auto* audio =
+      ECSManager::getInstance().getComponent<AudioSourceComponent>(entity);
+    return audio ? audio->isPlaying : false;
+  }
+
+  void Audio_SetMasterVolume(float volume)
+  {
+    AudioSystem::getInstance().setMasterVolume(volume);
+  }
+
+  float Audio_GetMasterVolume()
+  {
+    return AudioSystem::getInstance().getMasterVolume();
+  }
+
+  void Audio_LoadClip(const char* path)
+  {
+    AudioSystem::getInstance().loadAudioClip(path);
   }
 };

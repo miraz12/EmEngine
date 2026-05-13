@@ -23,6 +23,9 @@ set(ENGINE_FILES
   Window.cpp
   Window.hpp
 
+  # Audio
+  Audio/AudioDecoders.cpp
+
   # ECS
   ECS/ECSManager.cpp
   ECS/ECSManager.hpp
@@ -33,11 +36,15 @@ set(ENGINE_FILES
   ECS/Components/GraphicsComponent.hpp
   ECS/Components/LightingComponent.hpp
   ECS/Components/ParticlesComponent.hpp
+  ECS/Components/AudioSourceComponent.cpp
+  ECS/Components/AudioSourceComponent.hpp
   ECS/Components/PhysicsComponent.cpp
   ECS/Components/PhysicsComponent.hpp
   ECS/Components/PositionComponent.hpp
   ECS/Systems/AnimationSystem.cpp
   ECS/Systems/AnimationSystem.hpp
+  ECS/Systems/AudioSystem.cpp
+  ECS/Systems/AudioSystem.hpp
   ECS/Systems/CameraSystem.cpp
   ECS/Systems/CameraSystem.hpp
   ECS/Systems/GraphicsSystem.cpp
@@ -171,6 +178,9 @@ target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
 target_link_libraries(Engine PUBLIC exts)
+if(DEFINED EMSCRIPTEN)
+  target_link_options(Engine PUBLIC -lopenal)
+endif()
 target_precompile_headers(Engine PUBLIC engine_pch.hpp)
 target_compile_definitions(Engine PUBLIC GLM_FORCE_SILENT_WARNINGS=1)
 set_property(TARGET Engine PROPERTY CXX_STANDARD 23)

@@ -31,6 +31,9 @@
           wayland-scanner
           libxkbcommon
           libGL
+          alsa-lib
+          pipewire
+          libpulseaudio
           libxml2
           pkg-config
           libffi
@@ -42,6 +45,9 @@
           with pkgs;
           mkShell.override { stdenv = llvmPackages.stdenv; } {
             nativeBuildInputs = [
+              alsa-lib
+              pipewire
+              libpulseaudio
               cmake
               cmake-language-server
               clang-tools

@@ -62,6 +62,27 @@ set(DEBUG_RENDERER_IN_DISTRIBUTION OFF CACHE BOOL "" FORCE)
 add_subdirectory(JoltPhysics/Build)
 target_include_directories(exts SYSTEM INTERFACE JoltPhysics)
 
+# OpenAL Soft (native only; Emscripten has built-in OpenAL)
+if(NOT DEFINED EMSCRIPTEN)
+  set(ALSOFT_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(ALSOFT_UTILS OFF CACHE BOOL "" FORCE)
+  set(ALSOFT_INSTALL OFF CACHE BOOL "" FORCE)
+  set(ALSOFT_INSTALL_CONFIG OFF CACHE BOOL "" FORCE)
+  set(ALSOFT_INSTALL_HRTF_DATA OFF CACHE BOOL "" FORCE)
+  set(ALSOFT_INSTALL_AMBDEC_PRESETS OFF CACHE BOOL "" FORCE)
+  set(LIBTYPE STATIC CACHE STRING "" FORCE)
+  set(ALSOFT_DLOPEN OFF CACHE BOOL "" FORCE)
+  set(HAVE_DLFCN_H OFF CACHE BOOL "" FORCE)
+  add_subdirectory(openal-soft)
+  target_include_directories(exts SYSTEM INTERFACE openal-soft/include)
+  # OpenAL Soft's pkg_check_modules captures PIPEWIRE_LIBRARY_DIRS but doesn't
+  # add it to link_directories, causing -lpipewire-0.3 to fail. Propagate all
+  # backend library dirs so the linker can find them.
+  if(PIPEWIRE_LIBRARY_DIRS)
+    target_link_directories(exts INTERFACE ${PIPEWIRE_LIBRARY_DIRS})
+  endif()
+endif()
+
 # GLM
 add_subdirectory(glm)
 target_include_directories(exts SYSTEM INTERFACE glm/include)
@@ -149,6 +170,5 @@ target_link_libraries(
       )
 
 if(NOT DEFINED EMSCRIPTEN)
-  target_link_libraries(exts INTERFACE glad)
-
+  target_link_libraries(exts INTERFACE glad OpenAL)
 endif()

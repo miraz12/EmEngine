@@ -25,3 +25,6 @@
 [submodule "exts/JoltPhysics"]
 	path = exts/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "exts/openal-soft"]
+	path = exts/openal-soft
+	url = https://github.com/kcat/openal-soft.git

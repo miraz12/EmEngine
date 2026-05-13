@@ -148,6 +148,21 @@ extern "C"
                                                 [callback]() { callback(); });
   }
 
+  // Audio API
+  void AddAudioSourceComponent(int entity, const char* clipPath);
+  void Audio_Play(unsigned int entity);
+  void Audio_Stop(unsigned int entity);
+  void Audio_SetVolume(unsigned int entity, float volume);
+  void Audio_SetPitch(unsigned int entity, float pitch);
+  void Audio_SetLoop(unsigned int entity, bool loop);
+  void Audio_Set3D(unsigned int entity, bool is3D);
+  void Audio_SetMinDistance(unsigned int entity, float dist);
+  void Audio_SetMaxDistance(unsigned int entity, float dist);
+  bool Audio_IsPlaying(unsigned int entity);
+  void Audio_SetMasterVolume(float volume);
+  float Audio_GetMasterVolume();
+  void Audio_LoadClip(const char* path);
+
   void Start()
   {
 

@@ -40,8 +40,7 @@ ParticleSystem::killParticle(ParticlesComponent* pComp,
 {
   std::vector<std::shared_ptr<Particle>>& aliveParticles =
     pComp->aliveParticles;
-  std::vector<std::shared_ptr<Particle>>& deadParticles =
-    pComp->deadParticles;
+  std::vector<std::shared_ptr<Particle>>& deadParticles = pComp->deadParticles;
   std::vector<std::shared_ptr<Particle>>::iterator it =
     std::find(aliveParticles.begin(), aliveParticles.end(), p);
   if (it != aliveParticles.end()) {
@@ -53,8 +52,7 @@ ParticleSystem::killParticle(ParticlesComponent* pComp,
 void
 ParticleSystem::reviveParticle(ParticlesComponent* pComp, glm::vec3& pos)
 {
-  std::vector<std::shared_ptr<Particle>>& deadParticles =
-    pComp->deadParticles;
+  std::vector<std::shared_ptr<Particle>>& deadParticles = pComp->deadParticles;
   if (!deadParticles.empty()) {
     std::vector<std::shared_ptr<Particle>>& aliveParticles =
       pComp->aliveParticles;
@@ -70,8 +68,8 @@ ParticleSystem::reviveParticle(ParticlesComponent* pComp, glm::vec3& pos)
     p->color = glm::vec4(r * mul, g * mul, b * mul, 1.0f);
     p->life = 1.0f;
     p->velocity = pComp->velocity + glm::vec3(distribution(generator),
-                                                   distribution(generator),
-                                                   distribution(generator));
+                                              distribution(generator),
+                                              distribution(generator));
     aliveParticles.push_back(std::move(deadParticles.back()));
     deadParticles.pop_back();
   }
