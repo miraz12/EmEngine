@@ -23,11 +23,18 @@ private:
 
   // Cached uniform locations for CommandBuffer use
   i32 m_lightSpaceMatrixLoc{ -1 };
-  i32 m_modelMatrixLoc{ -1 };
   i32 m_isSkinnedLoc{ -1 };
 
   // Pipeline for CommandBuffer rendering
   gfx::PipelineId m_pipeline{};
+
+  // Instanced rendering (batched non-skinned entities)
+  gfx::BufferId m_instanceBuffer{};
+  u32 m_instanceBufferCapacity{ 0 };
+  static constexpr u32 kInitialInstanceCapacity = 256;
+
+  // Single-instance buffer for skinned entity draws
+  gfx::BufferId m_singleInstanceBuffer{};
 };
 
 #endif // SHADOWPASS_H_

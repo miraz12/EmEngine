@@ -170,7 +170,7 @@ void
 GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
                            gfx::SamplerId sampler,
                            const glm::mat4& entityModel,
-                           i32 modelMatrixLoc,
+                           gfx::BufferId instanceBuffer,
                            i32 isSkinnedLoc)
 {
   auto& resources = gfx::RenderResources::getInstance();
@@ -179,13 +179,12 @@ GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
     if (p_nodes[i].mesh >= 0) {
       bool isSkinned = p_nodes[i].skin >= 0;
 
-      // Skinned meshes: modelMatrix is the entity transform only (skinning
-      // matrices already encode node-to-world via getMatrix(joint)).
+      // Write per-node model matrix to instance buffer (deferred).
+      // Skinned meshes: entityModel only (skinning encodes node-to-world).
       // Non-skinned meshes: bake the node's local-to-world into modelMatrix.
-      if (modelMatrixLoc >= 0) {
-        cmd.setUniform(modelMatrixLoc,
-                       isSkinned ? entityModel : entityModel * getMatrix(i));
-      }
+      glm::mat4 nodeModel =
+        isSkinned ? entityModel : entityModel * getMatrix(i);
+      cmd.updateBuffer(instanceBuffer, 0, &nodeModel, sizeof(glm::mat4));
 
       // Set is_skinned uniform if location is valid
       if (isSkinnedLoc >= 0) {
@@ -243,6 +242,7 @@ GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
                           : &defaultMat;
 
         mat->recordBind(cmd, sampler);
+        cmd.bindVertexBuffer(1, instanceBuffer, 0);
         mesh.m_primitives[j].recordDraw(cmd);
       }
     }
@@ -252,7 +252,7 @@ GraphicsObject::recordDraw(gfx::CommandBuffer& cmd,
 void
 GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd,
                                const glm::mat4& entityModel,
-                               i32 modelMatrixLoc,
+                               gfx::BufferId instanceBuffer,
                                i32 isSkinnedLoc)
 {
   auto& resources = gfx::RenderResources::getInstance();
@@ -261,13 +261,10 @@ GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd,
     if (p_nodes[i].mesh >= 0) {
       bool isSkinned = p_nodes[i].skin >= 0;
 
-      // Skinned meshes: modelMatrix is the entity transform only (skinning
-      // matrices already encode node-to-world via getMatrix(joint)).
-      // Non-skinned meshes: bake the node's local-to-world into modelMatrix.
-      if (modelMatrixLoc >= 0) {
-        cmd.setUniform(modelMatrixLoc,
-                       isSkinned ? entityModel : entityModel * getMatrix(i));
-      }
+      // Write per-node model matrix to instance buffer (deferred).
+      glm::mat4 nodeModel =
+        isSkinned ? entityModel : entityModel * getMatrix(i);
+      cmd.updateBuffer(instanceBuffer, 0, &nodeModel, sizeof(glm::mat4));
 
       // Set is_skinned uniform if location is valid
       if (isSkinnedLoc >= 0) {
@@ -316,6 +313,7 @@ GraphicsObject::recordDrawGeom(gfx::CommandBuffer& cmd,
 
       Mesh& mesh = p_meshes[p_nodes[i].mesh];
       for (u32 j = 0; j < mesh.numPrims; j++) {
+        cmd.bindVertexBuffer(1, instanceBuffer, 0);
         mesh.m_primitives[j].recordDraw(cmd);
       }
     }

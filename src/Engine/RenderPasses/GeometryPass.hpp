@@ -15,8 +15,16 @@ public:
 private:
   gfx::SamplerId m_sampler{};
   gfx::PipelineId m_pipeline{};
-  i32 m_modelMatrixLoc{ -1 };
   i32 m_isSkinnedLoc{ -1 };
+
+  // Instanced rendering (batched non-skinned entities)
+  gfx::BufferId m_instanceBuffer{};
+  u32 m_instanceBufferCapacity{ 0 };
+  static constexpr u32 kInitialInstanceCapacity = 256;
+
+  // Single-instance buffer for skinned entity draws (separate to avoid
+  // overwriting batched data before command buffer execution)
+  gfx::BufferId m_singleInstanceBuffer{};
 };
 
 #endif // GEOMETRYPASS_H_

@@ -12,6 +12,9 @@ layout(location = 3) in vec2 TEXCOORD_0;
 layout(location = 4) in vec4 JOINTS_0;  // Bone indices
 layout(location = 5) in vec4 WEIGHTS_0; // Bone weights
 
+// Per-instance model matrix 
+layout(location = 6) in mat4 iModelMatrix;
+
 // Camera UBO (binding point 1)
 layout(std140) uniform CameraData
 {
@@ -21,7 +24,6 @@ layout(std140) uniform CameraData
   vec4 cameraPosition; // xyz = position, w = unused
 };
 
-uniform mat4 modelMatrix;
 uniform mat4 meshMatrix; // Currently unused
 uniform bool is_skinned;
 uniform sampler2D jointMats; // Bone matrices texture
@@ -43,6 +45,8 @@ getBoneMatrix(int boneIdx)
 void
 main()
 {
+  mat4 model = iModelMatrix;
+
   vec4 worldPos = vec4(POSITION, 1.0);
   vec3 skinnedNormal = NORMAL;
 
@@ -56,9 +60,9 @@ main()
     skinnedNormal = mat3(skinMat) * NORMAL;
   }
 
-  gl_Position = projMatrix * viewMatrix * modelMatrix * worldPos;
-  pPosition = (modelMatrix * worldPos).xyz;
-  mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
+  gl_Position = projMatrix * viewMatrix * model * worldPos;
+  pPosition = (model * worldPos).xyz;
+  mat3 normalMatrix = transpose(inverse(mat3(model)));
 
   pNormal = normalize(normalMatrix * skinnedNormal);
   pTexCoords = TEXCOORD_0;

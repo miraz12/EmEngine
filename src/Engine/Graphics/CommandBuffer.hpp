@@ -79,6 +79,9 @@ enum class CommandType : u8
   SetUniformVec2,
   SetUniformFloat,
   SetUniformInt,
+  // Buffer/texture update
+  UpdateBuffer,
+  UpdateDataTexture,
   // Draw calls
   Draw,
   DrawIndexed,
@@ -157,6 +160,17 @@ public:
   void setUniform(i32 location, const glm::vec2& value);
   void setUniform(i32 location, float value);
   void setUniform(i32 location, i32 value);
+
+  /// Update buffer contents (deferred — data is captured at recording time)
+  void updateBuffer(BufferId buffer, u64 offset, const void* data, u64 size);
+
+  /// Update a data texture via RenderResources (deferred — data captured at recording time).
+  void updateDataTexture(u32 textureUnit,
+                         const std::string& textureName,
+                         u32 width,
+                         u32 height,
+                         const void* data,
+                         u64 dataSize);
 
   void draw(u32 vertexCount,
             u32 instanceCount = 1,

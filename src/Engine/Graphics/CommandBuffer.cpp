@@ -237,6 +237,21 @@ CommandBuffer::setUniform(i32 location, i32 value)
 }
 
 void
+CommandBuffer::updateBuffer(BufferId buffer,
+                            u64 offset,
+                            const void* data,
+                            u64 size)
+{
+  encodeCommand(CommandType::UpdateBuffer);
+  encode(buffer);
+  encode(offset);
+  encode(size);
+  // Inline the raw data bytes into the command stream
+  const auto* bytes = reinterpret_cast<const u8*>(data);
+  m_commandStream.insert(m_commandStream.end(), bytes, bytes + size);
+}
+
+void
 CommandBuffer::draw(u32 vertexCount,
                     u32 instanceCount,
                     u32 firstVertex,

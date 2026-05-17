@@ -8,7 +8,9 @@ layout(location = 0) in vec3 POSITION;  // Vertex position
 layout(location = 4) in vec4 JOINTS_0;  // Bone indices (4 influences)
 layout(location = 5) in vec4 WEIGHTS_0; // Bone weights (4 influences, sum=1)
 
-uniform mat4 modelMatrix;      // Model transform
+// Per-instance model matrix (binding 1, divisor=1, consumes locations 6-9)
+layout(location = 6) in mat4 iModelMatrix;
+
 uniform mat4 lightSpaceMatrix; // Light view-projection matrix
 uniform bool is_skinned;       // Enable skeletal animation
 uniform sampler2D
@@ -17,7 +19,7 @@ uniform sampler2D
 // Fetch bone transformation matrix from texture
 // Bone matrices stored as 4 consecutive texels (columns)
 // Params: boneIdx (bone index)
-// Returns: 4×4 transformation matrix for the bone
+// Returns: 4x4 transformation matrix for the bone
 mat4
 getBoneMatrix(int boneIdx)
 {
@@ -30,6 +32,8 @@ getBoneMatrix(int boneIdx)
 void
 main()
 {
+  mat4 model = iModelMatrix;
+
   vec4 worldPos = vec4(POSITION, 1.0);
   if (is_skinned) {
     mat4 skinMat = WEIGHTS_0.x * getBoneMatrix(int(JOINTS_0.x)) +
@@ -39,5 +43,5 @@ main()
     worldPos = skinMat * vec4(POSITION, 1.0);
   }
 
-  gl_Position = lightSpaceMatrix * modelMatrix * worldPos;
+  gl_Position = lightSpaceMatrix * model * worldPos;
 }

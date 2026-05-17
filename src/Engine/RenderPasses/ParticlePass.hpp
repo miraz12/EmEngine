@@ -21,8 +21,11 @@ private:
   // Cached uniform locations for performance
   i32 m_projMatrixLoc{ -1 };
   i32 m_viewMatrixLoc{ -1 };
-  i32 m_particlePosLoc{ -1 };
-  i32 m_colorLoc{ -1 };
+
+  // Instanced rendering
+  gfx::BufferId m_instanceBuffer{};
+  u32 m_instanceBufferCapacity{ 0 };
+  static constexpr u32 kInitialInstanceCapacity = 50000;
 };
 
 #endif // PARTICLEPASS_H_

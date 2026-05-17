@@ -660,7 +660,7 @@ Device::createPipeline(const PipelineCreateInfo& info)
   // Enable and configure all vertex attributes
   // The actual buffer bindings will be set when binding vertex buffers
   for (const auto& attrib : info.vertexAttributes) {
-    glEnableVertexAttribArray(attrib.location);
+    enableVertexAttribLocations(attrib);
   }
 
   glBindVertexArray(0);
@@ -965,7 +965,7 @@ Device::createVertexArray(const VertexArrayCreateInfo& info)
   // glVertexAttribPointer, so we defer that to drawVertexArray when the
   // actual VBO is bound.
   for (const auto& attrib : info.vertexAttributes) {
-    glEnableVertexAttribArray(attrib.location);
+    enableVertexAttribLocations(attrib);
   }
 
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
@@ -1031,30 +1031,15 @@ Device::drawVertexArray(VertexArrayId vao, BufferId vertexBuffer)
 
   for (const auto& attrib : vaoRes->attributes) {
     u32 stride = 0;
+    bool perInstance = false;
     for (const auto& binding : vaoRes->bindings) {
       if (binding.binding == attrib.binding) {
         stride = binding.stride;
+        perInstance = binding.perInstance;
         break;
       }
     }
-
-    auto info = toGLVertexAttrib(attrib.format);
-    if (info.isInteger) {
-      glVertexAttribIPointer(
-        attrib.location,
-        info.size,
-        info.type,
-        stride,
-        reinterpret_cast<void*>(static_cast<uintptr_t>(attrib.offset)));
-    } else {
-      glVertexAttribPointer(
-        attrib.location,
-        info.size,
-        info.type,
-        info.normalized,
-        stride,
-        reinterpret_cast<void*>(static_cast<uintptr_t>(attrib.offset)));
-    }
+    configureVertexAttribPointers(attrib, stride, 0, perInstance);
   }
 
   GLenum mode = toGLPrimitive(vaoRes->topology);
@@ -1088,31 +1073,15 @@ Device::drawVertexArrayDynamic(VertexArrayId vao,
 
   for (const auto& attrib : vaoRes->attributes) {
     u32 stride = 0;
+    bool perInstance = false;
     for (const auto& binding : vaoRes->bindings) {
       if (binding.binding == attrib.binding) {
         stride = binding.stride;
+        perInstance = binding.perInstance;
         break;
       }
     }
-
-    auto info = toGLVertexAttrib(attrib.format);
-    if (info.isInteger) {
-      glVertexAttribIPointer(
-        attrib.location,
-        info.size,
-        info.type,
-        stride,
-        reinterpret_cast<void*>(static_cast<uintptr_t>(attrib.offset)));
-    } else {
-      glVertexAttribPointer(
-        attrib.location,
-        info.size,
-        info.type,
-        info.normalized,
-        stride,
-        reinterpret_cast<void*>(static_cast<uintptr_t>(attrib.offset)));
-    }
-    glEnableVertexAttribArray(attrib.location);
+    configureVertexAttribPointers(attrib, stride, 0, perInstance);
   }
 
   GLenum mode = toGLPrimitive(topology);
@@ -1146,31 +1115,15 @@ Device::drawIndexedVertexArray(VertexArrayId vao,
 
   for (const auto& attrib : vaoRes->attributes) {
     u32 stride = 0;
+    bool perInstance = false;
     for (const auto& binding : vaoRes->bindings) {
       if (binding.binding == attrib.binding) {
         stride = binding.stride;
+        perInstance = binding.perInstance;
         break;
       }
     }
-
-    auto info = toGLVertexAttrib(attrib.format);
-    if (info.isInteger) {
-      glVertexAttribIPointer(
-        attrib.location,
-        info.size,
-        info.type,
-        stride,
-        reinterpret_cast<void*>(static_cast<uintptr_t>(attrib.offset)));
-    } else {
-      glVertexAttribPointer(
-        attrib.location,
-        info.size,
-        info.type,
-        info.normalized,
-        stride,
-        reinterpret_cast<void*>(static_cast<uintptr_t>(attrib.offset)));
-    }
-    glEnableVertexAttribArray(attrib.location);
+    configureVertexAttribPointers(attrib, stride, 0, perInstance);
   }
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibufRes->glName);
@@ -1739,6 +1692,18 @@ Device::executeCommandBuffer(const CommandBuffer& cmdBuffer)
         glUniform1i(location, value);
         break;
       }
+      case CommandType::UpdateBuffer: {
+        BufferId buffer;
+        u64 bufOffset, bufSize;
+        read(buffer);
+        read(bufOffset);
+        read(bufSize);
+        // Data is inline in command stream
+        const void* data = stream.data() + offset;
+        offset += static_cast<size_t>(bufSize);
+        updateBuffer(buffer, bufOffset, data, bufSize);
+        break;
+      }
       case CommandType::Draw: {
         u32 vertexCount, instanceCount, firstVertex, firstInstance;
         read(vertexCount);
@@ -1945,10 +1910,14 @@ Device::executeBindVertexBuffer(u32 binding, BufferId buffer, u64 offset)
   // If an explicit VAO was bound via bindVertexArray command, use the VAO's
   // vertex layout instead of the pipeline's. The VAO already has vertex
   // attribute locations enabled; we just need to configure the pointers.
+  // If the VAO has no attributes for this binding, fall through to the
+  // pipeline's layout (needed for per-instance bindings in instanced draws).
   auto* explicitVao = m_vertexArrays.get(m_stateCache.explicitVAO);
   if (explicitVao) {
+    bool foundBinding = false;
     for (const auto& attrib : explicitVao->attributes) {
       if (attrib.binding == binding) {
+        foundBinding = true;
         u32 stride = 0;
         bool perInstance = false;
         for (const auto& vaoBinding : explicitVao->bindings) {
@@ -1959,31 +1928,14 @@ Device::executeBindVertexBuffer(u32 binding, BufferId buffer, u64 offset)
           }
         }
 
-        auto info = toGLVertexAttrib(attrib.format);
-        if (info.isInteger) {
-          glVertexAttribIPointer(
-            attrib.location,
-            info.size,
-            info.type,
-            static_cast<GLsizei>(stride),
-            reinterpret_cast<const void*>(offset + attrib.offset));
-        } else {
-          glVertexAttribPointer(
-            attrib.location,
-            info.size,
-            info.type,
-            info.normalized,
-            static_cast<GLsizei>(stride),
-            reinterpret_cast<const void*>(offset + attrib.offset));
-        }
-        if (perInstance) {
-          glVertexAttribDivisor(attrib.location, 1);
-        } else {
-          glVertexAttribDivisor(attrib.location, 0);
-        }
+        configureVertexAttribPointers(
+          attrib, static_cast<GLsizei>(stride), offset, perInstance);
       }
     }
-    return;
+    if (foundBinding) {
+      return;
+    }
+    // Fall through to pipeline layout for bindings not in the VAO
   }
 
   // Fall back to pipeline's vertex layout
@@ -2004,28 +1956,8 @@ Device::executeBindVertexBuffer(u32 binding, BufferId buffer, u64 offset)
 
   for (const auto& attrib : pipe->vertexAttributes) {
     if (attrib.binding == binding) {
-      auto info = toGLVertexAttrib(attrib.format);
-      if (info.isInteger) {
-        glVertexAttribIPointer(
-          attrib.location,
-          info.size,
-          info.type,
-          static_cast<GLsizei>(stride),
-          reinterpret_cast<const void*>(offset + attrib.offset));
-      } else {
-        glVertexAttribPointer(
-          attrib.location,
-          info.size,
-          info.type,
-          info.normalized,
-          static_cast<GLsizei>(stride),
-          reinterpret_cast<const void*>(offset + attrib.offset));
-      }
-      if (perInstance) {
-        glVertexAttribDivisor(attrib.location, 1);
-      } else {
-        glVertexAttribDivisor(attrib.location, 0);
-      }
+      configureVertexAttribPointers(
+        attrib, static_cast<GLsizei>(stride), offset, perInstance);
     }
   }
 }
@@ -2318,6 +2250,8 @@ Device::toGLBufferUsage(BufferUsage usage)
 {
   if (hasFlag(usage, BufferUsage::Uniform))
     return GL_DYNAMIC_DRAW;
+  if (hasFlag(usage, BufferUsage::Dynamic))
+    return GL_STREAM_DRAW;
   return GL_STATIC_DRAW;
 }
 
@@ -2534,6 +2468,7 @@ Device::toGLVertexAttrib(PixelFormat format)
     case PixelFormat::RGBA16F:
       return { 4, GL_HALF_FLOAT, GL_FALSE, false };
     case PixelFormat::RGBA32F:
+    case PixelFormat::MAT4F: // Each column is vec4; expansion handled at call sites
       return { 4, GL_FLOAT, GL_FALSE, false };
     case PixelFormat::RGB10A2:
       return { 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, false };
@@ -2557,6 +2492,55 @@ Device::toGLVertexAttrib(PixelFormat format)
 
     default:
       return { 4, GL_FLOAT, GL_FALSE, false };
+  }
+}
+
+void
+Device::enableVertexAttribLocations(const VertexAttribute& attrib)
+{
+  if (attrib.format == PixelFormat::MAT4F) {
+    for (u32 col = 0; col < 4; ++col) {
+      glEnableVertexAttribArray(attrib.location + col);
+    }
+  } else {
+    glEnableVertexAttribArray(attrib.location);
+  }
+}
+
+void
+Device::configureVertexAttribPointers(const VertexAttribute& attrib,
+                                      GLsizei stride,
+                                      u64 baseOffset,
+                                      bool perInstance)
+{
+  auto info = toGLVertexAttrib(attrib.format);
+  u32 columnCount = (attrib.format == PixelFormat::MAT4F) ? 4u : 1u;
+
+  for (u32 col = 0; col < columnCount; ++col) {
+    u32 loc = attrib.location + col;
+    auto colOffset =
+      baseOffset + attrib.offset + static_cast<u64>(col) * 16u;
+
+    glEnableVertexAttribArray(loc);
+
+    if (info.isInteger) {
+      glVertexAttribIPointer(
+        loc,
+        info.size,
+        info.type,
+        stride,
+        reinterpret_cast<const void*>(colOffset));
+    } else {
+      glVertexAttribPointer(
+        loc,
+        info.size,
+        info.type,
+        info.normalized,
+        stride,
+        reinterpret_cast<const void*>(colOffset));
+    }
+
+    glVertexAttribDivisor(loc, perInstance ? 1 : 0);
   }
 }
 

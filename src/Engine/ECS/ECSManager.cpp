@@ -32,17 +32,14 @@ ECSManager::initializeSystems()
   m_systems["CAMERA"] = &CameraSystem::getInstance();
   m_systems["AUDIO"] = &AudioSystem::getInstance();
 
-  // Explicit update order: camera -> particles -> animation -> audio -> position -> graphics -> physics
-  // Audio runs after animation (needs camera for listener) but before graphics.
-  // Physics runs last so that forces/velocities set by the game layer (C# via C API)
-  // between frames are consumed in the same frame's physics step.
+  // Explicit update order: camera -> particles -> animation -> audio ->
+  // position -> graphics -> physics Audio runs after animation (needs camera
+  // for listener) but before graphics. Physics runs last so that
+  // forces/velocities set by the game layer (C# via C API) between frames are
+  // consumed in the same frame's physics step.
   m_systemUpdateOrder = {
-    m_systems["CAMERA"],
-    m_systems["PARTICLES"],
-    m_systems["ANIMATION"],
-    m_systems["AUDIO"],
-    m_systems["POSITION"],
-    m_systems["GRAPHICS"],
+    m_systems["CAMERA"],  m_systems["PARTICLES"], m_systems["ANIMATION"],
+    m_systems["AUDIO"],   m_systems["POSITION"],  m_systems["GRAPHICS"],
     m_systems["PHYSICS"],
   };
 
@@ -55,9 +52,10 @@ void
 ECSManager::update(float dt)
 {
 #ifndef NDEBUG
-  static constexpr std::string_view kSystemNames[] = {
-    "Camera", "Particles", "Animation", "Audio", "Position", "Graphics", "Physics"
-  };
+  static constexpr std::string_view kSystemNames[] = { "Camera",    "Particles",
+                                                       "Animation", "Audio",
+                                                       "Position",  "Graphics",
+                                                       "Physics" };
 #endif
 
   for (size_t i = 0; i < m_systemUpdateOrder.size(); ++i) {

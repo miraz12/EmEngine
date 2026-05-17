@@ -10,6 +10,44 @@
 #include <Graphics/UBOStructs.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 #include <RenderPasses/RenderPass.hpp>
+#include <unordered_map>
+
+namespace {
+
+// Instance key for grouping entities that share the same primitive
+struct InstanceKey
+{
+  GraphicsObject* obj;
+  u32 nodeIdx;
+  u32 primIdx;
+
+  bool operator==(const InstanceKey&) const = default;
+};
+
+struct InstanceKeyHash
+{
+  size_t operator()(const InstanceKey& key) const
+  {
+    auto h1 = std::hash<void*>{}(key.obj);
+    auto h2 = std::hash<u32>{}(key.nodeIdx);
+    auto h3 = std::hash<u32>{}(key.primIdx);
+    return h1 ^ (h2 << 16) ^ (h3 << 32);
+  }
+};
+
+struct DrawGroup
+{
+  InstanceKey key;
+  u32 offset; // index into allMatrices
+  u32 count;  // number of instances
+};
+
+// Mesh vertex stride (must match InterleavedVertex in GltfObject.cpp)
+// vec3 pos + vec3 norm + vec4 tan + vec2 uv + u16vec4 joints + vec4 weights
+constexpr u32 kMeshVertexStride = 72;
+constexpr u32 kInstanceStride = sizeof(glm::mat4); // 64 bytes
+
+} // namespace
 
 GeometryPass::GeometryPass()
   : RenderPass("GeometryPass",
@@ -82,25 +120,76 @@ GeometryPass::GeometryPass()
   i32 jointMatsLoc = device.getUniformLocation(getShaderId(), "jointMats");
   device.setUniformInt(jointMatsLoc, kJointMatsUnit);
 
-  // Cache uniform locations for modelMatrix and is_skinned
-  m_modelMatrixLoc = device.getUniformLocation(getShaderId(), "modelMatrix");
+  // Cache uniform locations
   m_isSkinnedLoc = device.getUniformLocation(getShaderId(), "is_skinned");
 
-  // Create pipeline for CommandBuffer rendering.
-  // Note: We use per-primitive VAOs (bindVertexArray), so the pipeline's vertex
-  // layout is not used for actual drawing. We provide an empty layout here.
+  // Pipeline with full instanced vertex layout.
+  // Binding 0: mesh vertex data (per-vertex, locations 0-5)
+  // Binding 1: instance model matrix (per-instance, locations 6-9)
+  // For non-instanced (skinned) draws, per-primitive VAOs override binding 0.
+  // For instanced draws, the pipeline layout is used for both bindings.
+  std::array<gfx::VertexBinding, 2> pipeBindings = {
+    { { .binding = 0, .stride = kMeshVertexStride, .perInstance = false },
+      { .binding = 1, .stride = kInstanceStride, .perInstance = true } }
+  };
+  std::array<gfx::VertexAttribute, 7> pipeAttribs = { {
+    { .location = 0,
+      .binding = 0,
+      .offset = 0,
+      .format = gfx::PixelFormat::RGB32F }, // position
+    { .location = 1,
+      .binding = 0,
+      .offset = 12,
+      .format = gfx::PixelFormat::RGB32F }, // normal
+    { .location = 2,
+      .binding = 0,
+      .offset = 24,
+      .format = gfx::PixelFormat::RGBA32F }, // tangent
+    { .location = 3,
+      .binding = 0,
+      .offset = 40,
+      .format = gfx::PixelFormat::RG32F }, // texcoord
+    { .location = 4,
+      .binding = 0,
+      .offset = 48,
+      .format = gfx::PixelFormat::RGBA16 }, // joints
+    { .location = 5,
+      .binding = 0,
+      .offset = 56,
+      .format = gfx::PixelFormat::RGBA32F }, // weights
+    { .location = 6,
+      .binding = 1,
+      .offset = 0,
+      .format = gfx::PixelFormat::MAT4F }, // modelMatrix
+  } };
   gfx::PipelineCreateInfo pipeInfo{};
   pipeInfo.shaderProgram = getShaderId();
-  // No vertex bindings/attributes - each primitive binds its own VAO
+  pipeInfo.vertexBindings = pipeBindings;
+  pipeInfo.vertexAttributes = pipeAttribs;
   pipeInfo.topology = gfx::PrimitiveTopology::Triangles;
   pipeInfo.depthStencil.depthTestEnable = true;
   pipeInfo.depthStencil.depthWriteEnable = true;
   pipeInfo.depthStencil.depthCompareOp = gfx::CompareOp::Less;
   pipeInfo.blend.attachments[0].blendEnable = false;
-  pipeInfo.rasterizer.cullMode =
-    gfx::CullMode::Back; // Default, may be overridden by material
+  pipeInfo.rasterizer.cullMode = gfx::CullMode::Back;
   pipeInfo.debugName = "GeometryPassPipeline";
   m_pipeline = resources.createPipeline("GeometryPassPipeline", pipeInfo);
+
+  // Create instance buffer for batched model matrices
+  gfx::BufferCreateInfo instanceBufInfo{};
+  instanceBufInfo.size =
+    static_cast<u64>(kInitialInstanceCapacity) * kInstanceStride;
+  instanceBufInfo.usage = gfx::BufferUsage::Vertex | gfx::BufferUsage::Dynamic;
+  instanceBufInfo.debugName = "GeometryInstanceBuffer";
+  m_instanceBuffer = device.createBuffer(instanceBufInfo);
+  m_instanceBufferCapacity = kInitialInstanceCapacity;
+
+  // Single-instance buffer for skinned entity draws (1 mat4)
+  gfx::BufferCreateInfo singleBufInfo{};
+  singleBufInfo.size = kInstanceStride;
+  singleBufInfo.usage = gfx::BufferUsage::Vertex | gfx::BufferUsage::Dynamic;
+  singleBufInfo.debugName = "GeometrySingleInstanceBuffer";
+  m_singleInstanceBuffer = device.createBuffer(singleBufInfo);
 
   resources.bindDefaultFramebuffer();
 }
@@ -169,9 +258,111 @@ GeometryPass::Record(ECSManager& eManager)
   viewport.maxDepth = 1.0f;
   cmd->setViewport(viewport);
 
-  // Iterate over entities with GraphicsComponent and record draw commands
-  std::vector<Entity> view = eManager.view<GraphicsComponent>();
-  for (auto entity : view) {
+  // Phase 1: Sort entities into instance groups vs non-instanced (skinned)
+  std::vector<Entity> entityView = eManager.view<GraphicsComponent>();
+
+  std::unordered_map<InstanceKey, std::vector<glm::mat4>, InstanceKeyHash>
+    instanceGroups;
+  std::vector<Entity> skinnedEntities;
+
+  for (auto entity : entityView) {
+    auto* posComp = eManager.getComponent<PositionComponent>(entity);
+    auto* gfxComp = eManager.getComponent<GraphicsComponent>(entity);
+    auto* obj = gfxComp->m_grapObj.get();
+
+    glm::mat4 entityModel =
+      posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
+                  glm::mat4_cast(posComp->rotation) *
+                  glm::scale(glm::mat4(1.0f), posComp->scale)
+              : glm::identity<glm::mat4>();
+
+    // Check if any node has skinning
+    bool hasSkin = false;
+    for (u32 idx = 0; idx < obj->p_numNodes; idx++) {
+      if (obj->p_nodes[idx].skin >= 0) {
+        hasSkin = true;
+        break;
+      }
+    }
+
+    if (hasSkin) {
+      skinnedEntities.push_back(entity);
+    } else {
+      // Group by (obj, node, primitive) for instancing
+      for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
+        if (obj->p_nodes[nodeIdx].mesh < 0) {
+          continue;
+        }
+        glm::mat4 nodeModel = entityModel * obj->getMatrix(nodeIdx);
+        Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
+        for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
+          instanceGroups[{ obj, nodeIdx, primIdx }].push_back(nodeModel);
+        }
+      }
+    }
+  }
+
+  // Phase 2: Build contiguous matrix buffer and draw groups
+  static thread_local std::vector<glm::mat4> allMatrices;
+  static thread_local std::vector<DrawGroup> drawGroups;
+  allMatrices.clear();
+  drawGroups.clear();
+
+  for (auto& [key, matrices] : instanceGroups) {
+    drawGroups.push_back({ key,
+                           static_cast<u32>(allMatrices.size()),
+                           static_cast<u32>(matrices.size()) });
+    allMatrices.insert(allMatrices.end(), matrices.begin(), matrices.end());
+  }
+
+  // Upload all instance matrices
+  if (!allMatrices.empty()) {
+    auto totalSize = static_cast<u32>(allMatrices.size()) * kInstanceStride;
+
+    // Resize buffer if needed
+    if (static_cast<u32>(allMatrices.size()) > m_instanceBufferCapacity) {
+      device.destroyBuffer(m_instanceBuffer);
+      m_instanceBufferCapacity = static_cast<u32>(allMatrices.size()) * 2;
+      gfx::BufferCreateInfo info{};
+      info.size = static_cast<u64>(m_instanceBufferCapacity) * kInstanceStride;
+      info.usage = gfx::BufferUsage::Vertex | gfx::BufferUsage::Dynamic;
+      info.debugName = "GeometryInstanceBuffer";
+      m_instanceBuffer = device.createBuffer(info);
+    }
+
+    device.updateBuffer(m_instanceBuffer, 0, allMatrices.data(), totalSize);
+  }
+
+  // Phase 3: Issue instanced draw calls
+  cmd->setUniform(m_isSkinnedLoc, 0);
+
+  for (auto& group : drawGroups) {
+    auto* obj = group.key.obj;
+    Mesh& mesh = obj->p_meshes[obj->p_nodes[group.key.nodeIdx].mesh];
+    Primitive& prim = mesh.m_primitives[group.key.primIdx];
+
+    // Bind material
+    Material* mat = prim.m_material > -1 ? &obj->p_materials[prim.m_material]
+                                         : &obj->defaultMat;
+    mat->recordBind(*cmd, m_sampler);
+
+    // Bind per-primitive VAO (handles binding 0 with correct stride/offsets).
+    // Binding 1 (instance data) falls through to the pipeline's vertex layout.
+    cmd->bindVertexArray(prim.m_vaoId);
+    cmd->bindVertexBuffer(0, prim.m_vboId);
+    cmd->bindVertexBuffer(
+      1, m_instanceBuffer, static_cast<u64>(group.offset) * kInstanceStride);
+
+    if (device.isValid(prim.m_eboId)) {
+      cmd->bindIndexBuffer(prim.m_eboId, 0, prim.m_indexType);
+      cmd->drawIndexed(prim.m_count, group.count, prim.m_offset);
+    } else {
+      cmd->draw(prim.m_count, group.count);
+    }
+  }
+
+  // Phase 4: Draw skinned entities (1-instance draws via instance buffer)
+  for (auto entity : skinnedEntities) {
     auto* posComp = eManager.getComponent<PositionComponent>(entity);
     auto* gfxComp = eManager.getComponent<GraphicsComponent>(entity);
 
@@ -181,9 +372,8 @@ GeometryPass::Record(ECSManager& eManager)
                   glm::scale(glm::mat4(1.0f), posComp->scale)
               : glm::identity<glm::mat4>();
 
-    // Record draw commands; model matrix is set per-node inside recordDraw
     gfxComp->m_grapObj->recordDraw(
-      *cmd, m_sampler, entityModel, m_modelMatrixLoc, m_isSkinnedLoc);
+      *cmd, m_sampler, entityModel, m_singleInstanceBuffer, m_isSkinnedLoc);
   }
 
   cmd->endRenderPass();

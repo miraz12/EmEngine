@@ -31,22 +31,20 @@ public:
   virtual void drawGeom(gfx::ShaderId shader);
 
   /// Record draw commands (with materials) into CommandBuffer.
-  /// @param modelMatrixLoc Uniform location for modelMatrix; set per-node as
-  ///                       entityModel * getMatrix(node)
-  /// @param isSkinnedLoc   Uniform location for is_skinned, or -1 to skip
+  /// Model matrix is written to instanceBuffer at offset 0 per-node (1-instance
+  /// draws).
   virtual void recordDraw(gfx::CommandBuffer& cmd,
                           gfx::SamplerId sampler,
                           const glm::mat4& entityModel,
-                          i32 modelMatrixLoc,
+                          gfx::BufferId instanceBuffer,
                           i32 isSkinnedLoc = -1);
 
   /// Record geometry-only draw commands into CommandBuffer (for shadow pass).
-  /// @param modelMatrixLoc Uniform location for modelMatrix; set per-node as
-  ///                       entityModel * getMatrix(node)
-  /// @param isSkinnedLoc   Uniform location for is_skinned, or -1 to skip
+  /// Model matrix is written to instanceBuffer at offset 0 per-node (1-instance
+  /// draws).
   virtual void recordDrawGeom(gfx::CommandBuffer& cmd,
                               const glm::mat4& entityModel,
-                              i32 modelMatrixLoc,
+                              gfx::BufferId instanceBuffer,
                               i32 isSkinnedLoc = -1);
 
   void applySkinning(gfx::ShaderId shader, i32 node);

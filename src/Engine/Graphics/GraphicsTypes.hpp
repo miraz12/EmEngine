@@ -39,6 +39,8 @@ enum class PixelFormat : u8
   RG32F,
   RGB32F,
   RGBA32F,
+  // Matrix format (vertex attribute only)
+  MAT4F,
   // Packed formats
   R11G11B10F,
   RGB10A2,
@@ -58,6 +60,7 @@ enum class BufferUsage : u16
   Uniform = 1 << 2,
   TransferSrc = 1 << 3,
   TransferDst = 1 << 4,
+  Dynamic = 1 << 5, // Hint for GL_STREAM_DRAW (per-frame instance data)
 };
 
 inline BufferUsage

@@ -298,6 +298,15 @@ private:
   };
   static VertexAttribInfo toGLVertexAttrib(PixelFormat format);
 
+  /// Enable vertex attribute locations (handles MAT4F → 4 locations).
+  static void enableVertexAttribLocations(const VertexAttribute& attrib);
+  /// Configure vertex attribute pointer(s) (handles MAT4F → 4 pointers).
+  /// `baseOffset` is added to `attrib.offset` (e.g. buffer offset).
+  static void configureVertexAttribPointers(const VertexAttribute& attrib,
+                                            GLsizei stride,
+                                            u64 baseOffset,
+                                            bool perInstance);
+
   ResourcePool<Buffer, BufferId> m_buffers;
   ResourcePool<Texture, TextureId> m_textures;
   ResourcePool<Sampler, SamplerId> m_samplers;
