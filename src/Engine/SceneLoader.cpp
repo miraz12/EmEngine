@@ -8,6 +8,7 @@
 #include "ECS/Components/PositionComponent.hpp"
 #include "ECS/ECSManager.hpp"
 #include "ECS/Systems/CameraSystem.hpp"
+#include "ECS/Systems/PhysicsSystem.hpp"
 #include "Objects/Cube.hpp"
 #include "Objects/GltfObject.hpp"
 #include "Objects/Heightmap.hpp"
@@ -44,6 +45,7 @@ SceneLoader::init(const char* file)
       }
     }
   }
+  PhysicsSystem::getInstance().optimizeBroadPhase();
 }
 
 void

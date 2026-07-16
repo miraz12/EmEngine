@@ -101,21 +101,20 @@ Core::initialize()
   return true;
 }
 
-float&
-Core::getDeltaTime()
+void
+Core::updateDeltaTime()
 {
   m_currentTime = glfwGetTime();
-  m_dt = m_currentTime - m_prevTime;
+  m_dt =
+    std::min(static_cast<float>(m_currentTime - m_prevTime), kMaxDeltaTime);
   m_prevTime = m_currentTime;
-  return m_dt;
 }
 
 void
 Core::update()
 {
   glfwPollEvents();
-
-  float& dt = getDeltaTime();
+  updateDeltaTime();
 
 #ifndef NDEBUG
   m_profiler.beginFrame();
@@ -126,7 +125,7 @@ Core::update()
 #ifndef NDEBUG
   m_profiler.beginPhase(Profiler::kPhaseUI);
 #endif
-  m_UIManager->update(dt);
+  m_UIManager->update(m_dt);
 #ifndef NDEBUG
   m_profiler.endPhase(Profiler::kPhaseUI);
 #endif
@@ -135,8 +134,8 @@ Core::update()
 #ifndef NDEBUG
   m_profiler.beginPhase(Profiler::kPhaseECS);
 #endif
-  InputManager::getInstance().update(dt);
-  ECSManager::getInstance().update(dt);
+  InputManager::getInstance().update(m_dt);
+  ECSManager::getInstance().update(m_dt);
 #ifndef NDEBUG
   m_profiler.endPhase(Profiler::kPhaseECS);
 #endif

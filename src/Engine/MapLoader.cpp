@@ -4,6 +4,7 @@
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "ECS/ECSManager.hpp"
+#include "ECS/Systems/PhysicsSystem.hpp"
 #include "Objects/Cube.hpp"
 #include "ResourceManager.hpp"
 #include <fstream>
@@ -81,6 +82,7 @@ MapLoader::generateMapEntities()
       // 'O' or 'o' or space means empty, so we skip
     }
   }
+  PhysicsSystem::getInstance().optimizeBroadPhase();
 }
 
 void

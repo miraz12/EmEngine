@@ -61,6 +61,7 @@ public:
   {
     return m_joltSystem->GetBodyInterfaceNoLock();
   }
+  void optimizeBroadPhase() { m_joltSystem->OptimizeBroadPhase(); }
 
 private:
   PhysicsSystem() = default;
@@ -79,6 +80,8 @@ private:
   float m_winWidth{ 0 };
   float m_winHeight{ 0 };
   DebugDrawer m_dDraw;
+  static constexpr float kFixedTimeStep = 1.0f / 60.0f;
+  float m_accumulator = 0.0f;
 };
 
 #endif // PHYSICSSYSTEM_H_

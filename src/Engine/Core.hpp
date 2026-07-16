@@ -21,16 +21,17 @@ public:
   bool initialize();
   void update();
   bool open();
-  float& getDeltaTime();
+  void updateDeltaTime();
   float getDt() const { return m_dt; }
 
 private:
   ECSManager* m_ECSManager = nullptr;
   UIManager* m_UIManager = nullptr;
   GameStateManager* m_gameStateManager = nullptr;
+  static constexpr float kMaxDeltaTime = 0.25f;
+  double m_prevTime = 0.0;
+  double m_currentTime = 0.0;
   float m_dt = 0.0f;
-  float m_prevTime = 0.0f;
-  float m_currentTime = 0.0f;
 
 #ifndef NDEBUG
   GUI m_gui;

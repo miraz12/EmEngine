@@ -163,15 +163,21 @@ void
 PhysicsSystem::update(float dt)
 {
   if (m_manager->getSimulatePhysics()) {
+    m_accumulator += dt;
+
     // Step the physics world
-    m_joltSystem->Update(dt, 1, m_tempAllocator.get(), m_jobSystem.get());
+    while (m_accumulator >= kFixedTimeStep) {
+      m_joltSystem->Update(
+        kFixedTimeStep, 1, m_tempAllocator.get(), m_jobSystem.get());
+      m_accumulator -= kFixedTimeStep;
+    }
 
     // Sync physics transforms to ECS PositionComponents
     std::vector<Entity> view =
       m_manager->view<PositionComponent, PhysicsComponent>();
-    for (auto e : view) {
-      auto p = m_manager->getComponent<PositionComponent>(e);
-      auto phy = m_manager->getComponent<PhysicsComponent>(e);
+    for (auto entity : view) {
+      auto* p = m_manager->getComponent<PositionComponent>(entity);
+      auto* phy = m_manager->getComponent<PhysicsComponent>(entity);
 
       if (!phy || !phy->isValid()) {
         continue;
@@ -181,16 +187,16 @@ PhysicsSystem::update(float dt)
       JPH::RVec3 pos = bodyInterface.GetPosition(phy->getBodyID());
       JPH::Quat rot = bodyInterface.GetRotation(phy->getBodyID());
 
-      p->position =
-        glm::vec3(float(pos.GetX()), float(pos.GetY()), float(pos.GetZ()));
+      p->position = glm::vec3(pos.GetX(), pos.GetY(), pos.GetZ());
       p->rotation = glm::quat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
     }
   } else {
+    m_accumulator = 0.f;
     // Editor mode: sync picked entity position to physics body
     Entity picked = m_manager->getPickedEntity();
     if (picked != 0) {
-      auto p = m_manager->getComponent<PositionComponent>(picked);
-      auto phy = m_manager->getComponent<PhysicsComponent>(picked);
+      auto* p = m_manager->getComponent<PositionComponent>(picked);
+      auto* phy = m_manager->getComponent<PhysicsComponent>(picked);
 
       if (p && phy && phy->isValid()) {
         auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
@@ -208,8 +214,8 @@ PhysicsSystem::update(float dt)
   auto& dbgBodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
   std::vector<Entity> debugView =
     m_manager->view<PositionComponent, PhysicsComponent>();
-  for (auto e : debugView) {
-    auto phy = m_manager->getComponent<PhysicsComponent>(e);
+  for (auto entity : debugView) {
+    auto* phy = m_manager->getComponent<PhysicsComponent>(entity);
     if (!phy || !phy->isValid()) {
       continue;
     }
