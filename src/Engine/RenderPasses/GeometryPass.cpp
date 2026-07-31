@@ -212,7 +212,7 @@ GeometryPass::Record(ECSManager& eManager)
   // Update CameraUBO with current camera matrices (before CommandBuffer
   // recording)
   auto cam = CameraSystem::getInstance().getMainCameraComponent();
-  CameraSystem::updateCameraUBO(cam);
+  CameraSystem::updateCameraUBO(*cam);
 
   // Ensure jointMats sampler uniform is set correctly each frame
   // (binding the shader and setting the uniform before recording)
@@ -259,48 +259,46 @@ GeometryPass::Record(ECSManager& eManager)
   cmd->setViewport(viewport);
 
   // Phase 1: Sort entities into instance groups vs non-instanced (skinned)
-  std::vector<Entity> entityView = eManager.view<GraphicsComponent>();
-
   std::unordered_map<InstanceKey, std::vector<glm::mat4>, InstanceKeyHash>
     instanceGroups;
   std::vector<Entity> skinnedEntities;
 
-  for (auto entity : entityView) {
-    auto* posComp = eManager.getComponent<PositionComponent>(entity);
-    auto* gfxComp = eManager.getComponent<GraphicsComponent>(entity);
-    auto* obj = gfxComp->m_grapObj.get();
+  eManager.each<GraphicsComponent>(
+    [&](Entity entity, GraphicsComponent& gfxComp) {
+      auto* posComp = eManager.getComponent<PositionComponent>(entity);
+      auto* obj = gfxComp.m_grapObj.get();
 
-    glm::mat4 entityModel =
-      posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
-                  glm::mat4_cast(posComp->rotation) *
-                  glm::scale(glm::mat4(1.0f), posComp->scale)
-              : glm::identity<glm::mat4>();
+      glm::mat4 entityModel =
+        posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
+                    glm::mat4_cast(posComp->rotation) *
+                    glm::scale(glm::mat4(1.0f), posComp->scale)
+                : glm::identity<glm::mat4>();
 
-    // Check if any node has skinning
-    bool hasSkin = false;
-    for (u32 idx = 0; idx < obj->p_numNodes; idx++) {
-      if (obj->p_nodes[idx].skin >= 0) {
-        hasSkin = true;
-        break;
-      }
-    }
-
-    if (hasSkin) {
-      skinnedEntities.push_back(entity);
-    } else {
-      // Group by (obj, node, primitive) for instancing
-      for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
-        if (obj->p_nodes[nodeIdx].mesh < 0) {
-          continue;
-        }
-        glm::mat4 nodeModel = entityModel * obj->getMatrix(nodeIdx);
-        Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
-        for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
-          instanceGroups[{ obj, nodeIdx, primIdx }].push_back(nodeModel);
+      // Check if any node has skinning
+      bool hasSkin = false;
+      for (u32 idx = 0; idx < obj->p_numNodes; idx++) {
+        if (obj->p_nodes[idx].skin >= 0) {
+          hasSkin = true;
+          break;
         }
       }
-    }
-  }
+
+      if (hasSkin) {
+        skinnedEntities.push_back(entity);
+      } else {
+        // Group by (obj, node, primitive) for instancing
+        for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
+          if (obj->p_nodes[nodeIdx].mesh < 0) {
+            continue;
+          }
+          glm::mat4 nodeModel = entityModel * obj->getMatrix(nodeIdx);
+          Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
+          for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
+            instanceGroups[{ obj, nodeIdx, primIdx }].push_back(nodeModel);
+          }
+        }
+      }
+    });
 
   // Phase 2: Build contiguous matrix buffer and draw groups
   static thread_local std::vector<glm::mat4> allMatrices;

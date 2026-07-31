@@ -107,53 +107,51 @@ LightPass::Record(ECSManager& eManager)
   // Populate LightingUBO from ECS light components
   gfx::LightingUBO& lightingUBO = resources.getLightingUBO();
 
-  std::vector<Entity> view = eManager.view<LightingComponent>();
   i32 numPLights = 0;
-  for (auto e : view) {
-    auto* g = eManager.getComponent<LightingComponent>(e);
+  eManager.each<LightingComponent>(
+    [&](Entity /*entity*/, LightingComponent& lightComp) {
+      switch (lightComp.type) {
+        case LightingComponent::TYPE::DIRECTIONAL: {
+          auto& light = static_cast<DirectionalLight&>(*lightComp.light);
 
-    switch (g->type) {
-      case LightingComponent::TYPE::DIRECTIONAL: {
-        auto& light = static_cast<DirectionalLight&>(*g->light);
+          lightingUBO.dirLightDirection = glm::vec4(light.direction, 0.0f);
+          lightingUBO.dirLightColor = glm::vec4(light.color, light.intensity);
 
-        lightingUBO.dirLightDirection = glm::vec4(light.direction, 0.0f);
-        lightingUBO.dirLightColor = glm::vec4(light.color, light.intensity);
-
-        break;
-      }
-      case LightingComponent::TYPE::POINT: {
-        if (numPLights >= static_cast<i32>(MAX_POINT_LIGHTS)) {
           break;
         }
+        case LightingComponent::TYPE::POINT: {
+          if (numPLights >= static_cast<i32>(MAX_POINT_LIGHTS)) {
+            break;
+          }
 
-        PointLight& light = static_cast<PointLight&>(*g->light);
+          PointLight& light = static_cast<PointLight&>(*lightComp.light);
 
-        // Calculate radius for culling
-        const float constant = 1.0f;
-        float maxBrightness =
-          std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
-        float radius =
-          (-light.linear +
-           std::sqrt(light.linear * light.linear -
-                     4 * light.quadratic *
-                       (constant - (256.0f / 5.0f) * maxBrightness))) /
-          (2.0f * light.quadratic);
+          // Calculate radius for culling
+          const float constant = 1.0f;
+          float maxBrightness =
+            std::fmaxf(std::fmaxf(light.color.r, light.color.g), light.color.b);
+          float radius =
+            (-light.linear +
+             std::sqrt(light.linear * light.linear -
+                       4 * light.quadratic *
+                         (constant - (256.0f / 5.0f) * maxBrightness))) /
+            (2.0f * light.quadratic);
 
-        // Populate UBO point light data
-        lightingUBO.pointLights[numPLights].positionRadius =
-          glm::vec4(light.position, radius);
-        lightingUBO.pointLights[numPLights].colorIntensity =
-          glm::vec4(light.color, 0.0f);
-        lightingUBO.pointLights[numPLights].attenuation =
-          glm::vec4(light.constant, light.linear, light.quadratic, 0.0f);
+          // Populate UBO point light data
+          lightingUBO.pointLights[numPLights].positionRadius =
+            glm::vec4(light.position, radius);
+          lightingUBO.pointLights[numPLights].colorIntensity =
+            glm::vec4(light.color, 0.0f);
+          lightingUBO.pointLights[numPLights].attenuation =
+            glm::vec4(light.constant, light.linear, light.quadratic, 0.0f);
 
-        numPLights++;
-        break;
+          numPLights++;
+          break;
+        }
+        default:
+          break;
       }
-      default:
-        break;
-    }
-  }
+    });
 
   // Set light config (numPointLights, debugView)
   lightingUBO.lightConfig =

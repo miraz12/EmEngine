@@ -195,16 +195,15 @@ ShadowPass::Record(ECSManager& eManager)
 
   // Get directional light
   glm::vec3 lightDirection(0.0f, -1.0f, 0.0f);
-  std::vector<Entity> lightView = eManager.view<LightingComponent>();
-  for (auto lightEntity : lightView) {
-    auto* lightComp = eManager.getComponent<LightingComponent>(lightEntity);
 
-    if (lightComp->type == LightingComponent::TYPE::DIRECTIONAL) {
-      auto& light = static_cast<DirectionalLight&>(*lightComp->light);
-      lightDirection = light.direction;
-      break;
-    }
-  }
+  eManager.each<LightingComponent>(
+    [&](Entity /*entity*/, LightingComponent& lightComp) {
+      if (lightComp.type == LightingComponent::TYPE::DIRECTIONAL) {
+        auto& light = static_cast<DirectionalLight&>(*lightComp.light);
+        lightDirection = light.direction;
+        return;
+      }
+    });
 
   // Calculate cascade splits and matrices
   constexpr float kLambdaSplit = 0.5f;
@@ -246,47 +245,46 @@ ShadowPass::Record(ECSManager& eManager)
   cmd->pushDebugGroup("Shadow Pass CSM");
 #endif
 
-  // Get entity list and sort into instanced vs skinned (once for all cascades)
-  std::vector<Entity> entityView = eManager.view<GraphicsComponent>();
-
+  // Get entity list and sort into instanced vs skinned (once for all
+  // cascades)
   std::unordered_map<InstanceKey, std::vector<glm::mat4>, InstanceKeyHash>
     instanceGroups;
   std::vector<Entity> skinnedEntities;
 
-  for (auto entity : entityView) {
-    auto* posComp = eManager.getComponent<PositionComponent>(entity);
-    auto* gfxComp = eManager.getComponent<GraphicsComponent>(entity);
-    auto* obj = gfxComp->m_grapObj.get();
+  eManager.each<GraphicsComponent>(
+    [&](Entity entity, GraphicsComponent& gfxComp) {
+      auto* posComp = eManager.getComponent<PositionComponent>(entity);
+      auto* obj = gfxComp.m_grapObj.get();
 
-    glm::mat4 entityModel =
-      posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
-                  glm::mat4_cast(posComp->rotation) *
-                  glm::scale(glm::mat4(1.0f), posComp->scale)
-              : glm::identity<glm::mat4>();
+      glm::mat4 entityModel =
+        posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
+                    glm::mat4_cast(posComp->rotation) *
+                    glm::scale(glm::mat4(1.0f), posComp->scale)
+                : glm::identity<glm::mat4>();
 
-    bool hasSkin = false;
-    for (u32 idx = 0; idx < obj->p_numNodes; idx++) {
-      if (obj->p_nodes[idx].skin >= 0) {
-        hasSkin = true;
-        break;
-      }
-    }
-
-    if (hasSkin) {
-      skinnedEntities.push_back(entity);
-    } else {
-      for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
-        if (obj->p_nodes[nodeIdx].mesh < 0) {
-          continue;
-        }
-        glm::mat4 nodeModel = entityModel * obj->getMatrix(nodeIdx);
-        Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
-        for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
-          instanceGroups[{ obj, nodeIdx, primIdx }].push_back(nodeModel);
+      bool hasSkin = false;
+      for (u32 idx = 0; idx < obj->p_numNodes; idx++) {
+        if (obj->p_nodes[idx].skin >= 0) {
+          hasSkin = true;
+          break;
         }
       }
-    }
-  }
+
+      if (hasSkin) {
+        skinnedEntities.push_back(entity);
+      } else {
+        for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
+          if (obj->p_nodes[nodeIdx].mesh < 0) {
+            continue;
+          }
+          glm::mat4 nodeModel = entityModel * obj->getMatrix(nodeIdx);
+          Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
+          for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
+            instanceGroups[{ obj, nodeIdx, primIdx }].push_back(nodeModel);
+          }
+        }
+      }
+    });
 
   // Build contiguous matrix buffer and draw groups
   static thread_local std::vector<glm::mat4> allMatrices;
@@ -364,9 +362,9 @@ ShadowPass::Record(ECSManager& eManager)
       Mesh& mesh = obj->p_meshes[obj->p_nodes[group.key.nodeIdx].mesh];
       Primitive& prim = mesh.m_primitives[group.key.primIdx];
 
-      // Bind per-primitive VAO (handles binding 0 with correct stride/offsets).
-      // Binding 1 (instance data) falls through to the pipeline's vertex
-      // layout.
+      // Bind per-primitive VAO (handles binding 0 with correct
+      // stride/offsets). Binding 1 (instance data) falls through to the
+      // pipeline's vertex layout.
       cmd->bindVertexArray(prim.m_vaoId);
       cmd->bindVertexBuffer(0, prim.m_vboId);
       cmd->bindVertexBuffer(
@@ -409,6 +407,7 @@ ShadowPass::setViewport(u32 w, u32 h)
   m_width = w;
   m_height = h;
 
-  // Note: Shadow map resolution is fixed at SHADOW_MAP_SIZE, not viewport size
-  // No need to recreate the texture - it's allocated with immutable storage
+  // Note: Shadow map resolution is fixed at SHADOW_MAP_SIZE, not viewport
+  // size No need to recreate the texture - it's allocated with immutable
+  // storage
 }

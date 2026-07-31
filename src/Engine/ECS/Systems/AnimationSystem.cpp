@@ -68,75 +68,68 @@ AnimationSystem::update(float dt)
     return;
   }
 
-  std::vector<Entity> view =
-    m_manager->view<AnimationComponent, GraphicsComponent>();
-
-  for (auto entity : view) {
-    auto animComp = m_manager->getComponent<AnimationComponent>(entity);
-    if (!animComp || !animComp->isPlaying) {
-      continue;
-    }
-
-    auto graComp = m_manager->getComponent<GraphicsComponent>(entity);
-    if (!graComp || !graComp->m_grapObj) {
-      continue;
-    }
-
-    if (graComp->m_grapObj->p_numAnimations == 0) {
-      if (!animComp->loggedNoAnimation) {
-        std::cout << "Entity " << entity << " does not contain animation."
-                  << '\n';
-        animComp->loggedNoAnimation = true;
-      }
-      continue;
-    }
-
-    auto* obj = graComp->m_grapObj.get();
-
-    if (animComp->blending) {
-      // Advance blend timer
-      animComp->blendElapsed += dt;
-      animComp->blendWeight = std::clamp(
-        animComp->blendElapsed / animComp->blendDuration, 0.0f, 1.0f);
-
-      // Advance both animation clocks
-      Animation& fromAnim = obj->p_animations[animComp->blendFromIndex];
-      Animation& toAnim = obj->p_animations[animComp->animationIndex];
-
-      animComp->blendFromTime += dt;
-      if (animComp->blendFromTime > fromAnim.end) {
-        animComp->blendFromTime -= fromAnim.end;
+  m_manager->each<AnimationComponent, GraphicsComponent>(
+    [&](
+      Entity entity, AnimationComponent& animComp, GraphicsComponent& graComp) {
+      if (!animComp.isPlaying || !graComp.m_grapObj) {
+        return;
       }
 
-      animComp->currentTime += dt;
-      if (animComp->currentTime > toAnim.end) {
-        animComp->currentTime -= toAnim.end;
+      if (graComp.m_grapObj->p_numAnimations == 0) {
+        if (!animComp.loggedNoAnimation) {
+          std::cout << "Entity " << entity << " does not contain animation."
+                    << '\n';
+          animComp.loggedNoAnimation = true;
+        }
+        return;
       }
 
-      // Sample source pose, snapshot it, then sample target pose
-      sampleAnimation(obj, fromAnim, animComp->blendFromTime);
-      snapshotPose(obj);
-      sampleAnimation(obj, toAnim, animComp->currentTime);
+      auto* obj = graComp.m_grapObj.get();
 
-      // Blend between source (snapshot) and target (current node TRS)
-      blendPose(obj, animComp->blendWeight);
+      if (animComp.blending) {
+        // Advance blend timer
+        animComp.blendElapsed += dt;
+        animComp.blendWeight = std::clamp(
+          animComp.blendElapsed / animComp.blendDuration, 0.0f, 1.0f);
 
-      // Complete the blend when duration elapsed
-      if (animComp->blendElapsed >= animComp->blendDuration) {
-        animComp->blending = false;
+        // Advance both animation clocks
+        Animation& fromAnim = obj->p_animations[animComp.blendFromIndex];
+        Animation& toAnim = obj->p_animations[animComp.animationIndex];
+
+        animComp.blendFromTime += dt;
+        if (animComp.blendFromTime > fromAnim.end) {
+          animComp.blendFromTime -= fromAnim.end;
+        }
+
+        animComp.currentTime += dt;
+        if (animComp.currentTime > toAnim.end) {
+          animComp.currentTime -= toAnim.end;
+        }
+
+        // Sample source pose, snapshot it, then sample target pose
+        sampleAnimation(obj, fromAnim, animComp.blendFromTime);
+        snapshotPose(obj);
+        sampleAnimation(obj, toAnim, animComp.currentTime);
+
+        // Blend between source (snapshot) and target (current node TRS)
+        blendPose(obj, animComp.blendWeight);
+
+        // Complete the blend when duration elapsed
+        if (animComp.blendElapsed >= animComp.blendDuration) {
+          animComp.blending = false;
+        }
+      } else {
+        // Single animation path
+        Animation& animation = obj->p_animations[animComp.animationIndex];
+
+        animComp.currentTime += dt;
+        if (animComp.currentTime > animation.end) {
+          animComp.currentTime -= animation.end;
+        }
+
+        sampleAnimation(obj, animation, animComp.currentTime);
       }
-    } else {
-      // Single animation path
-      Animation& animation = obj->p_animations[animComp->animationIndex];
 
-      animComp->currentTime += dt;
-      if (animComp->currentTime > animation.end) {
-        animComp->currentTime -= animation.end;
-      }
-
-      sampleAnimation(obj, animation, animComp->currentTime);
-    }
-
-    obj->resetMatrixCache();
-  }
+      obj->resetMatrixCache();
+    });
 }

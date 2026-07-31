@@ -100,15 +100,14 @@ ParticlePass::Record(ECSManager& eManager)
   static thread_local std::vector<ParticleInstanceData> instanceData;
   instanceData.clear();
 
-  std::vector<Entity> view = eManager.view<ParticlesComponent>();
-  for (auto& entity : view) {
-    auto* pComp = eManager.getComponent<ParticlesComponent>(entity);
-    for (auto& particle : pComp->aliveParticles) {
-      if (particle->life > 0.0f) {
-        instanceData.push_back({ particle->position, particle->color });
+  eManager.each<ParticlesComponent>(
+    [&](Entity /*entity*/, ParticlesComponent& pComp) {
+      for (auto& particle : pComp.aliveParticles) {
+        if (particle->life > 0.0f) {
+          instanceData.push_back({ particle->position, particle->color });
+        }
       }
-    }
-  }
+    });
 
   auto particleCount = static_cast<u32>(instanceData.size());
   if (particleCount == 0) {

@@ -173,23 +173,21 @@ PhysicsSystem::update(float dt)
     }
 
     // Sync physics transforms to ECS PositionComponents
-    std::vector<Entity> view =
-      m_manager->view<PositionComponent, PhysicsComponent>();
-    for (auto entity : view) {
-      auto* p = m_manager->getComponent<PositionComponent>(entity);
-      auto* phy = m_manager->getComponent<PhysicsComponent>(entity);
+    m_manager->each<PhysicsComponent, PositionComponent>(
+      [&](
+        Entity /*entity*/, PhysicsComponent& phy, PositionComponent& posComp) {
+        if (!phy.isValid()) {
+          return;
+        }
 
-      if (!phy || !phy->isValid()) {
-        continue;
-      }
+        auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
+        JPH::RVec3 pos = bodyInterface.GetPosition(phy.getBodyID());
+        JPH::Quat rot = bodyInterface.GetRotation(phy.getBodyID());
 
-      auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
-      JPH::RVec3 pos = bodyInterface.GetPosition(phy->getBodyID());
-      JPH::Quat rot = bodyInterface.GetRotation(phy->getBodyID());
-
-      p->position = glm::vec3(pos.GetX(), pos.GetY(), pos.GetZ());
-      p->rotation = glm::quat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
-    }
+        posComp.position = glm::vec3(pos.GetX(), pos.GetY(), pos.GetZ());
+        posComp.rotation =
+          glm::quat(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
+      });
   } else {
     m_accumulator = 0.f;
     // Editor mode: sync picked entity position to physics body
@@ -212,40 +210,39 @@ PhysicsSystem::update(float dt)
 #if !defined(EMSCRIPTEN) && !defined(NDEBUG)
   // Draw debug wireframe AABBs for all physics bodies
   auto& dbgBodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
-  std::vector<Entity> debugView =
-    m_manager->view<PositionComponent, PhysicsComponent>();
-  for (auto entity : debugView) {
-    auto* phy = m_manager->getComponent<PhysicsComponent>(entity);
-    if (!phy || !phy->isValid()) {
-      continue;
-    }
 
-    JPH::TransformedShape ts =
-      dbgBodyInterface.GetTransformedShape(phy->getBodyID());
-    JPH::AABox worldBounds = ts.GetWorldSpaceBounds();
-    glm::vec3 mn(worldBounds.mMin.GetX(),
-                 worldBounds.mMin.GetY(),
-                 worldBounds.mMin.GetZ());
-    glm::vec3 mx(worldBounds.mMax.GetX(),
-                 worldBounds.mMax.GetY(),
-                 worldBounds.mMax.GetZ());
+  m_manager->each<PhysicsComponent>(
+    [&](Entity /*entity*/, PhysicsComponent& phy) {
+      if (!phy.isValid()) {
+        return;
+      }
 
-    glm::vec3 color(0.0f, 1.0f, 0.0f);
+      JPH::TransformedShape ts =
+        dbgBodyInterface.GetTransformedShape(phy.getBodyID());
+      JPH::AABox worldBounds = ts.GetWorldSpaceBounds();
+      glm::vec3 mn(worldBounds.mMin.GetX(),
+                   worldBounds.mMin.GetY(),
+                   worldBounds.mMin.GetZ());
+      glm::vec3 mx(worldBounds.mMax.GetX(),
+                   worldBounds.mMax.GetY(),
+                   worldBounds.mMax.GetZ());
 
-    // 12 edges of an AABB
-    m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mx.x, mn.y, mn.z }, color);
-    m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mn.x, mx.y, mn.z }, color);
-    m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mn.x, mn.y, mx.z }, color);
-    m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mn.x, mx.y, mx.z }, color);
-    m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mx.x, mn.y, mx.z }, color);
-    m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mx.x, mx.y, mn.z }, color);
-    m_dDraw.drawLine({ mn.x, mx.y, mn.z }, { mx.x, mx.y, mn.z }, color);
-    m_dDraw.drawLine({ mn.x, mx.y, mn.z }, { mn.x, mx.y, mx.z }, color);
-    m_dDraw.drawLine({ mx.x, mn.y, mn.z }, { mx.x, mn.y, mx.z }, color);
-    m_dDraw.drawLine({ mx.x, mn.y, mn.z }, { mx.x, mx.y, mn.z }, color);
-    m_dDraw.drawLine({ mn.x, mn.y, mx.z }, { mx.x, mn.y, mx.z }, color);
-    m_dDraw.drawLine({ mn.x, mn.y, mx.z }, { mn.x, mx.y, mx.z }, color);
-  }
+      glm::vec3 color(0.0f, 1.0f, 0.0f);
+
+      // 12 edges of an AABB
+      m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mx.x, mn.y, mn.z }, color);
+      m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mn.x, mx.y, mn.z }, color);
+      m_dDraw.drawLine({ mn.x, mn.y, mn.z }, { mn.x, mn.y, mx.z }, color);
+      m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mn.x, mx.y, mx.z }, color);
+      m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mx.x, mn.y, mx.z }, color);
+      m_dDraw.drawLine({ mx.x, mx.y, mx.z }, { mx.x, mx.y, mn.z }, color);
+      m_dDraw.drawLine({ mn.x, mx.y, mn.z }, { mx.x, mx.y, mn.z }, color);
+      m_dDraw.drawLine({ mn.x, mx.y, mn.z }, { mn.x, mx.y, mx.z }, color);
+      m_dDraw.drawLine({ mx.x, mn.y, mn.z }, { mx.x, mn.y, mx.z }, color);
+      m_dDraw.drawLine({ mx.x, mn.y, mn.z }, { mx.x, mx.y, mn.z }, color);
+      m_dDraw.drawLine({ mn.x, mn.y, mx.z }, { mx.x, mn.y, mx.z }, color);
+      m_dDraw.drawLine({ mn.x, mn.y, mx.z }, { mn.x, mx.y, mx.z }, color);
+    });
 #endif
 }
 

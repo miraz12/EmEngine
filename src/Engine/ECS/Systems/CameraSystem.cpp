@@ -6,49 +6,44 @@
 void
 CameraSystem::update(float /* dt */)
 {
-  std::vector<Entity> view = m_manager->view<CameraComponent>();
-
-  for (auto& e : view) {
-    auto* c = m_manager->getComponent<CameraComponent>(e);
-
+  m_manager->each<CameraComponent>([&](Entity e, CameraComponent& c) {
     if (auto* p = m_manager->getComponent<PositionComponent>(e); p) {
-      c->m_position = p->position + c->m_offset;
+      c.m_position = p->position + c.m_offset;
       updateMatrices(c);
-    } else if (c->m_matrixNeedsUpdate) {
+    } else if (c.m_matrixNeedsUpdate) {
       updateMatrices(c);
     }
-  }
+  });
 }
 
 void
-CameraSystem::updateMatrices(CameraComponent* camera)
+CameraSystem::updateMatrices(CameraComponent& camera)
 {
-  camera->m_viewMatrix = glm::lookAt(
-    camera->m_position, camera->m_position + camera->m_front, camera->m_up);
+  camera.m_viewMatrix = glm::lookAt(
+    camera.m_position, camera.m_position + camera.m_front, camera.m_up);
 
-  camera->m_ProjectionMatrix =
-    glm::perspective(glm::radians(camera->m_fov),
-                     camera->m_width / camera->m_height,
-                     camera->m_near,
-                     camera->m_far);
+  camera.m_ProjectionMatrix = glm::perspective(glm::radians(camera.m_fov),
+                                               camera.m_width / camera.m_height,
+                                               camera.m_near,
+                                               camera.m_far);
 
-  camera->m_matrixNeedsUpdate = false;
+  camera.m_matrixNeedsUpdate = false;
 }
 
 void
-CameraSystem::updateCameraUBO(CameraComponent* camera)
+CameraSystem::updateCameraUBO(CameraComponent& camera)
 {
-  if (camera->m_matrixNeedsUpdate) {
+  if (camera.m_matrixNeedsUpdate) {
     updateMatrices(camera);
   }
 
   auto& resources = gfx::RenderResources::getInstance();
   gfx::CameraUBO& ubo = resources.getCameraUBO();
 
-  ubo.viewMatrix = camera->m_viewMatrix;
-  ubo.projMatrix = camera->m_ProjectionMatrix;
-  ubo.viewProjMatrix = camera->m_ProjectionMatrix * camera->m_viewMatrix;
-  ubo.cameraPosition = glm::vec4(camera->m_position, 1.0f);
+  ubo.viewMatrix = camera.m_viewMatrix;
+  ubo.projMatrix = camera.m_ProjectionMatrix;
+  ubo.viewProjMatrix = camera.m_ProjectionMatrix * camera.m_viewMatrix;
+  ubo.cameraPosition = glm::vec4(camera.m_position, 1.0f);
 
   resources.flushCameraUBO();
 }

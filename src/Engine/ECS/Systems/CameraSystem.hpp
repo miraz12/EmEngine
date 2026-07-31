@@ -15,7 +15,7 @@ class CameraSystem
 public:
   void update(float dt) override;
 
-  static void updateCameraUBO(CameraComponent* camera);
+  static void updateCameraUBO(CameraComponent& camera);
 
   static std::tuple<glm::vec3, glm::vec3> getRayTo(CameraComponent* camera,
                                                    i32 x,
@@ -28,7 +28,7 @@ public:
   CameraComponent* getMainCameraComponent();
 
 private:
-  static void updateMatrices(CameraComponent* camera);
+  static void updateMatrices(CameraComponent& camera);
   Entity m_mainCamera{ 0 };
 };
 

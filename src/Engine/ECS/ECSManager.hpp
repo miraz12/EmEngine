@@ -62,61 +62,85 @@ public:
   template<typename T>
   void removeComponent(Entity& entity, T component);
 
-  template<typename T>
-  ComponentType getComponentType()
+  // Monotonic counter shared by all component types. Assigned once per type
+  // on first use, in registration order.
+  static std::size_t nextComponentTypeID()
   {
-    ComponentType type = typeid(T);
-    if (auto iter = m_componentTypeToIndex.find(type);
-        iter != m_componentTypeToIndex.end()) {
-      // T has already been registered, return it
-    } else {
-      // T has not been registered yet, assign it a new ID and return it
-      u32 next = m_nextComponentTypeID++;
-      m_componentTypeToIndex.insert({ type, next });
-    }
-    return type;
+    static std::atomic<std::size_t> counter{ 0 };
+    return counter++;
   }
+
   template<typename T>
-  std::size_t getComponentTypeID()
+  static std::size_t getComponentTypeID()
   {
-    ComponentType type = getComponentType<T>();
-    return m_componentTypeToIndex[type];
+    static const std::size_t id = nextComponentTypeID();
+    assert(id < MAX_COMPONENTS && "Too many component types");
+    return id;
   }
 
   // Create a view of entities with the given component types
-  template<typename... T>
+  template<typename First, typename... Rest>
   std::vector<Entity> view()
   {
-    Signature requiredComponents;
-    ((requiredComponents.set(getComponentTypeID<T>()), ...));
-
-    std::vector<Entity> matchingEntities;
-    matchingEntities.reserve(m_entities.size() / 2);
-
-    for (Entity entity : m_entities) {
-      if ((m_entityComponentMasks[entity] & requiredComponents) ==
-          requiredComponents) {
-        matchingEntities.push_back(entity);
-      }
+    std::vector<Entity> matching;
+    auto* pool = getPool<First>();
+    if (!pool) {
+      return matching;
     }
 
-    return matchingEntities;
+    Signature required;
+    required.set(getComponentTypeID<First>());
+    (required.set(getComponentTypeID<Rest>()), ...);
+
+    matching.reserve(pool->size());
+    for (std::size_t i = 0; i < pool->size(); ++i) {
+      Entity e = pool->entityAt(i);
+      if ((m_entityComponentMasks[e] & required) == required) {
+        matching.push_back(e);
+      }
+    }
+    return matching;
+  }
+
+  // Execute function for entities with given components, driving from the
+  // first type's pool — put the rarest component first.
+  template<typename First, typename... Rest, typename Fn>
+  void each(Fn&& func)
+  {
+    auto* firstPool = getPool<First>();
+    if (!firstPool) {
+      return;
+    }
+
+    if constexpr (sizeof...(Rest) == 0) {
+      for (std::size_t i = 0; i < firstPool->size(); ++i) {
+        func(firstPool->entityAt(i), (*firstPool)[i]);
+      }
+    } else {
+      auto restPools = std::make_tuple(getPool<Rest>()...);
+      if ((... || (std::get<ComponentPool<Rest>*>(restPools) == nullptr))) {
+        return;
+      }
+
+      for (std::size_t i = 0; i < firstPool->size(); ++i) {
+        Entity e = firstPool->entityAt(i);
+        auto rest =
+          std::make_tuple(std::get<ComponentPool<Rest>*>(restPools)->get(e)...);
+        if ((... && (std::get<Rest*>(rest) != nullptr))) {
+          func(e, (*firstPool)[i], (*std::get<Rest*>(rest))...);
+        }
+      }
+    }
   }
 
   // Get the component from the pool, returns nullptr if not found
   template<typename T>
   T* getComponent(Entity entity)
   {
-    if (!hasComponent<T>(entity)) {
-      return nullptr;
-    }
-
-    std::size_t typeID = getComponentTypeID<T>();
-
+    const std::size_t typeID = getComponentTypeID<T>();
     if (typeID >= m_componentPools.size() || !m_componentPools[typeID]) {
       return nullptr;
     }
-
     return getPool<T>(typeID)->get(entity);
   }
 
@@ -202,14 +226,10 @@ private:
   // Component pools - one pool per component type
   std::vector<std::unique_ptr<IComponentPool>> m_componentPools;
 
-  // Maps component types to their indices
-  std::unordered_map<ComponentType, size_t> m_componentTypeToIndex;
-
   // Tracks which components each entity has
   std::array<Signature, MAX_ENTITIES> m_entityComponentMasks;
 
   size_t m_entityCount{ 1 };
-  size_t m_nextComponentTypeID{ 0 };
   Entity m_pickedEntity{ 0 };
   bool m_entitySelected{ false };
   Entity m_dirLightEntity{ 0 };

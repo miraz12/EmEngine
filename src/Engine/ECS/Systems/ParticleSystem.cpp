@@ -5,33 +5,32 @@
 void
 ParticleSystem::update(float dt)
 {
-  std::vector<Entity> view = m_manager->view<ParticlesComponent>();
-  for (auto& e : view) {
-    auto* partComp = m_manager->getComponent<ParticlesComponent>(e);
-    auto* posComp = m_manager->getComponent<PositionComponent>(e);
+  m_manager->each<ParticlesComponent>(
+    [&](Entity e, ParticlesComponent& partComp) {
+      auto* posComp = m_manager->getComponent<PositionComponent>(e);
 
-    for (u32 i = 0; i < partComp->numNewParticles; i++) {
-      glm::vec3 pos = glm::vec3(0);
-      if (posComp) {
-        pos = posComp->position;
+      for (u32 i = 0; i < partComp.numNewParticles; i++) {
+        glm::vec3 pos = glm::vec3(0);
+        if (posComp) {
+          pos = posComp->position;
+        }
+        reviveParticle(&partComp, pos);
       }
-      reviveParticle(partComp, pos);
-    }
-    std::vector<std::shared_ptr<Particle>>& aliveParticles =
-      partComp->aliveParticles;
-    // Loop through all alive particles, removing all dying ones
-    for (u32 i = 0; i < aliveParticles.size();)
-      if (aliveParticles[i]->life <= 0) {
-        killParticle(partComp, aliveParticles[i]);
-      } else {
-        aliveParticles[i]->velocity += glm::vec3(0.0, -9.8, 0.0) * dt;
-        aliveParticles[i]->life -= dt;
-        aliveParticles[i]->position += aliveParticles[i]->velocity * dt;
-        aliveParticles[i]->color.a -= dt * 2.5f;
-        i++; // Only progress if not deleting element as deleting shiftes the
-             // vector
-      }
-  }
+      std::vector<std::shared_ptr<Particle>>& aliveParticles =
+        partComp.aliveParticles;
+      // Loop through all alive particles, removing all dying ones
+      for (u32 i = 0; i < aliveParticles.size();)
+        if (aliveParticles[i]->life <= 0) {
+          killParticle(&partComp, aliveParticles[i]);
+        } else {
+          aliveParticles[i]->velocity += glm::vec3(0.0, -9.8, 0.0) * dt;
+          aliveParticles[i]->life -= dt;
+          aliveParticles[i]->position += aliveParticles[i]->velocity * dt;
+          aliveParticles[i]->color.a -= dt * 2.5f;
+          i++; // Only progress if not deleting element as deleting shiftes the
+               // vector
+        }
+    });
 }
 
 void

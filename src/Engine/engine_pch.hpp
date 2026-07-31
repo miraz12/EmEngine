@@ -87,12 +87,8 @@ using i8 = std::int8_t;
 
 constexpr std::size_t MAX_COMPONENTS = 32;
 constexpr std::size_t MAX_ENTITIES = 1000;
-using ComponentType = std::type_index;
 using Entity = std::size_t;
 using Signature = std::bitset<MAX_COMPONENTS>;
-
-// Undef int to only allow the ones defined here
-// #define int undefined
 
 // Defines
 
