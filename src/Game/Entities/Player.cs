@@ -11,10 +11,7 @@ namespace Entities
         public Vector3 right = new Vector3(1, 0, 0);
         private Vector3 velocity = new Vector3(0, 0, 0);
         private Vector3 forceDirection = new Vector3(0, 0, 0);
-        
-        // Force applied for movement (Newtons) - average human can produce ~400-600N horizontally
-        private float maxForce = 500.0f;
-        
+
         // Movement speeds in m/s based on real human locomotion data:
         // Walking: 1.2-1.4 m/s, Jogging: 2.5-3.5 m/s, Running: 4.5-6.0 m/s, Sprint: 8-12 m/s
         private float walkSpeed = 1.4f;      // Comfortable walking pace
@@ -241,13 +238,6 @@ namespace Entities
 
             // Apply only horizontal velocity to physics engine (preserve gravity on Y)
             EngineApi.SetHorizontalVelocity(entityId, velocity.X, velocity.Z);
-            
-            // Apply additional force for more responsive movement
-            if (forceDirection.Length() > 0.1f && onGround)
-            {
-                Vector3 forceVector = Vector3.Normalize(forceDirection) * maxForce;
-                EngineApi.AddForce(entityId, forceVector.X, 0, forceVector.Z);
-            }
 
             // Reset inputs for next frame
             jumpRequested = false;
