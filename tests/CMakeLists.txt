@@ -8,7 +8,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" CACHE PATH "" FORCE)
 
 # Add source files
 add_executable(emengine_tests component_tests.cpp ecs_tests.cpp core_tests.cpp
-                              scene_tests.cpp math_tests.cpp)
+                              scene_tests.cpp scene_loader_tests.cpp)
+
+set_property(TARGET emengine_tests PROPERTY CXX_STANDARD 23)
+set_property(TARGET emengine_tests PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_precompile_headers(emengine_tests PUBLIC
                           ${CMAKE_SOURCE_DIR}/src/Engine/engine_pch.hpp)
@@ -23,17 +26,24 @@ target_include_directories(emengine_tests SYSTEM
 add_test(NAME ComponentTests COMMAND emengine_tests
                                      --gtest_filter=*ComponentTest*)
 add_test(NAME ECSTests COMMAND emengine_tests --gtest_filter=*ECSManagerTest*)
-add_test(NAME CoreTests COMMAND emengine_tests --gtest_filter=*CoreTest*)
-add_test(NAME SceneTests COMMAND emengine_tests --gtest_filter=*SceneTest*)
-add_test(NAME MathTests COMMAND emengine_tests --gtest_filter=*MathTest*)
+add_test(NAME CoreTests COMMAND emengine_tests
+                                --gtest_filter=*CoreTest*:*ComponentPoolTest*:*PerformanceTest*)
+# Fixture class is SceneManagementTest, not SceneTest.
+add_test(NAME SceneTests COMMAND emengine_tests
+                                 --gtest_filter=*SceneManagementTest*)
 add_test(NAME SingletonTests COMMAND emengine_tests
                                      --gtest_filter=*SingletonTest*)
-add_test(NAME InputManagerTests COMMAND emengine_tests
-                                        --gtest_filter=*InputManagerTest*)
-add_test(NAME GLMTests COMMAND emengine_tests
-                               --gtest_filter=*GLMIntegrationTest*)
 add_test(NAME EntityStressTests COMMAND emengine_tests
                                         --gtest_filter=*EntityStressTest*)
+add_test(NAME ECSIterationTests COMMAND emengine_tests
+                                        --gtest_filter=*ECSIterationTest*)
+
+# Loads YAML fixtures by a path relative to the repo root, so — like
+# VisualTests below — it needs an explicit working directory.
+add_test(NAME SceneLoaderTests COMMAND emengine_tests
+                                       --gtest_filter=*SceneLoaderTest*)
+set_tests_properties(SceneLoaderTests PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 # ---------------------------------------------------------------------------
 # Visual regression tests

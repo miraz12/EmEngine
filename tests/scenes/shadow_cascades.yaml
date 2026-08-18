@@ -1,0 +1,63 @@
+# Fixture for the shadow cascades visual test (tests/test_engine_shaders.cpp).
+# Sized/placed so the occluders sit inside cascade 2's fitted depth range
+# (see LightingUtil::CascadeConfig::calculateCascadeMatrices: each cascade's
+# box is fit to a depth slice of the camera frustum, not scene geometry — with
+# near=0.1/far=20 here, cascade 2 spans camera-space depth ~5.7-10.2, and the
+# occluders below sit at depth 6/9/12). shadowCascadesTest reads that same
+# cascade index. All geometry uses the Cube primitive.
+- entity: camera
+  components:
+    - type: Cam
+      position: [0.0, 4.0, 8.0]
+      target: [0.0, 0.0, 0.0]
+      up: [0.0, 1.0, 0.0]
+      fov: 60.0
+      near: 0.1
+      far: 20.0
+      width: 1600.0
+      height: 1200.0
+      main: true
+
+- entity: sun
+  components:
+    - type: Lig
+      lightType: dir
+      color: [1.0, 0.98, 0.9]
+      direction: [-0.4, -1.0, -0.3]
+      ambient: 0.3
+
+- entity: ground
+  components:
+    - type: Pos
+      position: [0.0, -1.0, 0.0]
+      rotation: [0.0, 0.0, 0.0]
+      scale: [8.0, 0.2, 6.0]
+    - type: Gra
+      primitive: Cube
+
+- entity: occluder_near
+  components:
+    - type: Pos
+      position: [-1.5, 1.0, 2.0]
+      rotation: [0.0, 0.0, 0.0]
+      scale: [1.2, 2.0, 1.2]
+    - type: Gra
+      primitive: Cube
+
+- entity: occluder_mid
+  components:
+    - type: Pos
+      position: [1.2, 1.2, -1.0]
+      rotation: [0.0, 0.3, 0.0]
+      scale: [1.2, 2.4, 1.2]
+    - type: Gra
+      primitive: Cube
+
+- entity: occluder_far
+  components:
+    - type: Pos
+      position: [-0.8, 1.5, -4.0]
+      rotation: [0.0, 0.0, 0.0]
+      scale: [1.6, 3.0, 1.6]
+    - type: Gra
+      primitive: Cube

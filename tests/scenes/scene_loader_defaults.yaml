@@ -1,0 +1,6 @@
+# Fixture for SceneLoaderTest.LoadsCameraWithDefaults — a Cam component with
+# every optional field omitted, to exercise SceneLoader::addCameraComponent's
+# default-value branches (SceneLoader.cpp).
+- entity: default_camera
+  components:
+    - type: Cam

@@ -82,11 +82,11 @@ captureAndCompare(VisualTestHarness& harness, const std::string& testName)
 #endif
 }
 
-// Loads a scene YAML, runs one FrameGraph frame, and compares the result.
-static bool
-runSceneTest(VisualTestHarness& harness,
-             const std::string& sceneFile,
-             const std::string& testName)
+// Loads a scene YAML and runs one FrameGraph frame (all passes). Shared by
+// runSceneTest (captures the final framebuffer) and the intermediate-pass
+// tests below (capture a specific pass's own render target instead).
+static void
+runSceneFrame(VisualTestHarness& harness, const std::string& sceneFile)
 {
   const u32 w = static_cast<u32>(harness.getWidth());
   const u32 h = static_cast<u32>(harness.getHeight());
@@ -102,6 +102,16 @@ runSceneTest(VisualTestHarness& harness,
   fg.draw(ecs);
 
   glFinish();
+}
+
+// Loads a scene YAML, runs one FrameGraph frame, and compares the final
+// framebuffer against the reference image.
+static bool
+runSceneTest(VisualTestHarness& harness,
+             const std::string& sceneFile,
+             const std::string& testName)
+{
+  runSceneFrame(harness, sceneFile);
   return captureAndCompare(harness, testName);
 }
 
@@ -563,6 +573,190 @@ normalTangentTest(VisualTestHarness& harness)
   return runSceneTest(harness, "normal_tangent_back.yaml", "normal_tangent_back");
 }
 
+// ---------------------------------------------------------------------------
+// Test 7: Geometry Pass (G-buffer) — full engine pipeline via FrameGraph + ECS
+//
+// Scene description: tests/scenes/pbr_metal_rough.yaml
+// Reads back the gAlbedoSpecRough G-buffer attachment (color attachment 2 of
+// "gBuffer") instead of the final post-lighting framebuffer, isolating
+// GeometryPass's own output from Light/Bloom/FXAA.
+// ---------------------------------------------------------------------------
+
+static bool
+geometryPassTest(VisualTestHarness& harness)
+{
+  runSceneFrame(harness, "pbr_metal_rough.yaml");
+
+  auto& resources = gfx::RenderResources::getInstance();
+  resources.bindFramebuffer("gBuffer");
+  resources.setReadBuffer(2); // gAlbedoSpecRough
+
+  return captureAndCompare(harness, "geometry_gbuffer");
+}
+
+// ---------------------------------------------------------------------------
+// Test 8: Shadow Pass (cascades) — full engine pipeline via FrameGraph + ECS
+//
+// Scene description: tests/scenes/shadow_cascades.yaml
+// Visualizes cascade layer 2 of "depthMapArray" as grayscale via a debug
+// shader (resources/Shaders/shadowDebugView.frag) into an offscreen RGB8
+// texture. depthMapArray is depth-only and its FBO is left bound to the last
+// cascade after ShadowPass::Record(), so a direct read can't target a
+// specific layer — hence the explicit sampling shader.
+//
+// Cascade 2 is fit to this scene's occluders specifically: each cascade's
+// box is fit to a depth slice of the camera frustum, not scene geometry (see
+// LightingUtil::CascadeConfig::calculateCascadeMatrices), so the cascade
+// index only makes sense paired with the camera/geometry placement in
+// shadow_cascades.yaml.
+// ---------------------------------------------------------------------------
+
+static bool
+shadowCascadesTest(VisualTestHarness& harness)
+{
+  runSceneFrame(harness, "shadow_cascades.yaml");
+
+  auto& device = gfx::GraphicsDevice::getInstance();
+  auto& resources = gfx::RenderResources::getInstance();
+
+  const u32 w = static_cast<u32>(harness.getWidth());
+  const u32 h = static_cast<u32>(harness.getHeight());
+
+  if (!resources.hasTexture("test_shadow_debug_view")) {
+    gfx::TextureCreateInfo viewTexInfo{};
+    viewTexInfo.type = gfx::TextureType::Texture2D;
+    viewTexInfo.format = gfx::PixelFormat::RGBA8;
+    viewTexInfo.width = w;
+    viewTexInfo.height = h;
+    viewTexInfo.mipLevels = 1;
+    viewTexInfo.debugName = "test_shadow_debug_view";
+    resources.createTexture2D("test_shadow_debug_view", viewTexInfo);
+    resources.createBareFramebuffer("test_shadow_debug_view_fbo");
+    resources.setFramebufferAttachment(
+      "test_shadow_debug_view_fbo", 0, "test_shadow_debug_view");
+  }
+
+  gfx::ShaderId debugShader = resources.getShaderProgram("test_shadowDebugView");
+  if (!device.isValid(debugShader)) {
+    debugShader =
+      resources.loadShaderProgram("test_shadowDebugView",
+                                  "resources/Shaders/quad.vert",
+                                  "resources/Shaders/shadowDebugView.frag");
+  }
+  if (!device.isValid(debugShader)) {
+    std::println(stderr, "  [shadow_cascades] Debug shader load failed");
+    return false;
+  }
+
+  device.bindFramebuffer(resources.getFramebuffer("test_shadow_debug_view_fbo"));
+  device.setViewport(0, 0, w, h);
+  device.setDepthTest(false);
+  device.clearColor(std::nullopt, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+  device.bindShaderProgram(debugShader);
+
+  // Plain (non-comparison) sampler is required here: getShadowSampler() is
+  // for the runtime PCF comparison lookup, not raw depth visualization.
+  device.bindTexture(0, resources.getTexture("depthMapArray"));
+  device.bindSampler(0, resources.getNearestClampSampler());
+  device.setUniformInt(
+    device.getUniformLocation(debugShader, "depthMapArray"), 0);
+
+  constexpr i32 kTargetCascade = 2;
+  device.setUniformInt(
+    device.getUniformLocation(debugShader, "cascadeLayer"), kTargetCascade);
+
+  resources.renderQuad();
+  glFinish();
+
+  return captureAndCompare(harness, "shadow_cascades");
+}
+
+// ---------------------------------------------------------------------------
+// Test 9: CubeMap/IBL Pass — full engine pipeline via FrameGraph + ECS
+//
+// Scene description: tests/scenes/pbr_metal_rough.yaml
+// "envCubemap" is baked once in CubeMapPass's constructor, not per frame, so
+// any scene that constructs a FrameGraph has valid IBL data. This isolates
+// the bake from the per-frame background-cube composite (which also depends
+// on Geometry/Light output) by sampling envCubemap by direction — like
+// background.frag does at runtime — via a debug shader
+// (resources/Shaders/envCubemapDebugView.frag), rather than reading a face's
+// raw texture memory (which comes out vertically flipped: CubeMapPass bakes
+// faces with an inverted up vector, see CubeMapPass::m_captureViews, that
+// only cancels out when sampled by direction, not read as a raw 2D image).
+// ---------------------------------------------------------------------------
+
+static bool
+cubemapIblTest(VisualTestHarness& harness)
+{
+  runSceneFrame(harness, "pbr_metal_rough.yaml");
+
+  auto& device = gfx::GraphicsDevice::getInstance();
+  auto& resources = gfx::RenderResources::getInstance();
+
+  const u32 w = static_cast<u32>(harness.getWidth());
+  const u32 h = static_cast<u32>(harness.getHeight());
+
+  if (!resources.hasTexture("test_cubemap_face_view")) {
+    gfx::TextureCreateInfo viewTexInfo{};
+    viewTexInfo.type = gfx::TextureType::Texture2D;
+    viewTexInfo.format = gfx::PixelFormat::RGBA8;
+    viewTexInfo.width = w;
+    viewTexInfo.height = h;
+    viewTexInfo.mipLevels = 1;
+    viewTexInfo.debugName = "test_cubemap_face_view";
+    resources.createTexture2D("test_cubemap_face_view", viewTexInfo);
+    resources.createBareFramebuffer("test_cubemap_face_view_fbo");
+    resources.setFramebufferAttachment(
+      "test_cubemap_face_view_fbo", 0, "test_cubemap_face_view");
+  }
+
+  gfx::ShaderId debugShader =
+    resources.getShaderProgram("test_envCubemapDebugView");
+  if (!device.isValid(debugShader)) {
+    debugShader =
+      resources.loadShaderProgram("test_envCubemapDebugView",
+                                  "resources/Shaders/cubeMap.vert",
+                                  "resources/Shaders/envCubemapDebugView.frag");
+  }
+  if (!device.isValid(debugShader)) {
+    std::println(stderr, "  [cubemap_ibl] Debug shader load failed");
+    return false;
+  }
+
+  // 90-degree FOV matches a single cube face's coverage. Unlike
+  // CubeMapPass::m_captureViews[4], this uses a normal, non-inverted up
+  // vector — m_captureViews' inversion compensates for how a face gets
+  // *written*, not for how it should look when *displayed*.
+  const glm::mat4 captureProjection =
+    glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+  const glm::mat4 lookPositiveZ = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f),
+                                              glm::vec3(0.0f, 0.0f, 1.0f),
+                                              glm::vec3(0.0f, 1.0f, 0.0f));
+
+  device.bindFramebuffer(resources.getFramebuffer("test_cubemap_face_view_fbo"));
+  device.setViewport(0, 0, w, h);
+  device.setDepthTest(false);
+  device.clearColor(std::nullopt, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+  device.bindShaderProgram(debugShader);
+  device.setUniformMat4(device.getUniformLocation(debugShader, "projection"),
+                        captureProjection);
+  device.setUniformMat4(device.getUniformLocation(debugShader, "view"),
+                        lookPositiveZ);
+
+  device.bindTexture(0, resources.getTexture("envCubemap"));
+  device.bindSampler(0, resources.getLinearClampSampler());
+  device.setUniformInt(
+    device.getUniformLocation(debugShader, "environmentMap"), 0);
+
+  resources.renderCube();
+  glFinish();
+
+  return captureAndCompare(harness, "cubemap_ibl");
+}
+
 // Auto-register tests at static init
 static bool reg1 = registerVisualTest("debug_lines", debugLinesTest);
 static bool reg2 = registerVisualTest("fxaa", fxaaTest);
@@ -571,3 +765,6 @@ static bool reg4 =
   registerVisualTest("pbr_metal_rough", pbrMetalRoughSpheresTest);
 static bool reg5 = registerVisualTest("alpha_blend_mode", alphaBlendModeTest);
 static bool reg6 = registerVisualTest("normal_tangent", normalTangentTest);
+static bool reg7 = registerVisualTest("geometry_gbuffer", geometryPassTest);
+static bool reg8 = registerVisualTest("shadow_cascades", shadowCascadesTest);
+static bool reg9 = registerVisualTest("cubemap_ibl", cubemapIblTest);

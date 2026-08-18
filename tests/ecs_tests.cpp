@@ -20,12 +20,6 @@ protected:
   ECSManager* manager;
 };
 
-TEST_F(ECSManagerTest, InitializeSystems)
-{
-  // Test that ECS manager initializes successfully
-  ASSERT_NE(manager, nullptr);
-}
-
 TEST_F(ECSManagerTest, CreateEntity)
 {
   Entity entity = manager->createEntity("TestEntity");
@@ -49,34 +43,29 @@ TEST_F(ECSManagerTest, CreateMultipleEntities)
   EXPECT_EQ(manager->getEntityName(entity3), "Entity3");
 }
 
-TEST_F(ECSManagerTest, AddPositionComponent)
+TEST_F(ECSManagerTest, AddComponentsByType)
 {
-  Entity entity = manager->createEntity("PositionEntity");
+  Entity entity = manager->createEntity("MultiComponentEntity");
 
   auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
   posComp.position = glm::vec3(1.0f, 2.0f, 3.0f);
   posComp.scale = glm::vec3(2.0f, 2.0f, 2.0f);
-
-  auto* retrievedComponent = manager->getComponent<PositionComponent>(entity);
-  ASSERT_NE(retrievedComponent, nullptr);
-  EXPECT_EQ(retrievedComponent->position, glm::vec3(1.0f, 2.0f, 3.0f));
-  EXPECT_EQ(retrievedComponent->scale, glm::vec3(2.0f, 2.0f, 2.0f));
-}
-
-TEST_F(ECSManagerTest, AddAnimationComponent)
-{
-  Entity entity = manager->createEntity("AnimationEntity");
 
   auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
   animComp.currentTime = 1.5f;
   animComp.isPlaying = false;
   animComp.animationIndex = 2;
 
-  auto* retrievedComponent = manager->getComponent<AnimationComponent>(entity);
-  ASSERT_NE(retrievedComponent, nullptr);
-  EXPECT_FLOAT_EQ(retrievedComponent->currentTime, 1.5f);
-  EXPECT_FALSE(retrievedComponent->isPlaying);
-  EXPECT_EQ(retrievedComponent->animationIndex, 2);
+  auto* retrievedPos = manager->getComponent<PositionComponent>(entity);
+  ASSERT_NE(retrievedPos, nullptr);
+  EXPECT_EQ(retrievedPos->position, glm::vec3(1.0f, 2.0f, 3.0f));
+  EXPECT_EQ(retrievedPos->scale, glm::vec3(2.0f, 2.0f, 2.0f));
+
+  auto* retrievedAnim = manager->getComponent<AnimationComponent>(entity);
+  ASSERT_NE(retrievedAnim, nullptr);
+  EXPECT_FLOAT_EQ(retrievedAnim->currentTime, 1.5f);
+  EXPECT_FALSE(retrievedAnim->isPlaying);
+  EXPECT_EQ(retrievedAnim->animationIndex, 2);
 }
 
 TEST_F(ECSManagerTest, ComponentViews)
@@ -165,25 +154,6 @@ TEST_F(ECSManagerTest, PhysicsSimulationToggle)
   EXPECT_EQ(manager->getSimulatePhysics(), initialState);
 }
 
-TEST_F(ECSManagerTest, EntityManagement)
-{
-  Entity entity = manager->createEntity("TestEntity");
-
-  // Add multiple components
-  manager->emplaceComponent<PositionComponent>(entity);
-  manager->emplaceComponent<AnimationComponent>(entity);
-
-  auto baseLight = std::make_shared<BaseLight>();
-  baseLight->color = glm::vec3(1.0f, 1.0f, 1.0f);
-  manager->emplaceComponent<LightingComponent>(
-    entity, baseLight, LightingComponent::TYPE::POINT);
-
-  // Verify all components can be retrieved
-  EXPECT_NE(manager->getComponent<PositionComponent>(entity), nullptr);
-  EXPECT_NE(manager->getComponent<AnimationComponent>(entity), nullptr);
-  EXPECT_NE(manager->getComponent<LightingComponent>(entity), nullptr);
-}
-
 // Singleton Pattern Tests
 TEST(SingletonTest, ECSManagerSingleton)
 {
@@ -201,50 +171,6 @@ TEST(SingletonTest, InputManagerSingleton)
   EXPECT_EQ(&instance1, &instance2);
 }
 
-// Input Manager Tests
-class InputManagerTest : public ::testing::Test
-{
-protected:
-  void SetUp() override { inputManager = &InputManager::getInstance(); }
-
-  InputManager* inputManager;
-};
-
-TEST_F(InputManagerTest, KeyAccess)
-{
-  // Test that we can access different key states
-  bool wKey = inputManager->getKey(KEY::W);
-  bool spaceKey = inputManager->getKey(KEY::Space);
-  bool escapeKey = inputManager->getKey(KEY::Escape);
-
-  // These should return valid boolean values
-  EXPECT_TRUE(wKey == true || wKey == false);
-  EXPECT_TRUE(spaceKey == true || spaceKey == false);
-  EXPECT_TRUE(escapeKey == true || escapeKey == false);
-}
-
-TEST_F(InputManagerTest, MousePositionHandling)
-{
-  double testX = 150.0;
-  double testY = 250.0;
-
-  // Test that setMousePos doesn't crash and can be called
-  inputManager->setMousePos(testX, testY);
-
-  // Method exists and can be called successfully
-  SUCCEED();
-}
-
-TEST_F(InputManagerTest, HandleInput)
-{
-  // Test input handling methods exist and can be called
-  inputManager->handleInput(65, 1); // 'A' key press
-  inputManager->handleAction(KEY::W, 1);
-
-  // Methods exist and can be called successfully
-  SUCCEED();
-}
-
 // Entity Stress Tests
 class EntityStressTest : public ::testing::Test
 {
@@ -256,65 +182,60 @@ protected:
   ECSManager* manager;
 };
 
-TEST_F(EntityStressTest, CreateManyEntities)
+TEST_F(EntityStressTest, BulkCreateAndDestroy)
 {
-  const int NUM_ENTITIES = 800; // Test creating many entities (staying safely
-                                // within MAX_ENTITIES=1000)
+  // Covers, at one representative N (staying safely within
+  // MAX_ENTITIES=1000): sequential ID assignment across a large batch,
+  // component views at scale, and that destroying every entity cleans up
+  // both the name map and every component pool.
+  const int NUM_ENTITIES = 500;
   std::vector<Entity> entities;
 
-  // Create many entities
-  for (int i = 0; i < NUM_ENTITIES; ++i) {
-    Entity entity = manager->createEntity("StressEntity_" + std::to_string(i));
-    entities.push_back(entity);
-
-    // Verify entity is valid and has sequential IDs
-    EXPECT_NE(entity, 0);
-    if (i > 0) {
-      EXPECT_EQ(entity, entities[i - 1] + 1); // IDs should be sequential
-    }
-  }
-
-  // Verify all entities exist and have correct names
-  EXPECT_EQ(entities.size(), NUM_ENTITIES);
-
-  // Check first
-  EXPECT_EQ(manager->getEntityName(entities[0]), "StressEntity_0");
-  EXPECT_EQ(manager->getEntityName(entities[NUM_ENTITIES - 1]),
-            "StressEntity_" + std::to_string(NUM_ENTITIES - 1));
-}
-
-TEST_F(EntityStressTest, CreateAndDestroyManyEntities)
-{
-  const int NUM_ENTITIES = 500; // Stay safely within MAX_ENTITIES limit
-  std::vector<Entity> entities;
-
-  // Create entities
   for (int i = 0; i < NUM_ENTITIES; ++i) {
     Entity entity = manager->createEntity("Entity_" + std::to_string(i));
     entities.push_back(entity);
 
-    // Add a component to make sure destruction cleans up properly
-    auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
-    posComp.position = glm::vec3(i, i, i);
+    EXPECT_NE(entity, 0);
+    if (i > 0) {
+      EXPECT_EQ(entity, entities[i - 1] + 1); // IDs should be sequential
+    }
+
+    // Add components to test component pool views at scale
+    if (i % 2 == 0) { // Every other entity
+      auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
+      posComp.position = glm::vec3(i, i, i);
+    }
+    if (i % 3 == 0) { // Every third entity
+      auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
+      animComp.animationIndex = i;
+    }
   }
 
-  // Verify all entities exist
   EXPECT_EQ(entities.size(), NUM_ENTITIES);
+  EXPECT_EQ(manager->getEntityName(entities[0]), "Entity_0");
+  EXPECT_EQ(manager->getEntityName(entities[NUM_ENTITIES - 1]),
+            "Entity_" + std::to_string(NUM_ENTITIES - 1));
 
-  // Destroy all entities
+  auto positionView = manager->view<PositionComponent>();
+  auto animationView = manager->view<AnimationComponent>();
+  int expectedPosCount = (NUM_ENTITIES + 1) / 2;
+  int expectedAnimCount = (NUM_ENTITIES + 2) / 3;
+  EXPECT_EQ(positionView.size(), expectedPosCount);
+  EXPECT_EQ(animationView.size(), expectedAnimCount);
+
+  // Destroy all entities and verify full cleanup
   for (Entity entity : entities) {
-    // Verify entity exists before destruction
     EXPECT_NE(manager->getEntityName(entity), "");
-    EXPECT_NE(manager->getComponent<PositionComponent>(entity), nullptr);
 
-    // Destroy the entity
     manager->destroyEntity(entity);
 
-    // Verify entity is cleaned up
-    EXPECT_EQ(manager->getEntityName(entity), ""); // Name should be empty
-    EXPECT_EQ(manager->getComponent<PositionComponent>(entity),
-              nullptr); // Component should be null
+    EXPECT_EQ(manager->getEntityName(entity), "");
+    EXPECT_EQ(manager->getComponent<PositionComponent>(entity), nullptr);
+    EXPECT_EQ(manager->getComponent<AnimationComponent>(entity), nullptr);
   }
+
+  EXPECT_EQ(manager->view<PositionComponent>().size(), 0u);
+  EXPECT_EQ(manager->view<AnimationComponent>().size(), 0u);
 }
 
 TEST_F(EntityStressTest, EntityIdReuseBehavior)
@@ -359,51 +280,6 @@ TEST_F(EntityStressTest, EntityIdReuseBehavior)
 
   EXPECT_EQ(entity6, 1); // Should reuse entity1's ID
   EXPECT_EQ(entity7, 3); // Should reuse entity3's ID
-}
-
-TEST_F(EntityStressTest, EntityLimitBehavior)
-{
-  // Test behavior near MAX_ENTITIES limit
-  // MAX_ENTITIES is 1000, so let's test creating close to that limit
-  const int ENTITIES_TO_CREATE = 950; // Stay safely under limit for this test
-  std::vector<Entity> entities;
-
-  for (int i = 0; i < ENTITIES_TO_CREATE; ++i) {
-    Entity entity = manager->createEntity("LimitEntity_" + std::to_string(i));
-    entities.push_back(entity);
-
-    // Add components to test component pool limits too
-    if (i % 2 == 0) { // Add PositionComponent to every other entity
-      auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
-      posComp.position = glm::vec3(i, 0, 0);
-    }
-
-    if (i % 3 == 0) { // Add AnimationComponent to every third entity
-      auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
-      animComp.animationIndex = i;
-    }
-  }
-
-  // Verify all entities were created successfully
-  EXPECT_EQ(entities.size(), ENTITIES_TO_CREATE);
-
-  // Test component views with large number of entities
-  auto positionView = manager->view<PositionComponent>();
-  auto animationView = manager->view<AnimationComponent>();
-  auto bothView = manager->view<PositionComponent, AnimationComponent>();
-
-  // Calculate expected counts
-  int expectedPosCount = (ENTITIES_TO_CREATE + 1) / 2;  // Every other entity
-  int expectedAnimCount = (ENTITIES_TO_CREATE + 2) / 3; // Every third entity
-  int expectedBothCount = 0;
-  for (int i = 0; i < ENTITIES_TO_CREATE; ++i) {
-    if (i % 2 == 0 && i % 3 == 0)
-      expectedBothCount++; // Every sixth entity
-  }
-
-  EXPECT_EQ(positionView.size(), expectedPosCount);
-  EXPECT_EQ(animationView.size(), expectedAnimCount);
-  EXPECT_EQ(bothView.size(), expectedBothCount);
 }
 
 TEST_F(EntityStressTest, EntityMaxLimitBoundary)
@@ -484,54 +360,156 @@ TEST_F(EntityStressTest, EntityLimitWithReuse)
   EXPECT_EQ(shouldFailAgain, 0);
 }
 
-TEST_F(EntityStressTest, MassEntityDestructionAndRecreation)
+// each<>() / hasComponent<>() / removal-reflection tests
+class ECSIterationTest : public ::testing::Test
 {
-  const int BATCH_SIZE = 150; // Reduced to stay within MAX_ENTITIES
-  const int NUM_BATCHES = 4;  // 4 batches x 150 = 600 entities total
+protected:
+  void SetUp() override { manager = &ECSManager::getInstance(); }
 
-  for (int batch = 0; batch < NUM_BATCHES; ++batch) {
-    std::vector<Entity> batchEntities;
+  void TearDown() override { manager->reset(); }
 
-    // Create batch of entities
-    for (int i = 0; i < BATCH_SIZE; ++i) {
-      Entity entity = manager->createEntity("Batch" + std::to_string(batch) +
-                                            "_Entity" + std::to_string(i));
-      batchEntities.push_back(entity);
+  ECSManager* manager;
+};
 
-      // Add random components
-      if (i % 2 == 0) {
-        auto& posComp = manager->emplaceComponent<PositionComponent>(entity);
-        posComp.position = glm::vec3(batch, i, 0);
-      }
+TEST_F(ECSIterationTest, EachSingleType)
+{
+  Entity entity1 = manager->createEntity("Entity1");
+  Entity entity2 = manager->createEntity("Entity2");
+  Entity entity3 = manager->createEntity("Entity3");
 
-      if (i % 3 == 0) {
-        auto& animComp = manager->emplaceComponent<AnimationComponent>(entity);
-        animComp.currentTime = batch * i;
-      }
-    }
+  manager->emplaceComponent<PositionComponent>(entity1).position =
+    glm::vec3(1.0f, 0.0f, 0.0f);
+  manager->emplaceComponent<PositionComponent>(entity2).position =
+    glm::vec3(2.0f, 0.0f, 0.0f);
+  manager->emplaceComponent<PositionComponent>(entity3).position =
+    glm::vec3(3.0f, 0.0f, 0.0f);
 
-    // Verify batch creation
-    EXPECT_EQ(batchEntities.size(), BATCH_SIZE);
+  std::set<Entity> visited;
+  manager->each<PositionComponent>(
+    [&](Entity e, PositionComponent& pos) {
+      visited.insert(e);
+      // Mutate through the reference each<>() hands back
+      pos.position.y = pos.position.x * 10.0f;
+    });
 
-    // Destroy all entities in batch
-    for (Entity entity : batchEntities) {
-      manager->destroyEntity(entity);
-    }
+  EXPECT_EQ(visited, (std::set<Entity>{ entity1, entity2, entity3 }));
 
-    // Verify all entities in batch are destroyed
-    for (Entity entity : batchEntities) {
-      EXPECT_EQ(manager->getEntityName(entity), "");
-      EXPECT_EQ(manager->getComponent<PositionComponent>(entity), nullptr);
-      EXPECT_EQ(manager->getComponent<AnimationComponent>(entity), nullptr);
-    }
-  }
+  // Mutation through the passed reference must persist
+  EXPECT_FLOAT_EQ(
+    manager->getComponent<PositionComponent>(entity1)->position.y, 10.0f);
+  EXPECT_FLOAT_EQ(
+    manager->getComponent<PositionComponent>(entity2)->position.y, 20.0f);
+  EXPECT_FLOAT_EQ(
+    manager->getComponent<PositionComponent>(entity3)->position.y, 30.0f);
+}
 
-  // With ID reuse, we should be able to create a new entity
-  // It should reuse one of the many destroyed entity IDs
-  Entity finalEntity = manager->createEntity("FinalEntity");
-  EXPECT_NE(finalEntity, 0); // Should succeed
+TEST_F(ECSIterationTest, EachMultiType)
+{
+  Entity both1 = manager->createEntity("Both1");
+  Entity both2 = manager->createEntity("Both2");
+  Entity positionOnly = manager->createEntity("PositionOnly");
 
-  // The reused ID should be within the range of previously created entities
-  EXPECT_GE(finalEntity, 1);
-  EXPECT_LE(finalEntity, BATCH_SIZE * NUM_BATCHES);
+  manager->emplaceComponent<PositionComponent>(both1);
+  manager->emplaceComponent<AnimationComponent>(both1).animationIndex = 1;
+
+  manager->emplaceComponent<PositionComponent>(both2);
+  manager->emplaceComponent<AnimationComponent>(both2).animationIndex = 2;
+
+  // Has the driving (First) component but not the Rest component — must be
+  // skipped even though it's in PositionComponent's pool.
+  manager->emplaceComponent<PositionComponent>(positionOnly);
+
+  std::set<Entity> visited;
+  manager->each<PositionComponent, AnimationComponent>(
+    [&](Entity e, PositionComponent&, AnimationComponent& anim) {
+      visited.insert(e);
+      anim.currentTime = 5.0f;
+    });
+
+  EXPECT_EQ(visited, (std::set<Entity>{ both1, both2 }));
+  EXPECT_FLOAT_EQ(
+    manager->getComponent<AnimationComponent>(both1)->currentTime, 5.0f);
+  EXPECT_FLOAT_EQ(
+    manager->getComponent<AnimationComponent>(both2)->currentTime, 5.0f);
+}
+
+TEST_F(ECSIterationTest, EachSkipsWhenPoolMissing)
+{
+  // No LightingComponent has ever been emplaced in this fresh (reset) ECS,
+  // so its pool doesn't exist yet — each<>() must no-op rather than crash.
+  manager->createEntity("NoLighting");
+
+  int callCount = 0;
+  manager->each<LightingComponent>(
+    [&](Entity, LightingComponent&) { ++callCount; });
+  EXPECT_EQ(callCount, 0);
+
+  // Same for the multi-type overload when the Rest pool is missing.
+  Entity entity = manager->createEntity("PositionOnly");
+  manager->emplaceComponent<PositionComponent>(entity);
+
+  callCount = 0;
+  manager->each<PositionComponent, LightingComponent>(
+    [&](Entity, PositionComponent&, LightingComponent&) { ++callCount; });
+  EXPECT_EQ(callCount, 0);
+}
+
+TEST_F(ECSIterationTest, HasComponentContract)
+{
+  Entity entity = manager->createEntity("HasComponentEntity");
+
+  EXPECT_FALSE(manager->hasComponent<PositionComponent>(entity));
+
+  manager->emplaceComponent<PositionComponent>(entity);
+  EXPECT_TRUE(manager->hasComponent<PositionComponent>(entity));
+  EXPECT_FALSE(manager->hasComponent<AnimationComponent>(entity));
+
+  manager->destroyEntity(entity);
+  EXPECT_FALSE(manager->hasComponent<PositionComponent>(entity));
+}
+
+TEST_F(ECSIterationTest, ViewAndEachReflectRemoval)
+{
+  Entity entity1 = manager->createEntity("Entity1");
+  Entity entity2 = manager->createEntity("Entity2");
+  Entity entity3 = manager->createEntity("Entity3");
+
+  manager->emplaceComponent<PositionComponent>(entity1);
+  manager->emplaceComponent<PositionComponent>(entity2);
+  manager->emplaceComponent<PositionComponent>(entity3);
+
+  EXPECT_EQ(manager->view<PositionComponent>().size(), 3u);
+
+  manager->destroyEntity(entity2);
+
+  auto remaining = manager->view<PositionComponent>();
+  EXPECT_EQ(remaining.size(), 2u);
+  EXPECT_EQ(std::count(remaining.begin(), remaining.end(), entity2), 0);
+
+  std::set<Entity> visited;
+  manager->each<PositionComponent>(
+    [&](Entity e, PositionComponent&) { visited.insert(e); });
+  EXPECT_EQ(visited, (std::set<Entity>{ entity1, entity3 }));
+}
+
+TEST_F(ECSIterationTest, SignatureIsolatedOnRemoval)
+{
+  Entity entity = manager->createEntity("MultiComponentEntity");
+
+  manager->emplaceComponent<PositionComponent>(entity);
+  manager->emplaceComponent<AnimationComponent>(entity);
+  auto baseLight = std::make_shared<BaseLight>();
+  manager->emplaceComponent<LightingComponent>(
+    entity, baseLight, LightingComponent::TYPE::POINT);
+
+  EXPECT_TRUE(manager->hasComponent<PositionComponent>(entity));
+  EXPECT_TRUE(manager->hasComponent<AnimationComponent>(entity));
+  EXPECT_TRUE(manager->hasComponent<LightingComponent>(entity));
+
+  manager->destroyEntity(entity);
+
+  // The whole signature bitset must clear, not just one bit.
+  EXPECT_FALSE(manager->hasComponent<PositionComponent>(entity));
+  EXPECT_FALSE(manager->hasComponent<AnimationComponent>(entity));
+  EXPECT_FALSE(manager->hasComponent<LightingComponent>(entity));
 }

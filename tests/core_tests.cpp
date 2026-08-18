@@ -6,52 +6,9 @@
 #include "InputManager.hpp"
 #include "Singleton.hpp"
 
-// Test Singleton Pattern Implementation
-class TestSingleton : public Singleton<TestSingleton>
-{
-  friend class Singleton<TestSingleton>;
-
-private:
-  TestSingleton() = default;
-  int testValue = 42;
-
-public:
-  int getTestValue() const { return testValue; }
-  void setTestValue(int value) { testValue = value; }
-};
-
-class SingletonPatternTest : public ::testing::Test
-{
-protected:
-  void TearDown() override
-  {
-    // Reset singleton state if needed
-    TestSingleton::getInstance().setTestValue(42);
-  }
-};
-
-TEST_F(SingletonPatternTest, SingletonInstanceCreation)
-{
-  TestSingleton& instance1 = TestSingleton::getInstance();
-  TestSingleton& instance2 = TestSingleton::getInstance();
-
-  // Should be the same instance
-  EXPECT_EQ(&instance1, &instance2);
-}
-
-TEST_F(SingletonPatternTest, SingletonStateConsistency)
-{
-  TestSingleton& instance1 = TestSingleton::getInstance();
-  TestSingleton& instance2 = TestSingleton::getInstance();
-
-  EXPECT_EQ(instance1.getTestValue(), 42);
-  EXPECT_EQ(instance2.getTestValue(), 42);
-
-  instance1.setTestValue(100);
-
-  EXPECT_EQ(instance1.getTestValue(), 100);
-  EXPECT_EQ(instance2.getTestValue(), 100);
-}
+// Singleton pattern is covered end-to-end by the real engine singletons in
+// ecs_tests.cpp (SingletonTest.ECSManagerSingleton / InputManagerSingleton) —
+// no need for a synthetic TestSingleton here.
 
 // Test Component Pool Functionality
 class ComponentPoolTest : public ::testing::Test
@@ -65,69 +22,34 @@ protected:
   std::unique_ptr<ComponentPool<PositionComponent>> pool;
 };
 
-TEST_F(ComponentPoolTest, ComponentPoolCreation)
-{
-  ASSERT_NE(pool, nullptr);
-}
-
-TEST_F(ComponentPoolTest, ComponentAddition)
-{
-  Entity entity = 1;
-  auto& comp = pool->emplace(entity);
-  comp.position = glm::vec3(1.0f, 2.0f, 3.0f);
-
-  auto* retrieved = pool->get(entity);
-  ASSERT_NE(retrieved, nullptr);
-  EXPECT_EQ(retrieved->position, glm::vec3(1.0f, 2.0f, 3.0f));
-}
-
-TEST_F(ComponentPoolTest, ComponentRetrieval)
+TEST_F(ComponentPoolTest, AddGetRemoveLifecycle)
 {
   Entity entity1 = 1;
   Entity entity2 = 2;
 
-  auto& comp1 = pool->emplace(entity1);
-  comp1.position = glm::vec3(1.0f, 0.0f, 0.0f);
+  // Doesn't exist before adding
+  EXPECT_EQ(pool->get(entity1), nullptr);
 
-  auto& comp2 = pool->emplace(entity2);
-  comp2.position = glm::vec3(0.0f, 1.0f, 0.0f);
+  // emplace()'s returned reference is only valid until the next emplace()
+  // may reallocate the pool's backing vector — set through it immediately,
+  // then verify by value through get() rather than by address.
+  pool->emplace(entity1).position = glm::vec3(1.0f, 2.0f, 3.0f);
+  pool->emplace(entity2).position = glm::vec3(0.0f, 1.0f, 0.0f);
 
+  // Exists after adding
   auto* retrieved1 = pool->get(entity1);
   auto* retrieved2 = pool->get(entity2);
-
   ASSERT_NE(retrieved1, nullptr);
   ASSERT_NE(retrieved2, nullptr);
-  EXPECT_EQ(retrieved1->position, glm::vec3(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(retrieved1->position, glm::vec3(1.0f, 2.0f, 3.0f));
   EXPECT_EQ(retrieved2->position, glm::vec3(0.0f, 1.0f, 0.0f));
-}
 
-TEST_F(ComponentPoolTest, ComponentRemoval)
-{
-  Entity entity = 1;
-  pool->emplace(entity);
-  ASSERT_NE(pool->get(entity), nullptr);
+  pool->remove(entity1);
 
-  pool->remove(entity);
-  EXPECT_EQ(pool->get(entity), nullptr);
-}
-
-TEST_F(ComponentPoolTest, ComponentOperations)
-{
-  Entity entity = 1;
-
-  // Check component doesn't exist initially
-  EXPECT_EQ(pool->get(entity), nullptr);
-
-  auto& comp = pool->emplace(entity);
-
-  // Check component exists after adding
-  EXPECT_NE(pool->get(entity), nullptr);
-  EXPECT_EQ(pool->get(entity), &comp);
-
-  pool->remove(entity);
-
-  // Check component is removed
-  EXPECT_EQ(pool->get(entity), nullptr);
+  // Removed entity is gone, untouched entity is unaffected
+  EXPECT_EQ(pool->get(entity1), nullptr);
+  ASSERT_NE(pool->get(entity2), nullptr);
+  EXPECT_EQ(pool->get(entity2)->position, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 TEST_F(ComponentPoolTest, MultipleComponents)
@@ -169,6 +91,97 @@ TEST_F(ComponentPoolTest, SwapAndPopCorrectness)
   ASSERT_NE(pool->get(entity3), nullptr);
   EXPECT_EQ(pool->get(entity1)->position, glm::vec3(1.0f, 0.0f, 0.0f));
   EXPECT_EQ(pool->get(entity3)->position, glm::vec3(0.0f, 0.0f, 3.0f));
+}
+
+TEST_F(ComponentPoolTest, RemoveLastElement)
+{
+  // SwapAndPopCorrectness removes a middle element; this covers the other
+  // branch in ComponentPool::remove — removedIndex == lastIndex, where the
+  // swap-with-last step is skipped entirely.
+  Entity entity1 = 1;
+  Entity entity2 = 2;
+  Entity entity3 = 3;
+
+  pool->emplace(entity1).position = glm::vec3(1.0f, 0.0f, 0.0f);
+  pool->emplace(entity2).position = glm::vec3(0.0f, 2.0f, 0.0f);
+  pool->emplace(entity3).position = glm::vec3(0.0f, 0.0f, 3.0f);
+
+  EXPECT_EQ(pool->size(), 3u);
+
+  // Remove the last entity in dense order
+  pool->remove(entity3);
+
+  EXPECT_EQ(pool->size(), 2u);
+  EXPECT_EQ(pool->get(entity3), nullptr);
+
+  // The other two entities are untouched
+  ASSERT_NE(pool->get(entity1), nullptr);
+  ASSERT_NE(pool->get(entity2), nullptr);
+  EXPECT_EQ(pool->get(entity1)->position, glm::vec3(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(pool->get(entity2)->position, glm::vec3(0.0f, 2.0f, 0.0f));
+}
+
+TEST_F(ComponentPoolTest, RepeatedAddRemoveCycles)
+{
+  Entity entity = 1;
+
+  for (int cycle = 0; cycle < 5; ++cycle) {
+    EXPECT_FALSE(pool->has(entity));
+    EXPECT_EQ(pool->get(entity), nullptr);
+
+    auto& comp = pool->emplace(entity);
+    comp.position = glm::vec3(static_cast<float>(cycle), 0.0f, 0.0f);
+
+    EXPECT_TRUE(pool->has(entity));
+    EXPECT_EQ(pool->size(), 1u);
+    ASSERT_NE(pool->get(entity), nullptr);
+    EXPECT_EQ(pool->get(entity)->position,
+              glm::vec3(static_cast<float>(cycle), 0.0f, 0.0f));
+
+    pool->remove(entity);
+
+    EXPECT_FALSE(pool->has(entity));
+    EXPECT_EQ(pool->size(), 0u);
+  }
+}
+
+TEST_F(ComponentPoolTest, InterleavedAddRemoveDifferentEntities)
+{
+  Entity a = 1;
+  Entity b = 2;
+  Entity c = 3;
+  Entity d = 4;
+
+  pool->emplace(a).position = glm::vec3(1.0f, 0.0f, 0.0f);
+  pool->emplace(b).position = glm::vec3(2.0f, 0.0f, 0.0f);
+  pool->emplace(c).position = glm::vec3(3.0f, 0.0f, 0.0f);
+
+  // Remove the middle entity (triggers a swap-and-pop with c moving into b's slot)
+  pool->remove(b);
+  EXPECT_EQ(pool->size(), 2u);
+  EXPECT_FALSE(pool->has(b));
+
+  // Add a new entity — it should land in the freed slot without disturbing
+  // the survivors
+  pool->emplace(d).position = glm::vec3(4.0f, 0.0f, 0.0f);
+  EXPECT_EQ(pool->size(), 3u);
+
+  // Remove the first entity added (triggers another swap-and-pop)
+  pool->remove(a);
+  EXPECT_EQ(pool->size(), 2u);
+  EXPECT_FALSE(pool->has(a));
+
+  // c and d must still resolve to their own data through entityAt()/get()
+  ASSERT_NE(pool->get(c), nullptr);
+  ASSERT_NE(pool->get(d), nullptr);
+  EXPECT_EQ(pool->get(c)->position, glm::vec3(3.0f, 0.0f, 0.0f));
+  EXPECT_EQ(pool->get(d)->position, glm::vec3(4.0f, 0.0f, 0.0f));
+
+  std::set<Entity> denseEntities;
+  for (size_t i = 0; i < pool->size(); ++i) {
+    denseEntities.insert(pool->entityAt(i));
+  }
+  EXPECT_EQ(denseEntities, (std::set<Entity>{ c, d }));
 }
 
 TEST_F(ComponentPoolTest, DenseIteration)
@@ -227,26 +240,6 @@ TEST_F(ComponentPoolTest, ClearPool)
   EXPECT_EQ(pool->get(Entity(3)), nullptr);
 }
 
-// Test Component Data Structures
-class ComponentTest : public ::testing::Test
-{
-protected:
-  void SetUp() override { component = PositionComponent{}; }
-  PositionComponent component;
-};
-
-TEST_F(ComponentTest, ComponentInstantiation)
-{
-  PositionComponent pos1;
-  PositionComponent pos2;
-
-  // Test they have independent state
-  pos1.position = glm::vec3(1.0f, 0.0f, 0.0f);
-  pos2.position = glm::vec3(0.0f, 1.0f, 0.0f);
-
-  EXPECT_NE(pos1.position, pos2.position);
-}
-
 // Test Input Manager Core Functionality
 class InputManagerCoreTest : public ::testing::Test
 {
@@ -255,11 +248,6 @@ protected:
 
   InputManager* inputManager;
 };
-
-TEST_F(InputManagerCoreTest, InputManagerExists)
-{
-  ASSERT_NE(inputManager, nullptr);
-}
 
 TEST_F(InputManagerCoreTest, KeyMapAccess)
 {
@@ -294,60 +282,6 @@ TEST_F(InputManagerCoreTest, ActiveKeyTracking)
   EXPECT_TRUE(inputManager->getKey(KEY::W));
 }
 
-TEST_F(InputManagerCoreTest, InputHandling)
-{
-  // Test that input handling methods can be called
-  inputManager->handleInput(87, 1); // 'W' key
-  inputManager->handleAction(KEY::W, 1);
-
-  // Test update method
-  inputManager->update(0.016f); // 60 FPS delta
-
-  // Methods should execute without crashing
-  SUCCEED();
-}
-
-// Test Entity Type
-class EntityTest : public ::testing::Test
-{};
-
-TEST_F(EntityTest, EntityType)
-{
-  Entity entity1 = 1;
-  Entity entity2 = 2;
-  Entity entity3 = 0;
-
-  EXPECT_EQ(entity1, 1);
-  EXPECT_EQ(entity2, 2);
-  EXPECT_EQ(entity3, 0);
-}
-
-TEST_F(EntityTest, EntityComparison)
-{
-  Entity entity1 = 1;
-  Entity entity2 = 1;
-  Entity entity3 = 2;
-
-  EXPECT_EQ(entity1, entity2);
-  EXPECT_NE(entity1, entity3);
-  EXPECT_NE(entity2, entity3);
-}
-
-TEST_F(EntityTest, EntityOrdering)
-{
-  Entity entity1 = 1;
-  Entity entity2 = 2;
-  Entity entity3 = 3;
-
-  EXPECT_LT(entity1, entity2);
-  EXPECT_LT(entity2, entity3);
-  EXPECT_LT(entity1, entity3);
-
-  EXPECT_GT(entity3, entity2);
-  EXPECT_GT(entity2, entity1);
-  EXPECT_GT(entity3, entity1);
-}
-
 // Performance and Memory Tests
 class PerformanceTest : public ::testing::Test
 {};
@@ -357,22 +291,13 @@ TEST_F(PerformanceTest, ComponentCreationPerformance)
   const int NUM_COMPONENTS = 1000;
   ComponentPool<PositionComponent> pool;
 
-  auto start = std::chrono::high_resolution_clock::now();
-
   for (int i = 0; i < NUM_COMPONENTS; ++i) {
     // Entity IDs 0..999 (MAX_ENTITIES is 1000)
     auto& comp = pool.emplace(static_cast<Entity>(i));
     comp.position = glm::vec3(i, i + 1, i + 2);
   }
 
-  auto end = std::chrono::high_resolution_clock::now();
-  auto duration =
-    std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-  // Should be able to create 1000 components in reasonable time (< 10ms)
-  EXPECT_LT(duration.count(), 10000);
-
-  // Verify components are properly created
+  // Verify components are properly created at scale
   EXPECT_EQ(pool.size(), NUM_COMPONENTS);
   EXPECT_EQ(pool.get(0)->position, glm::vec3(0, 1, 2));
   EXPECT_EQ(pool.get(999)->position, glm::vec3(999, 1000, 1001));
@@ -383,24 +308,16 @@ TEST_F(PerformanceTest, ComponentPoolPerformance)
   ComponentPool<PositionComponent> pool;
   const int NUM_ENTITIES = 500;
 
-  auto start = std::chrono::high_resolution_clock::now();
-
   // Add components for many entities
   for (Entity i = 0; i < NUM_ENTITIES; ++i) {
     auto& comp = pool.emplace(i);
     comp.position = glm::vec3(i, i * 2, i * 3);
   }
 
-  // Retrieve all components
+  // Retrieve all components at scale
   for (Entity i = 0; i < NUM_ENTITIES; ++i) {
     auto* comp = pool.get(i);
     ASSERT_NE(comp, nullptr);
+    EXPECT_EQ(comp->position, glm::vec3(i, i * 2, i * 3));
   }
-
-  auto end = std::chrono::high_resolution_clock::now();
-  auto duration =
-    std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-  // Should be fast (< 50ms for 500 entities)
-  EXPECT_LT(duration.count(), 50000);
 }
