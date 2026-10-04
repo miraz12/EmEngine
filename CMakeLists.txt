@@ -29,6 +29,8 @@ if(EMSCRIPTEN)
     set(CMAKE_TOOLCHAIN_FILE "${EMSDK_PATH}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
 endif()
 
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
 project(emEngine)
 # Generate compile_commands.json for LSP
 if(LINUX)
