@@ -135,7 +135,7 @@ LightPass::Record(ECSManager& eManager)
              std::sqrt(light.linear * light.linear -
                        4 * light.quadratic *
                          (constant - (256.0f / 5.0f) * maxBrightness))) /
-            (2.0f * light.quadratic);
+            std::max(2.0f * light.quadratic, 1e-4f);
 
           // Populate UBO point light data
           lightingUBO.pointLights[numPLights].positionRadius =
