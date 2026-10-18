@@ -163,13 +163,19 @@ void
 PhysicsSystem::update(float dt)
 {
   if (m_manager->getSimulatePhysics()) {
+    constexpr int maxSteps = 4;
     m_accumulator += dt;
+    int steps = 0;
 
     // Step the physics world
-    while (m_accumulator >= kFixedTimeStep) {
+    while (m_accumulator >= kFixedTimeStep && steps < maxSteps) {
       m_joltSystem->Update(
         kFixedTimeStep, 1, m_tempAllocator.get(), m_jobSystem.get());
       m_accumulator -= kFixedTimeStep;
+      ++steps;
+    }
+    if (steps == maxSteps) {
+      m_accumulator = 0.0f;
     }
 
     // Sync physics transforms to ECS PositionComponents
@@ -383,13 +389,7 @@ void
 PhysicsSystem::setLinearVelocity(JPH::BodyID bodyId, float x, float y, float z)
 {
   auto& bodyInterface = m_joltSystem->GetBodyInterfaceNoLock();
-  if (y == 0.0f) {
-    // Preserve existing Y velocity (gravity/jumping)
-    JPH::Vec3 vel = bodyInterface.GetLinearVelocity(bodyId);
-    bodyInterface.SetLinearVelocity(bodyId, JPH::Vec3(x, vel.GetY(), z));
-  } else {
-    bodyInterface.SetLinearVelocity(bodyId, JPH::Vec3(x, y, z));
-  }
+  bodyInterface.SetLinearVelocity(bodyId, JPH::Vec3(x, y, z));
 }
 
 void
