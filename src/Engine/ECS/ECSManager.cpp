@@ -11,6 +11,7 @@
 #include "ECS/Components/PhysicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
 #include "Objects/GltfObject.hpp"
+#include "ResourceManager.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/AudioSystem.hpp"
 #include "Systems/CameraSystem.hpp"
@@ -293,13 +294,25 @@ extern "C"
 
   void AddGraphicsComponent(int entity, const char* model)
   {
-    auto gltfObj =
-      std::make_shared<GltfObject>("resources/Models/" + std::string(model));
-    bool hasAnims = gltfObj->p_numAnimations > 0;
-    ECSManager::getInstance().emplaceComponent<GraphicsComponent>(
-      entity, std::move(gltfObj));
+    if (!model) {
+      std::cerr << "AddGraphicsComponent: null model\n";
+      return;
+    }
+    const std::string path = std::string("resources/Models/") + model;
+
+    std::shared_ptr<GltfObject> obj =
+      ResourceManager::getInstance().getGltfModel(path);
+
+    const bool hasAnims = obj->p_numAnimations > 0;
     if (hasAnims) {
-      ECSManager::getInstance().emplaceComponent<AnimationComponent>(entity);
+      // TODO Don't cache animated objects for now
+      obj = std::make_shared<GltfObject>(path);
+    }
+
+    auto& ecs = ECSManager::getInstance();
+    ecs.emplaceComponent<GraphicsComponent>(entity, std::move(obj));
+    if (hasAnims) {
+      ecs.emplaceComponent<AnimationComponent>(entity);
     }
   }
 
