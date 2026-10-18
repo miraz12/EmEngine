@@ -8,7 +8,7 @@ precision highp float;
 precision highp sampler2DArrayShadow;
 
 #define NR_POINT_LIGHTS 10
-#define NUM_CASCADES 4
+#define NUM_CASCADES 3
 
 // ============================================================
 // UNIFORMS

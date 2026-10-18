@@ -52,8 +52,8 @@ calculateLightSpaceMatrix(const glm::vec3& lightDirection,
 
 struct CascadeConfig
 {
-  static constexpr u32 NUM_CASCADES = 4;
-  static constexpr u32 SHADOW_MAP_SIZE = 1024;
+  static constexpr u32 NUM_CASCADES = 3;
+  static constexpr u32 SHADOW_MAP_SIZE = 512;
 
   glm::mat4 lightSpaceMatrices[NUM_CASCADES];
   std::array<float, NUM_CASCADES> cascadeSplits;
