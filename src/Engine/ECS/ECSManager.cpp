@@ -163,6 +163,7 @@ ECSManager::setViewport(u32 width, u32 height)
   if (cam) {
     cam->m_width = width;
     cam->m_height = height;
+    cam->m_matrixNeedsUpdate = true;
   }
 
   static_cast<GraphicsSystem*>(m_systems["GRAPHICS"])

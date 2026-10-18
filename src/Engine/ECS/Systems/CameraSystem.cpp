@@ -22,10 +22,10 @@ CameraSystem::updateMatrices(CameraComponent& camera)
   camera.m_viewMatrix = glm::lookAt(
     camera.m_position, camera.m_position + camera.m_front, camera.m_up);
 
-  camera.m_ProjectionMatrix = glm::perspective(glm::radians(camera.m_fov),
-                                               camera.m_width / camera.m_height,
-                                               camera.m_near,
-                                               camera.m_far);
+  const float aspect =
+    camera.m_height > 0.0f ? camera.m_width / camera.m_height : 1.0f;
+  camera.m_ProjectionMatrix = glm::perspective(
+    glm::radians(camera.m_fov), aspect, camera.m_near, camera.m_far);
 
   camera.m_matrixNeedsUpdate = false;
 }

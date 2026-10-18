@@ -6,6 +6,12 @@
 #include "ECS/Systems/GraphicsSystem.hpp"
 #endif
 
+namespace {
+u32 pendingW = 0;
+u32 pendingH = 0;
+bool resizePending = false;
+}
+
 bool
 Core::initialize()
 {
@@ -94,9 +100,20 @@ Core::initialize()
   });
   Window::getInstance().setFramebufferSizeCallback(
     [](GLFWwindow* /* win */, i32 width, i32 height) {
-      ECSManager::getInstance().setViewport(width, height);
-      UIManager::getInstance().onResize(width, height);
+      if (width > 0 && height > 0) {
+        pendingW = static_cast<u32>(width);
+        pendingH = static_cast<u32>(height);
+        resizePending = true;
+      }
     });
+
+  int width, height;
+  glfwGetFramebufferSize(Window::getInstance().getWindow(), &width, &height);
+  if (width > 0 && height > 0) {
+    pendingW = static_cast<u32>(width);
+    pendingH = static_cast<u32>(height);
+    resizePending = true;
+  }
 
   return true;
 }
@@ -154,6 +171,13 @@ Core::update()
   m_profiler.endPhase(Profiler::kPhaseSwap);
   m_profiler.endFrame();
 #endif
+
+  if (resizePending) {
+    resizePending = false;
+    ECSManager::getInstance().setViewport(pendingW, pendingH);
+    UIManager::getInstance().onResize(static_cast<int>(pendingW),
+                                      static_cast<int>(pendingH));
+  }
 }
 
 bool
