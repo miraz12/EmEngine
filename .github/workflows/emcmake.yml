@@ -15,6 +15,25 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Drop stale CMake cache
+        run: |
+          dir=../emengine_build/emscripten-release
+          cache="$dir/CMakeCache.txt"
+          if [ -f "$cache" ]; then
+            stale=0
+            for var in CMAKE_MAKE_PROGRAM CMAKE_COMMAND PKG_CONFIG_EXECUTABLE; do
+              path=$(sed -n "s/^${var}:[A-Z]*=//p" "$cache")
+              if [ -n "$path" ] && [ ! -e "$path" ]; then
+                echo "Stale ${var}: $path"
+                stale=1
+              fi
+            done
+            if [ "$stale" = 1 ]; then
+              echo "Removing stale build dir $dir"
+              rm -rf "$dir"
+            fi
+          fi
+
       - name: Configure CMake
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
