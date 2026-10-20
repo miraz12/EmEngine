@@ -24,7 +24,6 @@ private:
 
   // Single-instance buffer for skinned entity draws (separate to avoid
   // overwriting batched data before command buffer execution)
-  gfx::BufferId m_singleInstanceBuffer{};
 };
 
 #endif // GEOMETRYPASS_H_

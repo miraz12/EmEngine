@@ -107,6 +107,8 @@ set(ENGINE_FILES
   Rendering/Primitive.cpp
   Rendering/Primitive.hpp
   Rendering/Skin.hpp
+  Rendering/SkeletonPose.cpp
+  Rendering/SkeletonPose.hpp
 
   # Render Passes
   RenderPasses/BloomPass.cpp
@@ -131,6 +133,8 @@ set(ENGINE_FILES
   RenderPasses/RenderUtil.hpp
   RenderPasses/ShadowPass.cpp
   RenderPasses/ShadowPass.hpp
+  RenderPasses/SkinningGather.cpp
+  RenderPasses/SkinningGather.hpp
 
   # Types
   Types/LightTypes.hpp

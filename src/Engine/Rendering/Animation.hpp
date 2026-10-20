@@ -21,11 +21,14 @@ struct AnimationSampler
   std::vector<Keyframe> keyframes;
   std::vector<float> outputs; // flat float array for cubic spline interpolation
 
-  // Pre-calculated time indices to avoid binary search during animation
-  mutable size_t lastIndex = 0;
-
-  // Find the appropriate keyframe index for the given time
-  size_t findKeyframeIndex(float time) const;
+  // Find the appropriate keyframe index for the given time.
+  //
+  // `hint` is the index this sampler returned last time for the SAME entity;
+  // it lets a sequential playhead skip the binary search. It must be passed
+  // in rather than cached on the sampler: Animation (and therefore its
+  // samplers) lives on the shared GraphicsObject, so a cached cursor would
+  // be thrashed between entities playing the same clip at different times.
+  size_t findKeyframeIndex(float time, size_t hint = 0) const;
 
   glm::vec3 translate(size_t index, float time);
   glm::vec3 scale(size_t index, float time);

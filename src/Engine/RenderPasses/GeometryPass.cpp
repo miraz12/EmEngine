@@ -2,6 +2,7 @@
 #include "ECS/Components/CameraComponent.hpp"
 #include "ECS/Components/GraphicsComponent.hpp"
 #include "ECS/Components/PositionComponent.hpp"
+#include <ECS/Components/AnimationComponent.hpp>
 #include <ECS/ECSManager.hpp>
 #include <ECS/Systems/CameraSystem.hpp>
 #include <Graphics/CommandBuffer.hpp>
@@ -10,6 +11,8 @@
 #include <Graphics/UBOStructs.hpp>
 #include <RenderPasses/FrameGraph.hpp>
 #include <RenderPasses/RenderPass.hpp>
+#include <RenderPasses/SkinningGather.hpp>
+#include <Rendering/SkeletonPose.hpp>
 #include <unordered_map>
 
 namespace {
@@ -20,6 +23,7 @@ struct InstanceKey
   GraphicsObject* obj;
   u32 nodeIdx;
   u32 primIdx;
+  bool skinned;
 
   bool operator==(const InstanceKey&) const = default;
 };
@@ -31,21 +35,22 @@ struct InstanceKeyHash
     auto h1 = std::hash<void*>{}(key.obj);
     auto h2 = std::hash<u32>{}(key.nodeIdx);
     auto h3 = std::hash<u32>{}(key.primIdx);
-    return h1 ^ (h2 << 16) ^ (h3 << 32);
+    auto h4 = std::hash<bool>{}(key.skinned);
+    return h1 ^ (h2 << 16) ^ (h3 << 32) ^ (h4 << 48);
   }
 };
 
 struct DrawGroup
 {
   InstanceKey key;
-  u32 offset; // index into allMatrices
+  u32 offset; // index into allInstances
   u32 count;  // number of instances
 };
 
 // Mesh vertex stride (must match InterleavedVertex in GltfObject.cpp)
 // vec3 pos + vec3 norm + vec4 tan + vec2 uv + u16vec4 joints + vec4 weights
 constexpr u32 kMeshVertexStride = 72;
-constexpr u32 kInstanceStride = sizeof(glm::mat4); // 64 bytes
+constexpr u32 kInstanceStride = sizeof(InstanceData);
 
 } // namespace
 
@@ -132,7 +137,7 @@ GeometryPass::GeometryPass()
     { { .binding = 0, .stride = kMeshVertexStride, .perInstance = false },
       { .binding = 1, .stride = kInstanceStride, .perInstance = true } }
   };
-  std::array<gfx::VertexAttribute, 7> pipeAttribs = { {
+  std::array<gfx::VertexAttribute, 8> pipeAttribs = { {
     { .location = 0,
       .binding = 0,
       .offset = 0,
@@ -161,6 +166,10 @@ GeometryPass::GeometryPass()
       .binding = 1,
       .offset = 0,
       .format = gfx::PixelFormat::MAT4F }, // modelMatrix
+    { .location = 10,
+      .binding = 1,
+      .offset = offsetof(InstanceData, jointOffset),
+      .format = gfx::PixelFormat::R32F }, // jointOffset
   } };
   gfx::PipelineCreateInfo pipeInfo{};
   pipeInfo.shaderProgram = getShaderId();
@@ -183,13 +192,6 @@ GeometryPass::GeometryPass()
   instanceBufInfo.debugName = "GeometryInstanceBuffer";
   m_instanceBuffer = device.createBuffer(instanceBufInfo);
   m_instanceBufferCapacity = kInitialInstanceCapacity;
-
-  // Single-instance buffer for skinned entity draws (1 mat4)
-  gfx::BufferCreateInfo singleBufInfo{};
-  singleBufInfo.size = kInstanceStride;
-  singleBufInfo.usage = gfx::BufferUsage::Vertex | gfx::BufferUsage::Dynamic;
-  singleBufInfo.debugName = "GeometrySingleInstanceBuffer";
-  m_singleInstanceBuffer = device.createBuffer(singleBufInfo);
 
   resources.bindDefaultFramebuffer();
 }
@@ -258,69 +260,86 @@ GeometryPass::Record(ECSManager& eManager)
   viewport.maxDepth = 1.0f;
   cmd->setViewport(viewport);
 
-  // Phase 1: Sort entities into instance groups vs non-instanced (skinned)
-  std::unordered_map<InstanceKey, std::vector<glm::mat4>, InstanceKeyHash>
+  // Gather & upload this frame's joint matrices once, before building the
+  // instance data — each skinned instance needs the row its skeleton landed
+  // on. Memoized, so this is a no-op if ShadowPass already ran it.
+  const auto& frameSkinning = gatherAndUploadFrameSkinning(eManager);
+
+  // Phase 1: Group every drawable node/primitive for instancing. Skinned
+  // entities take part too: their differing skeletons are addressed through
+  // the per-instance jointOffset rather than by splitting the draw.
+  std::unordered_map<InstanceKey, std::vector<InstanceData>, InstanceKeyHash>
     instanceGroups;
-  std::vector<Entity> skinnedEntities;
 
-  eManager.each<GraphicsComponent>(
-    [&](Entity entity, GraphicsComponent& gfxComp) {
-      auto* posComp = eManager.getComponent<PositionComponent>(entity);
-      auto* obj = gfxComp.m_grapObj.get();
+  eManager.each<GraphicsComponent>([&](Entity entity,
+                                       GraphicsComponent& gfxComp) {
+    auto* posComp = eManager.getComponent<PositionComponent>(entity);
+    auto* obj = gfxComp.m_grapObj.get();
+    if (!obj) {
+      return;
+    }
 
-      glm::mat4 entityModel =
-        posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
-                    glm::mat4_cast(posComp->rotation) *
-                    glm::scale(glm::mat4(1.0f), posComp->scale)
-                : glm::identity<glm::mat4>();
+    glm::mat4 entityModel =
+      posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
+                  glm::mat4_cast(posComp->rotation) *
+                  glm::scale(glm::mat4(1.0f), posComp->scale)
+              : glm::identity<glm::mat4>();
 
-      // Check if any node has skinning
-      bool hasSkin = false;
-      for (u32 idx = 0; idx < obj->p_numNodes; idx++) {
-        if (obj->p_nodes[idx].skin >= 0) {
-          hasSkin = true;
-          break;
-        }
+    // Node transforms come from this entity's own pose when it has one —
+    // the GraphicsObject is shared between entities using the same model.
+    auto* animComp = eManager.getComponent<AnimationComponent>(entity);
+    SkeletonPose* pose =
+      (animComp && animComp->pose.isBound()) ? &animComp->pose : nullptr;
+
+    for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
+      if (obj->p_nodes[nodeIdx].mesh < 0) {
+        continue;
       }
 
-      if (hasSkin) {
-        skinnedEntities.push_back(entity);
+      const bool isSkinned = obj->p_nodes[nodeIdx].skin >= 0;
+
+      InstanceData inst{};
+      if (isSkinned) {
+        // Skinning already encodes node-to-world.
+        inst.modelMatrix = entityModel;
+        inst.jointOffset =
+          static_cast<float>(findJointOffset(frameSkinning, entity, nodeIdx));
       } else {
-        // Group by (obj, node, primitive) for instancing
-        for (u32 nodeIdx = 0; nodeIdx < obj->p_numNodes; nodeIdx++) {
-          if (obj->p_nodes[nodeIdx].mesh < 0) {
-            continue;
-          }
-          glm::mat4 nodeModel = entityModel * obj->getMatrix(nodeIdx);
-          Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
-          for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
-            instanceGroups[{ obj, nodeIdx, primIdx }].push_back(nodeModel);
-          }
-        }
+        glm::mat4 nodeMat = pose
+                              ? pose->getMatrix(*obj, static_cast<i32>(nodeIdx))
+                              : obj->getMatrix(nodeIdx);
+        inst.modelMatrix = entityModel * nodeMat;
+        inst.jointOffset = 0.0f;
       }
-    });
 
-  // Phase 2: Build contiguous matrix buffer and draw groups
-  static thread_local std::vector<glm::mat4> allMatrices;
+      Mesh& mesh = obj->p_meshes[obj->p_nodes[nodeIdx].mesh];
+      for (u32 primIdx = 0; primIdx < mesh.numPrims; primIdx++) {
+        instanceGroups[{ obj, nodeIdx, primIdx, isSkinned }].push_back(inst);
+      }
+    }
+  });
+
+  // Phase 2: Build contiguous instance buffer and draw groups
+  static thread_local std::vector<InstanceData> allInstances;
   static thread_local std::vector<DrawGroup> drawGroups;
-  allMatrices.clear();
+  allInstances.clear();
   drawGroups.clear();
 
-  for (auto& [key, matrices] : instanceGroups) {
+  for (auto& [key, instances] : instanceGroups) {
     drawGroups.push_back({ key,
-                           static_cast<u32>(allMatrices.size()),
-                           static_cast<u32>(matrices.size()) });
-    allMatrices.insert(allMatrices.end(), matrices.begin(), matrices.end());
+                           static_cast<u32>(allInstances.size()),
+                           static_cast<u32>(instances.size()) });
+    allInstances.insert(allInstances.end(), instances.begin(), instances.end());
   }
 
-  // Upload all instance matrices
-  if (!allMatrices.empty()) {
-    auto totalSize = static_cast<u32>(allMatrices.size()) * kInstanceStride;
+  // Upload all instance data
+  if (!allInstances.empty()) {
+    auto totalSize = static_cast<u32>(allInstances.size()) * kInstanceStride;
 
     // Resize buffer if needed
-    if (static_cast<u32>(allMatrices.size()) > m_instanceBufferCapacity) {
+    if (static_cast<u32>(allInstances.size()) > m_instanceBufferCapacity) {
       device.destroyBuffer(m_instanceBuffer);
-      m_instanceBufferCapacity = static_cast<u32>(allMatrices.size()) * 2;
+      m_instanceBufferCapacity = static_cast<u32>(allInstances.size()) * 2;
       gfx::BufferCreateInfo info{};
       info.size = static_cast<u64>(m_instanceBufferCapacity) * kInstanceStride;
       info.usage = gfx::BufferUsage::Vertex | gfx::BufferUsage::Dynamic;
@@ -328,16 +347,27 @@ GeometryPass::Record(ECSManager& eManager)
       m_instanceBuffer = device.createBuffer(info);
     }
 
-    device.updateBuffer(m_instanceBuffer, 0, allMatrices.data(), totalSize);
+    device.updateBuffer(m_instanceBuffer, 0, allInstances.data(), totalSize);
   }
 
   // Phase 3: Issue instanced draw calls
+  constexpr u32 kJointTexUnit = 5;
+  bool lastSkinned = false;
   cmd->setUniform(m_isSkinnedLoc, 0);
 
   for (auto& group : drawGroups) {
     auto* obj = group.key.obj;
     Mesh& mesh = obj->p_meshes[obj->p_nodes[group.key.nodeIdx].mesh];
     Primitive& prim = mesh.m_primitives[group.key.primIdx];
+
+    if (group.key.skinned != lastSkinned) {
+      cmd->setUniform(m_isSkinnedLoc, group.key.skinned ? 1 : 0);
+      lastSkinned = group.key.skinned;
+    }
+    if (group.key.skinned) {
+      cmd->bindTextureByName(
+        kJointTexUnit, "jointMats", resources.getLinearClampSampler());
+    }
 
     // Bind material
     Material* mat = prim.m_material > -1 ? &obj->p_materials[prim.m_material]
@@ -357,21 +387,6 @@ GeometryPass::Record(ECSManager& eManager)
     } else {
       cmd->draw(prim.m_count, group.count);
     }
-  }
-
-  // Phase 4: Draw skinned entities (1-instance draws via instance buffer)
-  for (auto entity : skinnedEntities) {
-    auto* posComp = eManager.getComponent<PositionComponent>(entity);
-    auto* gfxComp = eManager.getComponent<GraphicsComponent>(entity);
-
-    glm::mat4 entityModel =
-      posComp ? glm::translate(glm::mat4(1.0f), posComp->position) *
-                  glm::mat4_cast(posComp->rotation) *
-                  glm::scale(glm::mat4(1.0f), posComp->scale)
-              : glm::identity<glm::mat4>();
-
-    gfxComp->m_grapObj->recordDraw(
-      *cmd, m_sampler, entityModel, m_singleInstanceBuffer, m_isSkinnedLoc);
   }
 
   cmd->endRenderPass();

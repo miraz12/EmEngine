@@ -576,6 +576,35 @@ RenderResources::updateDataTexture(const std::string& name,
   }
 }
 
+void
+RenderResources::beginJointUploadFrame()
+{
+  m_jointScratch.clear();
+}
+
+u32
+RenderResources::appendJointMatrices(const glm::mat4* matrices, u32 jointCount)
+{
+  auto offset = static_cast<u32>(m_jointScratch.size());
+  m_jointScratch.insert(m_jointScratch.end(), matrices, matrices + jointCount);
+  return offset;
+}
+
+void
+RenderResources::flushJointUploads()
+{
+  if (m_jointScratch.empty()) {
+    return;
+  }
+
+  // One texel row per joint, 4 columns per mat4.
+  constexpr u32 kMatrixColumns = 4;
+  updateDataTexture("jointMats",
+                    kMatrixColumns,
+                    static_cast<u32>(m_jointScratch.size()),
+                    glm::value_ptr(m_jointScratch[0]));
+}
+
 TextureId
 RenderResources::recreateTexture2D(const std::string& name,
                                    u32 newWidth,

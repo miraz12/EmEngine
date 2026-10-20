@@ -34,7 +34,6 @@ private:
   static constexpr u32 kInitialInstanceCapacity = 256;
 
   // Single-instance buffer for skinned entity draws
-  gfx::BufferId m_singleInstanceBuffer{};
 };
 
 #endif // SHADOWPASS_H_

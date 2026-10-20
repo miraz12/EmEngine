@@ -13,6 +13,7 @@
 #include <RenderPasses/LightPass.hpp>
 #include <RenderPasses/ParticlePass.hpp>
 #include <RenderPasses/ShadowPass.hpp>
+#include <RenderPasses/SkinningGather.hpp>
 
 FrameGraph::FrameGraph()
 {
@@ -59,6 +60,8 @@ FrameGraph::draw(ECSManager& eManager)
   resources.clearDepth(1.0f);
   resources.clearStencil(0);
   resources.setViewportRect(0, 0, m_width, m_height);
+
+  resetFrameSkinningGather();
 
   // Two-phase rendering: record all pass commands first, then batch submit.
   // Self-submitting passes (e.g. BloomPass) manage their own submission

@@ -164,7 +164,8 @@ public:
   /// Update buffer contents (deferred — data is captured at recording time)
   void updateBuffer(BufferId buffer, u64 offset, const void* data, u64 size);
 
-  /// Update a data texture via RenderResources (deferred — data captured at recording time).
+  /// Update a data texture via RenderResources (deferred — data captured at
+  /// recording time).
   void updateDataTexture(u32 textureUnit,
                          const std::string& textureName,
                          u32 width,

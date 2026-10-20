@@ -1,10 +1,13 @@
 #ifndef ANMATIONCOMPONENT_H_
 #define ANMATIONCOMPONENT_H_
 #include <Rendering/Animation.hpp>
+#include <Rendering/SkeletonPose.hpp>
 
 struct AnimationComponent
 {
   AnimationComponent() = default;
+
+  SkeletonPose pose;
 
   float currentTime{ 0.0f };
   bool isPlaying{ true };

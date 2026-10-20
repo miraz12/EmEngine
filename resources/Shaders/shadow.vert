@@ -10,6 +10,10 @@ layout(location = 5) in vec4 WEIGHTS_0; // Bone weights (4 influences, sum=1)
 
 // Per-instance model matrix (binding 1, divisor=1, consumes locations 6-9)
 layout(location = 6) in mat4 iModelMatrix;
+// Per-instance first jointMats row for this instance's skeleton. Carried
+// per instance (not as a uniform) so several skinned entities with
+// different skeletons can be drawn in a single instanced call.
+layout(location = 10) in float iJointOffset;
 
 uniform mat4 lightSpaceMatrix; // Light view-projection matrix
 uniform bool is_skinned;       // Enable skeletal animation
@@ -17,16 +21,20 @@ uniform sampler2D
   jointMats; // Bone transformation matrices (4 columns per bone)
 
 // Fetch bone transformation matrix from texture
-// Bone matrices stored as 4 consecutive texels (columns)
+// Bone matrices stored as 4 consecutive texels (columns). jointMats packs
+// every simultaneously-visible skeleton into contiguous row ranges, so
+// boneIdx is biased by this instance's own range to avoid reading another
+// entity's skeleton.
 // Params: boneIdx (bone index)
 // Returns: 4x4 transformation matrix for the bone
 mat4
 getBoneMatrix(int boneIdx)
 {
-  return mat4(texelFetch(jointMats, ivec2(0, boneIdx), 0),
-              texelFetch(jointMats, ivec2(1, boneIdx), 0),
-              texelFetch(jointMats, ivec2(2, boneIdx), 0),
-              texelFetch(jointMats, ivec2(3, boneIdx), 0));
+  int row = int(iJointOffset) + boneIdx;
+  return mat4(texelFetch(jointMats, ivec2(0, row), 0),
+              texelFetch(jointMats, ivec2(1, row), 0),
+              texelFetch(jointMats, ivec2(2, row), 0),
+              texelFetch(jointMats, ivec2(3, row), 0));
 }
 
 void

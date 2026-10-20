@@ -3,10 +3,11 @@
 #include <ECS/Components/GraphicsComponent.hpp>
 #include <ECS/ECSManager.hpp>
 #include <Objects/GraphicsObject.hpp>
+#include <Rendering/SkeletonPose.hpp>
 #include <iostream>
 
 void
-AnimationSystem::sampleAnimation(GraphicsObject* obj,
+AnimationSystem::sampleAnimation(SkeletonPose& pose,
                                  Animation& animation,
                                  float time)
 {
@@ -16,48 +17,47 @@ AnimationSystem::sampleAnimation(GraphicsObject* obj,
       continue;
     }
 
-    size_t keyframeIndex = sampler.findKeyframeIndex(time);
+    size_t keyframeIndex =
+      sampler.findKeyframeIndex(time, pose.keyframeHint(channel.samplerIndex));
+    pose.setKeyframeHint(channel.samplerIndex, keyframeIndex);
 
     switch (channel.path) {
       case AnimationChannel::PathType::TRANSLATION:
-        obj->p_nodes[channel.node].trans =
-          sampler.translate(keyframeIndex, time);
+        pose.translation(channel.node) = sampler.translate(keyframeIndex, time);
         break;
       case AnimationChannel::PathType::SCALE:
-        obj->p_nodes[channel.node].scale = sampler.scale(keyframeIndex, time);
+        pose.scale(channel.node) = sampler.scale(keyframeIndex, time);
         break;
       case AnimationChannel::PathType::ROTATION:
-        obj->p_nodes[channel.node].rot = sampler.rotate(keyframeIndex, time);
+        pose.rotation(channel.node) = sampler.rotate(keyframeIndex, time);
         break;
     }
   }
 }
 
 void
-AnimationSystem::snapshotPose(GraphicsObject* obj)
+AnimationSystem::snapshotPose(SkeletonPose& pose)
 {
-  u32 n = obj->p_numNodes;
+  u32 n = pose.nodeCount();
   if (m_snapTrans.size() < n) {
     m_snapTrans.resize(n);
     m_snapRot.resize(n);
     m_snapScale.resize(n);
   }
   for (u32 i = 0; i < n; i++) {
-    m_snapTrans[i] = obj->p_nodes[i].trans;
-    m_snapRot[i] = obj->p_nodes[i].rot;
-    m_snapScale[i] = obj->p_nodes[i].scale;
+    m_snapTrans[i] = pose.translation(i);
+    m_snapRot[i] = pose.rotation(i);
+    m_snapScale[i] = pose.scale(i);
   }
 }
 
 void
-AnimationSystem::blendPose(GraphicsObject* obj, float weight)
+AnimationSystem::blendPose(SkeletonPose& pose, float weight)
 {
-  for (u32 i = 0; i < obj->p_numNodes; i++) {
-    obj->p_nodes[i].trans =
-      glm::mix(m_snapTrans[i], obj->p_nodes[i].trans, weight);
-    obj->p_nodes[i].rot = glm::slerp(m_snapRot[i], obj->p_nodes[i].rot, weight);
-    obj->p_nodes[i].scale =
-      glm::mix(m_snapScale[i], obj->p_nodes[i].scale, weight);
+  for (u32 i = 0; i < pose.nodeCount(); i++) {
+    pose.translation(i) = glm::mix(m_snapTrans[i], pose.translation(i), weight);
+    pose.rotation(i) = glm::slerp(m_snapRot[i], pose.rotation(i), weight);
+    pose.scale(i) = glm::mix(m_snapScale[i], pose.scale(i), weight);
   }
 }
 
@@ -86,6 +86,10 @@ AnimationSystem::update(float dt)
 
       auto* obj = graComp.m_grapObj.get();
 
+      // Bind this entity's pose to the (shared) model on first use.
+      animComp.pose.bindTo(*obj);
+      SkeletonPose& pose = animComp.pose;
+
       if (animComp.blending) {
         // Advance blend timer
         animComp.blendElapsed += dt;
@@ -107,12 +111,12 @@ AnimationSystem::update(float dt)
         }
 
         // Sample source pose, snapshot it, then sample target pose
-        sampleAnimation(obj, fromAnim, animComp.blendFromTime);
-        snapshotPose(obj);
-        sampleAnimation(obj, toAnim, animComp.currentTime);
+        sampleAnimation(pose, fromAnim, animComp.blendFromTime);
+        snapshotPose(pose);
+        sampleAnimation(pose, toAnim, animComp.currentTime);
 
         // Blend between source (snapshot) and target (current node TRS)
-        blendPose(obj, animComp.blendWeight);
+        blendPose(pose, animComp.blendWeight);
 
         // Complete the blend when duration elapsed
         if (animComp.blendElapsed >= animComp.blendDuration) {
@@ -127,9 +131,9 @@ AnimationSystem::update(float dt)
           animComp.currentTime -= animation.end;
         }
 
-        sampleAnimation(obj, animation, animComp.currentTime);
+        sampleAnimation(pose, animation, animComp.currentTime);
       }
 
-      obj->resetMatrixCache();
+      pose.invalidate();
     });
 }

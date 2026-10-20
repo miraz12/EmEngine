@@ -2468,7 +2468,8 @@ Device::toGLVertexAttrib(PixelFormat format)
     case PixelFormat::RGBA16F:
       return { 4, GL_HALF_FLOAT, GL_FALSE, false };
     case PixelFormat::RGBA32F:
-    case PixelFormat::MAT4F: // Each column is vec4; expansion handled at call sites
+    case PixelFormat::MAT4F: // Each column is vec4; expansion handled at call
+                             // sites
       return { 4, GL_FLOAT, GL_FALSE, false };
     case PixelFormat::RGB10A2:
       return { 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, false };
@@ -2518,26 +2519,23 @@ Device::configureVertexAttribPointers(const VertexAttribute& attrib,
 
   for (u32 col = 0; col < columnCount; ++col) {
     u32 loc = attrib.location + col;
-    auto colOffset =
-      baseOffset + attrib.offset + static_cast<u64>(col) * 16u;
+    auto colOffset = baseOffset + attrib.offset + static_cast<u64>(col) * 16u;
 
     glEnableVertexAttribArray(loc);
 
     if (info.isInteger) {
-      glVertexAttribIPointer(
-        loc,
-        info.size,
-        info.type,
-        stride,
-        reinterpret_cast<const void*>(colOffset));
+      glVertexAttribIPointer(loc,
+                             info.size,
+                             info.type,
+                             stride,
+                             reinterpret_cast<const void*>(colOffset));
     } else {
-      glVertexAttribPointer(
-        loc,
-        info.size,
-        info.type,
-        info.normalized,
-        stride,
-        reinterpret_cast<const void*>(colOffset));
+      glVertexAttribPointer(loc,
+                            info.size,
+                            info.type,
+                            info.normalized,
+                            stride,
+                            reinterpret_cast<const void*>(colOffset));
     }
 
     glVertexAttribDivisor(loc, perInstance ? 1 : 0);

@@ -1,23 +1,18 @@
 #include "Animation.hpp"
 
-// Find the appropriate keyframe index for the given time
-// Uses the lastIndex as a hint to avoid searching from the beginning each time
 size_t
-AnimationSampler::findKeyframeIndex(float time) const
+AnimationSampler::findKeyframeIndex(float time, size_t hint) const
 {
-  // Check if we can use the cached index
-  if (lastIndex < keyframes.size() - 1) {
-    if (time >= keyframes[lastIndex].time &&
-        time <= keyframes[lastIndex + 1].time) {
-      return lastIndex;
+  // Check if the caller's hint still brackets the requested time
+  if (hint < keyframes.size() - 1) {
+    if (time >= keyframes[hint].time && time <= keyframes[hint + 1].time) {
+      return hint;
     }
 
     // Try the next index
-    if (lastIndex + 1 < keyframes.size() - 1 &&
-        time >= keyframes[lastIndex + 1].time &&
-        time <= keyframes[lastIndex + 2].time) {
-      lastIndex++;
-      return lastIndex;
+    if (hint + 1 < keyframes.size() - 1 && time >= keyframes[hint + 1].time &&
+        time <= keyframes[hint + 2].time) {
+      return hint + 1;
     }
   }
 
@@ -29,7 +24,6 @@ AnimationSampler::findKeyframeIndex(float time) const
     size_t mid = left + (right - left) / 2;
 
     if (time >= keyframes[mid].time && time <= keyframes[mid + 1].time) {
-      lastIndex = mid;
       return mid;
     }
 
@@ -43,7 +37,6 @@ AnimationSampler::findKeyframeIndex(float time) const
   }
 
   // Default to the first keyframe if no suitable range is found
-  lastIndex = 0;
   return 0;
 }
 

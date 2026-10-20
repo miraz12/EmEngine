@@ -305,10 +305,6 @@ extern "C"
       ResourceManager::getInstance().getGltfModel(path);
 
     const bool hasAnims = obj->p_numAnimations > 0;
-    if (hasAnims) {
-      // TODO Don't cache animated objects for now
-      obj = std::make_shared<GltfObject>(path);
-    }
 
     auto& ecs = ECSManager::getInstance();
     ecs.emplaceComponent<GraphicsComponent>(entity, std::move(obj));

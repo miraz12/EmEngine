@@ -12,8 +12,12 @@ layout(location = 3) in vec2 TEXCOORD_0;
 layout(location = 4) in vec4 JOINTS_0;  // Bone indices
 layout(location = 5) in vec4 WEIGHTS_0; // Bone weights
 
-// Per-instance model matrix 
+// Per-instance model matrix
 layout(location = 6) in mat4 iModelMatrix;
+// Per-instance first jointMats row for this instance's skeleton. Carried
+// per instance (not as a uniform) so several skinned entities with
+// different skeletons can be drawn in a single instanced call.
+layout(location = 10) in float iJointOffset;
 
 // Camera UBO (binding point 1)
 layout(std140) uniform CameraData
@@ -32,14 +36,18 @@ out vec3 pPosition;  // World-space position (for lighting)
 out vec2 pTexCoords; // Texture coordinates
 out vec3 pNormal;    // World-space normal (for TBN fallback)
 
-// Fetch bone transformation matrix (identical to shadow.vert)
+// Fetch bone transformation matrix (identical to shadow.vert).
+// jointMats packs every simultaneously-visible skeleton into contiguous row
+// ranges, so boneIdx is biased by this instance's own range to avoid
+// reading another entity's skeleton.
 mat4
 getBoneMatrix(int boneIdx)
 {
-  return mat4(texelFetch(jointMats, ivec2(0, boneIdx), 0),
-              texelFetch(jointMats, ivec2(1, boneIdx), 0),
-              texelFetch(jointMats, ivec2(2, boneIdx), 0),
-              texelFetch(jointMats, ivec2(3, boneIdx), 0));
+  int row = int(iJointOffset) + boneIdx;
+  return mat4(texelFetch(jointMats, ivec2(0, row), 0),
+              texelFetch(jointMats, ivec2(1, row), 0),
+              texelFetch(jointMats, ivec2(2, row), 0),
+              texelFetch(jointMats, ivec2(3, row), 0));
 }
 
 void

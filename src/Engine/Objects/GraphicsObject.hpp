@@ -13,10 +13,6 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 
-namespace gfx {
-class CommandBuffer;
-}
-
 class GraphicsObject
 {
 public:
@@ -25,29 +21,6 @@ public:
 
   // Add a new node to the object
   void newNode(glm::mat4 model);
-
-  virtual void draw(gfx::ShaderId shader);
-
-  virtual void drawGeom(gfx::ShaderId shader);
-
-  /// Record draw commands (with materials) into CommandBuffer.
-  /// Model matrix is written to instanceBuffer at offset 0 per-node (1-instance
-  /// draws).
-  virtual void recordDraw(gfx::CommandBuffer& cmd,
-                          gfx::SamplerId sampler,
-                          const glm::mat4& entityModel,
-                          gfx::BufferId instanceBuffer,
-                          i32 isSkinnedLoc = -1);
-
-  /// Record geometry-only draw commands into CommandBuffer (for shadow pass).
-  /// Model matrix is written to instanceBuffer at offset 0 per-node (1-instance
-  /// draws).
-  virtual void recordDrawGeom(gfx::CommandBuffer& cmd,
-                              const glm::mat4& entityModel,
-                              gfx::BufferId instanceBuffer,
-                              i32 isSkinnedLoc = -1);
-
-  void applySkinning(gfx::ShaderId shader, i32 node);
 
   // Compute the local transformation matrix of the given node
   glm::mat4 getLocalMat(i32 node);
@@ -75,14 +48,6 @@ public:
 private:
   // Cache for computed matrices
   mutable std::vector<std::pair<bool, glm::mat4>> m_matrixCache;
-
-  // Skinning cache
-  struct SkinningCache
-  {
-    bool valid = false;                   // Is cache valid?
-    std::vector<glm::mat4> jointMatrices; // Cached joint matrices
-  };
-  mutable std::vector<SkinningCache> m_skinningCache;
 };
 
 #endif // GRAPHICSOBJECT_H_

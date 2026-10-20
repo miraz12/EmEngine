@@ -6,6 +6,7 @@
 
 class GraphicsObject;
 class Animation;
+class SkeletonPose;
 
 class AnimationSystem final
   : public System
@@ -20,10 +21,10 @@ private:
   AnimationSystem() = default;
   ~AnimationSystem() override = default;
 
-  void sampleAnimation(GraphicsObject* obj, Animation& animation, float time);
+  void sampleAnimation(SkeletonPose& pose, Animation& animation, float time);
   // Snapshot current animation into snapshot storage. Used for blending
-  void snapshotPose(GraphicsObject* obj);
-  void blendPose(GraphicsObject* obj, float weight);
+  void snapshotPose(SkeletonPose& pose);
+  void blendPose(SkeletonPose& pose, float weight);
 
   // Reusable per-frame storage for source pose during crossfade
   std::vector<glm::vec3> m_snapTrans;

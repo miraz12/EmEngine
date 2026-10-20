@@ -75,6 +75,10 @@ public:
                          const void* data,
                          bool reallocate = false);
 
+  void beginJointUploadFrame();
+  u32 appendJointMatrices(const glm::mat4* matrices, u32 jointCount);
+  void flushJointUploads();
+
   FramebufferId createFramebuffer(const std::string& name,
                                   const FramebufferCreateInfo& info);
 
@@ -370,6 +374,8 @@ private:
   PostProcessUBO m_postProcessUBOData{};
 
   bool m_initialized{ false };
+
+  std::vector<glm::mat4> m_jointScratch;
 };
 
 } // namespace gfx

@@ -8,7 +8,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" CACHE PATH "" FORCE)
 
 # Add source files
 add_executable(emengine_tests component_tests.cpp ecs_tests.cpp core_tests.cpp
-                              scene_tests.cpp scene_loader_tests.cpp)
+                              scene_tests.cpp scene_loader_tests.cpp
+                              skeleton_pose_tests.cpp)
 
 set_property(TARGET emengine_tests PROPERTY CXX_STANDARD 23)
 set_property(TARGET emengine_tests PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -37,6 +38,9 @@ add_test(NAME EntityStressTests COMMAND emengine_tests
                                         --gtest_filter=*EntityStressTest*)
 add_test(NAME ECSIterationTests COMMAND emengine_tests
                                         --gtest_filter=*ECSIterationTest*)
+
+add_test(NAME SkeletonPoseTests COMMAND emengine_tests
+                                       --gtest_filter=*SkeletonPoseTest*)
 
 # Loads YAML fixtures by a path relative to the repo root, so — like
 # VisualTests below — it needs an explicit working directory.
