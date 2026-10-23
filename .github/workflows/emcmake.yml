@@ -47,4 +47,4 @@ jobs:
       - name: Copy build
         run: |
           PATH=/run/wrappers/bin:/root/.nix-profile/bin:/etc/profiles/per-user/root/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-          rsync -r --checksum src/Game/bin/Release/net9.0/browser-wasm/native/* /var/lib/www/engine.rlyeh.nu
+          rsync -r --checksum src/Game/bin/Release/net10.0/browser-wasm/native/* /var/lib/www/engine.rlyeh.nu
