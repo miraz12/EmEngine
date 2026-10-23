@@ -77,7 +77,7 @@
               export EM_CACHE="/tmp/.emscripten_cache";
               export EMSDK_PATH="$PWD/exts/emsdk";
 
-              export DOTNET_ROOT="${dotnetCorePackages.dotnet_11.sdk}"
+              export DOTNET_ROOT="${dotnetCorePackages.dotnet_10.sdk}"
               export DRI_PRIME=1
               export npm_config_prefix=$PWD/.npm-global
               export PATH=$npm_config_prefix/bin:$PATH
